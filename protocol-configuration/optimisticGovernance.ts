@@ -19,7 +19,6 @@ export type PodCreationConfig = {
   imageUrl: string;
   admin: string;
   minDelay: number;
-  vetoController: string;
 };
 
 export const tribalCouncilMembers = [

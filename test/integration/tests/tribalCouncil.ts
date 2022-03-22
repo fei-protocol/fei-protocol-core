@@ -60,7 +60,7 @@ describe('Tribal Council', function () {
     const initialNumPodMembers = await podFactory.getNumMembers(tribalCouncilPodId);
 
     const newMember = '0x0000000000000000000000000000000000000030';
-    await podAdminGateway.connect(feiDAOTimelockSigner).addMemberToPod(tribalCouncilPodId, newMember);
+    await podAdminGateway.connect(feiDAOTimelockSigner).addPodMember(tribalCouncilPodId, newMember);
 
     const numPodMembers = await podFactory.getNumMembers(tribalCouncilPodId);
     await expect(numPodMembers).to.equal(initialNumPodMembers.add(toBN(1)));
@@ -73,7 +73,7 @@ describe('Tribal Council', function () {
     const initialNumPodMembers = await podFactory.getNumMembers(tribalCouncilPodId);
 
     const memberToBurn = tribalCouncilMembers[0];
-    await podAdminGateway.connect(feiDAOTimelockSigner).removeMemberFromPod(tribalCouncilPodId, memberToBurn);
+    await podAdminGateway.connect(feiDAOTimelockSigner).removePodMember(tribalCouncilPodId, memberToBurn);
 
     const numPodMembers = await podFactory.getNumMembers(tribalCouncilPodId);
     await expect(numPodMembers).to.equal(initialNumPodMembers.sub(toBN(1)));

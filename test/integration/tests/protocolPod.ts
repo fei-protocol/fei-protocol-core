@@ -60,7 +60,7 @@ describe('Protocol pod', function () {
   it('should allow Tribal council to add members to protocol pod', async () => {
     const initialNumPodMembers = await podFactory.getNumMembers(podId);
     const newMember = '0x0000000000000000000000000000000000000030';
-    await podAdminGateway.connect(tribalCouncilTimelockSigner).addMemberToPod(podId, newMember);
+    await podAdminGateway.connect(tribalCouncilTimelockSigner).addPodMember(podId, newMember);
 
     const numPodMembers = await podFactory.getNumMembers(podId);
     await expect(numPodMembers).to.equal(initialNumPodMembers.add(toBN(1)));
@@ -73,7 +73,7 @@ describe('Protocol pod', function () {
     const initialNumPodMembers = await podFactory.getNumMembers(podId);
 
     const memberToBurn = tribalCouncilMembers[0];
-    await podAdminGateway.connect(tribalCouncilTimelockSigner).removeMemberFromPod(podId, memberToBurn);
+    await podAdminGateway.connect(tribalCouncilTimelockSigner).removePodMember(podId, memberToBurn);
 
     const numPodMembers = await podFactory.getNumMembers(podId);
     await expect(numPodMembers).to.equal(initialNumPodMembers.sub(toBN(1)));

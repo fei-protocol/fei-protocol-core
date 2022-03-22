@@ -57,12 +57,6 @@ const mintOrcaToken = async (address: string) => {
 const fipNumber = '82';
 
 const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: NamedAddresses, logging: boolean) => {
-  // 0. Deploy PodAdminGateway contract
-  const multiPodAdminFactory = await ethers.getContractFactory('PodAdminGateway');
-  const podAdminGateway = await multiPodAdminFactory.deploy(addresses.core, addresses.memberToken);
-  await podAdminGateway.deployTransaction.wait();
-  logging && console.log(`Deployed PodAdminGateway at ${podAdminGateway.address}`);
-
   // 1. Deploy public pod executor
   const podExecutorFactory = await ethers.getContractFactory('PodExecutor');
   const podExecutor = await podExecutorFactory.deploy();
@@ -71,7 +65,6 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 
   // 2. Deploy tribalCouncilPodFactory
   const podFactoryEthersFactory = await ethers.getContractFactory('PodFactory');
-
   const podFactory = await podFactoryEthersFactory.deploy(
     addresses.core, // core
     addresses.podController, // podController
@@ -82,13 +75,17 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   await mintOrcaToken(podFactory.address);
   logging && console.log('DAO pod factory deployed to:', podFactory.address);
 
-  const vetoControllerFactory = await ethers.getContractFactory('VetoController');
-  const vetoController = await vetoControllerFactory.deploy(addresses.core, podFactory.address);
-  await vetoController.deployTransaction.wait();
-  logging && console.log('Veto controller deployed to:', vetoController.address);
+  // 3. Deploy PodAdminGateway contract
+  const podAdminGatewayFactory = await ethers.getContractFactory('PodAdminGateway');
+  const podAdminGateway = await podAdminGatewayFactory.deploy(
+    addresses.core,
+    addresses.memberToken,
+    podFactory.address
+  );
+  await podAdminGateway.deployTransaction.wait();
+  logging && console.log(`Deployed PodAdminGateway at ${podAdminGateway.address}`);
 
-  // 3. Create TribalCouncil and Protocol Tier pods
-  // are these in the right order?
+  // 4. Create TribalCouncil and Protocol Tier pods
   const tribalCouncilPod: PodCreationConfig = {
     members: tribeCouncilPodConfig.placeHolderMembers,
     threshold: tribeCouncilPodConfig.threshold,
@@ -96,8 +93,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     ensString: tribeCouncilPodConfig.ensString,
     imageUrl: tribeCouncilPodConfig.imageUrl,
     admin: podAdminGateway.address,
-    minDelay: tribeCouncilPodConfig.minDelay,
-    vetoController: ethers.constants.AddressZero
+    minDelay: tribeCouncilPodConfig.minDelay
   };
 
   const protocolTierPod: PodCreationConfig = {
@@ -107,12 +103,10 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     ensString: protocolPodConfig.ensString,
     imageUrl: protocolPodConfig.imageUrl,
     admin: podAdminGateway.address,
-    minDelay: protocolPodConfig.minDelay,
-    vetoController: vetoController.address
+    minDelay: protocolPodConfig.minDelay
   };
 
   const pods = [tribalCouncilPod, protocolTierPod];
-
   await podFactory.burnerCreateChildOptimisticPods(pods);
 
   const protocolPodId = await podFactory.latestPodId();
@@ -127,7 +121,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   logging && console.log('Tribal council timelock deployed to: ', councilTimelockAddress);
   logging && console.log('Protocol pod timelock deployed to: ', protocolPodTimelockAddress);
 
-  // 4. Create contract artifacts for timelocks, so address is available to DAO script
+  // 5. Create contract artifacts for timelocks, so address is available to DAO script
   const mockSigner = await getImpersonatedSigner(deployAddress);
   const tribalCouncilTimelock = new ethers.Contract(councilTimelockAddress, timelockABI, mockSigner);
   const protocolPodTimelock = new ethers.Contract(protocolPodTimelockAddress, timelockABI, mockSigner);
@@ -137,8 +131,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     podFactory,
     tribalCouncilTimelock,
     protocolPodTimelock,
-    podAdminGateway,
-    vetoController
+    podAdminGateway
   };
 };
 
@@ -153,21 +146,21 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const tribalCouncilPodId = await podFactory.getPodId(addresses.tribalCouncilTimelock);
   const tribalCouncilSafeAddress = await podFactory.getPodSafe(tribalCouncilPodId);
 
-  // 1. Validate VetoController has PROPOSER role on protocol pod. Validate TribalCouncil
-  // does not have a VetoController role
+  // 1. Validate PodAdminGateway has PROPOSER role on TribalCouncil and Protocol Pod
+  // Validate TribalCouncil does not have a VetoController role
   const tribalCouncilTimelock = contracts.tribalCouncilTimelock;
   const protocolTierTimelock = contracts.protocolPodTimelock;
-  const vetoControllerIsProposer = await protocolTierTimelock.hasRole(
+  const gatewayIsProtocolPodProposer = await protocolTierTimelock.hasRole(
     ethers.utils.id('PROPOSER_ROLE'),
-    addresses.vetoController
+    addresses.podAdminGateway
   );
-  expect(vetoControllerIsProposer).to.be.true;
+  expect(gatewayIsProtocolPodProposer).to.be.true;
 
-  const councilZeroAddressIsProposer = await tribalCouncilTimelock.hasRole(
+  const gatewayIsCouncilProposer = await tribalCouncilTimelock.hasRole(
     ethers.utils.id('PROPOSER_ROLE'),
-    ethers.constants.AddressZero
+    addresses.podAdminGateway
   );
-  expect(councilZeroAddressIsProposer).to.be.true;
+  expect(gatewayIsCouncilProposer).to.be.true;
 
   // 2. Validate that Tribal Council Safe, timelock and podAdmin are configured
   const councilPodAdmin = await podFactory.getPodAdmin(tribalCouncilPodId);
@@ -223,42 +216,12 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const podMembers = await podFactory.getPodMembers(protocolPodId);
   validateArraysEqual(podMembers, protocolPodConfig.members);
 
-  await validatePodAdmins(tribalCouncilPodId.toNumber(), protocolPodId.toNumber(), contracts);
   await validateTribeRoles(
     contracts.core,
     addresses.feiDAOTimelock,
     addresses.tribalCouncilTimelock,
     addresses.protocolPodTimelock
   );
-};
-
-// Validate that pod admin priviledges are set as expected
-const validatePodAdmins = async (tribalCouncilPodId: number, protocolPodId: number, contracts: NamedContracts) => {
-  const multiPodAdminContract = contracts.podAdminGateway;
-
-  const tribalRolesWithAddPriviledge = await multiPodAdminContract.getPodAdminPriviledges(
-    tribalCouncilPodId,
-    adminPriviledge.ADD_MEMBER
-  );
-  expect(tribalRolesWithAddPriviledge).to.deep.equal(tribalCouncilAdminTribeRoles.ADD_MEMBER);
-
-  const tribalRolesWithRemovePriviledge = await multiPodAdminContract.getPodAdminPriviledges(
-    tribalCouncilPodId,
-    adminPriviledge.REMOVE_MEMBER
-  );
-  expect(tribalRolesWithRemovePriviledge).to.deep.equal(tribalCouncilAdminTribeRoles.REMOVE_MEMBER);
-
-  const protocolPodRolesWithAddPriviledge = await multiPodAdminContract.getPodAdminPriviledges(
-    protocolPodId,
-    adminPriviledge.ADD_MEMBER
-  );
-  expect(protocolPodRolesWithAddPriviledge).to.deep.equal(protocolPodAdminTribeRoles.ADD_MEMBER);
-
-  const protocolPodRolesWithRemovePriviledge = await multiPodAdminContract.getPodAdminPriviledges(
-    protocolPodId,
-    adminPriviledge.REMOVE_MEMBER
-  );
-  expect(protocolPodRolesWithRemovePriviledge).to.deep.equal(protocolPodAdminTribeRoles.REMOVE_MEMBER);
 };
 
 // Validate that the relevant timelocks and Safes have the relevant TribeRoles

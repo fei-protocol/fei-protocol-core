@@ -102,52 +102,11 @@ const fip_82: ProposalDescription = {
       ],
       description: 'Transfer VOTIUM_ADMIN_ROLE admin from GOVERNOR to ROLE_ADMIN'
     },
-    /////// Grant appropriate Tribe Roles admin priviledges over Tribal Council /////
-    {
-      target: 'podAdminGateway',
-      values: '0',
-      method: 'batchGrantAdminPriviledge(uint256[] memory,uint8[] memory,bytes32[] memory)',
-      arguments: [
-        ['17', '17', '17'], // TODO: Replace with real protocol pod ID
-        ['0', '1', '1'], // ADD_MEMBER, REMOVE_MEMBER, ADD_MEMBER
-        [
-          '0x899bd46557473cb80307a9dabc297131ced39608330a2d29b2d52b660c03923e', // GOVERNOR (able to add member)
-          '0x899bd46557473cb80307a9dabc297131ced39608330a2d29b2d52b660c03923e', // GOVERNOR (able to remove member)
-          '0x55435dd261a4b9b3364963f7738a7a662ad9c84396d64be3365284bb7f0a5041' // GUARDIAN (able to remove member)
-        ]
-      ],
-      description: `
-      Grant GOVERNOR ability to add members to TribalCouncil. 
-      Grant GOVERNOR and GUARDIAN ability to remove members from TribalCouncil
-      `
-    },
-    /////// Grant appropriate Tribe Roles admin priviledges over Protocol tier pod /////
-    {
-      target: 'podAdminGateway',
-      values: '0',
-      method: 'batchGrantAdminPriviledge(uint256[] memory,uint8[] memory,bytes32[] memory)',
-      arguments: [
-        ['18', '18', '18', '18', '18'],
-        ['0', '1', '0', '1', '1'], // ADD_MEMBER, REMOVE_MEMBER, ADD_MEMBER, REMOVE_MEMBER, REMOVE_MEMBER
-        [
-          '0x899bd46557473cb80307a9dabc297131ced39608330a2d29b2d52b660c03923e', // GOVERNOR (able to add member)
-          '0x899bd46557473cb80307a9dabc297131ced39608330a2d29b2d52b660c03923e', // GOVERNOR (able to remove member)
-          '0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096', // ROLE_ADMIN (able to add member)
-          '0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096', // ROLE_ADMIN (able to remove member)
-          '0x55435dd261a4b9b3364963f7738a7a662ad9c84396d64be3365284bb7f0a5041' // GUARDIAN (able to remove member)
-        ]
-      ],
-      description: `
-      Grant GOVERNOR ability to add members to TribalCouncil. 
-      Grant GOVERNOR and GUARDIAN ability to remove members from TribalCouncil
-      `
-    },
     //////////////    Configure Membership of Council and Pod /////////////
-    // TODO: Replace with calls to podAdminGateway
     {
       target: 'podAdminGateway',
       values: '0',
-      method: 'batchAddMemberToPod(uint256 _podId,address[] memory _members)',
+      method: 'batchAddPodMember(uint256 _podId,address[] memory _members)',
       arguments: [
         '17',
         [
@@ -167,7 +126,7 @@ const fip_82: ProposalDescription = {
     {
       target: 'podAdminGateway',
       values: '0',
-      method: 'batchRemoveMemberFromPod(uint256 _podId, address[] memory)',
+      method: 'batchRemovePodMember(uint256 _podId, address[] memory)',
       arguments: [
         '17', // TODO: Replace hardcoded value with real podId
         [
@@ -187,7 +146,7 @@ const fip_82: ProposalDescription = {
     {
       target: 'podAdminGateway',
       values: '0',
-      method: 'batchAddMemberToPod(uint256 _podId,address[] memory _members)',
+      method: 'batchAddPodMember(uint256 _podId,address[] memory _members)',
       arguments: [
         '18', // TODO: Replace with real protocol pod ID
         [
@@ -203,7 +162,7 @@ const fip_82: ProposalDescription = {
     {
       target: 'podAdminGateway',
       values: '0',
-      method: 'batchRemoveMemberFromPod(uint256 _podId, address[] memory)',
+      method: 'batchRemovePodMember(uint256 _podId, address[] memory)',
       arguments: [
         '18', // TODO: Replace with real protocol pod ID
         [
