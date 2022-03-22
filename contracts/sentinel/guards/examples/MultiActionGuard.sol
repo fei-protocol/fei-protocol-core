@@ -49,7 +49,6 @@ contract MultiActionGuard is IGuard {
         values[2] = 0;
         values[3] = 0;
         values[4] = 0;
-        values[5] = 0;
 
         return (targets, datas, values);
     }
