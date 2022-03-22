@@ -117,7 +117,7 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
     }
 
     /// @notice Admin functionality to add a member to a pod
-    /// @dev Permissioned to GOVERNOR, POD_ADMIN, GUARDIAN and POD_ADD_MEMBER_ROLE
+    /// @dev Permissioned to GOVERNOR, POD_ADMIN and POD_ADD_MEMBER_ROLE
     function addPodMember(uint256 _podId, address _member)
         external
         hasAnyOfThreeRoles(
@@ -137,6 +137,7 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
     }
 
     /// @notice Admin functionality to batch add a member to a pod
+    /// @dev Permissioned to GOVERNOR, POD_ADMIN and POD_ADMIN_REMOVE_MEMBER
     function batchAddPodMember(uint256 _podId, address[] memory _members)
         external
         hasAnyOfThreeRoles(
@@ -177,6 +178,7 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
     }
 
     /// @notice Admin functionality to batch remove a member from a pod
+    /// @dev Permissioned to GOVERNOR, POD_ADMIN, GUARDIAN and POD_ADMIN_REMOVE_MEMBER
     function batchRemovePodMember(uint256 _podId, address[] memory _members)
         external
         hasAnyOfFourRoles(
@@ -198,6 +200,9 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
     }
 
     ///////////////  VETO CONTROLLER /////////////////
+
+    /// @notice Allow a proposal to be vetoed in a pod timelock
+    /// @dev Permissioned to GOVERNOR, POD_ADMIN, GUARDIAN and specific POD_VETO_ROLE
     function veto(uint256 _podId, bytes32 proposalId)
         external
         hasAnyOfFourRoles(
