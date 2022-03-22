@@ -93,30 +93,27 @@ contract PCVSentinel is IPCVSentinel, CoreRef, ReentrancyGuard {
      */
     function protec(address guard) external override nonReentrant {
         require(guards.contains(guard), "Guard does not exist.");
+        require(IGuard(guard).check(), "No need to protec.");
 
-        if (IGuard(guard).check()) {
-            (
-                address[] memory targets,
-                bytes[] memory calldatas,
-                uint256[] memory values
-            ) = IGuard(guard).getProtecActions();
+        (
+            address[] memory targets,
+            bytes[] memory calldatas,
+            uint256[] memory values
+        ) = IGuard(guard).getProtecActions();
 
-            for (uint256 i = 0; i < targets.length; i++) {
-                require(targets[i] != address(this), "Cannot target self.");
-                (bool success, bytes memory returndata) = targets[i].call{
-                    value: values[i]
-                }(calldatas[i]);
-                Address.verifyCallResult(
-                    success,
-                    returndata,
-                    "Guard sub-action failed with empty error message."
-                );
-            }
-
-            emit Protected(guard);
-        } else {
-            revert("No need to protec.");
+        for (uint256 i = 0; i < targets.length; i++) {
+            require(targets[i] != address(this), "Cannot target self.");
+            (bool success, bytes memory returndata) = targets[i].call{
+                value: values[i]
+            }(calldatas[i]);
+            Address.verifyCallResult(
+                success,
+                returndata,
+                "Guard sub-action failed with empty error message."
+            );
         }
+
+        emit Protected(guard);
     }
 
     /**
