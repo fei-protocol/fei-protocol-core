@@ -7,9 +7,6 @@ import {
   TeardownUpgradeFunc,
   ValidateUpgradeFunc
 } from '@custom-types/types';
-import { getImpersonatedSigner, time } from '@test/helpers';
-import { forceEth } from '@test/integration/setup/utils';
-import { EthReserveStabilizer } from '@custom-types/contracts/EthReserveStabilizer';
 
 const fipNumber = '87';
 
