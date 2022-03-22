@@ -25,6 +25,7 @@ contract NoOpGuard is IGuard {
 
         targets[0] = ZERO;
         datas[0] = bytes("");
+        values[0] = 0;
 
         return (targets, datas, values);
     }

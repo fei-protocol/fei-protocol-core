@@ -44,6 +44,12 @@ contract MultiActionGuard is IGuard {
         datas[2] = bytes("three");
         datas[3] = bytes("four");
         datas[4] = bytes("five");
+        values[0] = 0;
+        values[1] = 0;
+        values[2] = 0;
+        values[3] = 0;
+        values[4] = 0;
+        values[5] = 0;
 
         return (targets, datas, values);
     }

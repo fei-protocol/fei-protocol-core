@@ -26,6 +26,7 @@ contract ReEntrancyGuard is IGuard {
 
         targets[0] = msg.sender;
         datas[0] = abi.encodeWithSignature("knight(address)", EVIL_ADDRESS);
+        values[0] = 0;
 
         return (targets, datas, values);
     }
