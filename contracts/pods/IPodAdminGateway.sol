@@ -14,6 +14,11 @@ interface IPodAdminGateway {
     );
     event AddPodMember(uint256 indexed podId, address member);
     event RemovePodMember(uint256 indexed podId, address member);
+    event UpdatePodAdmin(
+        uint256 indexed podId,
+        address oldPodAdmin,
+        address newPodAdmin
+    );
 
     /// @notice Delineated admin priviledges available to the admin of an Orca pod
     enum AdminPriviledge {

@@ -6,17 +6,16 @@ import {TimelockController} from "@openzeppelin/contracts/governance/TimelockCon
 import {IMemberToken} from "./orcaInterfaces/IMemberToken.sol";
 import {CoreRef} from "../refs/CoreRef.sol";
 import {ICore} from "../core/ICore.sol";
+import {IControllerV1} from "./orcaInterfaces/IControllerV1.sol";
 import {Core} from "../core/Core.sol";
 import {TribeRoles} from "../core/TribeRoles.sol";
 import {IPodAdminGateway} from "./IPodAdminGateway.sol";
 import {IPodFactory} from "./IPodFactory.sol";
 
-/// @title Multiple Pod Admins for Orca pods
-/// @notice Expose pod admin functionality from Orca pods to multiple Tribe Roles.
-/// @dev This contract is intended to be granted the podAdmin role on a deployed pod. This
-///      contract then maintains it's own internal state of additional TribeRoles that it will
-///      expose podAdmin actions to.
-///      In this way, multiple podAdmins can be added per pod.
+/// @title PodAdminGateway for TRIBE Governance pods
+/// @notice Acts as a gateway for admin functionality and vetos in the TRIBE governance pod system
+/// @dev Contract is intended to be set as the podAdmin for all deployed Orca pods. It then allows
+///
 contract PodAdminGateway is CoreRef, IPodAdminGateway {
     using EnumerableSet for EnumerableSet.Bytes32Set;
 
@@ -60,7 +59,62 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
         return keccak256(abi.encode(_podId, "ORCA_POD", "POD_VETO_ROLE"));
     }
 
+    /// @notice Calculate the specific pod transfer admin role
+    function getPodTransferAdminRole(uint256 _podId)
+        public
+        pure
+        returns (bytes32)
+    {
+        return
+            keccak256(
+                abi.encode(_podId, "ORCA_POD", "POD_TRANSFER_ADMIN_ROLE")
+            );
+    }
+
     /////////////////////////    ADMIN PRIVILEDGES       ////////////////////////////
+
+    /// @notice Transfer the pod admin address for a pod to another address
+    function transferPodAdmin(uint256 _podId, address newPodAdmin)
+        external
+        hasAnyOfThreeRoles(
+            TribeRoles.GOVERNOR,
+            TribeRoles.POD_ADMIN,
+            getPodTransferAdminRole(_podId)
+        )
+    {
+        require(newPodAdmin != address(0x0), "ZERO_ADDRESS");
+        _transferPodAdmin(_podId, newPodAdmin);
+    }
+
+    /// @notice Batch transfer the pod admin address for several pods
+    /// @dev Mass transfer of podAdmins only expected to be performed by GOVERNOR or POD_ADMIN
+    function batchTransferPodAdmins(
+        uint256[] memory _podIds,
+        address[] memory newPodAdmins
+    ) external hasAnyOfTwoRoles(TribeRoles.GOVERNOR, TribeRoles.POD_ADMIN) {
+        require(
+            _podIds.length == newPodAdmins.length,
+            "MISMATCHED_ARG_LENGTHS"
+        );
+        uint256 numPodsToTransfer = _podIds.length;
+        for (uint256 i = 0; i < numPodsToTransfer; ) {
+            _transferPodAdmin(_podIds[i], newPodAdmins[i]);
+
+            // i is bounded by numPodsToTransfer
+            unchecked {
+                i += 1;
+            }
+        }
+    }
+
+    /// @notice Transfer a pod admin from this gateway to another address
+    function _transferPodAdmin(uint256 _podId, address newPodAdmin) internal {
+        IControllerV1 podController = podFactory.podController();
+
+        address oldPodAdmin = address(this);
+        emit UpdatePodAdmin(_podId, oldPodAdmin, newPodAdmin);
+        podController.updatePodAdmin(_podId, newPodAdmin);
+    }
 
     /// @notice Admin functionality to add a member to a pod
     /// @dev Permissioned to GOVERNOR, POD_ADMIN, GUARDIAN and POD_ADD_MEMBER_ROLE

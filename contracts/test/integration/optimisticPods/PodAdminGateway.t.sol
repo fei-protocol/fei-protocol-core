@@ -8,11 +8,10 @@ import {PodAdminGateway} from "../../../pods/PodAdminGateway.sol";
 import {IPodAdminGateway} from "../../../pods/IPodAdminGateway.sol";
 import {mintOrcaTokens, getPodParams} from "../fixtures/Orca.sol";
 import {IPodFactory} from "../../../pods/IPodFactory.sol";
+import {IControllerV1} from "../../../pods/orcaInterfaces/IControllerV1.sol";
 import {ITimelock} from "../../../dao/timelock/ITimelock.sol";
 import {TribeRoles} from "../../../core/TribeRoles.sol";
 import {ICore} from "../../../core/ICore.sol";
-
-// import "hardhat/console.sol";
 
 contract PodAdminGatewayIntegrationTest is DSTest {
     Vm public constant vm = Vm(HEVM_ADDRESS);
@@ -155,6 +154,17 @@ contract PodAdminGatewayIntegrationTest is DSTest {
         assertEq(specificVetoRole, podAdminGateway.getPodVetoRole(podId));
     }
 
+    /// @notice Validate that specific admin transfer role is computed correctly
+    function testGetTransferAdminRole() public {
+        bytes32 specificTransferAdminRole = keccak256(
+            abi.encode(podId, "ORCA_POD", "POD_TRANSFER_ADMIN_ROLE")
+        );
+        assertEq(
+            specificTransferAdminRole,
+            podAdminGateway.getPodTransferAdminRole(podId)
+        );
+    }
+
     /// @notice Validate that PodRemoveMemberRole is computed is expected
     function testRemovePodAddMemberRole() public {
         bytes32 specificRemoveRole = keccak256(
@@ -244,5 +254,21 @@ contract PodAdminGatewayIntegrationTest is DSTest {
             bytes("TimelockController: operation cannot be cancelled")
         );
         podAdminGateway.veto(podId, bytes32("5"));
+    }
+
+    /// @notice Validate that the pod admin contract can be transferred to another admin
+    function testTransferPodAdmin() public {
+        address newAdmin = address(0x11);
+
+        vm.prank(feiDAOTimelock);
+        podAdminGateway.transferPodAdmin(podId, newAdmin);
+
+        // Validate admin set on pod contract was updated everywhere as expected
+        address orcaControllerReportedAdmin = IControllerV1(podController)
+            .podAdmin(podId);
+        assertEq(orcaControllerReportedAdmin, newAdmin);
+
+        address podFactoryReportedAdmin = factory.getPodAdmin(podId);
+        assertEq(podFactoryReportedAdmin, newAdmin);
     }
 }
