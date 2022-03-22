@@ -1,17 +1,17 @@
 import { ProposalCategory, ProposalsConfigMap } from '@custom-types/types';
 
-// import fip_x from '@proposals/description/fip_x';
+import fip_87 from '@proposals/description/fip_87';
 
 const proposals: ProposalsConfigMap = {
-  /*fip_x: {
+  fip_87: {
     deploy: true,
     proposalId: null,
     affectedContractSignoff: [],
     deprecatedContractSignoff: [],
     category: ProposalCategory.DAO,
     totalValue: 0,
-    proposal: fip_x
-  }*/
+    proposal: fip_87
+  }
 };
 
 export default proposals;
