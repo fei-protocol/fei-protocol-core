@@ -153,7 +153,7 @@ const fip_82: ProposalDescription = {
       values: '0',
       method: 'batchAddPodMember(uint256 _podId,address[] memory _members)',
       arguments: [
-        '17',
+        '19',
         [
           '0x000000000000000000000000000000000000000D', // TODO: Complete with real member addresses
           '0x000000000000000000000000000000000000000E',
@@ -173,7 +173,7 @@ const fip_82: ProposalDescription = {
       values: '0',
       method: 'batchRemovePodMember(uint256 _podId, address[] memory)',
       arguments: [
-        '17', // TODO: Replace hardcoded value with real podId
+        '19', // TODO: Replace hardcoded value with real podId
         [
           '0x0000000000000000000000000000000000000004',
           '0x0000000000000000000000000000000000000005',
@@ -193,7 +193,7 @@ const fip_82: ProposalDescription = {
       values: '0',
       method: 'batchAddPodMember(uint256 _podId,address[] memory _members)',
       arguments: [
-        '18', // TODO: Replace with real protocol pod ID
+        '20', // TODO: Replace with real protocol pod ID
         [
           '0x0000000000000000000000000000000000000009', // TODO: Complete with real member addresses
           '0x000000000000000000000000000000000000000A',
@@ -209,7 +209,7 @@ const fip_82: ProposalDescription = {
       values: '0',
       method: 'batchRemovePodMember(uint256 _podId, address[] memory)',
       arguments: [
-        '18', // TODO: Replace with real protocol pod ID
+        '20', // TODO: Replace with real protocol pod ID
         [
           '0x0000000000000000000000000000000000000004',
           '0x0000000000000000000000000000000000000005',

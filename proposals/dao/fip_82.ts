@@ -8,14 +8,7 @@ import {
   ValidateUpgradeFunc
 } from '@custom-types/types';
 import { getImpersonatedSigner } from '@test/helpers';
-import {
-  tribeCouncilPodConfig,
-  protocolPodConfig,
-  tribalCouncilAdminTribeRoles,
-  protocolPodAdminTribeRoles,
-  adminPriviledge,
-  PodCreationConfig
-} from '@protocol/optimisticGovernance';
+import { tribeCouncilPodConfig, protocolPodConfig, PodCreationConfig } from '@protocol/optimisticGovernance';
 import { abi as timelockABI } from '../../artifacts/contracts/dao/timelock/OptimisticTimelock.sol/OptimisticTimelock.json';
 import { abi as gnosisSafeABI } from '../../artifacts/contracts/pods/orcaInterfaces/IGnosisSafe.sol/IGnosisSafe.json';
 import { Contract } from 'ethers';
@@ -136,13 +129,17 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   const metadataRegistryFactory = await ethers.getContractFactory('GovernanceMetadataRegistry');
   const governanceMetadataRegistry = await metadataRegistryFactory.deploy(addresses.core);
   await governanceMetadataRegistry.deployTransaction.wait();
+  logging && console.log('GovernanceMetadataRegistry deployed to:', governanceMetadataRegistry.address);
 
   return {
     podExecutor,
     podFactory,
     tribalCouncilTimelock,
     protocolPodTimelock,
-    podAdminGateway
+    podAdminGateway,
+    tribalCouncilSafe,
+    protocolPodSafe,
+    governanceMetadataRegistry
   };
 };
 
