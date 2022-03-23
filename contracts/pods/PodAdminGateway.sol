@@ -89,8 +89,8 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
     /// @notice Batch transfer the pod admin address for several pods
     /// @dev Mass transfer of podAdmins only expected to be performed by GOVERNOR or POD_ADMIN
     function batchTransferPodAdmins(
-        uint256[] memory _podIds,
-        address[] memory newPodAdmins
+        uint256[] calldata _podIds,
+        address[] calldata newPodAdmins
     ) external hasAnyOfTwoRoles(TribeRoles.GOVERNOR, TribeRoles.POD_ADMIN) {
         require(
             _podIds.length == newPodAdmins.length,
@@ -138,7 +138,7 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
 
     /// @notice Admin functionality to batch add a member to a pod
     /// @dev Permissioned to GOVERNOR, POD_ADMIN and POD_ADMIN_REMOVE_MEMBER
-    function batchAddPodMember(uint256 _podId, address[] memory _members)
+    function batchAddPodMember(uint256 _podId, address[] calldata _members)
         external
         hasAnyOfThreeRoles(
             TribeRoles.GOVERNOR,
@@ -179,7 +179,7 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
 
     /// @notice Admin functionality to batch remove a member from a pod
     /// @dev Permissioned to GOVERNOR, POD_ADMIN, GUARDIAN and POD_ADMIN_REMOVE_MEMBER
-    function batchRemovePodMember(uint256 _podId, address[] memory _members)
+    function batchRemovePodMember(uint256 _podId, address[] calldata _members)
         external
         hasAnyOfFourRoles(
             TribeRoles.GOVERNOR,
