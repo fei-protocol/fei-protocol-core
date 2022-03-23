@@ -4,7 +4,7 @@ import fip_87 from '@proposals/description/fip_87';
 
 const proposals: ProposalsConfigMap = {
   fip_87: {
-    deploy: true,
+    deploy: false,
     proposalId: null,
     affectedContractSignoff: [],
     deprecatedContractSignoff: [],

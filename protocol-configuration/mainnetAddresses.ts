@@ -38,7 +38,7 @@ const MainnetAddresses: MainnetAddresses = {
   },
   pcvSentinel: {
     artifactName: 'PCVSentinel',
-    address: '',
+    address: '0xC297705Acf50134d256187c754B92FA37826C019',
     category: AddressCategory.Core
   },
   proxyAdmin: {
