@@ -1847,7 +1847,7 @@ const MainnetAddresses: MainnetAddresses = {
     category: AddressCategory.Governance
   },
   rariGovernanceTokenSushiSwapDistributor: {
-    artifactName: 'unknown',
+    artifactName: 'RariGovernanceTokenUniswapDistributor',
     address: '0x1fa69a416bcf8572577d3949b742fbb0a9cd98c7',
     category: AddressCategory.Governance
   }
