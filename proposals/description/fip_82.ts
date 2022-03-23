@@ -29,7 +29,7 @@ const fip_82: ProposalDescription = {
       values: '0',
       method: 'grantRole(bytes32,address)',
       arguments: [
-        '0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096', // GOVERN_ROLE
+        '0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096', // ROLE_ADMIN
         '{feiDAOTimelock}' // Fei DAI timelock
       ],
       description: `
@@ -55,10 +55,22 @@ const fip_82: ProposalDescription = {
         '0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096' // ROLE_ADMIN
       ],
       description: `
-      Create POD_VETO_ADMIN role, using the GOVERNOR role. Later to be assigned ROLE_ADMIN as admin
+      Create POD_VETO_ADMIN role. Assign ROLE_ADMIN as admin
       `
     },
-    //////////////// Grant relevant TribeRoles to relevant timelock contracts ///////////////
+    {
+      target: 'core',
+      values: '0',
+      method: 'createRole(bytes32,bytes32)',
+      arguments: [
+        '0xf62a46a499242191aaab61084d4912c2c0a8c48e3d70edfb5a9be2bc9e92622f', // POD_METADATA_REGISTER_ROLE
+        '0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096' // ROLE_ADMIN
+      ],
+      description: `
+      Create POD_METADATA_REGISTER_ROLE role, assign ROLE_ADMIN as admin
+      `
+    },
+    //////////////// Grant relevant TribeRoles to relevant timelock and safe contracts ///////////////
     {
       target: 'core',
       values: '0',
@@ -114,6 +126,20 @@ const fip_82: ProposalDescription = {
     {
       target: 'core',
       values: '0',
+      method: 'grantRole(bytes32,address)',
+      arguments: ['0xf62a46a499242191aaab61084d4912c2c0a8c48e3d70edfb5a9be2bc9e92622f', '{tribalCouncilSafe}'],
+      description: 'Grant TribalCouncil Gnosis Safe address role to register metadata'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'grantRole(bytes32,address)',
+      arguments: ['0xf62a46a499242191aaab61084d4912c2c0a8c48e3d70edfb5a9be2bc9e92622f', '{protocolPodSafe}'],
+      description: 'Grant ProtocolPod Gnosis Safe address role to register metadata'
+    },
+    {
+      target: 'core',
+      values: '0',
       method: 'createRole(bytes32,bytes32)',
       arguments: [
         '0x2d46c62aa6fbc9b550f22e00476aebb90f4ea69cd492a68db4d444217763330d', // VOTIUM_ADMIN_ROLE
@@ -127,7 +153,7 @@ const fip_82: ProposalDescription = {
       values: '0',
       method: 'batchAddPodMember(uint256 _podId,address[] memory _members)',
       arguments: [
-        '17',
+        '19',
         [
           '0x000000000000000000000000000000000000000D', // TODO: Complete with real member addresses
           '0x000000000000000000000000000000000000000E',
@@ -147,7 +173,7 @@ const fip_82: ProposalDescription = {
       values: '0',
       method: 'batchRemovePodMember(uint256 _podId, address[] memory)',
       arguments: [
-        '17', // TODO: Replace hardcoded value with real podId
+        '19', // TODO: Replace hardcoded value with real podId
         [
           '0x0000000000000000000000000000000000000004',
           '0x0000000000000000000000000000000000000005',
@@ -167,7 +193,7 @@ const fip_82: ProposalDescription = {
       values: '0',
       method: 'batchAddPodMember(uint256 _podId,address[] memory _members)',
       arguments: [
-        '18', // TODO: Replace with real protocol pod ID
+        '20', // TODO: Replace with real protocol pod ID
         [
           '0x0000000000000000000000000000000000000009', // TODO: Complete with real member addresses
           '0x000000000000000000000000000000000000000A',
@@ -183,7 +209,7 @@ const fip_82: ProposalDescription = {
       values: '0',
       method: 'batchRemovePodMember(uint256 _podId, address[] memory)',
       arguments: [
-        '18', // TODO: Replace with real protocol pod ID
+        '20', // TODO: Replace with real protocol pod ID
         [
           '0x0000000000000000000000000000000000000004',
           '0x0000000000000000000000000000000000000005',

@@ -135,4 +135,13 @@ contract OptimisticPodIntegrationTest is DSTest {
         assertEq(members[2], member2);
         assertEq(members[3], member3);
     }
+
+    /// @notice Validate that add pod member is permissioned
+    function testAddPodMemberPermissioned() public {
+        address newMember = address(0x30);
+        address safeAddress = controller.podIdToSafe(podId);
+
+        vm.expectRevert(bytes("No Rules Set"));
+        memberToken.mint(newMember, podId, bytes(""));
+    }
 }
