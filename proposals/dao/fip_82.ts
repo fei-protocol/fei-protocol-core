@@ -8,7 +8,14 @@ import {
   ValidateUpgradeFunc
 } from '@custom-types/types';
 import { getImpersonatedSigner } from '@test/helpers';
-import { tribeCouncilPodConfig, protocolPodConfig, PodCreationConfig } from '@protocol/optimisticGovernance';
+import {
+  tribeCouncilPodConfig,
+  protocolPodConfig,
+  tribalCouncilAdminTribeRoles,
+  protocolPodAdminTribeRoles,
+  adminPriviledge,
+  PodCreationConfig
+} from '@protocol/optimisticGovernance';
 import { abi as timelockABI } from '../../artifacts/contracts/dao/timelock/OptimisticTimelock.sol/OptimisticTimelock.json';
 import { abi as gnosisSafeABI } from '../../artifacts/contracts/pods/orcaInterfaces/IGnosisSafe.sol/IGnosisSafe.json';
 import { Contract } from 'ethers';
@@ -56,9 +63,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   await podExecutor.deployTransaction.wait();
   logging && console.log('PodExecutor deployed to', podExecutor.address);
 
-  // 2. Deploy tribalCouncilPodFactory. Set podAdmin to deploy address, so pods can be created
+  // 2. Deploy tribalCouncilPodFactory
   const podFactoryEthersFactory = await ethers.getContractFactory('PodFactory');
-
   const podFactory = await podFactoryEthersFactory.deploy(
     addresses.core, // core
     addresses.podController, // podController
@@ -69,22 +75,25 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   await mintOrcaToken(podFactory.address);
   logging && console.log('DAO pod factory deployed to:', podFactory.address);
 
-  const vetoControllerFactory = await ethers.getContractFactory('VetoController');
-  const vetoController = await vetoControllerFactory.deploy(addresses.core, podFactory.address);
-  await vetoController.deployTransaction.wait();
-  logging && console.log('Veto controller deployed to:', vetoController.address);
+  // 3. Deploy PodAdminGateway contract
+  const podAdminGatewayFactory = await ethers.getContractFactory('PodAdminGateway');
+  const podAdminGateway = await podAdminGatewayFactory.deploy(
+    addresses.core,
+    addresses.memberToken,
+    podFactory.address
+  );
+  await podAdminGateway.deployTransaction.wait();
+  logging && console.log(`Deployed PodAdminGateway at ${podAdminGateway.address}`);
 
-  // 3. Create TribalCouncil and Protocol Tier pods
-  // are these in the right order?
+  // 4. Create TribalCouncil and Protocol Tier pods
   const tribalCouncilPod: PodCreationConfig = {
     members: tribeCouncilPodConfig.placeHolderMembers,
     threshold: tribeCouncilPodConfig.threshold,
     label: tribeCouncilPodConfig.label,
     ensString: tribeCouncilPodConfig.ensString,
     imageUrl: tribeCouncilPodConfig.imageUrl,
-    admin: addresses.feiDAOTimelock,
-    minDelay: tribeCouncilPodConfig.minDelay,
-    vetoController: ethers.constants.AddressZero
+    admin: podAdminGateway.address,
+    minDelay: tribeCouncilPodConfig.minDelay
   };
 
   const protocolTierPod: PodCreationConfig = {
@@ -93,13 +102,11 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     label: protocolPodConfig.label,
     ensString: protocolPodConfig.ensString,
     imageUrl: protocolPodConfig.imageUrl,
-    admin: addresses.feiDAOTimelock,
-    minDelay: protocolPodConfig.minDelay,
-    vetoController: vetoController.address
+    admin: podAdminGateway.address,
+    minDelay: protocolPodConfig.minDelay
   };
 
   const pods = [tribalCouncilPod, protocolTierPod];
-
   await podFactory.burnerCreateChildOptimisticPods(pods);
 
   const protocolPodId = await podFactory.latestPodId();
@@ -118,7 +125,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   logging && console.log('Tribal council Gnosis safe is: ', councilSafeAddress);
   logging && console.log('Protocol pod safe is: ', protocolPodSafeAddress);
 
-  // 4. Create contract artifacts for timelocks and Safes, so addresses are available to DAO script
+  // 5. Create contract artifacts for timelocks, so address is available to DAO script
   const mockSigner = await getImpersonatedSigner(deployAddress);
   const tribalCouncilTimelock = new ethers.Contract(councilTimelockAddress, timelockABI, mockSigner);
   const protocolPodTimelock = new ethers.Contract(protocolPodTimelockAddress, timelockABI, mockSigner);
@@ -135,10 +142,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     podFactory,
     tribalCouncilTimelock,
     protocolPodTimelock,
-    governanceMetadataRegistry,
-    vetoController,
-    tribalCouncilSafe,
-    protocolPodSafe
+    podAdminGateway
   };
 };
 
@@ -153,25 +157,25 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const tribalCouncilPodId = await podFactory.getPodId(addresses.tribalCouncilTimelock);
   const tribalCouncilSafeAddress = await podFactory.getPodSafe(tribalCouncilPodId);
 
-  // 1. Validate VetoController has PROPOSER role on protocol pod. Validate TribalCouncil
-  // does not have a VetoController role
+  // 1. Validate PodAdminGateway has PROPOSER role on TribalCouncil and Protocol Pod
+  // Validate TribalCouncil does not have a VetoController role
   const tribalCouncilTimelock = contracts.tribalCouncilTimelock;
   const protocolTierTimelock = contracts.protocolPodTimelock;
-  const vetoControllerIsProposer = await protocolTierTimelock.hasRole(
+  const gatewayIsProtocolPodProposer = await protocolTierTimelock.hasRole(
     ethers.utils.id('PROPOSER_ROLE'),
-    addresses.vetoController
+    addresses.podAdminGateway
   );
-  expect(vetoControllerIsProposer).to.be.true;
+  expect(gatewayIsProtocolPodProposer).to.be.true;
 
-  const councilZeroAddressIsProposer = await tribalCouncilTimelock.hasRole(
+  const gatewayIsCouncilProposer = await tribalCouncilTimelock.hasRole(
     ethers.utils.id('PROPOSER_ROLE'),
-    ethers.constants.AddressZero
+    addresses.podAdminGateway
   );
-  expect(councilZeroAddressIsProposer).to.be.true;
+  expect(gatewayIsCouncilProposer).to.be.true;
 
   // 2. Validate that Tribal Council Safe, timelock and podAdmin are configured
   const councilPodAdmin = await podFactory.getPodAdmin(tribalCouncilPodId);
-  expect(councilPodAdmin).to.equal(addresses.feiDAOTimelock);
+  expect(councilPodAdmin).to.equal(addresses.podAdminGateway);
 
   const councilSafeIsProposer = await tribalCouncilTimelock.hasRole(
     ethers.utils.id('PROPOSER_ROLE'),
@@ -201,7 +205,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const protocolSafeAddress = await podFactory.getPodSafe(protocolPodId);
 
   const protocolPodAdmin = await podFactory.getPodAdmin(protocolPodId);
-  expect(protocolPodAdmin).to.equal(addresses.tribalCouncilTimelock);
+  expect(protocolPodAdmin).to.equal(addresses.podAdminGateway);
 
   const protocolTimelock = contracts.protocolPodTimelock;
   const protocolSafeIsProposer = await protocolTimelock.hasRole(ethers.utils.id('PROPOSER_ROLE'), protocolSafeAddress);
@@ -238,6 +242,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   );
 };
 
+// Validate that the relevant timelocks and Safes have the relevant TribeRoles
 const validateTribeRoles = async (
   core: Contract,
   feiDAOTimelockAddress: string,
@@ -250,7 +255,7 @@ const validateTribeRoles = async (
   const daoIsPodDeployer = await core.hasRole(ethers.utils.id('POD_DEPLOYER_ROLE'), feiDAOTimelockAddress);
   expect(daoIsPodDeployer).to.be.true;
 
-  // TribalCouncilTimelock roles: ROLE_ADMIN, POD_DEPLOYER_ROLE, POD_VETO_ROLE
+  // TribalCouncilTimelock roles: ROLE_ADMIN, POD_DEPLOYER_ROLE, POD_ADMIN, POD_VETO_ADMIN
   const councilIsRoleAdmin = await core.hasRole(ethers.utils.id('ROLE_ADMIN'), tribalCouncilTimelockAddress);
   expect(councilIsRoleAdmin).to.be.true;
 
@@ -259,6 +264,9 @@ const validateTribeRoles = async (
 
   const councilIsPodVetoAdmin = await core.hasRole(ethers.utils.id('POD_VETO_ADMIN'), tribalCouncilTimelockAddress);
   expect(councilIsPodVetoAdmin).to.be.true;
+
+  const councilIsPodAdmin = await core.hasRole(ethers.utils.id('POD_ADMIN'), tribalCouncilTimelockAddress);
+  expect(councilIsPodAdmin).to.be.true;
 
   // Protocol pod timelock roles: Specific first pod duties role
   const protocolPodIsVotiumRole = await core.hasRole(ethers.utils.id('VOTIUM_ADMIN_ROLE'), protocolPodTimelockAddress);

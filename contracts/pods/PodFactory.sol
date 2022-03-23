@@ -207,7 +207,7 @@ contract PodFactory is CoreRef, IPodFactory {
             safeAddress,
             _config.minDelay,
             podExecutor,
-            _config.vetoController
+            _config.admin
         );
 
         // Set mapping from podId to timelock for reference
@@ -246,6 +246,8 @@ contract PodFactory is CoreRef, IPodFactory {
     /// @param minDelay Delay on the timelock
     /// @param publicExecutor Non-permissioned smart contract that
     ///        allows any address to execute a ready transaction
+    /// @param vetoController Address which manages veto rights over a pod timelock
+    ///        Will also be able to propose
     function createOptimisticTimelock(
         address safeAddress,
         uint256 minDelay,

@@ -37,5 +37,6 @@ export const permissions = {
   ROLE_ADMIN: ['feiDAOTimelock', 'tribalCouncilTimelock'],
   POD_DEPLOYER_ROLE: ['feiDAOTimelock', 'tribalCouncilTimelock'],
   POD_METADATA_REGISTER_ROLE: ['tribalCouncilSafe', 'protocolPodSafe'],
-  POD_VETO_ADMIN: ['tribalCouncilTimelock']
+  POD_VETO_ADMIN: ['tribalCouncilTimelock'],
+  POD_ADMIN: ['tribalCouncilTimelock']
 };

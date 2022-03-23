@@ -7,7 +7,6 @@ import {IInviteToken} from "../../../pods/orcaInterfaces/IInviteToken.sol";
 import {IPodFactory} from "../../../pods/IPodFactory.sol";
 import {OptimisticTimelock} from "../../../dao/timelock/OptimisticTimelock.sol";
 import {Vm} from "../../utils/Vm.sol";
-import "hardhat/console.sol";
 
 function createPod(
     IControllerV1 controller,
@@ -71,7 +70,7 @@ function mintOrcaTokens(
     inviteToken.mint(to, amount);
 }
 
-function getPodParams(address admin, address vetoController)
+function getPodParams(address admin)
     pure
     returns (IPodFactory.PodConfig memory)
 {
@@ -93,8 +92,7 @@ function getPodParams(address admin, address vetoController)
         ensString: ensString,
         imageUrl: imageUrl,
         admin: admin,
-        minDelay: minDelay,
-        vetoController: vetoController
+        minDelay: minDelay
     });
     return config;
 }
