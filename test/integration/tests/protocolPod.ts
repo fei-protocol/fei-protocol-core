@@ -1,4 +1,4 @@
-import { PodFactory } from '@custom-types/contracts';
+import { PodFactory, PodAdminGateway } from '@custom-types/contracts';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
@@ -11,7 +11,6 @@ import { TestEndtoEndCoordinator } from '../setup';
 import { BigNumber } from 'ethers';
 import { tribalCouncilMembers } from '@protocol/optimisticGovernance';
 import { forceEth } from '@test/integration/setup/utils';
-import { Contract } from 'ethers';
 
 const toBN = ethers.BigNumber.from;
 
@@ -22,8 +21,9 @@ describe('Protocol pod', function () {
   let e2eCoord: TestEndtoEndCoordinator;
   let doLogging: boolean;
   let podFactory: PodFactory;
-  let memberToken: Contract;
   let podId: BigNumber;
+  let podAdminGateway: PodAdminGateway;
+  let tribalCouncilTimelockSigner: SignerWithAddress;
 
   before(async () => {
     chai.use(CBN(ethers.BigNumber));
@@ -50,21 +50,17 @@ describe('Protocol pod', function () {
     ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment());
     doLogging && console.log(`Environment loaded.`);
     podFactory = contracts.podFactory as PodFactory;
+    podAdminGateway = contracts.podAdminGateway as PodAdminGateway;
     podId = await podFactory.getPodId(contractAddresses.protocolPodTimelock);
 
-    const memberTokenABI = [
-      'function mint(address _account,uint256 _id,bytes memory data) external',
-      'function burn(address _account, uint256 _id) external;'
-    ];
     await forceEth(contractAddresses.tribalCouncilTimelock);
-    const tribalCouncilTimelockSigner = await getImpersonatedSigner(contractAddresses.tribalCouncilTimelock);
-    memberToken = new ethers.Contract(contractAddresses.memberToken, memberTokenABI, tribalCouncilTimelockSigner);
+    tribalCouncilTimelockSigner = await getImpersonatedSigner(contractAddresses.tribalCouncilTimelock);
   });
 
   it('should allow Tribal council to add members to protocol pod', async () => {
     const initialNumPodMembers = await podFactory.getNumMembers(podId);
     const newMember = '0x0000000000000000000000000000000000000030';
-    await memberToken.mint(newMember, podId, '0x0000000000000000000000000000000000000000000000000000000000000000');
+    await podAdminGateway.connect(tribalCouncilTimelockSigner).addPodMember(podId, newMember);
 
     const numPodMembers = await podFactory.getNumMembers(podId);
     await expect(numPodMembers).to.equal(initialNumPodMembers.add(toBN(1)));
@@ -77,7 +73,7 @@ describe('Protocol pod', function () {
     const initialNumPodMembers = await podFactory.getNumMembers(podId);
 
     const memberToBurn = tribalCouncilMembers[0];
-    await memberToken.burn(memberToBurn, podId);
+    await podAdminGateway.connect(tribalCouncilTimelockSigner).removePodMember(podId, memberToBurn);
 
     const numPodMembers = await podFactory.getNumMembers(podId);
     await expect(numPodMembers).to.equal(initialNumPodMembers.sub(toBN(1)));
