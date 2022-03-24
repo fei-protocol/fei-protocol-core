@@ -17,7 +17,7 @@ export const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses
   const wrapperFactory = await ethers.getContractFactory('PCVDepositWrapper');
   const wrapper = await wrapperFactory.deploy(DEPOSIT);
 
-  logging && console.log('PCVDepositWrapper deployed to: ', wrapper.address);
+  logging && console.log('wrapperFactory deployed to: ', wrapper.address);
 
   return { wrapper };
 };
