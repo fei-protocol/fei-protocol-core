@@ -7,91 +7,84 @@ import {getCore, getAddresses, FeiTestAddresses} from "./utils/Fixtures.sol";
 import {Core} from "../core/Core.sol";
 import {RoleBastion} from "../pods/RoleBastion.sol";
 import {TribeRoles} from "../core/TribeRoles.sol";
-import "hardhat/console.sol";
+
+// import "hardhat/console.sol";
 
 contract RoleBastionTest is DSTest {
     Vm public constant vm = Vm(HEVM_ADDRESS);
 
     address tribalCouncil = address(0x1);
     address contractToGrant = address(0x2);
+    bytes32 dummyRole = keccak256("DUMMY_ROLE");
 
     FeiTestAddresses addresses;
     Core core;
     RoleBastion roleBastion;
 
-    // Flow: Helper contract has GOVERNOR and ROLE_ADMIN ROLE
-    // Helper contract creates a new role using the GOVERNOR role, and assigns role admin to ROLE_ADMIN
-    // Helper contract given ROLE_ADMIN role
-
     function setUp() public {
-        FeiTestAddresses memory addresses = getAddresses();
+        addresses = getAddresses();
         core = getCore();
         roleBastion = new RoleBastion(address(core));
 
-        // 1. Grant RoleAdministration GOVERNOR role
-        vm.startPrank(addresses.governorAddress);
-        core.grantRole(TribeRoles.GOVERNOR, address(roleBastion));
-        vm.stopPrank();
-
-        // 2. Grant a TribalCouncil and RoleBastion contract ROLE_ADMIN
+        // 1. Grant a TribalCouncil and RoleBastion contract ROLE_ADMIN
         //     - needed to be able to create new roles
         vm.startPrank(addresses.governorAddress);
         core.createRole(TribeRoles.ROLE_ADMIN, TribeRoles.GOVERNOR);
         core.grantRole(TribeRoles.ROLE_ADMIN, tribalCouncil);
         core.grantRole(TribeRoles.ROLE_ADMIN, address(roleBastion));
+
+        // 2. Create dummyRole, which ROLE_ADMIN becomes admin of
+        core.createRole(dummyRole, TribeRoles.ROLE_ADMIN);
         vm.stopPrank();
+
+        // Grant RoleAdministration GOVERNOR role
+        // vm.startPrank(addresses.governorAddress);
+        // core.grantRole(TribeRoles.GOVERNOR, address(roleBastion));
+        // vm.stopPrank();
     }
 
     /// @notice Validate RoleAdmin contract has relevant permissions
     function testInitialState() public {
-        assertTrue(core.isGovernor(address(roleBastion)));
         assertTrue(core.hasRole(TribeRoles.ROLE_ADMIN, tribalCouncil));
-    }
 
-    function testCreateRole() public {
-        bytes32 roleToCreate = keccak256("TEST_ROLE");
-
-        vm.prank(tribalCouncil);
-        roleBastion.createRole(roleToCreate);
-    }
-
-    function testConvenienceGetter() public {
-        bytes32 roleToCreate = keccak256("TEST_ROLE");
-
-        vm.prank(tribalCouncil);
-        roleBastion.createRole(roleToCreate);
-
-        vm.prank(tribalCouncil);
-        roleBastion.grantRole(roleToCreate, contractToGrant);
-        assertTrue(core.hasRole(roleToCreate, contractToGrant));
-
-        assertTrue(roleBastion.hasRole(roleToCreate, contractToGrant));
+        bytes32[] memory allRoles = roleBastion.getAllRolesGranted();
+        assertTrue(allRoles.length == 0);
     }
 
     function testGrantRole() public {
-        bytes32 roleToCreate = keccak256("TEST_ROLE");
-
         vm.prank(tribalCouncil);
-        roleBastion.createRole(roleToCreate);
+        roleBastion.grantRole(dummyRole, contractToGrant);
 
-        vm.prank(tribalCouncil);
-        roleBastion.grantRole(roleToCreate, contractToGrant);
-        assertTrue(core.hasRole(roleToCreate, contractToGrant));
+        assertTrue(core.hasRole(dummyRole, contractToGrant));
+        assertTrue(roleBastion.hasRole(dummyRole, contractToGrant));
+
+        bytes32[] memory allRoles = roleBastion.getAllRolesGranted();
+        assertTrue(allRoles.length == 1);
+
+        address[] memory addressesWithRole = roleBastion.getAddressesWithRole(
+            dummyRole
+        );
+        assertEq(addressesWithRole.length, 1);
+        assertEq(addressesWithRole[0], contractToGrant);
     }
 
     function testRevokeRole() public {
-        bytes32 roleToCreate = keccak256("TEST_ROLE");
+        vm.prank(tribalCouncil);
+        roleBastion.grantRole(dummyRole, contractToGrant);
 
         vm.prank(tribalCouncil);
-        roleBastion.createRole(roleToCreate);
+        roleBastion.revokeRole(dummyRole, contractToGrant);
 
-        vm.prank(tribalCouncil);
-        roleBastion.grantRole(roleToCreate, contractToGrant);
-        assertTrue(core.hasRole(roleToCreate, contractToGrant));
+        bytes32[] memory allRoles = roleBastion.getAllRolesGranted();
+        assertTrue(allRoles.length == 0);
 
-        vm.prank(tribalCouncil);
-        roleBastion.revokeRole(roleToCreate, contractToGrant);
-
-        // Validate does not have role
+        assertFalse(roleBastion.hasRole(dummyRole, contractToGrant));
     }
+
+    // function testCreateRole() public {
+    //     bytes32 roleToCreate = keccak256("TEST_ROLE");
+
+    //     vm.prank(tribalCouncil);
+    //     roleBastion.createRole(roleToCreate);
+    // }
 }
