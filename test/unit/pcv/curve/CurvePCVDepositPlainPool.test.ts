@@ -14,7 +14,7 @@ import {
 
 chai.config.includeStack = true;
 
-describe('CurvePCVDepositPlainPool', function () {
+describe.only('CurvePCVDepositPlainPool', function () {
   let core: Core;
   let fei: Fei;
   let stable1: MockERC20;
