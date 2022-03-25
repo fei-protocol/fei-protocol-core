@@ -13,7 +13,7 @@ import { tribalCouncilMembers } from '@protocol/optimisticGovernance';
 
 const toBN = ethers.BigNumber.from;
 
-describe('Tribal Council', function () {
+describe.only('Tribal Council', function () {
   let contracts: NamedContracts;
   let contractAddresses: NamedAddresses;
   let deployAddress: SignerWithAddress;
