@@ -7,11 +7,11 @@ import {CoreRef} from "../refs/CoreRef.sol";
 import {Core} from "../core/Core.sol";
 import {ICore} from "../core/ICore.sol";
 
-/// @title RoleBastionGranter
+/// @title RoleBastion
 /// @notice Bastion for creating roles under the control of the ROLE_ADMIN
 /// @dev Intended to be used by the TribalCouncil to manage authorising and revoking lower ranking pods
 ///      access over system components
-contract RoleBastionGranter is CoreRef {
+contract RoleBastion is CoreRef {
     using EnumerableSet for EnumerableSet.AddressSet;
     using EnumerableSet for EnumerableSet.Bytes32Set;
 
