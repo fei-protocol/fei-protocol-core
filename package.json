@@ -82,7 +82,7 @@
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-import": "^2.25.4",
     "eslint-plugin-prettier": "^4.0.0",
-    "ethereum-waffle": "^3.3.0",
+    "ethereum-waffle": "^3.4.4",
     "ethers": "^5.6.1",
     "husky": "^7.0.4",
     "lint-staged": "^12.3.7",
