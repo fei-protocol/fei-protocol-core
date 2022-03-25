@@ -7,11 +7,11 @@ import {CoreRef} from "../refs/CoreRef.sol";
 import {Core} from "../core/Core.sol";
 import {ICore} from "../core/ICore.sol";
 
-/// @title RoleBastion
+/// @title RoleBastionGranter
 /// @notice Bastion for creating roles under the control of the ROLE_ADMIN
 /// @dev Intended to be used by the TribalCouncil to manage authorising and revoking lower ranking pods
 ///      access over system components
-contract RoleBastion is CoreRef {
+contract RoleBastionGranter is CoreRef {
     using EnumerableSet for EnumerableSet.AddressSet;
     using EnumerableSet for EnumerableSet.Bytes32Set;
 
@@ -48,15 +48,6 @@ contract RoleBastion is CoreRef {
     {
         return core().hasRole(role, account);
     }
-
-    /// @notice Create a role whose admin is the ROLE_ADMIN
-    // function createRole(bytes32 role)
-    //     external
-    //     onlyTribeRole(TribeRoles.ROLE_ADMIN)
-    // {
-    //     // onlyGovernor can call create role
-    //     core().createRole(role, TribeRoles.ROLE_ADMIN);
-    // }
 
     /// @notice Grant a role to an address. Only the ROLE_ADMIN can call this
     function grantRole(bytes32 role, address to)
