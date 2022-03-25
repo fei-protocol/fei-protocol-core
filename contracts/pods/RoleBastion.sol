@@ -8,7 +8,7 @@ import {Core} from "../core/Core.sol";
 import {ICore} from "../core/ICore.sol";
 
 /// @title RoleBastion
-/// @notice Bastion for creating roles under the control of the ROLE_ADMIN
+/// @notice Bastion for granting and revoking roles under the control of the ROLE_ADMIN
 /// @dev Intended to be used by the TribalCouncil to manage authorising and revoking lower ranking pods
 ///      access over system components
 contract RoleBastion is CoreRef {
@@ -21,10 +21,11 @@ contract RoleBastion is CoreRef {
     event BastionRoleRevoke(bytes32 indexed role, address from);
 
     /// @notice All roles granted by RoleBastion
-    EnumerableSet.Bytes32Set private allRoles;
+    EnumerableSet.Bytes32Set private allNonMajorRoles;
 
     /// @notice On-chain location to track granted non-major roles
-    mapping(bytes32 => EnumerableSet.AddressSet) private nonMajorRoles;
+    mapping(bytes32 => EnumerableSet.AddressSet)
+        private nonMajorRolesToAddresses;
 
     /////////////////    GETTERS    /////////////////////////
 
@@ -34,12 +35,12 @@ contract RoleBastion is CoreRef {
         view
         returns (address[] memory)
     {
-        return nonMajorRoles[role].values();
+        return nonMajorRolesToAddresses[role].values();
     }
 
     /// @notice Get all the roles that have been granted by the RoleBastion
     function getAllRolesGranted() external view returns (bytes32[] memory) {
-        return allRoles.values();
+        return allNonMajorRoles.values();
     }
 
     /// @notice Convenience getter to check if an account has a role
@@ -69,8 +70,8 @@ contract RoleBastion is CoreRef {
             "Only non-major roles can be granted"
         );
 
-        nonMajorRoles[role].add(to);
-        allRoles.add(role);
+        nonMajorRolesToAddresses[role].add(to);
+        allNonMajorRoles.add(role);
 
         emit BastionRoleGrant(role, to);
         core().grantRole(role, to);
@@ -89,8 +90,8 @@ contract RoleBastion is CoreRef {
             "Only non-major roles can be revoked"
         );
 
-        nonMajorRoles[role].remove(from);
-        allRoles.remove(role);
+        nonMajorRolesToAddresses[role].remove(from);
+        allNonMajorRoles.remove(role);
         emit BastionRoleRevoke(role, from);
         core().revokeRole(role, from);
     }

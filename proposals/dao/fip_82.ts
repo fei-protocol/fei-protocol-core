@@ -301,7 +301,7 @@ const validateTribeRoles = async (
   expect(protocolPodHasMetadataRegisterRole).to.be.true;
 
   // RoleBastionCreator role: GOVERNOR
-  const roleBastionCreator = await core.hasRole(ethers.utils.id('GOVERNOR_ROLE'), roleBastionCreatorAddress);
+  const roleBastionCreator = await core.hasRole(ethers.utils.id('GOVERN_ROLE'), roleBastionCreatorAddress);
   expect(roleBastionCreator).to.be.true;
 
   // RoleBastion role: ROLE_ADMIN

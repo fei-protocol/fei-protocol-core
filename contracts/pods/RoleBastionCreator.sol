@@ -16,7 +16,7 @@ contract RoleBastionCreator is CoreRef {
     event BastionRoleCreate(bytes32 indexed role, bytes32 roleAdmin);
 
     /// @notice All roles granted by RoleBastionCreator
-    EnumerableSet.Bytes32Set private allRoles;
+    EnumerableSet.Bytes32Set private allNonMajorRoles;
 
     constructor(address _core) CoreRef(_core) {}
 
@@ -31,12 +31,12 @@ contract RoleBastionCreator is CoreRef {
         view
         returns (bytes32[] memory)
     {
-        return allRoles.values();
+        return allNonMajorRoles.values();
     }
 
     /// @notice Determine if a role has been created by this contract
     function isRole(bytes32 _role) external view returns (bool) {
-        return allRoles.contains(_role);
+        return allNonMajorRoles.contains(_role);
     }
 
     ///////////////    STATE-CHANGING API         /////////////////
@@ -65,7 +65,7 @@ contract RoleBastionCreator is CoreRef {
             "Only non-major roles can be created"
         );
 
-        allRoles.add(role);
+        allNonMajorRoles.add(role);
         emit BastionRoleCreate(role, TribeRoles.ROLE_ADMIN);
 
         core().createRole(role, TribeRoles.ROLE_ADMIN);
