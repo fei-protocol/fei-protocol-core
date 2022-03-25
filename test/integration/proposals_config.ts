@@ -1,33 +1,16 @@
 import { ProposalCategory, ProposalsConfigMap } from '@custom-types/types';
 
-// import fip_x from '@proposals/description/fip_x';
-import fip_85 from '@proposals/description/fip_85';
+// import fip_xx_proposal from '@proposals/description/fip_xx';
 
 const proposals: ProposalsConfigMap = {
-  /*fip_x: {
-    deploy: true,
-    proposalId: null,
-    affectedContractSignoff: [],
-    deprecatedContractSignoff: [],
-    category: ProposalCategory.DAO,
-    totalValue: 0,
-    proposal: fip_x
-  }*/
-
-  fip_85: {
-    deploy: false,
-    proposalId: null,
-    affectedContractSignoff: [
-      'rariGovernanceProxyAdmin',
-      'rariGovernanceTokenSushiSwapDistributor',
-      'rariTimelock',
-      '0x4650a83520be4f1e4cee726fdd169d37cea80525'
-    ],
-    deprecatedContractSignoff: [],
-    category: ProposalCategory.DAO,
-    totalValue: 0,
-    proposal: fip_85
-  }
+  /*
+    fip_xx : {
+        deploy: true, // deploy flag for whether to run deploy action during e2e tests or use mainnet state
+        skipDAO: false, // whether or not to simulate proposal in DAO
+        totalValue: 0, // amount of ETH to send to DAO execution
+        proposal: fip_xx_proposal // full proposal file, imported from '@proposals/description/fip_xx.ts'
+    }
+    */
 };
 
 export default proposals;
