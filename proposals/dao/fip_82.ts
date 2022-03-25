@@ -125,11 +125,22 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   const tribalCouncilSafe = new ethers.Contract(councilSafeAddress, gnosisSafeABI, mockSigner);
   const protocolPodSafe = new ethers.Contract(protocolPodSafeAddress, gnosisSafeABI, mockSigner);
 
-  // 5. Deploy GovernanceMetadataRegistry contract
+  // 6. Deploy GovernanceMetadataRegistry contract
   const metadataRegistryFactory = await ethers.getContractFactory('GovernanceMetadataRegistry');
   const governanceMetadataRegistry = await metadataRegistryFactory.deploy(addresses.core);
   await governanceMetadataRegistry.deployTransaction.wait();
   logging && console.log('GovernanceMetadataRegistry deployed to:', governanceMetadataRegistry.address);
+
+  // 7. Deploy RoleBastion and RoleBastionCreator, to allow TribalCouncil to manage roles
+  const roleBastionFactory = await ethers.getContractFactory('RoleBastion');
+  const roleBastion = await roleBastionFactory.deploy(addresses.core);
+  await roleBastion.deployTransaction.wait();
+  logging && console.log('RoleBastion deployed to:', roleBastion.address);
+
+  const roleBastionCreatorFactory = await ethers.getContractFactory('RoleBastionCreator');
+  const roleBastionCreator = await roleBastionCreatorFactory.deploy(addresses.core);
+  await roleBastionCreator.deployTransaction.wait();
+  logging && console.log('RoleBastionCreator deployed to:', roleBastionCreator.address);
 
   return {
     podExecutor,
@@ -139,7 +150,9 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     podAdminGateway,
     tribalCouncilSafe,
     protocolPodSafe,
-    governanceMetadataRegistry
+    governanceMetadataRegistry,
+    roleBastion,
+    roleBastionCreator
   };
 };
 
@@ -235,7 +248,9 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
     addresses.tribalCouncilTimelock,
     addresses.protocolPodTimelock,
     tribalCouncilSafeAddress,
-    protocolSafeAddress
+    protocolSafeAddress,
+    addresses.roleBastionCreator,
+    addresses.roleBastion
   );
 };
 
@@ -246,7 +261,9 @@ const validateTribeRoles = async (
   tribalCouncilTimelockAddress: string,
   protocolPodTimelockAddress: string,
   tribalCouncilSafeAddress: string,
-  protocolPodSafeAddress: string
+  protocolPodSafeAddress: string,
+  roleBastionCreatorAddress: string,
+  roleBastionAddress: string
 ) => {
   // feiDAOTimelock added roles: POD_DEPLOYER_ROLE
   const daoIsPodDeployer = await core.hasRole(ethers.utils.id('POD_DEPLOYER_ROLE'), feiDAOTimelockAddress);
@@ -282,6 +299,14 @@ const validateTribeRoles = async (
     protocolPodSafeAddress
   );
   expect(protocolPodHasMetadataRegisterRole).to.be.true;
+
+  // RoleBastionCreator role: GOVERNOR
+  const roleBastionCreator = await core.hasRole(ethers.utils.id('GOVERNOR_ROLE'), roleBastionCreatorAddress);
+  expect(roleBastionCreator).to.be.true;
+
+  // RoleBastion role: ROLE_ADMIN
+  const roleBastion = await core.hasRole(ethers.utils.id('ROLE_ADMIN'), roleBastionCreatorAddress);
+  expect(roleBastion).to.be.true;
 };
 
 export { deploy, setup, teardown, validate };
