@@ -34,11 +34,6 @@ contract RoleBastionGranterTest is DSTest {
         // 2. Create dummyRole, which ROLE_ADMIN becomes admin of
         core.createRole(dummyRole, TribeRoles.ROLE_ADMIN);
         vm.stopPrank();
-
-        // Grant RoleAdministration GOVERNOR role
-        // vm.startPrank(addresses.governorAddress);
-        // core.grantRole(TribeRoles.GOVERNOR, address(roleGranter));
-        // vm.stopPrank();
     }
 
     /// @notice Validate RoleAdmin contract has relevant permissions
@@ -49,6 +44,7 @@ contract RoleBastionGranterTest is DSTest {
         assertTrue(allRoles.length == 0);
     }
 
+    /// @notice Validate that RoleBastionGranter can grant a role
     function testGrantRole() public {
         vm.prank(tribalCouncil);
         roleGranter.grantRole(dummyRole, contractToGrant);
@@ -66,6 +62,7 @@ contract RoleBastionGranterTest is DSTest {
         assertEq(addressesWithRole[0], contractToGrant);
     }
 
+    /// @notice Validate that RoleBastionGranter can revoke a role
     function testRevokeRole() public {
         vm.prank(tribalCouncil);
         roleGranter.grantRole(dummyRole, contractToGrant);
@@ -79,10 +76,28 @@ contract RoleBastionGranterTest is DSTest {
         assertFalse(roleGranter.hasRole(dummyRole, contractToGrant));
     }
 
-    // function testCreateRole() public {
-    //     bytes32 roleToCreate = keccak256("TEST_ROLE");
+    /// @notice Validate that RoleBastionGranter can not grant a major role
+    function testCanNotGrantMajorRole() public {
+        bytes32 majorRole = TribeRoles.MINTER;
 
-    //     vm.prank(tribalCouncil);
-    //     roleGranter.createRole(roleToCreate);
-    // }
+        vm.startPrank(tribalCouncil);
+        vm.expectRevert(bytes("Only non-major roles can be granted"));
+        roleGranter.grantRole(majorRole, contractToGrant);
+        vm.stopPrank();
+    }
+
+    /// @notice Validate that RoleBastionGranter can not revoke a major role
+    function testCanNotRevokeMajorRole() public {
+        // Grant major rule using GOVERNOR to an address
+        bytes32 majorRole = TribeRoles.MINTER;
+        vm.startPrank(addresses.governorAddress);
+        core.createRole(majorRole, TribeRoles.GOVERNOR);
+        core.grantRole(majorRole, contractToGrant);
+        vm.stopPrank();
+
+        vm.startPrank(tribalCouncil);
+        vm.expectRevert(bytes("Only non-major roles can be revoked"));
+        roleGranter.revokeRole(majorRole, contractToGrant);
+        vm.stopPrank();
+    }
 }

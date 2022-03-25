@@ -23,8 +23,10 @@ contract RoleBastionGranter is CoreRef {
     /// @notice All roles granted by RoleBastion
     EnumerableSet.Bytes32Set private allRoles;
 
-    /// @notice On-chain location to track granted minor roles
+    /// @notice On-chain location to track granted non-major roles
     mapping(bytes32 => EnumerableSet.AddressSet) private nonMajorRoles;
+
+    /////////////////    GETTERS    /////////////////////////
 
     /// @notice Return all addresses that have been granted a particular role by the RoleBastion
     function getAddressesWithRole(bytes32 role)
@@ -49,11 +51,24 @@ contract RoleBastionGranter is CoreRef {
         return core().hasRole(role, account);
     }
 
+    ////////////////     STATE-CHANGING API    /////////////////////////
+
     /// @notice Grant a role to an address. Only the ROLE_ADMIN can call this
     function grantRole(bytes32 role, address to)
         external
         onlyTribeRole(TribeRoles.ROLE_ADMIN)
     {
+        // Add explicit guard that major roles cannot be granted.
+        // It is a redundant check as Core access control will also protect
+        //  - ROLE_ADMIN is not the admin of major roles
+        require(
+            role != TribeRoles.GOVERNOR &&
+                role != TribeRoles.GUARDIAN &&
+                role != TribeRoles.PCV_CONTROLLER &&
+                role != TribeRoles.MINTER,
+            "Only non-major roles can be granted"
+        );
+
         nonMajorRoles[role].add(to);
         allRoles.add(role);
 
@@ -66,6 +81,14 @@ contract RoleBastionGranter is CoreRef {
         external
         onlyTribeRole(TribeRoles.ROLE_ADMIN)
     {
+        require(
+            role != TribeRoles.GOVERNOR &&
+                role != TribeRoles.GUARDIAN &&
+                role != TribeRoles.PCV_CONTROLLER &&
+                role != TribeRoles.MINTER,
+            "Only non-major roles can be revoked"
+        );
+
         nonMajorRoles[role].remove(from);
         allRoles.remove(role);
         emit BastionRoleRevoke(role, from);

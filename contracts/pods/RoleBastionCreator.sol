@@ -13,7 +13,7 @@ import {Core} from "../core/Core.sol";
 contract RoleBastionCreator is CoreRef {
     using EnumerableSet for EnumerableSet.Bytes32Set;
 
-    event CreateNonMajorRole(bytes32 indexed role, bytes32 roleAdmin);
+    event BastionRoleCreate(bytes32 indexed role, bytes32 roleAdmin);
 
     /// @notice All roles granted by RoleBastionCreator
     EnumerableSet.Bytes32Set private allRoles;
@@ -56,8 +56,7 @@ contract RoleBastionCreator is CoreRef {
         external
         onlyTribeRole(TribeRoles.ROLE_ADMIN)
     {
-        // Requirements:
-        // 2. Can only create roles that don't already have an admin
+        // TODO: Can only create roles that don't already have an admin
         require(
             role != TribeRoles.GOVERNOR &&
                 role != TribeRoles.GUARDIAN &&
@@ -66,10 +65,9 @@ contract RoleBastionCreator is CoreRef {
             "Only non-major roles can be created"
         );
 
-        emit CreateNonMajorRole(role, TribeRoles.ROLE_ADMIN);
-        core().createRole(role, TribeRoles.ROLE_ADMIN);
-
-        // Would this brick if many roles were added?
         allRoles.add(role);
+        emit BastionRoleCreate(role, TribeRoles.ROLE_ADMIN);
+
+        core().createRole(role, TribeRoles.ROLE_ADMIN);
     }
 }
