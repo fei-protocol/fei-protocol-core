@@ -14,10 +14,9 @@ contract RoleBastion is CoreRef {
 
     /// @notice Create a role whose admin is the ROLE_ADMIN
     /// @param role Role to be created
-    /// @dev Function is intended to be used by an address with ROLE_ADMIN, the TribalCouncil, to create
-    ///      non-major roles. As this contract is granted the GOVERNOR role it would allow it to create major
-    ///      roles. To prevent this, a check is made to ensure that the role does not have an admin (i.e. it's a
-    ///      new admin)
+    /// @dev Function is used by an address with ROLE_ADMIN, e.g. the TribalCouncil, to create
+    ///      non-major roles. A check is made to ensure that the role to be created does not
+    //       have an admin i.e. that it is a new admin
     function createRole(bytes32 role)
         external
         onlyTribeRole(TribeRoles.ROLE_ADMIN)

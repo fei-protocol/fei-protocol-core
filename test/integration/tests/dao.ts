@@ -201,7 +201,7 @@ describe('e2e-dao', function () {
     });
   });
 
-  describe.only('Access control', async () => {
+  describe('Access control', async () => {
     before(async () => {
       // Revoke deploy address permissions, so that does not erroneously
       // contribute to num governor roles etc

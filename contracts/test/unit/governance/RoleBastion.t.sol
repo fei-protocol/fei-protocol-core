@@ -28,7 +28,7 @@ contract RoleBastionTest is DSTest {
         core.grantRole(TribeRoles.ROLE_ADMIN, address(tribalCouncil));
         vm.stopPrank();
 
-        // 2. Grant roleBastionCreator GOVERNOR
+        // 2. Grant roleBastion GOVERNOR
         vm.startPrank(addresses.governorAddress);
         core.grantRole(TribeRoles.GOVERNOR, address(roleBastion));
         vm.stopPrank();
@@ -40,7 +40,7 @@ contract RoleBastionTest is DSTest {
         assertTrue(core.hasRole(TribeRoles.ROLE_ADMIN, address(tribalCouncil)));
     }
 
-    /// @notice Validate that roleCreator can create a non-major role
+    /// @notice Validate that roleCreator can create a role
     function testCreateNewRole() public {
         bytes32 newRole = keccak256("DUMMY_ROLE");
 
@@ -52,7 +52,22 @@ contract RoleBastionTest is DSTest {
         assertEq(createdRoleAdmin, TribeRoles.ROLE_ADMIN);
     }
 
-    /// @notice Validate that roleCreator can not create a major role
+    /// @notice Validate that created role can be granted by core
+    function testCreatedRoleCanBeGranted() public {
+        bytes32 newRole = keccak256("DUMMY_ROLE");
+
+        vm.prank(tribalCouncil);
+        roleBastion.createRole(newRole);
+
+        address roleReceiver = address(0x3);
+        vm.prank(tribalCouncil); // ROLE_ADMIN is transferring the role
+        core.grantRole(newRole, roleReceiver);
+
+        // Validate address received role
+        assertTrue(core.hasRole(newRole, roleReceiver));
+    }
+
+    /// @notice Validate that roleCreator can not create an already existing role
     function testCanNotCreateExistingRole() public {
         bytes32 existingRole = TribeRoles.MINTER;
 

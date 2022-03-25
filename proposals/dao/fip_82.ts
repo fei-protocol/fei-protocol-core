@@ -131,16 +131,11 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   await governanceMetadataRegistry.deployTransaction.wait();
   logging && console.log('GovernanceMetadataRegistry deployed to:', governanceMetadataRegistry.address);
 
-  // 7. Deploy RoleBastion and RoleBastionCreator, to allow TribalCouncil to manage roles
+  // 7. Deploy RoleBastion and RoleBastion, to allow TribalCouncil to manage roles
   const roleBastionFactory = await ethers.getContractFactory('RoleBastion');
   const roleBastion = await roleBastionFactory.deploy(addresses.core);
   await roleBastion.deployTransaction.wait();
   logging && console.log('RoleBastion deployed to:', roleBastion.address);
-
-  const roleBastionCreatorFactory = await ethers.getContractFactory('RoleBastionCreator');
-  const roleBastionCreator = await roleBastionCreatorFactory.deploy(addresses.core);
-  await roleBastionCreator.deployTransaction.wait();
-  logging && console.log('RoleBastionCreator deployed to:', roleBastionCreator.address);
 
   return {
     podExecutor,
@@ -151,8 +146,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     tribalCouncilSafe,
     protocolPodSafe,
     governanceMetadataRegistry,
-    roleBastion,
-    roleBastionCreator
+    roleBastion
   };
 };
 
@@ -249,7 +243,6 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
     addresses.protocolPodTimelock,
     tribalCouncilSafeAddress,
     protocolSafeAddress,
-    addresses.roleBastionCreator,
     addresses.roleBastion
   );
 };
@@ -262,7 +255,6 @@ const validateTribeRoles = async (
   protocolPodTimelockAddress: string,
   tribalCouncilSafeAddress: string,
   protocolPodSafeAddress: string,
-  roleBastionCreatorAddress: string,
   roleBastionAddress: string
 ) => {
   // feiDAOTimelock added roles: POD_DEPLOYER_ROLE
@@ -300,12 +292,8 @@ const validateTribeRoles = async (
   );
   expect(protocolPodHasMetadataRegisterRole).to.be.true;
 
-  // RoleBastionCreator role: GOVERNOR
-  const roleBastionCreator = await core.hasRole(ethers.utils.id('GOVERN_ROLE'), roleBastionCreatorAddress);
-  expect(roleBastionCreator).to.be.true;
-
-  // RoleBastion role: ROLE_ADMIN
-  const roleBastion = await core.hasRole(ethers.utils.id('ROLE_ADMIN'), roleBastionCreatorAddress);
+  // RoleBastion role: GOVERNOR
+  const roleBastion = await core.hasRole(ethers.utils.id('GOVERN_ROLE'), roleBastionAddress);
   expect(roleBastion).to.be.true;
 };
 
