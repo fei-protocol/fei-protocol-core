@@ -3,16 +3,15 @@ pragma solidity ^0.8.4;
 
 import {Governor, IGovernor} from "@openzeppelin/contracts/governance/Governor.sol";
 import {GovernorSettings} from "@openzeppelin/contracts/governance/extensions/GovernorSettings.sol";
-import {GovernorCompatibilityBravo} from "@openzeppelin/contracts/governance/compatibility/GovernorCompatibilityBravo.sol";
 import {GovernorVotesComp, IERC165} from "@openzeppelin/contracts/governance/extensions/GovernorVotesComp.sol";
-import {GovernorTimelockControl} from "@openzeppelin/contracts/governance/extensions/GovernorTimelockControl.sol";
+import {GovernorCountingSimple} from "@openzeppelin/contracts/governance/extensions/GovernorCountingSimple.sol";
 import {ERC20VotesComp} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20VotesComp.sol";
 
-abstract contract NopeDAO is
+contract NopeDAO is
     Governor,
     GovernorSettings,
-    GovernorCompatibilityBravo,
-    GovernorVotesComp
+    GovernorVotesComp,
+    GovernorCountingSimple
 {
     constructor(ERC20VotesComp _tribe)
         Governor("NopeDAO")
@@ -65,7 +64,7 @@ abstract contract NopeDAO is
     function state(uint256 proposalId)
         public
         view
-        override(Governor, IGovernor)
+        override(Governor)
         returns (ProposalState)
     {
         return super.state(proposalId);
@@ -76,7 +75,7 @@ abstract contract NopeDAO is
         uint256[] memory values,
         bytes[] memory calldatas,
         string memory description
-    ) public override(Governor, GovernorCompatibilityBravo) returns (uint256) {
+    ) public override(Governor) returns (uint256) {
         return super.propose(targets, values, calldatas, description);
     }
 
@@ -115,7 +114,7 @@ abstract contract NopeDAO is
     function supportsInterface(bytes4 interfaceId)
         public
         view
-        override(Governor, IERC165)
+        override(Governor)
         returns (bool)
     {
         return super.supportsInterface(interfaceId);
