@@ -76,4 +76,14 @@ contract RoleBastionTest is DSTest {
         roleBastion.createRole(existingRole);
         vm.stopPrank();
     }
+
+    /// @notice Validate that can not create a role of bytes32(0), which is the
+    ///         CONTRACT_ADMIN_ROLE in core
+    function testCanNotCreateZeroRole() public {
+        bytes32 zeroRole = bytes32(0);
+        vm.startPrank(tribalCouncil);
+        vm.expectRevert(bytes("Can not create zero role"));
+        roleBastion.createRole(zeroRole);
+        vm.stopPrank();
+    }
 }
