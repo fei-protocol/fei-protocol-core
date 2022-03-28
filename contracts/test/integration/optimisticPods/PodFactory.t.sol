@@ -12,6 +12,7 @@ import {TribeRoles} from "../../../core/TribeRoles.sol";
 import {DSTest} from "../../utils/DSTest.sol";
 import {mintOrcaTokens, getPodParams} from "../fixtures/Orca.sol";
 import {Vm} from "../../utils/Vm.sol";
+import {getMainnetAddresses, MainnetAddresses} from "../fixtures/MainnetAddresses.sol";
 
 /// @notice Validate PodFactory critical functionality such as creating pods
 ///  @dev PodAdmin can not also be a pod member
@@ -20,14 +21,16 @@ contract PodFactoryIntegrationTest is DSTest {
 
     PodFactory factory;
     PodExecutor podExecutor;
-    address private core = 0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9;
-    address private podController = 0xD89AAd5348A34E440E72f5F596De4fA7e291A3e8;
-    address private memberToken = 0x0762aA185b6ed2dCA77945Ebe92De705e0C37AE3;
     address private podAdmin = address(0x3);
-    address private feiDAOTimelock = 0xd51dbA7a94e1adEa403553A8235C302cEbF41a3c;
 
     bytes32 public constant PROPOSER_ROLE = keccak256("PROPOSER_ROLE");
     bytes32 public constant EXECUTOR_ROLE = keccak256("EXECUTOR_ROLE");
+
+    MainnetAddresses mainnetAddresses = getMainnetAddresses();
+    address core = mainnetAddresses.core;
+    address memberToken = mainnetAddresses.memberToken;
+    address podController = mainnetAddresses.podController;
+    address feiDAOTimelock = mainnetAddresses.feiDAOTimelock;
 
     function setUp() public {
         podExecutor = new PodExecutor();

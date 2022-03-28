@@ -7,16 +7,21 @@ import {Vm} from "../../utils/Vm.sol";
 import {TribeRoles} from "../../../core/TribeRoles.sol";
 import {NopeDAO} from "../../../dao/NopeDAO.sol";
 import {Core} from "../../../core/Core.sol";
+import {PodFactory} from "../../../pods/PodFactory.sol";
+import {getMainnetAddresses, MainnetAddresses} from "../fixtures/MainnetAddresses.sol";
+import {deployPodWithFactory} from "../fixtures/Orca.sol";
 
 contract NopeDAOIntegrationTest is DSTest {
-    address user = address(0x1);
     uint256 excessQuorumTribe = (11e6) * (10**18);
+    address private user = address(0x1);
+    address private podExecutor = address(0x2);
+    address private podAdmin = address(0x3);
 
     NopeDAO nopeDAO;
-    Core core = Core(0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9);
-    address feiDAOTimelock = 0xd51dbA7a94e1adEa403553A8235C302cEbF41a3c;
-    ERC20VotesComp tribe =
-        ERC20VotesComp(0xc7283b66Eb1EB5FB86327f08e1B5816b0720212B);
+    PodFactory factory;
+    MainnetAddresses mainnetAddresses = getMainnetAddresses();
+    Core core = Core(mainnetAddresses.core);
+    ERC20VotesComp tribe = ERC20VotesComp(mainnetAddresses.tribe);
 
     Vm public constant vm = Vm(HEVM_ADDRESS);
 
@@ -24,7 +29,7 @@ contract NopeDAOIntegrationTest is DSTest {
         nopeDAO = new NopeDAO(tribe);
 
         // Transfer Tribe from treasury to a user
-        vm.prank(feiDAOTimelock);
+        vm.prank(mainnetAddresses.feiDAOTimelock);
         core.allocateTribe(user, excessQuorumTribe);
 
         // Self-delegate that Tribe
@@ -32,10 +37,21 @@ contract NopeDAOIntegrationTest is DSTest {
         tribe.delegate(user);
 
         // Create POD_VETO_ADMIN role and grant to NopeDAO
-        vm.startPrank(feiDAOTimelock);
+        vm.startPrank(mainnetAddresses.feiDAOTimelock);
         core.createRole(TribeRoles.POD_VETO_ADMIN, TribeRoles.GOVERNOR);
         core.grantRole(TribeRoles.POD_VETO_ADMIN, address(nopeDAO));
         vm.stopPrank();
+
+        // Create pod, using a podFactory
+        (uint256 podId, address podTimelock) = deployPodWithFactory(
+            mainnetAddresses.core,
+            mainnetAddresses.podController,
+            mainnetAddresses.memberToken,
+            podExecutor,
+            podAdmin,
+            vm,
+            mainnetAddresses.feiDAOTimelock
+        );
     }
 
     /// @notice Validate that inital setup worked
@@ -45,8 +61,6 @@ contract NopeDAOIntegrationTest is DSTest {
 
     /// @notice Validate that the NopeDAO can veto a pod
     function testNope() public {
-        // Should the DAO be able to have proposals created that will do things outside of the
-        // FEI ecosystem?
         // Flow to Nope
         // 1. Proposal created in a pod
         // 2. Pod proposal goes to timelock
