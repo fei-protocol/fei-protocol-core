@@ -14,6 +14,7 @@ contract NopeDAOTest is DSTest {
     address user = address(0x1);
     uint256 excessQuorumTribe = (11e6) * (10**18);
     address tribeAddress;
+    ERC20VotesComp tribe;
 
     Vm public constant vm = Vm(HEVM_ADDRESS);
     NopeDAO private nopeDAO;
@@ -32,13 +33,16 @@ contract NopeDAOTest is DSTest {
         vm.prank(addresses.governorAddress);
         core.allocateTribe(user, excessQuorumTribe);
 
-        ERC20VotesComp tribe = ERC20VotesComp(tribeAddress);
-        tribe.delegate(tribeAddress);
+        tribe = ERC20VotesComp(tribeAddress);
+
+        vm.prank(user);
+        tribe.delegate(user);
 
         // 3. Deploy NopeDAO
         nopeDAO = new NopeDAO(tribe);
     }
 
+    /// @notice Validate initial state of the NopeDAO
     function testInitialState() public {
         uint256 quorum = nopeDAO.quorum(uint256(0));
         assertEq(quorum, 10_000_000e18);
@@ -55,5 +59,63 @@ contract NopeDAOTest is DSTest {
 
         address token = address(nopeDAO.token());
         assertEq(token, tribeAddress);
+
+        uint256 userVoteWeight = tribe.getCurrentVotes(user);
+        assertEq(userVoteWeight, excessQuorumTribe);
+    }
+
+    /// @notice Validate that a DAO proposal can be executed. Specifically, targets
+    /// changing a governance parameter. TODO: Should this be able to change it's
+    /// own parameters? Or be fixed?
+    function testProposalExecutes() public {
+        // Make block number non-zero, for getVotes accounting
+        vm.roll(1000);
+
+        address[] memory targets = new address[](1);
+        targets[0] = address(nopeDAO);
+
+        uint256[] memory values = new uint256[](1);
+        values[0] = uint256(0);
+
+        uint256 votingDelay = 10;
+        bytes[] memory calldatas = new bytes[](1);
+        bytes memory data = abi.encodePacked(
+            bytes4(keccak256(bytes("setVotingDelay(uint256)"))),
+            votingDelay
+        );
+        calldatas[0] = data;
+
+        string memory description = "Dummy proposal";
+        bytes32 descriptionHash = keccak256(bytes(description));
+
+        vm.prank(user);
+        uint256 proposalId = nopeDAO.propose(
+            targets,
+            values,
+            calldatas,
+            description
+        );
+
+        // Advance past the 1 voting block
+        vm.roll(1100);
+
+        // Cast a vote for the proposal, in excess of quorum
+        vm.prank(user);
+        nopeDAO.castVote(proposalId, 1);
+
+        // Skip to end of voting
+        uint256 votingEndBlock = nopeDAO.proposalDeadline(proposalId);
+        vm.roll(votingEndBlock + 1);
+
+        // Validate proposal is now successful
+        uint8 state = uint8(nopeDAO.state(proposalId));
+        assertEq(state, uint8(4));
+
+        // Execute
+        nopeDAO.execute(targets, values, calldatas, descriptionHash);
+
+        // Validate that voting delay was updated
+        uint256 newVotingDelay = nopeDAO.votingDelay();
+        assertEq(newVotingDelay, votingDelay);
     }
 }
