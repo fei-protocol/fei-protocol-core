@@ -6,6 +6,7 @@ import {IControllerV1} from "../../../pods/orcaInterfaces/IControllerV1.sol";
 import {IInviteToken} from "../../../pods/orcaInterfaces/IInviteToken.sol";
 import {IPodFactory} from "../../../pods/IPodFactory.sol";
 import {OptimisticTimelock} from "../../../dao/timelock/OptimisticTimelock.sol";
+import {PodFactory} from "../../../pods/PodFactory.sol";
 import {Vm} from "../../utils/Vm.sol";
 
 function createPod(
@@ -81,9 +82,9 @@ function getPodParams(address admin)
     uint256 minDelay = 0;
 
     address[] memory members = new address[](3);
-    members[0] = address(0x4);
-    members[1] = address(0x5);
-    members[2] = address(0x6);
+    members[0] = address(0x200);
+    members[1] = address(0x201);
+    members[2] = address(0x202);
 
     IPodFactory.PodConfig memory config = IPodFactory.PodConfig({
         members: members,
@@ -95,4 +96,32 @@ function getPodParams(address admin)
         minDelay: minDelay
     });
     return config;
+}
+
+/// @dev Deploy pod factory and use to create a pod
+function deployPodWithFactory(
+    address core,
+    address podController,
+    address memberToken,
+    address podExecutor,
+    address podAdmin,
+    Vm vm,
+    address podDeployer // must be GOVERNOR or have POD_DEPLOYER_ROLE
+) returns (uint256, address) {
+    PodFactory factory = new PodFactory(
+        core,
+        podController,
+        memberToken,
+        podExecutor
+    );
+    mintOrcaTokens(address(factory), 2, vm);
+
+    IPodFactory.PodConfig memory podConfig = getPodParams(podAdmin);
+
+    vm.deal(address(factory), 1000 ether);
+    vm.prank(podDeployer);
+    (uint256 podId, address podTimelock) = factory.createChildOptimisticPod(
+        podConfig
+    );
+    return (podId, podTimelock);
 }

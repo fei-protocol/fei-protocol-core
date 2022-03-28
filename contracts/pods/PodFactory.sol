@@ -21,7 +21,7 @@ import {ICore} from "../core/ICore.sol";
 /// the only proposer and executor.
 contract PodFactory is CoreRef, IPodFactory {
     /// @notice Orca controller for Pod
-    IControllerV1 public podController;
+    IControllerV1 public override podController;
 
     /// @notice Orca membership token for the pods. Handles permissioning pod members
     IMemberToken private immutable memberToken;
@@ -134,6 +134,7 @@ contract PodFactory is CoreRef, IPodFactory {
     //////////////////// STATE-CHANGING API ////////////////////
 
     /// @notice Create a child Orca pod with optimistic timelock. Callable by the DAO and the Tribal Council
+    ///         Returns podId and optimistic pod timelock address
     function createChildOptimisticPod(PodConfig calldata _config)
         public
         override
