@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
-import {DSTest} from "../utils/DSTest.sol";
-import {Vm} from "../utils/Vm.sol";
-import {TribeRoles} from "../../core/TribeRoles.sol";
-import {GovernanceMetadataRegistry} from "../../pods/GovernanceMetadataRegistry.sol";
-import {Core} from "../../core/Core.sol";
-import {getMainnetAddresses, MainnetAddresses} from "./fixtures/MainnetAddresses.sol";
+import {DSTest} from "../../utils/DSTest.sol";
+import {Vm} from "../../utils/Vm.sol";
+import {TribeRoles} from "../../../core/TribeRoles.sol";
+import {GovernanceMetadataRegistry} from "../../../pods/GovernanceMetadataRegistry.sol";
+import {Core} from "../../../core/Core.sol";
+import {getMainnetAddresses, MainnetAddresses} from "../fixtures/MainnetAddresses.sol";
 
 contract GovernanceMetadataRegistryIntegrationTest is DSTest {
     GovernanceMetadataRegistry registry;

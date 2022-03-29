@@ -125,11 +125,17 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   const tribalCouncilSafe = new ethers.Contract(councilSafeAddress, gnosisSafeABI, mockSigner);
   const protocolPodSafe = new ethers.Contract(protocolPodSafeAddress, gnosisSafeABI, mockSigner);
 
-  // 5. Deploy GovernanceMetadataRegistry contract
+  // 6. Deploy GovernanceMetadataRegistry contract
   const metadataRegistryFactory = await ethers.getContractFactory('GovernanceMetadataRegistry');
   const governanceMetadataRegistry = await metadataRegistryFactory.deploy(addresses.core);
   await governanceMetadataRegistry.deployTransaction.wait();
   logging && console.log('GovernanceMetadataRegistry deployed to:', governanceMetadataRegistry.address);
+
+  // 7. Deploy RoleBastion and RoleBastion, to allow TribalCouncil to manage roles
+  const roleBastionFactory = await ethers.getContractFactory('RoleBastion');
+  const roleBastion = await roleBastionFactory.deploy(addresses.core);
+  await roleBastion.deployTransaction.wait();
+  logging && console.log('RoleBastion deployed to:', roleBastion.address);
 
   return {
     podExecutor,
@@ -139,7 +145,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     podAdminGateway,
     tribalCouncilSafe,
     protocolPodSafe,
-    governanceMetadataRegistry
+    governanceMetadataRegistry,
+    roleBastion
   };
 };
 
@@ -235,7 +242,8 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
     addresses.tribalCouncilTimelock,
     addresses.protocolPodTimelock,
     tribalCouncilSafeAddress,
-    protocolSafeAddress
+    protocolSafeAddress,
+    addresses.roleBastion
   );
 };
 
@@ -246,7 +254,8 @@ const validateTribeRoles = async (
   tribalCouncilTimelockAddress: string,
   protocolPodTimelockAddress: string,
   tribalCouncilSafeAddress: string,
-  protocolPodSafeAddress: string
+  protocolPodSafeAddress: string,
+  roleBastionAddress: string
 ) => {
   // feiDAOTimelock added roles: POD_DEPLOYER_ROLE
   const daoIsPodDeployer = await core.hasRole(ethers.utils.id('POD_DEPLOYER_ROLE'), feiDAOTimelockAddress);
@@ -282,6 +291,10 @@ const validateTribeRoles = async (
     protocolPodSafeAddress
   );
   expect(protocolPodHasMetadataRegisterRole).to.be.true;
+
+  // RoleBastion role: GOVERNOR
+  const roleBastion = await core.hasRole(ethers.utils.id('GOVERN_ROLE'), roleBastionAddress);
+  expect(roleBastion).to.be.true;
 };
 
 export { deploy, setup, teardown, validate };
