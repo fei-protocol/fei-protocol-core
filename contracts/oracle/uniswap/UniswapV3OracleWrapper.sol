@@ -35,10 +35,6 @@ contract UniswapV3OracleWrapper is IUniswapV3OracleWrapper, IOracle, CoreRef {
     /// @notice Oracle configuration parameters
     OracleConfig public oracleConfig;
 
-    /// @notice Mean Ethereum block time. Used in estimating the number of observations
-    /// required on the Uniswap pool to support a particular TWAP period.
-    uint32 public constant meanBlockTime = 13 seconds;
-
     /// @notice Type for the oracle configuration parameters
     /// @param twapPeriod Time period of which the time weighted average price is calculated
     /// @param minPoolLiquidity Safety parameter, minimum liquidity that must be present in the pool
@@ -52,19 +48,9 @@ contract UniswapV3OracleWrapper is IUniswapV3OracleWrapper, IOracle, CoreRef {
         uint256 precision;
     }
 
-    /// @notice An event emitted when the TWAP period is updated
-    event TwapPeriodUpdate(
-        address indexed pool,
-        uint32 oldTwapPeriod,
-        uint32 newTwapPeriod
-    );
-
-    /// @notice An event emitted when a Uniswap pool has oracle support added
-    event AddPoolSupport(
-        address indexed pool,
-        uint32 twapPeriod,
-        uint16 cardinality
-    );
+    /// @notice Mean Ethereum block time. Used in estimating the number of observations
+    /// required on the Uniswap pool to support a particular TWAP period.
+    uint32 public constant meanBlockTime = 13 seconds;
 
     /// @notice UniswapV3OracleWrapper constructor
     /// @param _core Address of the Fei core contract
