@@ -70,7 +70,7 @@ const fip_82: ProposalDescription = {
       Create POD_METADATA_REGISTER_ROLE role, assign ROLE_ADMIN as admin
       `
     },
-    //////////////// Grant relevant TribeRoles to relevant timelock and safe contracts ///////////////
+    //////////////// Grant relevant TribeRoles to relevant Timelocks, Safes and Bastions ///////////////
     {
       target: 'core',
       values: '0',
@@ -146,6 +146,16 @@ const fip_82: ProposalDescription = {
         '0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096' // ROLE_ADMIN
       ],
       description: 'Transfer VOTIUM_ADMIN_ROLE admin from GOVERNOR to ROLE_ADMIN'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'grantRole(bytes32,address)',
+      arguments: [
+        '0x899bd46557473cb80307a9dabc297131ced39608330a2d29b2d52b660c03923e', // GOVERNOR
+        '{roleBastion}' // RoleBastion - used by TribalCouncil to create roles
+      ],
+      description: 'Grant GOVERNOR role to RoleBastion'
     },
     //////////////    Configure Membership of Council and Pod /////////////
     {
