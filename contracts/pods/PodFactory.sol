@@ -134,12 +134,16 @@ contract PodFactory is CoreRef, IPodFactory {
     //////////////////// STATE-CHANGING API ////////////////////
 
     /// @notice Create a child Orca pod with optimistic timelock. Callable by the DAO and the Tribal Council
-    ///         Returns podId and optimistic pod timelock address
+    ///         Returns podId, optimistic pod timelock address and the Pod Gnosis Safe address
     function createChildOptimisticPod(PodConfig calldata _config)
         public
         override
         hasAnyOfTwoRoles(TribeRoles.GOVERNOR, TribeRoles.POD_DEPLOYER_ROLE)
-        returns (uint256, address)
+        returns (
+            uint256,
+            address,
+            address
+        )
     {
         return _createChildOptimisticPod(_config);
     }
@@ -161,7 +165,11 @@ contract PodFactory is CoreRef, IPodFactory {
     function burnerCreateChildOptimisticPods(PodConfig[] calldata _config)
         external
         override
-        returns (uint256[] memory, address[] memory)
+        returns (
+            uint256[] memory,
+            address[] memory,
+            address[] memory
+        )
     {
         require(
             burnerDeploymentUsed == false,
@@ -170,18 +178,22 @@ contract PodFactory is CoreRef, IPodFactory {
 
         uint256[] memory podIds = new uint256[](_config.length);
         address[] memory timelocks = new address[](_config.length);
+        address[] memory safes = new address[](_config.length);
 
         {
             for (uint256 i = 0; i < _config.length; i += 1) {
-                (uint256 podId, address timelock) = _createChildOptimisticPod(
-                    _config[i]
-                );
+                (
+                    uint256 podId,
+                    address timelock,
+                    address safe
+                ) = _createChildOptimisticPod(_config[i]);
                 podIds[i] = podId;
                 timelocks[i] = timelock;
+                safes[i] = safe;
             }
         }
         burnerDeploymentUsed = true;
-        return (podIds, timelocks);
+        return (podIds, timelocks, safes);
     }
 
     ////////////////////////     INTERNAL          ////////////////////////////
@@ -190,7 +202,11 @@ contract PodFactory is CoreRef, IPodFactory {
     /// @param _config Pod configuraton
     function _createChildOptimisticPod(PodConfig calldata _config)
         internal
-        returns (uint256, address)
+        returns (
+            uint256,
+            address,
+            address
+        )
     {
         uint256 podId = memberToken.getNextAvailablePodId();
 
@@ -217,7 +233,7 @@ contract PodFactory is CoreRef, IPodFactory {
         latestPodId = podId;
 
         emit CreatePod(podId, safeAddress);
-        return (podId, timelock);
+        return (podId, timelock, safeAddress);
     }
 
     /// @notice Create an Orca pod - a Gnosis Safe with a membership wrapper

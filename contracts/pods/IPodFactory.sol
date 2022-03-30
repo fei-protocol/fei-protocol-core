@@ -43,11 +43,19 @@ interface IPodFactory {
 
     function createChildOptimisticPod(PodConfig calldata _config)
         external
-        returns (uint256, address);
+        returns (
+            uint256,
+            address,
+            address
+        );
 
     function updatePodController(address newPodController) external;
 
     function burnerCreateChildOptimisticPods(PodConfig[] calldata _config)
         external
-        returns (uint256[] memory, address[] memory);
+        returns (
+            uint256[] memory,
+            address[] memory,
+            address[] memory
+        );
 }

@@ -107,7 +107,13 @@ function deployPodWithFactory(
     address podAdmin,
     Vm vm,
     address podDeployer // must be GOVERNOR or have POD_DEPLOYER_ROLE
-) returns (uint256, address) {
+)
+    returns (
+        uint256,
+        address,
+        address
+    )
+{
     PodFactory factory = new PodFactory(
         core,
         podController,
@@ -120,8 +126,7 @@ function deployPodWithFactory(
 
     vm.deal(address(factory), 1000 ether);
     vm.prank(podDeployer);
-    (uint256 podId, address podTimelock) = factory.createChildOptimisticPod(
-        podConfig
-    );
-    return (podId, podTimelock);
+    (uint256 podId, address podTimelock, address safe) = factory
+        .createChildOptimisticPod(podConfig);
+    return (podId, podTimelock, safe);
 }

@@ -93,7 +93,7 @@ contract PodFactoryIntegrationTest is DSTest {
         IPodFactory.PodConfig memory podConfig = getPodParams(podAdmin);
 
         vm.prank(feiDAOTimelock);
-        (uint256 podId, address timelock) = factory.createChildOptimisticPod(
+        (uint256 podId, address timelock, ) = factory.createChildOptimisticPod(
             podConfig
         );
 
@@ -116,7 +116,7 @@ contract PodFactoryIntegrationTest is DSTest {
         IPodFactory.PodConfig memory podConfig = getPodParams(podAdmin);
 
         vm.prank(feiDAOTimelock);
-        (uint256 podId, ) = factory.createChildOptimisticPod(podConfig);
+        (uint256 podId, , ) = factory.createChildOptimisticPod(podConfig);
 
         address newAdmin = address(0x10);
         vm.prank(podAdmin);
@@ -140,24 +140,21 @@ contract PodFactoryIntegrationTest is DSTest {
         IPodFactory.PodConfig memory podConfig = getPodParams(podAdmin);
 
         vm.prank(feiDAOTimelock);
-        (uint256 podId, address timelock) = factory.createChildOptimisticPod(
-            podConfig
-        );
+        (uint256 podId, address timelock, address safe) = factory
+            .createChildOptimisticPod(podConfig);
         require(timelock != address(0));
 
         address safeAddress = factory.getPodSafe(podId);
+        assertEq(safe, safeAddress);
         ITimelock timelockContract = ITimelock(timelock);
 
         // Gnosis safe should be the proposer
-        bool hasProposerRole = timelockContract.hasRole(
-            PROPOSER_ROLE,
-            safeAddress
-        );
+        bool hasProposerRole = timelockContract.hasRole(PROPOSER_ROLE, safe);
         assertTrue(hasProposerRole);
 
         bool safeAddressIsExecutor = timelockContract.hasRole(
             EXECUTOR_ROLE,
-            safeAddress
+            safe
         );
         assertTrue(safeAddressIsExecutor);
 
@@ -173,11 +170,11 @@ contract PodFactoryIntegrationTest is DSTest {
         IPodFactory.PodConfig memory podConfig = getPodParams(podAdmin);
 
         vm.prank(feiDAOTimelock);
-        (uint256 podId, address timelock) = factory.createChildOptimisticPod(
-            podConfig
-        );
+        (uint256 podId, address timelock, address safe) = factory
+            .createChildOptimisticPod(podConfig);
 
         assertEq(timelock, factory.getPodTimelock(podId));
+        assertEq(safe, factory.getPodSafe(podId));
         assertEq(podId, factory.getPodId(timelock));
     }
 
@@ -188,14 +185,14 @@ contract PodFactoryIntegrationTest is DSTest {
         podConfig.label = bytes32("A");
 
         vm.prank(feiDAOTimelock);
-        (uint256 podAId, ) = factory.createChildOptimisticPod(podConfig);
+        (uint256 podAId, , ) = factory.createChildOptimisticPod(podConfig);
 
         address podAAdmin = IControllerV1(podController).podAdmin(podAId);
         assertEq(podAAdmin, podAdmin);
 
         podConfig.label = bytes32("B");
         vm.prank(feiDAOTimelock);
-        (uint256 podBId, ) = factory.createChildOptimisticPod(podConfig);
+        (uint256 podBId, , ) = factory.createChildOptimisticPod(podConfig);
 
         assertEq(podBId, podAId + 1);
         address podBAdmin = IControllerV1(podController).podAdmin(podBId);
@@ -214,7 +211,7 @@ contract PodFactoryIntegrationTest is DSTest {
         configs[1] = podConfigB;
 
         vm.prank(feiDAOTimelock);
-        (uint256[] memory podIds, ) = factory.burnerCreateChildOptimisticPods(
+        (uint256[] memory podIds, , ) = factory.burnerCreateChildOptimisticPods(
             configs
         );
         assertTrue(factory.burnerDeploymentUsed());
@@ -228,5 +225,17 @@ contract PodFactoryIntegrationTest is DSTest {
 
         address setPodAdminB = IControllerV1(podController).podAdmin(podIds[0]);
         assertEq(setPodAdminB, podAdmin);
+    }
+
+    /// @notice Valdiate that can create a transaction in the pod and that it progresses to the timelock
+    function testCreateTxInOptimisticPod() public {
+        // 1. Deploy pod
+        IPodFactory.PodConfig memory podConfig = getPodParams(podAdmin);
+        vm.prank(feiDAOTimelock);
+        (uint256 podId, address podTimelock, address safe) = factory
+            .createChildOptimisticPod(podConfig);
+
+        // 2. Create transaction on the pod's Gnosis Safe
+        // IGnosisSafe()
     }
 }

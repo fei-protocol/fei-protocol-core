@@ -42,30 +42,24 @@ contract NopeDAOIntegrationTest is DSTest {
         vm.stopPrank();
 
         // Create pod, using a podFactory
-        (uint256 podId, address podTimelock) = deployPodWithFactory(
-            MainnetAddresses.CORE,
-            MainnetAddresses.POD_CONTROLLER,
-            MainnetAddresses.MEMBER_TOKEN,
-            podExecutor,
-            podAdmin,
-            vm,
-            MainnetAddresses.FEI_DAO_TIMELOCK
-        );
+        (
+            uint256 podId,
+            address podTimelock,
+            address safe
+        ) = deployPodWithFactory(
+                MainnetAddresses.CORE,
+                MainnetAddresses.POD_CONTROLLER,
+                MainnetAddresses.MEMBER_TOKEN,
+                podExecutor,
+                podAdmin,
+                vm,
+                MainnetAddresses.FEI_DAO_TIMELOCK
+            );
     }
 
     /// @notice Validate that inital setup worked
     function testInitialState() public {
         assertTrue(core.hasRole(TribeRoles.POD_VETO_ADMIN, address(nopeDAO)));
-    }
-
-    /// @notice Validate that the NopeDAO can veto a pod
-    function testNope() public {
-        // Flow to Nope
-        // 1. Proposal created in a pod
-        // 2. Pod proposal goes to timelock
-        // 3. Proposal created on NopeDAO
-        // 4. Proposal voted for on NopeDAO
-        // 5. Transaction sent to pod timelock that cancels the relevant proposal
     }
 
     /// @notice Validate that the GOVERNOR can update the NopeDAO settings
@@ -147,8 +141,20 @@ contract NopeDAOIntegrationTest is DSTest {
         uint8 state = uint8(nopeDAO.state(proposalId));
         assertEq(state, uint8(4));
 
-        // Execute
+        // Execute and validate nopeDAO can not update it's own governor settings
         vm.expectRevert(bytes("UNAUTHORIZED"));
         nopeDAO.execute(targets, values, calldatas, descriptionHash);
+    }
+
+    /// @notice Validate that the NopeDAO can veto a pod
+    function testNope() public {
+        // Flow to Nope
+        // 1. Proposal created in a pod
+        // How?
+        // Need to create a proposal on the pod's Gnosis Safe
+        // 2. Pod proposal goes to timelock
+        // 3. Proposal created on NopeDAO
+        // 4. Proposal voted for on NopeDAO
+        // 5. Transaction sent to pod timelock that cancels the relevant proposal
     }
 }

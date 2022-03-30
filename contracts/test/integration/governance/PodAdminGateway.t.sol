@@ -23,6 +23,7 @@ contract PodAdminGatewayIntegrationTest is DSTest {
     uint256 podId;
     bytes32 testRole;
     address timelock;
+    address safe;
     address private podExecutor = address(0x500);
 
     address core = MainnetAddresses.CORE;
@@ -50,7 +51,7 @@ contract PodAdminGatewayIntegrationTest is DSTest {
 
         // 4.0 Create pod
         vm.prank(feiDAOTimelock);
-        (podId, timelock) = factory.createChildOptimisticPod(podConfig);
+        (podId, timelock, safe) = factory.createChildOptimisticPod(podConfig);
     }
 
     /// @notice Validate that podAdminGateway contract pod admin, and initial state is valid
