@@ -114,31 +114,22 @@ contract NopeDAOTest is DSTest {
             calldatas,
             description
         );
-        //     enum ProposalState {
-        //      Pending,
-        //      Active,
-        //      Canceled,
-        //      Defeated,
-        //      Succeeded,
-        //      Queued,
-        //      Expired,
-        //      Executed
-        //   }
+
         // 1. Validate Pending
         uint8 statePending = uint8(nopeDAO.state(proposalId));
-        assertEq(statePending, uint8(0));
+        assertEq(statePending, uint8(0)); // pending
 
         // Advance past the 1 voting block
         // 2. Validate Active
         vm.roll(2 + 2);
         uint8 stateActive = uint8(nopeDAO.state(proposalId));
-        assertEq(stateActive, uint8(1));
+        assertEq(stateActive, uint8(1)); // active
 
         // 3. Validate Succeeded, without a need for fast forwarding in time. Quorum reached when pass vote
         vm.prank(user);
         nopeDAO.castVote(proposalId, 1);
         uint8 stateSucceeded = uint8(nopeDAO.state(proposalId));
-        assertEq(stateSucceeded, uint8(4));
+        assertEq(stateSucceeded, uint8(4)); // succeeded
     }
 
     /// @notice Validate that a DAO proposal can be executed.

@@ -10,9 +10,16 @@ import {Core} from "../../../core/Core.sol";
 import {PodFactory} from "../../../pods/PodFactory.sol";
 import {MainnetAddresses} from "../fixtures/MainnetAddresses.sol";
 import {deployPodWithFactory} from "../fixtures/Orca.sol";
+import {OptimisticTimelock} from "../../../dao/timelock/OptimisticTimelock.sol";
+import {PodAdminGateway} from "../../../pods/PodAdminGateway.sol";
 
 contract NopeDAOIntegrationTest is DSTest {
     uint256 excessQuorumTribe = (11e6) * (10**18);
+
+    uint256 podId;
+    address podTimelock;
+    address safe;
+
     address private user = address(0x1);
     address private podExecutor = address(0x2);
     address private podAdmin = address(0x3);
@@ -42,19 +49,15 @@ contract NopeDAOIntegrationTest is DSTest {
         vm.stopPrank();
 
         // Create pod, using a podFactory
-        (
-            uint256 podId,
-            address podTimelock,
-            address safe
-        ) = deployPodWithFactory(
-                MainnetAddresses.CORE,
-                MainnetAddresses.POD_CONTROLLER,
-                MainnetAddresses.MEMBER_TOKEN,
-                podExecutor,
-                podAdmin,
-                vm,
-                MainnetAddresses.FEI_DAO_TIMELOCK
-            );
+        (podId, podTimelock, safe) = deployPodWithFactory(
+            MainnetAddresses.CORE,
+            MainnetAddresses.POD_CONTROLLER,
+            MainnetAddresses.MEMBER_TOKEN,
+            podExecutor,
+            podAdmin,
+            vm,
+            MainnetAddresses.FEI_DAO_TIMELOCK
+        );
     }
 
     /// @notice Validate that inital setup worked
@@ -146,15 +149,26 @@ contract NopeDAOIntegrationTest is DSTest {
         nopeDAO.execute(targets, values, calldatas, descriptionHash);
     }
 
-    /// @notice Validate that the NopeDAO can veto a pod
+    /// @notice Validate that the NopeDAO can veto a proposal in a pod timelock
     function testNope() public {
-        // Flow to Nope
-        // 1. Proposal created in a pod
-        // How?
-        // Need to create a proposal on the pod's Gnosis Safe
-        // 2. Pod proposal goes to timelock
-        // 3. Proposal created on NopeDAO
-        // 4. Proposal voted for on NopeDAO
-        // 5. Transaction sent to pod timelock that cancels the relevant proposal
+        // 1. Deploy PodAdminGateway
+        PodAdminGateway podAdminGateway = new PodAdminGateway(
+            MainnetAddresses.CORE,
+            MainnetAddresses.MEMBER_TOKEN,
+            address(factory)
+        );
+
+        // 2. Put a proposal through to the timelock
+        // TODO: Complete PodFactory integration test with Gnosis Safe first
+
+        // 3. Have NopeDAO veto the proposal in the timelock
+        // podAdminGateway.veto(podId, proposalId);
+
+        // 4. Fetch the proposal ID
+        // bytes32 proposalId = OptimisticTimelock(timelock).hashOperation()
+
+        // 5. Validate that proposal was vetoed
+        // uint256 proposalTimestampReady = OptimisticTimelock(timelock).getTimestamp(proposalId);
+        // assertEq(proposalTimestampReady, 0);
     }
 }

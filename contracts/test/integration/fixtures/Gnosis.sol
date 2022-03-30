@@ -11,7 +11,7 @@ function createGnosisTx(
     bytes memory txData,
     uint256 ownerPrivateKey,
     Vm vm
-) {
+) returns (bool) {
     {
         bytes memory gnosisDataToSign = IGnosisSafe(safe).encodeTransactionData(
                 txTarget,
@@ -45,6 +45,6 @@ function createGnosisTx(
             payable(address(0)), // refundReceiver
             signatures // Packed signatures
         );
-        require(success, "Gnosis Tx failed");
+        return success;
     }
 }

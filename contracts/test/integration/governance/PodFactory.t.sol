@@ -232,13 +232,35 @@ contract PodFactoryIntegrationTest is DSTest {
 
     /// @notice Valdiate that can create a transaction in the pod and that it progresses to the timelock
     function testCreateTxInOptimisticPod() public {
-        // 1. Deploy pod
-        IPodFactory.PodConfig memory podConfig = getPodParams(podAdmin);
+        // 1. Deploy Dummy contract to perform a transaction on
+        DummyStorage dummyContract = new DummyStorage();
+        assertEq(dummyContract.getVariable(), 5);
+
+        // 2. Deploy pod
+        (
+            IPodFactory.PodConfig memory podConfig,
+            uint256 ownerPrivateKey
+        ) = getPodParams(podAdmin);
         vm.prank(feiDAOTimelock);
         (uint256 podId, address podTimelock, address safe) = factory
             .createChildOptimisticPod(podConfig);
 
-        // 2. Create transaction on the pod's Gnosis Safe
-        // IGnosisSafe()
+        // 3. Create and execute transaction on the pod's Gnosis Safe. Transaction sets a storage variable on a mock contract
+        uint256 newDummyContractVar = 10;
+        bytes memory data = abi.encodePacked(
+            bytes4(keccak256(bytes("setVariable(uint256)"))),
+            newDummyContractVar
+        );
+
+        bool txExecutedStatus = createGnosisTx(
+            safe,
+            address(dummyContract),
+            data,
+            ownerPrivateKey,
+            vm
+        );
+        assertTrue(txExecutedStatus);
+
+        // TODO
     }
 }
