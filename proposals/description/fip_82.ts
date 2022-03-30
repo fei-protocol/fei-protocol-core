@@ -70,7 +70,7 @@ const fip_82: ProposalDescription = {
       Create POD_METADATA_REGISTER_ROLE role, assign ROLE_ADMIN as admin
       `
     },
-    //////////////// Grant relevant TribeRoles to relevant Timelocks, Safes and Bastions ///////////////
+    //////////////// Grant relevant TribeRoles to relevant Timelocks, Safes, Bastion and NopeDAO ///////////////
     {
       target: 'core',
       values: '0',
@@ -156,6 +156,16 @@ const fip_82: ProposalDescription = {
         '{roleBastion}' // RoleBastion - used by TribalCouncil to create roles
       ],
       description: 'Grant GOVERNOR role to RoleBastion'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'grantRole(bytes32,address)',
+      arguments: [
+        '0x29af6c210963c1cf458c6a5bf082996cf54b23ebba0c0fb8ae110e8e43371c71', // POD_VETO_ADMIN
+        '{nopeDAO}'
+      ],
+      description: 'Grant POD_VETO_ADMIN role to NopeDAO'
     },
     //////////////    Configure Membership of Council and Pod /////////////
     {

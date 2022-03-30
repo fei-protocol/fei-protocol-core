@@ -9,8 +9,6 @@ import {CoreRef} from "../../refs/CoreRef.sol";
 import {TribeRoles} from "../../core/TribeRoles.sol";
 import {GovernorQuickReaction} from "./GovernorQuickReaction.sol";
 
-// TODOs:
-// 1. Add Test that this NopeDAO can veto proposals on pods
 contract NopeDAO is
     Governor,
     GovernorSettings,
