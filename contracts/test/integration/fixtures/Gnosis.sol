@@ -26,7 +26,6 @@ function createGnosisTx(
                 0 // Nonce
             );
 
-        // Use Gnosis approveHash() fn rather than a signature
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(
             ownerPrivateKey,
             keccak256(gnosisDataToSign)

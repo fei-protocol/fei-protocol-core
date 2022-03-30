@@ -16,6 +16,7 @@ import {DummyStorage} from "../../utils/Fixtures.sol";
 import {createGnosisTx} from "../fixtures/Gnosis.sol";
 import {Vm} from "../../utils/Vm.sol";
 import {MainnetAddresses} from "../fixtures/MainnetAddresses.sol";
+import {OptimisticTimelock} from "../../../dao/timelock/OptimisticTimelock.sol";
 
 /// @notice Validate PodFactory critical functionality such as creating pods
 ///  @dev PodAdmin can not also be a pod member
@@ -230,37 +231,68 @@ contract PodFactoryIntegrationTest is DSTest {
         assertEq(setPodAdminB, podAdmin);
     }
 
-    /// @notice Valdiate that can create a transaction in the pod and that it progresses to the timelock
+    /// @notice Validate that can create a transaction in the pod and that it progresses to the timelock
     function testCreateTxInOptimisticPod() public {
+        vm.warp(1);
+        vm.roll(1);
+
         // 1. Deploy Dummy contract to perform a transaction on
         DummyStorage dummyContract = new DummyStorage();
         assertEq(dummyContract.getVariable(), 5);
 
         // 2. Deploy pod
-        (
-            IPodFactory.PodConfig memory podConfig,
-            uint256 ownerPrivateKey
-        ) = getPodParams(podAdmin);
+        (IPodFactory.PodConfig memory podConfig, ) = getPodParams(podAdmin);
         vm.prank(feiDAOTimelock);
-        (uint256 podId, address podTimelock, address safe) = factory
+        (, address podTimelock, address safe) = factory
             .createChildOptimisticPod(podConfig);
 
-        // 3. Create and execute transaction on the pod's Gnosis Safe. Transaction sets a storage variable on a mock contract
+        OptimisticTimelock timelockContract = OptimisticTimelock(
+            payable(podTimelock)
+        );
+
+        // 3. Schedle a transaction from the Pod's safe address to timelock. Transaction sets a variable on a dummy contract
         uint256 newDummyContractVar = 10;
-        bytes memory data = abi.encodePacked(
+        bytes memory timelockExecutionTxData = abi.encodePacked(
             bytes4(keccak256(bytes("setVariable(uint256)"))),
             newDummyContractVar
         );
 
-        bool txExecutedStatus = createGnosisTx(
-            safe,
+        uint256 timelockDelay = 500;
+        vm.prank(safe);
+        timelockContract.schedule(
             address(dummyContract),
-            data,
-            ownerPrivateKey,
-            vm
+            0,
+            timelockExecutionTxData,
+            bytes32(0),
+            bytes32("1"),
+            timelockDelay
         );
-        assertTrue(txExecutedStatus);
 
-        // TODO
+        // 4. Validate that transaction is in timelock
+        bytes32 txHash = timelockContract.hashOperation(
+            address(dummyContract),
+            0,
+            timelockExecutionTxData,
+            bytes32(0),
+            bytes32("1")
+        );
+        assertTrue(timelockContract.isOperationPending(txHash));
+
+        // 5. Fast forward to execution time in timelock
+        vm.warp(timelockDelay + 10);
+        vm.roll(timelockDelay + 10);
+
+        // 6. Execute transaction and validate state is updated
+        podExecutor.execute(
+            podTimelock,
+            address(dummyContract),
+            0,
+            timelockExecutionTxData,
+            bytes32(0),
+            bytes32("1")
+        );
+
+        assertTrue(timelockContract.isOperationDone(txHash));
+        assertEq(dummyContract.getVariable(), newDummyContractVar);
     }
 }
