@@ -24,9 +24,34 @@ contract DummyStorage {
     }
 }
 
-// TODO:
-// 1. Run the test proposal against a dummy contract
-// 2. Validate that the NopeDAO can not update it's own parameters
+/// @notice Fixture to create a dummy proposal
+function createDummyProposal(address dummyContract, uint256 newVariable)
+    returns (
+        address[] memory,
+        uint256[] memory,
+        bytes[] memory,
+        string memory,
+        bytes32
+    )
+{
+    address[] memory targets = new address[](1);
+    targets[0] = dummyContract;
+
+    uint256[] memory values = new uint256[](1);
+    values[0] = uint256(0);
+
+    bytes[] memory calldatas = new bytes[](1);
+    bytes memory data = abi.encodePacked(
+        bytes4(keccak256(bytes("setVariable(uint256)"))),
+        newVariable
+    );
+    calldatas[0] = data;
+
+    string memory description = "Dummy proposal";
+    bytes32 descriptionHash = keccak256(bytes(description));
+    return (targets, values, calldatas, description, descriptionHash);
+}
+
 contract NopeDAOTest is DSTest {
     address user = address(0x1);
     uint256 excessQuorumTribe = (11e6) * (10**18);
@@ -81,31 +106,69 @@ contract NopeDAOTest is DSTest {
         assertEq(userVoteWeight, excessQuorumTribe);
     }
 
+    /// @notice Validate the quick reaction governor and that state is set to SUCCEEDED as soon as quorum is reached
+    function testQuickReaction() public {
+        vm.roll(2); // Make block number non-zero, for getVotes accounting
+
+        DummyStorage dummyStorageContract = new DummyStorage();
+        uint256 newVariable = 10;
+        (
+            address[] memory targets,
+            uint256[] memory values,
+            bytes[] memory calldatas,
+            string memory description,
+
+        ) = createDummyProposal(address(dummyStorageContract), newVariable);
+
+        // Propose and validate state
+        uint256 proposalId = nopeDAO.propose(
+            targets,
+            values,
+            calldatas,
+            description
+        );
+        //     enum ProposalState {
+        //      Pending,
+        //      Active,
+        //      Canceled,
+        //      Defeated,
+        //      Succeeded,
+        //      Queued,
+        //      Expired,
+        //      Executed
+        //   }
+        // 1. Validate Pending
+        uint8 statePending = uint8(nopeDAO.state(proposalId));
+        assertEq(statePending, uint8(0));
+
+        // Advance past the 1 voting block
+        // 2. Validate Active
+        vm.roll(2 + 2);
+        uint8 stateActive = uint8(nopeDAO.state(proposalId));
+        assertEq(stateActive, uint8(1));
+
+        // 3. Validate Succeeded, without a need for fast forwarding in time. Quorum reached when pass vote
+        vm.prank(user);
+        nopeDAO.castVote(proposalId, 1);
+        uint8 stateSucceeded = uint8(nopeDAO.state(proposalId));
+        assertEq(stateSucceeded, uint8(4));
+    }
+
     /// @notice Validate that a DAO proposal can be executed.
     ///         Specifically, targets a dummy mock contract
     function testProposalExecutes() public {
+        vm.roll(2); // Make block number non-zero, for getVotes accounting
         DummyStorage dummyStorageContract = new DummyStorage();
         assertEq(dummyStorageContract.getVariable(), uint256(5));
 
-        // Make block number non-zero, for getVotes accounting
-        vm.roll(1000);
-
-        address[] memory targets = new address[](1);
-        targets[0] = address(dummyStorageContract);
-
-        uint256[] memory values = new uint256[](1);
-        values[0] = uint256(0);
-
         uint256 newVariable = 10;
-        bytes[] memory calldatas = new bytes[](1);
-        bytes memory data = abi.encodePacked(
-            bytes4(keccak256(bytes("setVariable(uint256)"))),
-            newVariable
-        );
-        calldatas[0] = data;
-
-        string memory description = "Dummy proposal";
-        bytes32 descriptionHash = keccak256(bytes(description));
+        (
+            address[] memory targets,
+            uint256[] memory values,
+            bytes[] memory calldatas,
+            string memory description,
+            bytes32 descriptionHash
+        ) = createDummyProposal(address(dummyStorageContract), newVariable);
 
         vm.prank(user);
         uint256 proposalId = nopeDAO.propose(
@@ -116,15 +179,11 @@ contract NopeDAOTest is DSTest {
         );
 
         // Advance past the 1 voting block
-        vm.roll(1100);
+        vm.roll(2 + 2);
 
         // Cast a vote for the proposal, in excess of quorum
         vm.prank(user);
         nopeDAO.castVote(proposalId, 1);
-
-        // Skip to end of voting
-        uint256 votingEndBlock = nopeDAO.proposalDeadline(proposalId);
-        vm.roll(votingEndBlock + 1);
 
         // Validate proposal is now successful
         uint8 state = uint8(nopeDAO.state(proposalId));

@@ -11,8 +11,6 @@ import {GovernorQuickReaction} from "./GovernorQuickReaction.sol";
 
 // TODOs:
 // 1. Add Test that this NopeDAO can veto proposals on pods
-// 2. Only allow GovernorSettings to be updateable by the TribeRoles.GOVERNOR - DONE
-// 3. Make a quick reaction DAO module, which the NopeDAO inherits from
 contract NopeDAO is
     Governor,
     GovernorSettings,

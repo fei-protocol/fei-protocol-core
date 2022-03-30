@@ -134,16 +134,14 @@ contract NopeDAOIntegrationTest is DSTest {
             description
         );
 
-        // Advance past the 1 voting block
-        vm.roll(block.number + 1100);
+        // Advance past the 1 voting block minimum
+        vm.roll(block.number + 2);
 
         // Cast a vote for the proposal, in excess of quorum
         vm.prank(user);
         nopeDAO.castVote(proposalId, 1);
 
-        // Skip to end of voting
-        uint256 votingEndBlock = nopeDAO.proposalDeadline(proposalId);
-        vm.roll(votingEndBlock + 1);
+        // No need to skip to end of voting, can execute immediately
 
         // Validate proposal is now successful
         uint8 state = uint8(nopeDAO.state(proposalId));
