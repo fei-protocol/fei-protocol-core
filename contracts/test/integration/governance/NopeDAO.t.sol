@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 import {ERC20VotesComp} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20VotesComp.sol";
 import {DSTest} from "../../utils/DSTest.sol";
+import {IPodFactory} from "../../../pods/IPodFactory.sol";
 import {Vm} from "../../utils/Vm.sol";
 import {TribeRoles} from "../../../core/TribeRoles.sol";
 import {NopeDAO} from "../../../dao/nopeDAO/NopeDAO.sol";
@@ -12,6 +13,7 @@ import {MainnetAddresses} from "../fixtures/MainnetAddresses.sol";
 import {deployPodWithFactory} from "../fixtures/Orca.sol";
 import {OptimisticTimelock} from "../../../dao/timelock/OptimisticTimelock.sol";
 import {PodAdminGateway} from "../../../pods/PodAdminGateway.sol";
+import {DummyStorage} from "../../utils/Fixtures.sol";
 
 contract NopeDAOIntegrationTest is DSTest {
     uint256 excessQuorumTribe = (11e6) * (10**18);
@@ -151,6 +153,9 @@ contract NopeDAOIntegrationTest is DSTest {
 
     /// @notice Validate that the NopeDAO can veto a proposal in a pod timelock
     function testNope() public {
+        vm.warp(1);
+        vm.roll(1);
+
         // 1. Deploy PodAdminGateway
         PodAdminGateway podAdminGateway = new PodAdminGateway(
             MainnetAddresses.CORE,
@@ -158,17 +163,56 @@ contract NopeDAOIntegrationTest is DSTest {
             address(factory)
         );
 
-        // 2. Put a proposal through to the timelock
-        // TODO: Complete PodFactory integration test with Gnosis Safe first
+        // 2. Deploy Dummy contract to perform a transaction on
+        DummyStorage dummyContract = new DummyStorage();
+        assertEq(dummyContract.getVariable(), 5);
 
-        // 3. Have NopeDAO veto the proposal in the timelock
-        // podAdminGateway.veto(podId, proposalId);
+        OptimisticTimelock timelockContract = OptimisticTimelock(
+            payable(podTimelock)
+        );
 
-        // 4. Fetch the proposal ID
-        // bytes32 proposalId = OptimisticTimelock(timelock).hashOperation()
+        // 3. Schedle a transaction from the Pod's safe address to timelock. Transaction sets a variable on a dummy contract
+        uint256 newDummyContractVar = 10;
+        bytes memory timelockExecutionTxData = abi.encodePacked(
+            bytes4(keccak256(bytes("setVariable(uint256)"))),
+            newDummyContractVar
+        );
 
-        // 5. Validate that proposal was vetoed
-        // uint256 proposalTimestampReady = OptimisticTimelock(timelock).getTimestamp(proposalId);
-        // assertEq(proposalTimestampReady, 0);
+        uint256 timelockDelay = 500;
+        vm.prank(safe);
+        timelockContract.schedule(
+            address(dummyContract),
+            0,
+            timelockExecutionTxData,
+            bytes32(0),
+            bytes32("1"),
+            timelockDelay
+        );
+
+        // 4. Validate that transaction is in timelock
+        bytes32 txHash = timelockContract.hashOperation(
+            address(dummyContract),
+            0,
+            timelockExecutionTxData,
+            bytes32(0),
+            bytes32("1")
+        );
+        assertTrue(timelockContract.isOperationPending(txHash));
+
+        // 5. Have NopeDAO veto the scheduled transaction
+        bytes32 proposalId = timelockContract.hashOperation(
+            address(dummyContract),
+            0,
+            timelockExecutionTxData,
+            bytes32(0),
+            bytes32("1")
+        );
+        podAdminGateway.veto(podId, proposalId);
+
+        // 6. Verify that timelocked transaction was vetoed
+        uint256 proposalTimestampReady = timelockContract.getTimestamp(
+            proposalId
+        );
+        assertEq(proposalTimestampReady, 0);
     }
 }
