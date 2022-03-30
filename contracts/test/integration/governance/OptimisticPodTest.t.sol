@@ -7,7 +7,7 @@ import {IGnosisSafe} from "../../../pods/orcaInterfaces/IGnosisSafe.sol";
 import {IMemberToken} from "../../../pods/orcaInterfaces/IMemberToken.sol";
 
 import {createPod, setupOptimisticTimelock, mintOrcaTokens} from "../fixtures/Orca.sol";
-import {getMainnetAddresses, MainnetAddresses} from "../fixtures/MainnetAddresses.sol";
+import {MainnetAddresses} from "../fixtures/MainnetAddresses.sol";
 import {Vm} from "../../utils/Vm.sol";
 import {DSTest} from "../../utils/DSTest.sol";
 
@@ -19,11 +19,10 @@ import {DSTest} from "../../utils/DSTest.sol";
 /// - Optimistic timelock: a timelock from which transactions are sent to the protocol
 contract OptimisticPodIntegrationTest is DSTest {
     Vm public constant vm = Vm(HEVM_ADDRESS);
-    MainnetAddresses mainnetAddresses = getMainnetAddresses();
 
-    IMemberToken memberToken = IMemberToken(mainnetAddresses.memberToken);
+    IMemberToken memberToken = IMemberToken(MainnetAddresses.MEMBER_TOKEN);
 
-    IControllerV1 controller = IControllerV1(mainnetAddresses.podController);
+    IControllerV1 controller = IControllerV1(MainnetAddresses.POD_CONTROLLER);
 
     address proposer = address(0x1);
     address executor = address(0x2);
@@ -69,7 +68,7 @@ contract OptimisticPodIntegrationTest is DSTest {
         OptimisticTimelock timelock = setupOptimisticTimelock(
             safeAddress,
             safeAddress,
-            mainnetAddresses.core
+            MainnetAddresses.CORE
         );
 
         // Be able to call propose via pod/safe. This verifies that the safe has onlyPropose role

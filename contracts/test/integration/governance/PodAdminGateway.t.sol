@@ -12,7 +12,7 @@ import {IControllerV1} from "../../../pods/orcaInterfaces/IControllerV1.sol";
 import {ITimelock} from "../../../dao/timelock/ITimelock.sol";
 import {TribeRoles} from "../../../core/TribeRoles.sol";
 import {ICore} from "../../../core/ICore.sol";
-import {getMainnetAddresses, MainnetAddresses} from "../fixtures/MainnetAddresses.sol";
+import {MainnetAddresses} from "../fixtures/MainnetAddresses.sol";
 
 contract PodAdminGatewayIntegrationTest is DSTest {
     Vm public constant vm = Vm(HEVM_ADDRESS);
@@ -25,11 +25,10 @@ contract PodAdminGatewayIntegrationTest is DSTest {
     address timelock;
     address private podExecutor = address(0x500);
 
-    MainnetAddresses mainnetAddresses = getMainnetAddresses();
-    address core = mainnetAddresses.core;
-    address memberToken = mainnetAddresses.memberToken;
-    address podController = mainnetAddresses.podController;
-    address feiDAOTimelock = mainnetAddresses.feiDAOTimelock;
+    address core = MainnetAddresses.CORE;
+    address memberToken = MainnetAddresses.MEMBER_TOKEN;
+    address podController = MainnetAddresses.POD_CONTROLLER;
+    address feiDAOTimelock = MainnetAddresses.FEI_DAO_TIMELOCK;
 
     function setUp() public {
         // 1.0 Deploy pod factory

@@ -8,7 +8,7 @@ import {TribeRoles} from "../../../core/TribeRoles.sol";
 import {NopeDAO} from "../../../dao/NopeDAO.sol";
 import {Core} from "../../../core/Core.sol";
 import {PodFactory} from "../../../pods/PodFactory.sol";
-import {getMainnetAddresses, MainnetAddresses} from "../fixtures/MainnetAddresses.sol";
+import {MainnetAddresses} from "../fixtures/MainnetAddresses.sol";
 import {deployPodWithFactory} from "../fixtures/Orca.sol";
 
 contract NopeDAOIntegrationTest is DSTest {
@@ -19,9 +19,8 @@ contract NopeDAOIntegrationTest is DSTest {
 
     NopeDAO nopeDAO;
     PodFactory factory;
-    MainnetAddresses mainnetAddresses = getMainnetAddresses();
-    Core core = Core(mainnetAddresses.core);
-    ERC20VotesComp tribe = ERC20VotesComp(mainnetAddresses.tribe);
+    Core core = Core(MainnetAddresses.CORE);
+    ERC20VotesComp tribe = ERC20VotesComp(MainnetAddresses.TRIBE);
 
     Vm public constant vm = Vm(HEVM_ADDRESS);
 
@@ -29,7 +28,7 @@ contract NopeDAOIntegrationTest is DSTest {
         nopeDAO = new NopeDAO(tribe);
 
         // Transfer Tribe from treasury to a user
-        vm.prank(mainnetAddresses.feiDAOTimelock);
+        vm.prank(MainnetAddresses.FEI_DAO_TIMELOCK);
         core.allocateTribe(user, excessQuorumTribe);
 
         // Self-delegate that Tribe
@@ -37,20 +36,20 @@ contract NopeDAOIntegrationTest is DSTest {
         tribe.delegate(user);
 
         // Create POD_VETO_ADMIN role and grant to NopeDAO
-        vm.startPrank(mainnetAddresses.feiDAOTimelock);
+        vm.startPrank(MainnetAddresses.FEI_DAO_TIMELOCK);
         core.createRole(TribeRoles.POD_VETO_ADMIN, TribeRoles.GOVERNOR);
         core.grantRole(TribeRoles.POD_VETO_ADMIN, address(nopeDAO));
         vm.stopPrank();
 
         // Create pod, using a podFactory
         (uint256 podId, address podTimelock) = deployPodWithFactory(
-            mainnetAddresses.core,
-            mainnetAddresses.podController,
-            mainnetAddresses.memberToken,
+            MainnetAddresses.CORE,
+            MainnetAddresses.POD_CONTROLLER,
+            MainnetAddresses.MEMBER_TOKEN,
             podExecutor,
             podAdmin,
             vm,
-            mainnetAddresses.feiDAOTimelock
+            MainnetAddresses.FEI_DAO_TIMELOCK
         );
     }
 

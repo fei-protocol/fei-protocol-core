@@ -7,6 +7,10 @@ import {GovernorVotesComp, IERC165} from "@openzeppelin/contracts/governance/ext
 import {GovernorCountingSimple} from "@openzeppelin/contracts/governance/extensions/GovernorCountingSimple.sol";
 import {ERC20VotesComp} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20VotesComp.sol";
 
+// TODOs:
+// 1. Add Test that this NopeDAO can veto proposals on pods
+// 2. Only allow GovernorSettings to be updateable by the TribeRoles.GOVERNOR
+// 3. Make a quick reaction DAO module
 contract NopeDAO is
     Governor,
     GovernorSettings,
@@ -29,7 +33,7 @@ contract NopeDAO is
         override
         returns (uint256)
     {
-        return 10000000e18;
+        return 10_000_000e18;
     }
 
     // The following functions are overrides required by Solidity.

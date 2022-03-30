@@ -6,7 +6,7 @@ import {Vm} from "../../utils/Vm.sol";
 import {TribeRoles} from "../../../core/TribeRoles.sol";
 import {GovernanceMetadataRegistry} from "../../../pods/GovernanceMetadataRegistry.sol";
 import {Core} from "../../../core/Core.sol";
-import {getMainnetAddresses, MainnetAddresses} from "../fixtures/MainnetAddresses.sol";
+import {MainnetAddresses} from "../fixtures/MainnetAddresses.sol";
 
 contract GovernanceMetadataRegistryIntegrationTest is DSTest {
     GovernanceMetadataRegistry registry;
@@ -15,20 +15,18 @@ contract GovernanceMetadataRegistryIntegrationTest is DSTest {
     address priviledgedRegistrationAddress = address(0x10);
 
     function setUp() public {
-        MainnetAddresses memory mainnetAddresses = getMainnetAddresses();
-
-        vm.startPrank(mainnetAddresses.feiDAOTimelock);
-        Core(mainnetAddresses.core).createRole(
+        vm.startPrank(MainnetAddresses.FEI_DAO_TIMELOCK);
+        Core(MainnetAddresses.CORE).createRole(
             TribeRoles.POD_METADATA_REGISTER_ROLE,
             TribeRoles.GOVERNOR
         );
-        Core(mainnetAddresses.core).grantRole(
+        Core(MainnetAddresses.CORE).grantRole(
             TribeRoles.POD_METADATA_REGISTER_ROLE,
             priviledgedRegistrationAddress
         );
         vm.stopPrank();
 
-        registry = new GovernanceMetadataRegistry(mainnetAddresses.core);
+        registry = new GovernanceMetadataRegistry(MainnetAddresses.CORE);
     }
 
     function testRegisterProposal() public {
