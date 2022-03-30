@@ -68,18 +68,6 @@ contract NopeDAOIntegrationTest is DSTest {
         // 5. Transaction sent to pod timelock that cancels the relevant proposal
     }
 
-    /// @notice Validate that NopeDAO can not create or execute any other proposal
-    function testCanNotPassAnyOtherProposal() public {
-        // How to do?
-        // restrict the proposal function signatures it can target?
-        // limit the roles that are granted to it?
-        //
-    }
-
-    /// @notice Validate that Governor, the Tribe DAO, can update governor settings
-    ///         such as quorum threshold
-    function testGovernorCanUpdateSettings() public {}
-
     /// @notice Validate that the GOVERNOR can update the NopeDAO settings
     function testGovernorCanUpdateQuroum() public {
         uint256 newQuorum = 15_000_000e18;
@@ -119,7 +107,7 @@ contract NopeDAOIntegrationTest is DSTest {
 
     /// @notice Validate that NopeDAO can not update it's own governor settings
     function testCanNotUpdateOwnGovernorSettings() public {
-        vm.roll(1000);
+        vm.roll(block.number + 1000);
 
         address[] memory targets = new address[](1);
         targets[0] = address(nopeDAO);
@@ -147,7 +135,7 @@ contract NopeDAOIntegrationTest is DSTest {
         );
 
         // Advance past the 1 voting block
-        vm.roll(1100);
+        vm.roll(block.number + 1100);
 
         // Cast a vote for the proposal, in excess of quorum
         vm.prank(user);
