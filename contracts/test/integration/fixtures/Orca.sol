@@ -73,16 +73,21 @@ function mintOrcaTokens(
 
 function getPodParams(address admin)
     pure
-    returns (IPodFactory.PodConfig memory)
+    returns (IPodFactory.PodConfig memory, uint256)
 {
-    uint256 threshold = 2;
+    uint256 threshold = 1;
     bytes32 label = bytes32("hellopod");
     string memory ensString = "hellopod.eth";
     string memory imageUrl = "hellopod.com";
     uint256 minDelay = 0;
 
+    // Private key of one of the Safe owners. Used to generate signatures in tests
+    uint256 ownerPrivateKey = uint256(
+        0x34d96150245786c2b8d4a4afc62b14b1f1ad3357542a1231c56b4cb292f9e48f
+    );
+
     address[] memory members = new address[](3);
-    members[0] = address(0x200);
+    members[0] = address(0xf5C8389EBeb26d5F1CaFcAB53a894a4c7912cdf0);
     members[1] = address(0x201);
     members[2] = address(0x202);
 
@@ -95,7 +100,7 @@ function getPodParams(address admin)
         admin: admin,
         minDelay: minDelay
     });
-    return config;
+    return (config, ownerPrivateKey);
 }
 
 /// @dev Deploy pod factory and use to create a pod
@@ -122,7 +127,7 @@ function deployPodWithFactory(
     );
     mintOrcaTokens(address(factory), 2, vm);
 
-    IPodFactory.PodConfig memory podConfig = getPodParams(podAdmin);
+    (IPodFactory.PodConfig memory podConfig, ) = getPodParams(podAdmin);
 
     vm.deal(address(factory), 1000 ether);
     vm.prank(podDeployer);

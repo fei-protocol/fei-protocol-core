@@ -7,22 +7,9 @@ import {Core} from "../../core/Core.sol";
 import {Vm} from "../utils/Vm.sol";
 import {DSTest} from "../utils/DSTest.sol";
 import {NopeDAO} from "../../dao/nopeDAO/NopeDAO.sol";
-import {getCore, getAddresses, FeiTestAddresses} from "../utils/Fixtures.sol";
+import {getCore, getAddresses, FeiTestAddresses, DummyStorage} from "../utils/Fixtures.sol";
 import {Tribe} from "../../tribe/Tribe.sol";
 import {TribeRoles} from "../../core/TribeRoles.sol";
-
-/// @notice Dummy contract to test NopeDAO proposals
-contract DummyStorage {
-    uint256 private variable = 5;
-
-    function getVariable() external view returns (uint256) {
-        return variable;
-    }
-
-    function setVariable(uint256 x) external {
-        variable = x;
-    }
-}
 
 /// @notice Fixture to create a dummy proposal
 function createDummyProposal(address dummyContract, uint256 newVariable)

@@ -43,7 +43,7 @@ contract PodAdminGatewayIntegrationTest is DSTest {
         );
 
         // 3.0 Make config for pod, mint Orca tokens to factory
-        IPodFactory.PodConfig memory config = getPodParams(
+        (IPodFactory.PodConfig memory config, ) = getPodParams(
             address(podAdminGateway)
         );
         podConfig = config;

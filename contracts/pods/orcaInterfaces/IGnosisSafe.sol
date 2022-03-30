@@ -19,6 +19,34 @@ interface IGnosisSafe {
         Operation operation
     ) external returns (bool success);
 
+    function execTransaction(
+        address to,
+        uint256 value,
+        bytes calldata data,
+        Operation operation,
+        uint256 safeTxGas,
+        uint256 baseGas,
+        uint256 gasPrice,
+        address gasToken,
+        address payable refundReceiver,
+        bytes memory signatures
+    ) external payable returns (bool success);
+
+    function approveHash(bytes32 hashToApprove) external;
+
+    function encodeTransactionData(
+        address to,
+        uint256 value,
+        bytes calldata data,
+        Operation operation,
+        uint256 safeTxGas,
+        uint256 baseGas,
+        uint256 gasPrice,
+        address gasToken,
+        address refundReceiver,
+        uint256 _nonce
+    ) external view returns (bytes memory);
+
     /// @dev Returns array of owners.
     /// @return Array of Safe owners.
     function getOwners() external view returns (address[] memory);
