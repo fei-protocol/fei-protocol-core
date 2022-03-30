@@ -4,20 +4,20 @@ pragma solidity ^0.8.4;
 import {Governor, IGovernor} from "@openzeppelin/contracts/governance/Governor.sol";
 import {GovernorSettings} from "@openzeppelin/contracts/governance/extensions/GovernorSettings.sol";
 import {GovernorVotesComp, IERC165} from "@openzeppelin/contracts/governance/extensions/GovernorVotesComp.sol";
-import {GovernorCountingSimple} from "@openzeppelin/contracts/governance/extensions/GovernorCountingSimple.sol";
 import {ERC20VotesComp} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20VotesComp.sol";
-import {CoreRef} from "../refs/CoreRef.sol";
-import {TribeRoles} from "../core/TribeRoles.sol";
+import {CoreRef} from "../../refs/CoreRef.sol";
+import {TribeRoles} from "../../core/TribeRoles.sol";
+import {GovernorQuickReaction} from "./GovernorQuickReaction.sol";
 
 // TODOs:
 // 1. Add Test that this NopeDAO can veto proposals on pods
-// 2. Only allow GovernorSettings to be updateable by the TribeRoles.GOVERNOR
+// 2. Only allow GovernorSettings to be updateable by the TribeRoles.GOVERNOR - DONE
 // 3. Make a quick reaction DAO module, which the NopeDAO inherits from
 contract NopeDAO is
     Governor,
     GovernorSettings,
     GovernorVotesComp,
-    GovernorCountingSimple,
+    GovernorQuickReaction,
     CoreRef
 {
     /// @notice Initial quorum required for a Nope proposal
@@ -34,6 +34,7 @@ contract NopeDAO is
             0
         )
         GovernorVotesComp(_tribe)
+        GovernorQuickReaction()
         CoreRef(_core)
     {}
 
@@ -117,7 +118,7 @@ contract NopeDAO is
     function state(uint256 proposalId)
         public
         view
-        override(Governor)
+        override(GovernorQuickReaction, Governor)
         returns (ProposalState)
     {
         return super.state(proposalId);

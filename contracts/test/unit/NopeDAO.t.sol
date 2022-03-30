@@ -6,7 +6,7 @@ import {ERC20VotesComp} from "@openzeppelin/contracts/token/ERC20/extensions/ERC
 import {Core} from "../../core/Core.sol";
 import {Vm} from "../utils/Vm.sol";
 import {DSTest} from "../utils/DSTest.sol";
-import {NopeDAO} from "../../dao/NopeDAO.sol";
+import {NopeDAO} from "../../dao/nopeDAO/NopeDAO.sol";
 import {getCore, getAddresses, FeiTestAddresses} from "../utils/Fixtures.sol";
 import {Tribe} from "../../tribe/Tribe.sol";
 import {TribeRoles} from "../../core/TribeRoles.sol";
