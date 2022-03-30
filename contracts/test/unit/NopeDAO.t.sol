@@ -9,7 +9,24 @@ import {DSTest} from "../utils/DSTest.sol";
 import {NopeDAO} from "../../dao/NopeDAO.sol";
 import {getCore, getAddresses, FeiTestAddresses} from "../utils/Fixtures.sol";
 import {Tribe} from "../../tribe/Tribe.sol";
+import {TribeRoles} from "../../core/TribeRoles.sol";
 
+/// @notice Dummy contract to test NopeDAO proposals
+contract DummyStorage {
+    uint256 private variable = 5;
+
+    function getVariable() external view returns (uint256) {
+        return variable;
+    }
+
+    function setVariable(uint256 x) external {
+        variable = x;
+    }
+}
+
+// TODO:
+// 1. Run the test proposal against a dummy contract
+// 2. Validate that the NopeDAO can not update it's own parameters
 contract NopeDAOTest is DSTest {
     address user = address(0x1);
     uint256 excessQuorumTribe = (11e6) * (10**18);
@@ -39,7 +56,7 @@ contract NopeDAOTest is DSTest {
         tribe.delegate(user);
 
         // 3. Deploy NopeDAO
-        nopeDAO = new NopeDAO(tribe);
+        nopeDAO = new NopeDAO(tribe, address(core));
     }
 
     /// @notice Validate initial state of the NopeDAO
@@ -64,24 +81,26 @@ contract NopeDAOTest is DSTest {
         assertEq(userVoteWeight, excessQuorumTribe);
     }
 
-    /// @notice Validate that a DAO proposal can be executed. Specifically, targets
-    /// changing a governance parameter. TODO: Should this be able to change it's
-    /// own parameters? Or be fixed?
+    /// @notice Validate that a DAO proposal can be executed.
+    ///         Specifically, targets a dummy mock contract
     function testProposalExecutes() public {
+        DummyStorage dummyStorageContract = new DummyStorage();
+        assertEq(dummyStorageContract.getVariable(), uint256(5));
+
         // Make block number non-zero, for getVotes accounting
         vm.roll(1000);
 
         address[] memory targets = new address[](1);
-        targets[0] = address(nopeDAO);
+        targets[0] = address(dummyStorageContract);
 
         uint256[] memory values = new uint256[](1);
         values[0] = uint256(0);
 
-        uint256 votingDelay = 10;
+        uint256 newVariable = 10;
         bytes[] memory calldatas = new bytes[](1);
         bytes memory data = abi.encodePacked(
-            bytes4(keccak256(bytes("setVotingDelay(uint256)"))),
-            votingDelay
+            bytes4(keccak256(bytes("setVariable(uint256)"))),
+            newVariable
         );
         calldatas[0] = data;
 
@@ -114,8 +133,8 @@ contract NopeDAOTest is DSTest {
         // Execute
         nopeDAO.execute(targets, values, calldatas, descriptionHash);
 
-        // Validate that voting delay was updated
-        uint256 newVotingDelay = nopeDAO.votingDelay();
-        assertEq(newVotingDelay, votingDelay);
+        // Validate that dummy test contract was interacted with as expected
+        uint256 updatedVariable = dummyStorageContract.getVariable();
+        assertEq(updatedVariable, newVariable);
     }
 }

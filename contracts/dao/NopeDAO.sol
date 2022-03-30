@@ -6,18 +6,27 @@ import {GovernorSettings} from "@openzeppelin/contracts/governance/extensions/Go
 import {GovernorVotesComp, IERC165} from "@openzeppelin/contracts/governance/extensions/GovernorVotesComp.sol";
 import {GovernorCountingSimple} from "@openzeppelin/contracts/governance/extensions/GovernorCountingSimple.sol";
 import {ERC20VotesComp} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20VotesComp.sol";
+import {CoreRef} from "../refs/CoreRef.sol";
+import {TribeRoles} from "../core/TribeRoles.sol";
 
 // TODOs:
 // 1. Add Test that this NopeDAO can veto proposals on pods
 // 2. Only allow GovernorSettings to be updateable by the TribeRoles.GOVERNOR
-// 3. Make a quick reaction DAO module
+// 3. Make a quick reaction DAO module, which the NopeDAO inherits from
 contract NopeDAO is
     Governor,
     GovernorSettings,
     GovernorVotesComp,
-    GovernorCountingSimple
+    GovernorCountingSimple,
+    CoreRef
 {
-    constructor(ERC20VotesComp _tribe)
+    /// @notice Initial quorum required for a Nope proposal
+    uint256 private _quorum = 10_000_000e18;
+
+    /// @notice Additional governance events
+    event QuorumUpdated(uint256 oldQuorum, uint256 newQuorum);
+
+    constructor(ERC20VotesComp _tribe, address _core)
         Governor("NopeDAO")
         GovernorSettings(
             1, /* 1 block */
@@ -25,15 +34,55 @@ contract NopeDAO is
             0
         )
         GovernorVotesComp(_tribe)
+        CoreRef(_core)
     {}
 
     function quorum(uint256 blockNumber)
         public
-        pure
+        view
         override
         returns (uint256)
     {
-        return 10_000_000e18;
+        return _quorum;
+    }
+
+    ////////////     GOVERNOR ONLY FUNCTIONS     //////////////
+
+    /// @notice Override of a Governor Settings function, to restrict to Tribe GOVERNOR
+    function setVotingDelay(uint256 newVotingDelay)
+        public
+        override
+        onlyTribeRole(TribeRoles.GOVERNOR)
+    {
+        _setVotingDelay(newVotingDelay);
+    }
+
+    /// @notice Override of a Governor Settings function, to restrict to Tribe GOVERNOR
+    function setVotingPeriod(uint256 newVotingPeriod)
+        public
+        override
+        onlyTribeRole(TribeRoles.GOVERNOR)
+    {
+        _setVotingPeriod(newVotingPeriod);
+    }
+
+    /// @notice Override of a Governor Settings function, to restrict to Tribe GOVERNOR
+    function setProposalThreshold(uint256 newProposalThreshold)
+        public
+        override
+        onlyTribeRole(TribeRoles.GOVERNOR)
+    {
+        _setProposalThreshold(newProposalThreshold);
+    }
+
+    /// @notice Adjust quorum of NopeDAO. Restricted to GOVERNOR, not part of GovernorSettings
+    function setQuorum(uint256 newQuroum)
+        public
+        onlyTribeRole(TribeRoles.GOVERNOR)
+    {
+        uint256 oldQuorum = _quorum;
+        _quorum = newQuroum;
+        emit QuorumUpdated(oldQuorum, newQuroum);
     }
 
     // The following functions are overrides required by Solidity.

@@ -25,7 +25,7 @@ contract NopeDAOIntegrationTest is DSTest {
     Vm public constant vm = Vm(HEVM_ADDRESS);
 
     function setUp() public {
-        nopeDAO = new NopeDAO(tribe);
+        nopeDAO = new NopeDAO(tribe, MainnetAddresses.CORE);
 
         // Transfer Tribe from treasury to a user
         vm.prank(MainnetAddresses.FEI_DAO_TIMELOCK);
@@ -74,5 +74,95 @@ contract NopeDAOIntegrationTest is DSTest {
         // restrict the proposal function signatures it can target?
         // limit the roles that are granted to it?
         //
+    }
+
+    /// @notice Validate that Governor, the Tribe DAO, can update governor settings
+    ///         such as quorum threshold
+    function testGovernorCanUpdateSettings() public {}
+
+    /// @notice Validate that the GOVERNOR can update the NopeDAO settings
+    function testGovernorCanUpdateQuroum() public {
+        uint256 newQuorum = 15_000_000e18;
+        vm.prank(MainnetAddresses.FEI_DAO_TIMELOCK);
+        nopeDAO.setQuorum(newQuorum);
+
+        uint256 updatedQuorum = nopeDAO.quorum(0);
+        assertEq(updatedQuorum, newQuorum);
+    }
+
+    function testGovernorCanUpdateVotingDelay() public {
+        uint256 newVotingDelay = 10;
+        vm.prank(MainnetAddresses.FEI_DAO_TIMELOCK);
+        nopeDAO.setVotingDelay(newVotingDelay);
+
+        uint256 updatedVotingDelay = nopeDAO.votingDelay();
+        assertEq(updatedVotingDelay, newVotingDelay);
+    }
+
+    function testGovernorCanUpdateVotingPeriod() public {
+        uint256 newVotingPeriod = 86_400;
+        vm.prank(MainnetAddresses.FEI_DAO_TIMELOCK);
+        nopeDAO.setVotingPeriod(newVotingPeriod);
+
+        uint256 updatedVotingPeriod = nopeDAO.votingPeriod();
+        assertEq(updatedVotingPeriod, newVotingPeriod);
+    }
+
+    function testGovernorCanUpdateProposalThreshold() public {
+        uint256 newProposalThreshold = 100;
+        vm.prank(MainnetAddresses.FEI_DAO_TIMELOCK);
+        nopeDAO.setProposalThreshold(newProposalThreshold);
+
+        uint256 updatedProposalThreshold = nopeDAO.proposalThreshold();
+        assertEq(updatedProposalThreshold, newProposalThreshold);
+    }
+
+    /// @notice Validate that NopeDAO can not update it's own governor settings
+    function testCanNotUpdateOwnGovernorSettings() public {
+        vm.roll(1000);
+
+        address[] memory targets = new address[](1);
+        targets[0] = address(nopeDAO);
+
+        uint256[] memory values = new uint256[](1);
+        values[0] = uint256(0);
+
+        uint256 newVotingDelay = 10;
+        bytes[] memory calldatas = new bytes[](1);
+        bytes memory data = abi.encodePacked(
+            bytes4(keccak256(bytes("setVotingDelay(uint256)"))),
+            newVotingDelay
+        );
+        calldatas[0] = data;
+
+        string memory description = "Dummy proposal";
+        bytes32 descriptionHash = keccak256(bytes(description));
+
+        vm.prank(user);
+        uint256 proposalId = nopeDAO.propose(
+            targets,
+            values,
+            calldatas,
+            description
+        );
+
+        // Advance past the 1 voting block
+        vm.roll(1100);
+
+        // Cast a vote for the proposal, in excess of quorum
+        vm.prank(user);
+        nopeDAO.castVote(proposalId, 1);
+
+        // Skip to end of voting
+        uint256 votingEndBlock = nopeDAO.proposalDeadline(proposalId);
+        vm.roll(votingEndBlock + 1);
+
+        // Validate proposal is now successful
+        uint8 state = uint8(nopeDAO.state(proposalId));
+        assertEq(state, uint8(4));
+
+        // Execute
+        vm.expectRevert(bytes("UNAUTHORIZED"));
+        nopeDAO.execute(targets, values, calldatas, descriptionHash);
     }
 }
