@@ -4,6 +4,7 @@ pragma solidity ^0.8.4;
 import {Governor, IGovernor} from "@openzeppelin/contracts/governance/Governor.sol";
 import {GovernorSettings} from "@openzeppelin/contracts/governance/extensions/GovernorSettings.sol";
 import {GovernorVotesComp, IERC165} from "@openzeppelin/contracts/governance/extensions/GovernorVotesComp.sol";
+import {GovernorCountingSimple} from "@openzeppelin/contracts/governance/extensions/GovernorCountingSimple.sol";
 import {ERC20VotesComp} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20VotesComp.sol";
 import {CoreRef} from "../../refs/CoreRef.sol";
 import {TribeRoles} from "../../core/TribeRoles.sol";
@@ -14,6 +15,7 @@ contract NopeDAO is
     GovernorSettings,
     GovernorVotesComp,
     GovernorQuickReaction,
+    GovernorCountingSimple,
     CoreRef
 {
     /// @notice Initial quorum required for a Nope proposal
@@ -46,12 +48,12 @@ contract NopeDAO is
     ////////////     GOVERNOR ONLY FUNCTIONS     //////////////
 
     /// @notice Override of a Governor Settings function, to restrict to Tribe GOVERNOR
-    function setVotingDelay(uint256 newVotingPeriod)
+    function setVotingDelay(uint256 newVotingDelay)
         public
         override
         onlyTribeRole(TribeRoles.GOVERNOR)
     {
-        _setVotingPeriod(newVotingPeriod);
+        _setVotingDelay(newVotingDelay);
     }
 
     /// @notice Override of a Governor Settings function, to restrict to Tribe GOVERNOR

@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.4;
 
-import {GovernorCountingSimple} from "@openzeppelin/contracts/governance/extensions/GovernorCountingSimple.sol";
+import {Governor} from "@openzeppelin/contracts/governance/Governor.sol";
 
 /**
  * @dev Extension of {Governor} for quick reaction, whereby a proposal
  *      is executed immediately once Quorum is reached.
  */
-abstract contract GovernorQuickReaction is GovernorCountingSimple {
+abstract contract GovernorQuickReaction is Governor {
     /// @notice Override state to achieve early execution
     function state(uint256 proposalId)
         public
