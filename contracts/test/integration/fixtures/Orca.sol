@@ -8,6 +8,8 @@ import {IPodFactory} from "../../../pods/IPodFactory.sol";
 import {OptimisticTimelock} from "../../../dao/timelock/OptimisticTimelock.sol";
 import {PodFactory} from "../../../pods/PodFactory.sol";
 import {Vm} from "../../utils/Vm.sol";
+import {PodAdminGateway} from "../../../pods/PodAdminGateway.sol";
+import {MainnetAddresses} from "../fixtures/MainnetAddresses.sol";
 
 function createPod(
     IControllerV1 controller,
@@ -104,7 +106,7 @@ function getPodParams(address admin)
 }
 
 /// @dev Deploy pod factory and use to create a pod
-function deployPodWithFactory(
+function deployPodWithSystem(
     address core,
     address podController,
     address memberToken,
@@ -116,9 +118,12 @@ function deployPodWithFactory(
     returns (
         uint256,
         address,
+        address,
+        address,
         address
     )
 {
+    // 1. Deploy PodFactory
     PodFactory factory = new PodFactory(
         core,
         podController,
@@ -127,11 +132,26 @@ function deployPodWithFactory(
     );
     mintOrcaTokens(address(factory), 2, vm);
 
+    // 2. Deploy PodAdminGateway
+    PodAdminGateway podAdminGateway = new PodAdminGateway(
+        MainnetAddresses.CORE,
+        MainnetAddresses.MEMBER_TOKEN,
+        address(factory)
+    );
+    podAdmin = address(podAdminGateway);
+
     (IPodFactory.PodConfig memory podConfig, ) = getPodParams(podAdmin);
 
     vm.deal(address(factory), 1000 ether);
     vm.prank(podDeployer);
     (uint256 podId, address podTimelock, address safe) = factory
         .createChildOptimisticPod(podConfig);
-    return (podId, podTimelock, safe);
+
+    return (
+        podId,
+        podTimelock,
+        safe,
+        address(factory),
+        address(podAdminGateway)
+    );
 }
