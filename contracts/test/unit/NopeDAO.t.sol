@@ -77,7 +77,7 @@ contract NopeDAOTest is DSTest {
         assertEq(quorum, 10_000_000e18);
 
         uint256 votingDelay = nopeDAO.votingDelay();
-        assertEq(votingDelay, 1);
+        assertEq(votingDelay, 0);
 
         uint256 votingPeriod = nopeDAO.votingPeriod();
         uint256 fourDays = 86400 * 4;
@@ -95,7 +95,7 @@ contract NopeDAOTest is DSTest {
 
     /// @notice Validate the quick reaction governor and that state is set to SUCCEEDED as soon as quorum is reached
     function testQuickReaction() public {
-        vm.roll(2); // Make block number non-zero, for getVotes accounting
+        vm.roll(1); // Make block number non-zero, for getVotes accounting
 
         DummyStorage dummyStorageContract = new DummyStorage();
         uint256 newVariable = 10;
@@ -118,12 +118,12 @@ contract NopeDAOTest is DSTest {
         // 1. Validate Pending
         uint8 statePending = uint8(nopeDAO.state(proposalId));
         assertEq(statePending, uint8(0)); // pending
+        vm.roll(block.number + 1);
 
-        // Advance past the 1 voting block
         // 2. Validate Active
-        vm.roll(2 + 2);
         uint8 stateActive = uint8(nopeDAO.state(proposalId));
         assertEq(stateActive, uint8(1)); // active
+        vm.roll(block.number + 1);
 
         // 3. Validate Succeeded, without a need for fast forwarding in time. Quorum reached when pass vote
         vm.prank(user);
@@ -135,7 +135,7 @@ contract NopeDAOTest is DSTest {
     /// @notice Validate that a DAO proposal can be executed.
     ///         Specifically, targets a dummy mock contract
     function testProposalExecutes() public {
-        vm.roll(2); // Make block number non-zero, for getVotes accounting
+        vm.roll(block.number + 1); // Make block number non-zero, for getVotes accounting
         DummyStorage dummyStorageContract = new DummyStorage();
         assertEq(dummyStorageContract.getVariable(), uint256(5));
 
@@ -157,7 +157,7 @@ contract NopeDAOTest is DSTest {
         );
 
         // Advance past the 1 voting block
-        vm.roll(2 + 2);
+        vm.roll(block.number + 1);
 
         // Cast a vote for the proposal, in excess of quorum
         vm.prank(user);

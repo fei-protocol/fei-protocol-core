@@ -25,7 +25,7 @@ contract NopeDAO is
     constructor(ERC20VotesComp _tribe, address _core)
         Governor("NopeDAO")
         GovernorSettings(
-            1, /* 1 block */
+            0, /* 0 blocks */
             345600, /* 4 days */
             0
         )
@@ -46,12 +46,12 @@ contract NopeDAO is
     ////////////     GOVERNOR ONLY FUNCTIONS     //////////////
 
     /// @notice Override of a Governor Settings function, to restrict to Tribe GOVERNOR
-    function setVotingDelay(uint256 newVotingDelay)
+    function setVotingDelay(uint256 newVotingPeriod)
         public
         override
         onlyTribeRole(TribeRoles.GOVERNOR)
     {
-        _setVotingDelay(newVotingDelay);
+        _setVotingPeriod(newVotingPeriod);
     }
 
     /// @notice Override of a Governor Settings function, to restrict to Tribe GOVERNOR

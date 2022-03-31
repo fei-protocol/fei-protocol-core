@@ -106,7 +106,7 @@ contract NopeDAOIntegrationTest is DSTest {
 
     /// @notice Validate that NopeDAO can not update it's own governor settings
     function testCanNotUpdateOwnGovernorSettings() public {
-        vm.roll(block.number + 1000);
+        vm.roll(block.number + 1);
 
         address[] memory targets = new address[](1);
         targets[0] = address(nopeDAO);
@@ -132,9 +132,7 @@ contract NopeDAOIntegrationTest is DSTest {
             calldatas,
             description
         );
-
-        // Advance past the 1 voting block minimum
-        vm.roll(block.number + 2);
+        vm.roll(block.number + 1);
 
         // Cast a vote for the proposal, in excess of quorum
         vm.prank(user);
@@ -153,7 +151,7 @@ contract NopeDAOIntegrationTest is DSTest {
 
     /// @notice Validate that the NopeDAO can veto a proposal in a pod timelock
     function testNope() public {
-        vm.roll(block.number + 1000);
+        vm.roll(block.number + 1);
 
         // 1. Deploy Dummy contract to perform a transaction on
         DummyStorage dummyContract = new DummyStorage();
@@ -226,9 +224,7 @@ contract NopeDAOIntegrationTest is DSTest {
         );
 
         // 5. Have user with >quorum delegated TRIBE veto
-        // Advance past the 1 voting block minimum
-        vm.roll(block.number + 2);
-
+        vm.roll(block.number + 1);
         // Cast a vote for the proposal, in excess of quorum
         vm.prank(user);
         nopeDAO.castVote(nopeDAOProposalId, 1);
