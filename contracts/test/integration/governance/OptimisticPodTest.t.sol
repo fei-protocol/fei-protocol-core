@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
-import {IGnosisSafe} from "@orcaprotocol/contracts/contracts/interfaces/IGnosisSafe.sol";
 import {OptimisticTimelock} from "../../../dao/timelock/OptimisticTimelock.sol";
 import {IControllerV1} from "../../../pods/orcaInterfaces/IControllerV1.sol";
+import {IGnosisSafe} from "../../../pods/orcaInterfaces/IGnosisSafe.sol";
 import {IMemberToken} from "../../../pods/orcaInterfaces/IMemberToken.sol";
 
 import {createPod, setupOptimisticTimelock, mintOrcaTokens} from "../fixtures/Orca.sol";
+import {MainnetAddresses} from "../fixtures/MainnetAddresses.sol";
 import {Vm} from "../../utils/Vm.sol";
 import {DSTest} from "../../utils/DSTest.sol";
 
@@ -19,16 +20,9 @@ import {DSTest} from "../../utils/DSTest.sol";
 contract OptimisticPodIntegrationTest is DSTest {
     Vm public constant vm = Vm(HEVM_ADDRESS);
 
-    // Mainnet addresses
-    address private core = 0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9;
-    address private podControllerAddress =
-        0xD89AAd5348A34E440E72f5F596De4fA7e291A3e8;
-    address private memberTokenAddress =
-        0x0762aA185b6ed2dCA77945Ebe92De705e0C37AE3;
+    IMemberToken memberToken = IMemberToken(MainnetAddresses.MEMBER_TOKEN);
 
-    IMemberToken memberToken = IMemberToken(memberTokenAddress);
-
-    IControllerV1 controller = IControllerV1(podControllerAddress);
+    IControllerV1 controller = IControllerV1(MainnetAddresses.POD_CONTROLLER);
 
     address proposer = address(0x1);
     address executor = address(0x2);
@@ -74,7 +68,7 @@ contract OptimisticPodIntegrationTest is DSTest {
         OptimisticTimelock timelock = setupOptimisticTimelock(
             safeAddress,
             safeAddress,
-            core
+            MainnetAddresses.CORE
         );
 
         // Be able to call propose via pod/safe. This verifies that the safe has onlyPropose role
@@ -139,7 +133,6 @@ contract OptimisticPodIntegrationTest is DSTest {
     /// @notice Validate that add pod member is permissioned
     function testAddPodMemberPermissioned() public {
         address newMember = address(0x30);
-        address safeAddress = controller.podIdToSafe(podId);
 
         vm.expectRevert(bytes("No Rules Set"));
         memberToken.mint(newMember, podId, bytes(""));

@@ -12,6 +12,7 @@ import {IControllerV1} from "../../../pods/orcaInterfaces/IControllerV1.sol";
 import {ITimelock} from "../../../dao/timelock/ITimelock.sol";
 import {TribeRoles} from "../../../core/TribeRoles.sol";
 import {ICore} from "../../../core/ICore.sol";
+import {MainnetAddresses} from "../fixtures/MainnetAddresses.sol";
 
 contract PodAdminGatewayIntegrationTest is DSTest {
     Vm public constant vm = Vm(HEVM_ADDRESS);
@@ -22,14 +23,13 @@ contract PodAdminGatewayIntegrationTest is DSTest {
     uint256 podId;
     bytes32 testRole;
     address timelock;
-
-    address private core = 0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9;
-    address private podController = 0xD89AAd5348A34E440E72f5F596De4fA7e291A3e8;
-    address private memberToken = 0x0762aA185b6ed2dCA77945Ebe92De705e0C37AE3;
-    address private feiDAOTimelock = 0xd51dbA7a94e1adEa403553A8235C302cEbF41a3c;
-    address private securityGuardian =
-        0xB8f482539F2d3Ae2C9ea6076894df36D1f632775;
+    address safe;
     address private podExecutor = address(0x500);
+
+    address core = MainnetAddresses.CORE;
+    address memberToken = MainnetAddresses.MEMBER_TOKEN;
+    address podController = MainnetAddresses.POD_CONTROLLER;
+    address feiDAOTimelock = MainnetAddresses.FEI_DAO_TIMELOCK;
 
     function setUp() public {
         // 1.0 Deploy pod factory
@@ -43,7 +43,7 @@ contract PodAdminGatewayIntegrationTest is DSTest {
         );
 
         // 3.0 Make config for pod, mint Orca tokens to factory
-        IPodFactory.PodConfig memory config = getPodParams(
+        (IPodFactory.PodConfig memory config, ) = getPodParams(
             address(podAdminGateway)
         );
         podConfig = config;
@@ -51,7 +51,7 @@ contract PodAdminGatewayIntegrationTest is DSTest {
 
         // 4.0 Create pod
         vm.prank(feiDAOTimelock);
-        (podId, timelock) = factory.createChildOptimisticPod(podConfig);
+        (podId, timelock, safe) = factory.createChildOptimisticPod(podConfig);
     }
 
     /// @notice Validate that podAdminGateway contract pod admin, and initial state is valid

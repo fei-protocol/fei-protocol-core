@@ -6,7 +6,10 @@ import {IControllerV1} from "../../../pods/orcaInterfaces/IControllerV1.sol";
 import {IInviteToken} from "../../../pods/orcaInterfaces/IInviteToken.sol";
 import {IPodFactory} from "../../../pods/IPodFactory.sol";
 import {OptimisticTimelock} from "../../../dao/timelock/OptimisticTimelock.sol";
+import {PodFactory} from "../../../pods/PodFactory.sol";
 import {Vm} from "../../utils/Vm.sol";
+import {PodAdminGateway} from "../../../pods/PodAdminGateway.sol";
+import {MainnetAddresses} from "../fixtures/MainnetAddresses.sol";
 
 function createPod(
     IControllerV1 controller,
@@ -72,18 +75,23 @@ function mintOrcaTokens(
 
 function getPodParams(address admin)
     pure
-    returns (IPodFactory.PodConfig memory)
+    returns (IPodFactory.PodConfig memory, uint256)
 {
-    uint256 threshold = 2;
+    uint256 threshold = 1;
     bytes32 label = bytes32("hellopod");
     string memory ensString = "hellopod.eth";
     string memory imageUrl = "hellopod.com";
     uint256 minDelay = 0;
 
+    // Private key of one of the Safe owners. Used to generate signatures in tests
+    uint256 ownerPrivateKey = uint256(
+        0x34d96150245786c2b8d4a4afc62b14b1f1ad3357542a1231c56b4cb292f9e48f
+    );
+
     address[] memory members = new address[](3);
-    members[0] = address(0x4);
-    members[1] = address(0x5);
-    members[2] = address(0x6);
+    members[0] = address(0xf5C8389EBeb26d5F1CaFcAB53a894a4c7912cdf0);
+    members[1] = address(0x201);
+    members[2] = address(0x202);
 
     IPodFactory.PodConfig memory config = IPodFactory.PodConfig({
         members: members,
@@ -94,5 +102,56 @@ function getPodParams(address admin)
         admin: admin,
         minDelay: minDelay
     });
-    return config;
+    return (config, ownerPrivateKey);
+}
+
+/// @dev Deploy pod factory and use to create a pod
+function deployPodWithSystem(
+    address core,
+    address podController,
+    address memberToken,
+    address podExecutor,
+    address podAdmin,
+    Vm vm,
+    address podDeployer // must be GOVERNOR or have POD_DEPLOYER_ROLE
+)
+    returns (
+        uint256,
+        address,
+        address,
+        address,
+        address
+    )
+{
+    // 1. Deploy PodFactory
+    PodFactory factory = new PodFactory(
+        core,
+        podController,
+        memberToken,
+        podExecutor
+    );
+    mintOrcaTokens(address(factory), 2, vm);
+
+    // 2. Deploy PodAdminGateway
+    PodAdminGateway podAdminGateway = new PodAdminGateway(
+        MainnetAddresses.CORE,
+        MainnetAddresses.MEMBER_TOKEN,
+        address(factory)
+    );
+    podAdmin = address(podAdminGateway);
+
+    (IPodFactory.PodConfig memory podConfig, ) = getPodParams(podAdmin);
+
+    vm.deal(address(factory), 1000 ether);
+    vm.prank(podDeployer);
+    (uint256 podId, address podTimelock, address safe) = factory
+        .createChildOptimisticPod(podConfig);
+
+    return (
+        podId,
+        podTimelock,
+        safe,
+        address(factory),
+        address(podAdminGateway)
+    );
 }

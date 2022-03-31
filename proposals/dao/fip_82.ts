@@ -14,18 +14,6 @@ import { abi as gnosisSafeABI } from '../../artifacts/contracts/pods/orcaInterfa
 import { Contract } from 'ethers';
 const toBN = ethers.BigNumber.from;
 
-// How this works:
-// Deployment
-// 1. DAO deploys an admin tier factory contract to deploy admin pods, specifically the Tribal Council
-// 2. DAO uses factory contract to create a Tribal Council pod, with empty members initially
-// 3. DAO deploys a protocol tier pod factory to deploy protocol pods
-// 4. DAO uses protocol tier pod factory to deploy the first protocol pod
-
-// Validation
-// 1. Validate admins
-// 2. Validate all pod members, proposers and executors
-// 3. Validate correct roles set on contracts
-
 const validateArraysEqual = (arrayA: string[], arrayB: string[]) => {
   arrayA.every((a) => expect(arrayB.map((b) => b.toLowerCase()).includes(a.toLowerCase())));
 };
@@ -137,6 +125,12 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   await roleBastion.deployTransaction.wait();
   logging && console.log('RoleBastion deployed to:', roleBastion.address);
 
+  // 8. Deploy NopeDAO
+  const nopeDAOFactory = await ethers.getContractFactory('NopeDAO');
+  const nopeDAO = await nopeDAOFactory.deploy(addresses.tribe, addresses.core);
+  await nopeDAO.deployTransaction.wait();
+  logging && console.log('NopeDAO deployed to:', nopeDAO.address);
+
   return {
     podExecutor,
     podFactory,
@@ -146,7 +140,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     tribalCouncilSafe,
     protocolPodSafe,
     governanceMetadataRegistry,
-    roleBastion
+    roleBastion,
+    nopeDAO
   };
 };
 
@@ -243,7 +238,8 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
     addresses.protocolPodTimelock,
     tribalCouncilSafeAddress,
     protocolSafeAddress,
-    addresses.roleBastion
+    addresses.roleBastion,
+    addresses.nopeDAO
   );
 };
 
@@ -255,7 +251,8 @@ const validateTribeRoles = async (
   protocolPodTimelockAddress: string,
   tribalCouncilSafeAddress: string,
   protocolPodSafeAddress: string,
-  roleBastionAddress: string
+  roleBastionAddress: string,
+  nopeDAOAddress: string
 ) => {
   // feiDAOTimelock added roles: POD_DEPLOYER_ROLE
   const daoIsPodDeployer = await core.hasRole(ethers.utils.id('POD_DEPLOYER_ROLE'), feiDAOTimelockAddress);
@@ -295,6 +292,10 @@ const validateTribeRoles = async (
   // RoleBastion role: GOVERNOR
   const roleBastion = await core.hasRole(ethers.utils.id('GOVERN_ROLE'), roleBastionAddress);
   expect(roleBastion).to.be.true;
+
+  // NopeDAO role: POD_VETO_ADMIN
+  const nopeDAOVetoRole = await core.hasRole(ethers.utils.id('POD_VETO_ADMIN'), nopeDAOAddress);
+  expect(nopeDAOVetoRole).to.be.true;
 };
 
 export { deploy, setup, teardown, validate };

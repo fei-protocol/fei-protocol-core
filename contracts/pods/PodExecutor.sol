@@ -9,6 +9,7 @@ import {ITimelock} from "../dao/timelock/ITimelock.sol";
 contract PodExecutor {
     event ExecuteTransaction(address timelock, bytes32 dataHash);
 
+    /// @notice Execute a timelock transaction. Must have EXECUTOR_ROLE on the appropriate timelock
     function execute(
         address timelock,
         address target,
@@ -22,6 +23,7 @@ contract PodExecutor {
         emit ExecuteTransaction(timelock, dataPayloadHash);
     }
 
+    /// @notice Batch execute transactions on a set of timelocks. Must have EXECUTE_ROLE on the appropriate timelocks
     function executeBatch(
         address[] memory timelock,
         address[] memory target,
