@@ -1771,6 +1771,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D',
     category: AddressCategory.Deprecated
   },
+  ohmEscrow: {
+    artifactName: 'OtcEscrow',
+    address: '0x14d2F529576d3a5451BfbA370408a899Bb5261a9',
+    category: AddressCategory.TBD
+  },
   mergerGate: {
     artifactName: 'MergerGate',
     address: '0xC2d452A4Feb76B41659cd036D5746149B98453D6',
@@ -1845,6 +1850,16 @@ const MainnetAddresses: MainnetAddresses = {
     artifactName: 'IMemberToken',
     address: '0x0762aA185b6ed2dCA77945Ebe92De705e0C37AE3',
     category: AddressCategory.External
+  },
+  rariGovernanceProxyAdmin: {
+    artifactName: 'ProxyAdmin',
+    address: '0x1c9aA54a013962C2444ECae06902F31D532c6AD3',
+    category: AddressCategory.Governance
+  },
+  rariGovernanceTokenSushiSwapDistributor: {
+    artifactName: 'RariGovernanceTokenUniswapDistributor',
+    address: '0x1fa69a416bcf8572577d3949b742fbb0a9cd98c7',
+    category: AddressCategory.Governance
   }
 };
 
