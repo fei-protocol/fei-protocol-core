@@ -1,9 +1,15 @@
 #!/usr/bin/env bash
 
 ##### Upload user specified contracts to MythX for processing  ####
+
+# Example usage:
+# MYTHX_API_KEY=1234 ./scripts/security/runMythx.sh deep ./contracts/fei/contract1.sol ./contracts/fei/contract2.sol
+
 # First argument: scan mode 
 #    - available options are: quick, standard, deep
 # Remaining arguments are the paths to the contracts to be uploaded to MythX
+# Pass MYTHX_API_KEY as an environment variable
+
 
 set -eo pipefail
 
@@ -45,7 +51,7 @@ runMythx() {
     echo $api_response
 }
 
-removeMythX() {
+teardown() {
     echo "Tearing down environment"
     deactivate
     rm -rf venv
@@ -54,3 +60,4 @@ removeMythX() {
 
 setupMythX 
 runMythx $1 
+# teardown
