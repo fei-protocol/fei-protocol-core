@@ -36,6 +36,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x2D1b1b509B6432A73e3d798572f0648f6453a5D9',
     category: AddressCategory.Core
   },
+  pcvSentinel: {
+    artifactName: 'PCVSentinel',
+    address: '0xC297705Acf50134d256187c754B92FA37826C019',
+    category: AddressCategory.Core
+  },
   proxyAdmin: {
     artifactName: 'ProxyAdmin',
     address: '0xf8c2b645988b7658E7748BA637fE25bdD46A704A',
