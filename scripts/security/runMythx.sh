@@ -19,6 +19,7 @@ setupMythX() {
     source venv/bin/activate
     pip3 install mythx-cli
     echo "Installed MythX CLI"
+    pip3 uninstall "markupsafe" && pip3 install "markupsafe"=="2.0.1"
 }
 
 runMythx() {
@@ -29,23 +30,27 @@ runMythx() {
     fi
 
     # Scan mode
-    if [ -z "$1" ]; then
+    SCAN_MODE=$1
+    if [ -z "$SCAN_MODE" ]; then
         echo "No scan mode specified. Exiting."
         exit 1
     fi
 
     # Contract file paths
-    echo "contract file paths"
-    echo $CONTRACT_FILE_PATHS
+    CONTRACT_FILE_PATHS=$2
+    if [ -z "$CONTRACT_FILE_PATHS" ]; then
+        echo "No contracts specified. Exiting."
+        exit 1
+    fi
 
-    
+    echo "Scan mode: $SCAN_MODE"
+    echo "Contracts for upload: $CONTRACT_FILE_PATHS"
 
-    echo "Uploading contracts to MythX"
+    echo "Uploading..."
     # Upload to Mythx API
-    api_response=mythx --api-key $MYTHX_API_KEY analyze --async \
-        --create-group --mode $SCAN_MODE --remap-import @uniswap=node_modules/@uniswap \
-        --remap-import @openzeppelin=node_modules/@openzeppelin  --remap-import @chainlink=node_modules/@chainlink \ 
-        --include $CONTRACT_FILE_PATHS
+    api_response=$(mythx --api-key $MYTHX_API_KEY analyze $CONTRACT_FILE_PATHS --async \
+        --group-name "fei" --mode $SCAN_MODE --remap-import @uniswap=node_modules/@uniswap \
+        --remap-import @openzeppelin=node_modules/@openzeppelin  --remap-import @chainlink=node_modules/@chainlink)
 
     echo "Uploaded, Mythx response: "
     echo $api_response
@@ -59,5 +64,5 @@ teardown() {
 }
 
 setupMythX 
-runMythx $1 
-# teardown
+runMythx $1 ${@:2}
+teardown
