@@ -181,7 +181,13 @@ abstract contract LiquidityGaugeManager is CoreRef {
 
     /// @notice Claim rewards associated to a gauge where this contract stakes
     /// tokens.
-    function claimGaugeRewards(address gaugeAddress) public whenNotPaused {
+    function claimGaugeRewards(address token) public whenNotPaused {
+        address gaugeAddress = tokenToGauge[token];
+        require(
+            gaugeAddress != address(0),
+            "LiquidityGaugeManager: token has no gauge configured"
+        );
+
         uint256 nTokens = ILiquidityGauge(gaugeAddress).reward_count();
         address[] memory tokens = new address[](nTokens);
         uint256[] memory amounts = new uint256[](nTokens);
