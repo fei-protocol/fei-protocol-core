@@ -1,17 +1,16 @@
 import { ProposalCategory, ProposalsConfigMap } from '@custom-types/types';
 
-import fip_87 from '@proposals/description/fip_87';
+// import fip_xx_proposal from '@proposals/description/fip_xx';
 
 const proposals: ProposalsConfigMap = {
-  fip_87: {
-    deploy: false,
-    proposalId: '114110038939654197374429334111955717306290796780942705117190274082864935809950',
-    affectedContractSignoff: [],
-    deprecatedContractSignoff: [],
-    category: ProposalCategory.DAO,
-    totalValue: 0,
-    proposal: fip_87
-  }
+  /*
+    fip_xx : {
+        deploy: true, // deploy flag for whether to run deploy action during e2e tests or use mainnet state
+        skipDAO: false, // whether or not to simulate proposal in DAO
+        totalValue: 0, // amount of ETH to send to DAO execution
+        proposal: fip_xx_proposal // full proposal file, imported from '@proposals/description/fip_xx.ts'
+    }
+    */
 };
 
 export default proposals;
