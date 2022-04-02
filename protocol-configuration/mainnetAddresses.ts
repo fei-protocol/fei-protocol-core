@@ -341,6 +341,31 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0xcd1Ac0014E2ebd972f40f24dF1694e6F528B2fD4',
     category: AddressCategory.PCV
   },
+  veBal: {
+    artifactName: 'IVeToken',
+    address: '0xC128a9954e6c874eA3d62ce62B468bA073093F25',
+    category: AddressCategory.External
+  },
+  bpt80Bal20Weth: {
+    artifactName: 'IERC20',
+    address: '0x5c6Ee304399DBdB9C8Ef030aB642B10820DB8F56',
+    category: AddressCategory.External
+  },
+  bpt30Fei70Weth: {
+    artifactName: 'IERC20',
+    address: '0x90291319F1D4eA3ad4dB0Dd8fe9E12BAF749E845',
+    category: AddressCategory.External
+  },
+  balancerGaugeController: {
+    artifactName: 'ILiquidityGaugeController',
+    address: '0xC128468b7Ce63eA702C1f104D55A2566b13D3ABD',
+    category: AddressCategory.External
+  },
+  balancerGaugeBpt30Fei70Weth: {
+    artifactName: 'ILiquidityGauge',
+    address: '0x4f9463405F5bC7b4C1304222c1dF76EFbD81a407',
+    category: AddressCategory.External
+  },
   d3poolConvexPCVDeposit: {
     artifactName: 'ConvexPCVDeposit',
     address: '0x5ae217dE26f6Ff5F481C6e10ec48b2cf2fc857C8',
