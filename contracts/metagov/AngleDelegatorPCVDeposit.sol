@@ -45,4 +45,14 @@ contract AngleDelegatorPCVDeposit is
     function balance() public view override returns (uint256) {
         return _totalTokensManaged(); // liquid and vote-escrowed tokens
     }
+
+    /// @notice returns the token address to be staked in the given gauge
+    function _tokenStakedInGauge(address gaugeAddress)
+        internal
+        view
+        override
+        returns (address)
+    {
+        return ILiquidityGauge(gaugeAddress).staking_token();
+    }
 }

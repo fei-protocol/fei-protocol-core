@@ -84,6 +84,16 @@ abstract contract LiquidityGaugeManager is CoreRef {
         emit GaugeControllerChanged(oldController, gaugeController);
     }
 
+    /// @notice returns the token address to be staked in the given gauge
+    function _tokenStakedInGauge(address gaugeAddress)
+        internal
+        view
+        virtual
+        returns (address)
+    {
+        return ILiquidityGauge(gaugeAddress).lp_token();
+    }
+
     /// @notice Set gauge for a given token.
     /// @param token the token address to stake in gauge
     /// @param gaugeAddress the address of the gauge where to stake token
@@ -92,7 +102,7 @@ abstract contract LiquidityGaugeManager is CoreRef {
         onlyTribeRole(TribeRoles.METAGOVERNANCE_GAUGE_ADMIN)
     {
         require(
-            ILiquidityGauge(gaugeAddress).staking_token() == token,
+            _tokenStakedInGauge(gaugeAddress) == token,
             "LiquidityGaugeManager: wrong gauge for token"
         );
         require(
