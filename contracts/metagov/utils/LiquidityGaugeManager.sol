@@ -14,6 +14,10 @@ interface ILiquidityGauge {
 
     function balanceOf(address) external view returns (uint256);
 
+    // curve & balancer use lp_token()
+    function lp_token() external view returns (address);
+
+    // angle use staking_token()
     function staking_token() external view returns (address);
 
     function reward_tokens(uint256 i) external view returns (address token);

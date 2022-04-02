@@ -4,7 +4,7 @@ pragma solidity ^0.8.10;
 import "../../metagov/utils/LiquidityGaugeManager.sol";
 import "../IPCVDepositBalances.sol";
 
-/// @title GaugeLens
+/// @title CurveGaugeLens
 /// @author Fei Protocol
 /// @notice a contract to read tokens held in a gauge
 contract CurveGaugeLens is IPCVDepositBalances {

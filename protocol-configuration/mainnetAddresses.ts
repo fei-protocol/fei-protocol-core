@@ -1022,7 +1022,7 @@ const MainnetAddresses: MainnetAddresses = {
     category: AddressCategory.Governance
   },
   gaugeLensAgEurUniswapGauge: {
-    artifactName: 'GaugeLens',
+    artifactName: 'AngleGaugeLens',
     address: '0x10f59bd0a100bcAD86CaB39751797D952eE1f76f',
     category: AddressCategory.Oracle
   },
