@@ -7,7 +7,7 @@ import "../IPCVDepositBalances.sol";
 /// @title GaugeLens
 /// @author Fei Protocol
 /// @notice a contract to read tokens held in a gauge
-contract GaugeLens is IPCVDepositBalances {
+contract AngleGaugeLens is IPCVDepositBalances {
     /// @notice FEI token address
     address private constant FEI = 0x956F47F50A910163D8BF957Cf5846D573E7f87CA;
 
