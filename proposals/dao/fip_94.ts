@@ -8,7 +8,7 @@ import {
   ValidateUpgradeFunc
 } from '@custom-types/types';
 
-const fipNumber = '88'; // Change me!
+const fipNumber = '94'; // Change me!
 
 // Do any deployments
 // This should exclusively include new contract deployments
@@ -23,7 +23,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 // This could include setting up Hardhat to impersonate accounts,
 // ensuring contracts have a specific state, etc.
 const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  console.log(`No actions to complete in setup for fip${fipNumber}`);
+  console.log(`No setup actions for fip${fipNumber}`);
 };
 
 // Tears down any changes made in setup() that need to be
@@ -35,7 +35,7 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // Run any validations required on the fip using mocha or console logging
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  // Verify Rari timelock does not have GOVERNOR role
+  // Verify Rari timelock does not have GOVERN_ROLE role
   const core = contracts.core;
   const hasGovRole = await core.hasRole(ethers.utils.id('GOVERN_ROLE'), addresses.rariTimelock);
   expect(hasGovRole).to.equal(false);
