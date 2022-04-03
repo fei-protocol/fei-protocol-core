@@ -37,7 +37,7 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
   // Verify Rari timelock does not have GOVERNOR role
   const core = contracts.core;
-  const hasGovRole = await core.hasRole(ethers.utils.id('GOVERNOR'), addresses.rariTimelock);
+  const hasGovRole = await core.hasRole(ethers.utils.id('GOVERN_ROLE'), addresses.rariTimelock);
   expect(hasGovRole).to.equal(false);
 };
 

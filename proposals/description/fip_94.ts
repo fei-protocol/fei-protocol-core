@@ -1,7 +1,7 @@
 import { ProposalDescription } from '@custom-types/types';
 
-const fip_88: ProposalDescription = {
-  title: 'FIP-88: Remove GOVERNOR role from Rari timelock',
+const fip_94: ProposalDescription = {
+  title: 'FIP-94: Remove GOVERNOR role from Rari timelock',
   commands: [
     {
       target: 'core',
@@ -18,4 +18,4 @@ const fip_88: ProposalDescription = {
   This FIP revokes the GOVERNOR role from the Rari timelock as a safety mechanism.`
 };
 
-export default fip_88;
+export default fip_94;
