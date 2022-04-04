@@ -173,7 +173,7 @@ const fip_82: ProposalDescription = {
       values: '0',
       method: 'batchAddPodMember(uint256 _podId,address[] memory _members)',
       arguments: [
-        '19',
+        '23',
         [
           '0x000000000000000000000000000000000000000D', // TODO: Complete with real member addresses
           '0x000000000000000000000000000000000000000E',
@@ -193,7 +193,7 @@ const fip_82: ProposalDescription = {
       values: '0',
       method: 'batchRemovePodMember(uint256 _podId, address[] memory)',
       arguments: [
-        '19', // TODO: Replace hardcoded value with real podId
+        '23', // TODO: Replace hardcoded value with real podId
         [
           '0x0000000000000000000000000000000000000004',
           '0x0000000000000000000000000000000000000005',
@@ -213,7 +213,7 @@ const fip_82: ProposalDescription = {
       values: '0',
       method: 'batchAddPodMember(uint256 _podId,address[] memory _members)',
       arguments: [
-        '20', // TODO: Replace with real protocol pod ID
+        '24', // TODO: Replace with real protocol pod ID
         [
           '0x0000000000000000000000000000000000000009', // TODO: Complete with real member addresses
           '0x000000000000000000000000000000000000000A',
@@ -229,7 +229,7 @@ const fip_82: ProposalDescription = {
       values: '0',
       method: 'batchRemovePodMember(uint256 _podId, address[] memory)',
       arguments: [
-        '20', // TODO: Replace with real protocol pod ID
+        '24', // TODO: Replace with real protocol pod ID
         [
           '0x0000000000000000000000000000000000000004',
           '0x0000000000000000000000000000000000000005',
@@ -245,14 +245,14 @@ const fip_82: ProposalDescription = {
       target: 'podAdminGateway',
       values: '0',
       method: 'lockMembershipTransfers(uint256)',
-      arguments: ['19'],
+      arguments: ['23'],
       description: 'Disable membership transfers for TribalCouncil'
     },
     {
       target: 'podAdminGateway',
       values: '0',
       method: 'lockMembershipTransfers(uint256)',
-      arguments: ['20'],
+      arguments: ['24'],
       description: 'Disable membership transfers for Protocol Pod'
     }
   ],
