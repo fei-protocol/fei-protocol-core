@@ -271,10 +271,6 @@ const validateTribeRoles = async (
   const councilIsPodAdmin = await core.hasRole(ethers.utils.id('POD_ADMIN'), tribalCouncilTimelockAddress);
   expect(councilIsPodAdmin).to.be.true;
 
-  // Protocol pod timelock roles: Specific first pod duties role
-  const protocolPodIsVotiumRole = await core.hasRole(ethers.utils.id('VOTIUM_ADMIN_ROLE'), protocolPodTimelockAddress);
-  expect(protocolPodIsVotiumRole).to.be.true;
-
   // TribalCouncil Gnosis Safe roles: POD_METADATA_REGISTER_ROLE
   const councilHasMetadataRegisterRole = await core.hasRole(
     ethers.utils.id('POD_METADATA_REGISTER_ROLE'),
