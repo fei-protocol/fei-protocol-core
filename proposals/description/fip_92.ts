@@ -1,7 +1,7 @@
 import { ProposalDescription } from '@custom-types/types';
 
 const fip_92: ProposalDescription = {
-  title: 'FIP-92: ANGLE Meta-governance',
+  title: 'FIP-92: Vote-escrow BAL',
   commands: [
     {
       target: 'ratioPCVControllerV2',
@@ -81,36 +81,34 @@ const fip_92: ProposalDescription = {
         '{bpt30Fei70Weth}' // token
       ],
       description: 'Stake all B-30FEI-70WETH in gauge'
-    }
-    /*
+    },
     {
       target: 'collateralizationOracle',
       values: '0',
       method: 'addDeposits(address[])',
-      arguments: [['{uniswapLensAgEurUniswapGauge}', '{agEurUniswapPCVDeposit}']],
-      description: 'Add agEUR/FEI Uniswap Lens and agEUR Uniswap deposit to cr oracle'
+      arguments: [['{balancerLensBpt30Fei70Weth}', '{balancerLensVeBalBal}', '{balancerLensVeBalWeth}']],
+      description: 'Add lenses to CR oracle'
     },
     {
       target: 'pcvGuardian',
       values: '0',
-      method: 'setSafeAddress(address)',
-      arguments: ['{agEurUniswapPCVDeposit}'],
-      description: 'Set agEUR Uniswap deposit as a safe address'
-    },
-    {
-      target: 'collateralizationOracle',
-      values: '0',
-      method: 'removeDeposits(address[])',
-      arguments: [['{agEurAngleUniswapPCVDeposit}']],
-      description: 'Remove old AngleUniswapPCVDeposit from CR oracle'
-    }*/
+      method: 'setSafeAddresses(address[])',
+      arguments: [['{balancerDepositBalWeth}', '{balancerDepositFeiWeth}', '{veBalDelegatorPCVDeposit}']],
+      description: 'Set safe addresses to allow BAL and BPT movements'
+    }
   ],
   description: `
 
-todo
+Vote-lock 100% of the protocol's BAL inside the new veBAL system for 1 year (renewed regularly).
+
+Use 100% of the protocol's voting power to incentivize the B-30FEI-70WETH gauge (can be changed by OA).
+
+Stake all the protocol's B-30FEI-70WETH in the Balancer gauge to earn BAL rewards.
+
+Delegate veBAL voting power on Snapshot to eswak.eth (can be changed by OA).
 
 Forum discussion: https://tribe.fei.money/t/fip-92-vote-escrow-the-daos-bal-to-vebal/4058
-Snapshot: todo
+Snapshot: https://snapshot.org/#/fei.eth/proposal/0x1a3c863f58b7ecf2d46e12e28c8a93e9d4535295bc1a1b10a61b96d8ce7927c7
 `
 };
 

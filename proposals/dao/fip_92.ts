@@ -18,11 +18,13 @@ const DELEGATE_BAL = '0x6ef71cA9cD708883E129559F5edBFb9d9D5C6148';
 // Do any deployments
 // This should exclusively include new contract deployments
 const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: NamedAddresses, logging: boolean) => {
+  // Deploy contract that will hold veBAL & stake in gauges
   const veBalDelegatorFactory = await ethers.getContractFactory('VeBalDelegatorPCVDeposit');
   const veBalDelegatorPCVDeposit = await veBalDelegatorFactory.deploy(addresses.core, DELEGATE_BAL);
   await veBalDelegatorPCVDeposit.deployTransaction.wait();
   logging && console.log('veBalDelegatorPCVDeposit: ', veBalDelegatorPCVDeposit.address);
 
+  // Deploy lens to report the B-30FEI-70WETH staked in gauge
   const gaugeLensFactory = await ethers.getContractFactory('CurveGaugeLens');
   const gaugeLensBpt30Fei70WethGauge = await gaugeLensFactory.deploy(
     addresses.balancerGaugeBpt30Fei70Weth,
@@ -31,25 +33,52 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   await gaugeLensBpt30Fei70WethGauge.deployTransaction.wait();
   logging && console.log('gaugeLensBpt30Fei70WethGauge:', gaugeLensBpt30Fei70WethGauge.address);
 
-  // TODO:
-  // need 3 lenses to add to the CR:
-  // - 1 lens that report (FEI, WETH) in the gaugeLensBpt30Fei70WethGauge
-  // - 1 lens that report (BAL) in the veBalDelegatorPCVDeposit
-  // - 1 lens that report (WETH) in the veBalDelegatorPCVDeposit
-
-  /*const uniswapLensFactory = await ethers.getContractFactory('UniswapLens');
-  const uniswapLensAgEurUniswapGauge = await uniswapLensFactory.deploy(
-    gaugeLensAgEurUniswapGauge.address, // deposit to read from
-    addresses.core, // core
-    addresses.chainlinkEurUsdOracleWrapper, // oracle
-    ethers.constants.AddressZero // no backup oracle
+  // Deploy lens to report B-30FEI-70WETH as WETH and protocol-owned FEI
+  const balancerPool2LensFactory = await ethers.getContractFactory('BalancerPool2Lens');
+  const balancerLensBpt30Fei70Weth = await balancerPool2LensFactory.deploy(
+    gaugeLensBpt30Fei70WethGauge.address, // address _depositAddress
+    addresses.wethERC20, // address _token
+    '0x90291319f1d4ea3ad4db0dd8fe9e12baf749e845', // IWeightedPool _pool
+    addresses.chainlinkEthUsdOracleWrapper, // IOracle _reportedOracle
+    addresses.oneConstantOracle, // IOracle _otherOracle
+    false, // bool _feiIsReportedIn
+    true // bool _feiIsOther
   );
-  await uniswapLensAgEurUniswapGauge.deployTransaction.wait();
-  logging && console.log('uniswapLensAgEurUniswapGauge:', uniswapLensAgEurUniswapGauge.address);*/
+  await balancerLensBpt30Fei70Weth.deployTransaction.wait();
+  logging && console.log('balancerLensBpt30Fei70Weth: ', balancerLensBpt30Fei70Weth.address);
+
+  // Deploy lens to report the BAL part of B-80BAL-20WETH vote-locked
+  const balancerLensVeBalBal = await balancerPool2LensFactory.deploy(
+    veBalDelegatorPCVDeposit.address, // address _depositAddress
+    addresses.bal, // address _token
+    '0x5c6ee304399dbdb9c8ef030ab642b10820db8f56', // IWeightedPool _pool
+    addresses.balUsdCompositeOracle, // IOracle _reportedOracle
+    addresses.chainlinkEthUsdOracleWrapper, // IOracle _otherOracle
+    false, // bool _feiIsReportedIn
+    false // bool _feiIsOther
+  );
+  await balancerLensVeBalBal.deployTransaction.wait();
+  logging && console.log('balancerLensVeBalBal: ', balancerLensVeBalBal.address);
+
+  // Deploy lens to report the WETH part of B-80BAL-20WETH vote-locked
+  const balancerLensVeBalWeth = await balancerPool2LensFactory.deploy(
+    veBalDelegatorPCVDeposit.address, // address _depositAddress
+    addresses.wethERC20, // address _token
+    '0x5c6ee304399dbdb9c8ef030ab642b10820db8f56', // IWeightedPool _pool
+    addresses.chainlinkEthUsdOracleWrapper, // IOracle _reportedOracle
+    addresses.balUsdCompositeOracle, // IOracle _otherOracle
+    false, // bool _feiIsReportedIn
+    false // bool _feiIsOther
+  );
+  await balancerLensVeBalWeth.deployTransaction.wait();
+  logging && console.log('balancerLensVeBalWeth: ', balancerLensVeBalWeth.address);
 
   return {
     veBalDelegatorPCVDeposit,
-    gaugeLensBpt30Fei70WethGauge
+    gaugeLensBpt30Fei70WethGauge,
+    balancerLensBpt30Fei70Weth,
+    balancerLensVeBalBal,
+    balancerLensVeBalWeth
   };
 };
 
@@ -109,7 +138,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   // All B-80BAL-20WETH converted to veBAL
   // for max duration (1 B-80BAL-20WETH ~= 1 veBAL)
   expect(await contracts.bpt80Bal20Weth.balanceOf(contracts.veBalDelegatorPCVDeposit.address)).to.be.equal('0');
-  expect(await contracts.veBal.balanceOf(contracts.veBalDelegatorPCVDeposit.address)).to.be.at.least(e18(109_000));
+  expect(await contracts.veBal.balanceOf(contracts.veBalDelegatorPCVDeposit.address)).to.be.at.least(e18(100_000));
 
   // Check that gauge vote is properly set to 100% for B-30FEI-70WETH
   expect(
@@ -127,12 +156,22 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
     await contracts.balancerGaugeBpt30Fei70Weth.balanceOf(contracts.veBalDelegatorPCVDeposit.address)
   ).to.be.at.least(e18(252_865));
 
-  console.log('~~ ok');
-
-  // Resistant balance & fei properly read
-  /*const resistantBalanceAndFei = await contracts.uniswapLensAgEurUniswapGauge.resistantBalanceAndFei();
-  expect(resistantBalanceAndFei[0]).to.be.at.least(e18(8_000_000)); // >8M agEUR
-  expect(resistantBalanceAndFei[1]).to.be.at.least(e18(9_500_000)); // >9.5M FEI*/
+  // Resistant balance & fei properly reported
+  // B-30FEI-70WETH staked in gauge should contain ~14k ETH (~50M$) and ~21M FEI
+  expect(await contracts.balancerLensBpt30Fei70Weth.balanceReportedIn()).to.be.equal(addresses.weth);
+  const rb1 = await contracts.balancerLensBpt30Fei70Weth.resistantBalanceAndFei();
+  expect(rb1[0]).to.be.at.least(e18(13_000));
+  expect(rb1[1]).to.be.at.least(e18(18_000_000));
+  // B-80BAL-20WETH vote-locked in veBAL should contain ~214k BAL (~3.45M$)
+  expect(await contracts.balancerLensVeBalBal.balanceReportedIn()).to.be.equal(addresses.bal);
+  const rb2 = await contracts.balancerLensVeBalBal.resistantBalanceAndFei();
+  expect(rb2[0]).to.be.at.least(e18(200_000));
+  expect(rb2[1]).to.be.equal('0');
+  // B-80BAL-20WETH vote-locked in veBAL should contain ~250 ETH (~870k$)
+  expect(await contracts.balancerLensVeBalWeth.balanceReportedIn()).to.be.equal(addresses.weth);
+  const rb3 = await contracts.balancerLensVeBalWeth.resistantBalanceAndFei();
+  expect(rb3[0]).to.be.at.least(e18(230));
+  expect(rb3[1]).to.be.equal('0');
 };
 
 export { deploy, setup, teardown, validate };

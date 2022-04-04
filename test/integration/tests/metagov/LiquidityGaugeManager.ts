@@ -11,7 +11,7 @@ import { AngleDelegatorPCVDeposit } from '@custom-types/contracts';
 
 const e18 = (x) => ethers.constants.WeiPerEther.mul(x);
 
-describe.only('e2e-metagov', function () {
+describe('e2e-metagov', function () {
   let deployAddress: string;
   let contracts: NamedContracts;
   let e2eCoord: TestEndtoEndCoordinator;
