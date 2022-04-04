@@ -55,8 +55,7 @@ contract GovernanceMetadataRegistry is CoreRef {
             registration[proposalHash] == false,
             "Proposal already registered"
         );
-
-        emit RegisterProposal(podId, proposalId, metadata);
         registration[proposalHash] = true;
+        emit RegisterProposal(podId, proposalId, metadata);
     }
 }
