@@ -209,32 +209,9 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
         }
     }
 
-    /// @notice Admin functionality to toggle pod membership transfers on or off
-    /// @dev Permissioned to GOVERNOR, POD_ADMIN, GUARDIAN and
-    function setMembershipTransferLock(uint256 _podId, bool _lock)
-        external
-        hasAnyOfFourRoles(
-            TribeRoles.GOVERNOR,
-            TribeRoles.POD_ADMIN,
-            TribeRoles.GUARDIAM,
-            getSetMembershipTransferLockRole(_podId)
-        )
-    {
-        _setMembershipTransferLock(_podId, _lock);
-    }
-
-    /// @notice Internal method to toggle a pod membership transfer lock
-    function _setMembershipTransferLock(uint256 _podId, bool _lock) internal {
-        ControllerV1 podController = podFactory.podController();
-        podController.setPodTransferLock(_podId, _lock);
-        emit PodMembershipTransferLock(_podId, _lock);
-    }
-
-    /// @notice Batch set pod membership transfer locks
-    function batchSetMembershipTransferLock(
-        uint256[] calldata _podId,
-        bool[] calldata _locks
-    )
+    /// @notice Admin functionality to turn off pod membership transfer
+    /// @dev Permissioned to GOVERNOR, POD_ADMIN, GUARDIAN and the specific role
+    function lockMembershipTransfers(uint256 _podId)
         external
         hasAnyOfFourRoles(
             TribeRoles.GOVERNOR,
@@ -243,15 +220,28 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
             getSetMembershipTransferLockRole(_podId)
         )
     {
-        uint256 numLocks = _locks.length;
-        for (uint256 i = 0; i < numLocks; ) {
-            _setMembershipTransferLock(_podId, _locks[i]);
+        _setMembershipTransferLock(_podId, true);
+    }
 
-            // i is constrained by being < _locks.length
-            unchecked {
-                i += 1;
-            }
-        }
+    /// @notice Admin functionality to turn on pod membership transfers
+    /// @dev Permissioned to GOVERNOR, POD_ADMIN, GUARDIAN and the specific role
+    function unlockMembershipTransfers(uint256 _podId)
+        external
+        hasAnyOfFourRoles(
+            TribeRoles.GOVERNOR,
+            TribeRoles.POD_ADMIN,
+            TribeRoles.GUARDIAN,
+            getSetMembershipTransferLockRole(_podId)
+        )
+    {
+        _setMembershipTransferLock(_podId, false);
+    }
+
+    /// @notice Internal method to toggle a pod membership transfer lock
+    function _setMembershipTransferLock(uint256 _podId, bool _lock) internal {
+        ControllerV1 podController = podFactory.podController();
+        podController.setPodTransferLock(_podId, _lock);
+        emit PodMembershipTransferLock(_podId, _lock);
     }
 
     ///////////////  VETO CONTROLLER /////////////////

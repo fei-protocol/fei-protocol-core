@@ -58,6 +58,9 @@ contract PodFactory is CoreRef, IPodFactory {
 
     ///////////////////// GETTERS ///////////////////////
 
+    // TODO: Maybe break these getters out into a form of Lens contract?
+    // Abstract away underlying storage and getters
+
     /// @notice Get the address of the Gnosis safe that represents a pod
     /// @param podId Unique id for the orca pod
     function getPodSafe(uint256 podId) public view override returns (address) {
@@ -117,6 +120,16 @@ contract PodFactory is CoreRef, IPodFactory {
         returns (address)
     {
         return ControllerV1(podController).podAdmin(podId);
+    }
+
+    /// @notice Get whether membership transfers are enabled for a pod
+    function getIsMembershipTransferLocked(uint256 podId)
+        external
+        view
+        override
+        returns (bool)
+    {
+        return ControllerV1(podController).isTransferLocked(podId);
     }
 
     //////////////////// STATE-CHANGING API ////////////////////
