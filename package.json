@@ -14,7 +14,7 @@
     "console:ropsten": "npx hardhat console --network ropsten",
     "clean": "forge clean && rm -rf artifacts",
     "test": "forge test --no-match-contract IntegrationTest",
-    "test:integration": "FORK_BLOCK=14322512; forge test --fork-url https://eth-mainnet.alchemyapi.io/v2/$MAINNET_ALCHEMY_API_KEY --fork-block-number $FORK_BLOCK --match-contract IntegrationTest",
+    "test:integration": "FORK_BLOCK=14516592; forge test --fork-url https://eth-mainnet.alchemyapi.io/v2/$MAINNET_ALCHEMY_API_KEY --fork-block-number $FORK_BLOCK --match-contract IntegrationTest",
     "test:integration:latest": "forge test --fork-url https://eth-mainnet.alchemyapi.io/v2/$MAINNET_ALCHEMY_API_KEY --match-contract IntegrationTest",
     "test:hardhat": "npx hardhat test",
     "test:hardhat:dependencies": "LOGGING=true NO_RESET=true npx hardhat test test/integration/tests/dependencies.ts",
