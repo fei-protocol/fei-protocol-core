@@ -66,6 +66,11 @@ contract PodAdminGatewayIntegrationTest is DSTest {
             address(address(podAdminGateway))
         );
         assertTrue(hasProposerRole);
+
+        bool memberTransfersLocked = factory.getIsMembershipTransferLocked(
+            podId
+        );
+        assertFalse(memberTransfersLocked);
     }
 
     /// @notice Validate that a podAdmin can be added for a particular pod by the GOVERNOR
@@ -132,6 +137,31 @@ contract PodAdminGatewayIntegrationTest is DSTest {
         assertEq(podMembers[1], membersToAdd[0]);
     }
 
+    /// @notice Validate can lock membership transfers
+    function testLockMembershipTransfer() public {
+        vm.prank(feiDAOTimelock);
+        podAdminGateway.lockMembershipTransfers(podId);
+
+        bool memberTransfersLocked = factory.getIsMembershipTransferLocked(
+            podId
+        );
+        assertTrue(memberTransfersLocked);
+    }
+
+    /// @notice Validate can unlock membership transfers
+    function testUnLockMembershipTransfer() public {
+        vm.prank(feiDAOTimelock);
+        podAdminGateway.lockMembershipTransfers(podId);
+
+        vm.prank(feiDAOTimelock);
+        podAdminGateway.unlockMembershipTransfers(podId);
+
+        bool memberTransfersLocked = factory.getIsMembershipTransferLocked(
+            podId
+        );
+        assertFalse(memberTransfersLocked);
+    }
+
     /// @notice Validate that a non-PodAdmin fails to call a priviledged admin method
     function testNonAdminFailsToRemoveMember() public {
         vm.expectRevert(bytes("UNAUTHORIZED"));
@@ -165,8 +195,19 @@ contract PodAdminGatewayIntegrationTest is DSTest {
         );
     }
 
+    /// @notice Validate that specific set membership transfer lock role is set
+    function testGetSetMembershipLockRole() public {
+        bytes32 specificMembershipLockRole = keccak256(
+            abi.encode(podId, "ORCA_POD", "SET_MEMBERSHIP_TRANSFER_LOCK_ROLE")
+        );
+        assertEq(
+            specificMembershipLockRole,
+            podAdminGateway.getSetMembershipTransferLockRole(podId)
+        );
+    }
+
     /// @notice Validate that PodRemoveMemberRole is computed is expected
-    function testRemovePodAddMemberRole() public {
+    function testRemovePodMemberRole() public {
         bytes32 specificRemoveRole = keccak256(
             abi.encode(podId, "ORCA_POD", "POD_REMOVE_MEMBER_ROLE")
         );
