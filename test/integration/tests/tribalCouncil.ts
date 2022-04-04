@@ -136,7 +136,6 @@ describe.only('Tribal Council', function () {
     await roleBastion.connect(tribalCouncilTimelockSigner).createRole(ethers.utils.id('DUMMY_ROLE'));
 
     // Validate that the role was created with the appropriate admin
-    
   });
 
   // it('can authorise another address with a role', async () => {
