@@ -9,6 +9,7 @@ interface IPodAdminGateway {
         address oldPodAdmin,
         address newPodAdmin
     );
+    event PodMembershipTransferLock(uint256 indexed podId, bool lock);
 
     // Veto functionality
     event VetoTimelock(uint256 indexed podId, address indexed timelock);

@@ -13,8 +13,11 @@ import {IPodFactory} from "./interfaces/IPodFactory.sol";
 
 /// @title PodAdminGateway for TRIBE Governance pods
 /// @notice Acts as a gateway for admin functionality and vetos in the TRIBE governance pod system
-/// @dev Contract is intended to be set as the podAdmin for all deployed Orca pods. It then allows
-///
+/// @dev Contract is intended to be set as the podAdmin for all deployed Orca pods. Specifically enables:
+///     1. Adding a member to a pod
+///     2. Removing a member from a pod
+///     3. Transferring a pod member
+///     4. Toggling a pod membership transfer switch
 contract PodAdminGateway is CoreRef, IPodAdminGateway {
     /// @notice Orca membership token for the pods. Handles permissioning pod members
     MemberToken private immutable memberToken;
@@ -62,6 +65,22 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
         return
             keccak256(
                 abi.encode(_podId, "ORCA_POD", "POD_TRANSFER_ADMIN_ROLE")
+            );
+    }
+
+    /// @notice Calculate the specific pod membership transfer lock role
+    function getSetMembershipTransferLockRole(uint256 _podId)
+        public
+        pure
+        returns (bytes32)
+    {
+        return
+            keccak256(
+                abi.encode(
+                    _podId,
+                    "ORCA_POD",
+                    "SET_MEMBERSHIP_TRANSFER_LOCK_ROLE"
+                )
             );
     }
 
@@ -184,6 +203,51 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
             _removePodMember(_podId, _members[i]);
 
             // i is constrained by being < _members.length
+            unchecked {
+                i += 1;
+            }
+        }
+    }
+
+    /// @notice Admin functionality to toggle pod membership transfers on or off
+    /// @dev Permissioned to GOVERNOR, POD_ADMIN, GUARDIAN and
+    function setMembershipTransferLock(uint256 _podId, bool _lock)
+        external
+        hasAnyOfFourRoles(
+            TribeRoles.GOVERNOR,
+            TribeRoles.POD_ADMIN,
+            TribeRoles.GUARDIAM,
+            getSetMembershipTransferLockRole(_podId)
+        )
+    {
+        _setMembershipTransferLock(_podId, _lock);
+    }
+
+    /// @notice Internal method to toggle a pod membership transfer lock
+    function _setMembershipTransferLock(uint256 _podId, bool _lock) internal {
+        ControllerV1 podController = podFactory.podController();
+        podController.setPodTransferLock(_podId, _lock);
+        emit PodMembershipTransferLock(_podId, _lock);
+    }
+
+    /// @notice Batch set pod membership transfer locks
+    function batchSetMembershipTransferLock(
+        uint256[] calldata _podId,
+        bool[] calldata _locks
+    )
+        external
+        hasAnyOfFourRoles(
+            TribeRoles.GOVERNOR,
+            TribeRoles.POD_ADMIN,
+            TribeRoles.GUARDIAN,
+            getSetMembershipTransferLockRole(_podId)
+        )
+    {
+        uint256 numLocks = _locks.length;
+        for (uint256 i = 0; i < numLocks; ) {
+            _setMembershipTransferLock(_podId, _locks[i]);
+
+            // i is constrained by being < _locks.length
             unchecked {
                 i += 1;
             }
