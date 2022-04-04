@@ -1,4 +1,5 @@
-import { PodFactory, PodAdminGateway } from '@custom-types/contracts';
+import hre from 'hardhat';
+import { PodFactory, PodAdminGateway, RoleBastion } from '@custom-types/contracts';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
@@ -13,7 +14,22 @@ import { tribalCouncilMembers } from '@protocol/optimisticGovernance';
 
 const toBN = ethers.BigNumber.from;
 
-describe('Tribal Council', function () {
+async function createFixture(): Promise<number> {
+  // evm_snapshot takes a snapshot of blockchain state
+  return hre.network.provider.send('evm_snapshot', []);
+}
+
+async function useFixture(snapshotId: string): Promise<number> {
+  // evm_revert reverts to a snapshot id
+  await hre.network.provider.send('evm_revert', [snapshotId]);
+  // sets chain state up to mirror deployment
+
+  // Recreate snapshot
+  const newSnapshotId = await hre.network.provider.send('evm_snapshot', []);
+  return newSnapshotId;
+}
+
+describe.only('Tribal Council', function () {
   let contracts: NamedContracts;
   let contractAddresses: NamedAddresses;
   let deployAddress: SignerWithAddress;
@@ -23,6 +39,7 @@ describe('Tribal Council', function () {
   let podAdminGateway: PodAdminGateway;
   let tribalCouncilPodId: BigNumber;
   let feiDAOTimelockSigner: SignerWithAddress;
+  let tribalCouncilTimelockSigner: SignerWithAddress;
 
   before(async () => {
     chai.use(CBN(ethers.BigNumber));
@@ -46,6 +63,9 @@ describe('Tribal Council', function () {
 
     e2eCoord = new TestEndtoEndCoordinator(config, proposals);
 
+    // const newSnapshotId = await useFixture('0x130');
+    // console.log({ newSnapshotId });
+
     doLogging && console.log(`Loading environment...`);
     ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment());
     doLogging && console.log(`Environment loaded.`);
@@ -54,8 +74,13 @@ describe('Tribal Council', function () {
     tribalCouncilPodId = await podFactory.getPodId(contractAddresses.tribalCouncilTimelock);
 
     feiDAOTimelockSigner = await getImpersonatedSigner(contractAddresses.feiDAOTimelock);
+    tribalCouncilTimelockSigner = await getImpersonatedSigner(contractAddresses.tribalCouncilTimelock);
+
+    // const snapshotId = await createFixture();
+    // console.log({ snapshotId });
   });
 
+  ///////////////   DAO management of Tribal Council  //////////////
   it('should allow DAO to add members', async () => {
     const initialNumPodMembers = await podFactory.getNumMembers(tribalCouncilPodId);
 
@@ -82,15 +107,45 @@ describe('Tribal Council', function () {
     expect(!podMembers.includes(memberToBurn)).to.be.true;
   });
 
-  it('can authorise another address with a role', async () => {
-    // TODO: Follow up PR
+  ///////////    TribalCouncil management of other pods  /////////////
+  it('can create a child pod', async () => {
+    const podConfig = {
+      members: [
+        '0x0000000000000000000000000000000000000001',
+        '0x0000000000000000000000000000000000000002',
+        '0x0000000000000000000000000000000000000003',
+        '0x0000000000000000000000000000000000000004'
+      ],
+      threshold: 2,
+      label: '0x47282', // TribalCouncil
+      ensString: 'testPod.eth',
+      imageUrl: 'testPod.com',
+      minDelay: 86400,
+      numMembers: 4,
+      admin: podAdminGateway.address
+    };
+
+    await podFactory.connect(tribalCouncilTimelockSigner).createChildOptimisticPod(podConfig);
+    const podId = await podFactory.latestPodId();
+    const numPodMembers = await podFactory.getNumMembers(podId);
+    expect(numPodMembers).to.equal(4);
   });
 
-  it('can veto a lower ranking pod', async () => {
-    // TODO: Follow up PR
+  it('can create a new role via the Role Bastion', async () => {
+    const roleBastion = contracts.roleBastion as RoleBastion;
+    await roleBastion.connect(tribalCouncilTimelockSigner).createRole(ethers.utils.id('DUMMY_ROLE'));
+
+    // Validate that the role was created with the appropriate admin
+    
   });
 
-  it('should allow a proposal to be proposed and executed', async () => {
-    // TODO: Test on testnet/mainnet
-  });
+  // it('can authorise another address with a role', async () => {
+  // });
+
+  // it('can veto a lower ranking pod', async () => {
+  // });
+
+  // ////////   TribalCouncil pod execution  //////////////
+  // it('should allow a proposal to be proposed and executed', async () => {
+  // });
 });
