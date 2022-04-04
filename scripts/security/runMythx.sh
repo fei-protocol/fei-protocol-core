@@ -49,7 +49,7 @@ runMythx() {
     echo "Uploading..."
     # Upload to Mythx API
     api_response=$(mythx --api-key $MYTHX_API_KEY analyze $CONTRACT_FILE_PATHS --async \
-        --group-name "fei" --mode $SCAN_MODE --remap-import @uniswap=node_modules/@uniswap \
+        --create-group --group-name "test123" --mode $SCAN_MODE --solc-version 0.8.4 --remap-import @uniswap=node_modules/@uniswap \
         --remap-import @openzeppelin=node_modules/@openzeppelin  --remap-import @chainlink=node_modules/@chainlink)
 
     echo "Uploaded, Mythx response: "
