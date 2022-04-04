@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
-import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import {TimelockController} from "@openzeppelin/contracts/governance/TimelockController.sol";
 import {IMemberToken} from "./orcaInterfaces/IMemberToken.sol";
 import {CoreRef} from "../refs/CoreRef.sol";
@@ -17,8 +16,6 @@ import {IPodFactory} from "./IPodFactory.sol";
 /// @dev Contract is intended to be set as the podAdmin for all deployed Orca pods. It then allows
 ///
 contract PodAdminGateway is CoreRef, IPodAdminGateway {
-    using EnumerableSet for EnumerableSet.Bytes32Set;
-
     /// @notice Orca membership token for the pods. Handles permissioning pod members
     IMemberToken private immutable memberToken;
 
@@ -30,9 +27,6 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
         address _memberToken,
         address _podFactory
     ) CoreRef(_core) {
-        require(_memberToken != address(0x0), "ZERO_ADDRESS");
-        require(_podFactory != address(0x0), "ZERO_ADDRESS");
-
         memberToken = IMemberToken(_memberToken);
         podFactory = IPodFactory(_podFactory);
     }
@@ -82,7 +76,6 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
             getPodTransferAdminRole(_podId)
         )
     {
-        require(newPodAdmin != address(0x0), "ZERO_ADDRESS");
         _transferPodAdmin(_podId, newPodAdmin);
     }
 
@@ -131,7 +124,6 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
 
     /// @notice Internal method to add a member to a pod
     function _addMemberToPod(uint256 _podId, address _member) internal {
-        require(_member != address(0), "ZERO_ADDRESS");
         emit AddPodMember(_podId, _member);
         memberToken.mint(_member, _podId, bytes(""));
     }
@@ -172,7 +164,6 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
 
     /// @notice Internal method to remove a member from a pod
     function _removePodMember(uint256 _podId, address _member) internal {
-        require(_member != address(0), "ZERO_ADDRESS");
         emit RemovePodMember(_podId, _member);
         memberToken.burn(_member, _podId);
     }

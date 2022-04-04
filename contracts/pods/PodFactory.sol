@@ -41,13 +41,6 @@ contract PodFactory is CoreRef, IPodFactory {
     /// @notice Burner function used flag
     bool public burnerDeploymentUsed = false;
 
-    event CreatePod(uint256 indexed podId, address indexed safeAddress);
-    event CreateOptimisticTimelock(address indexed timelock);
-    event UpdatePodController(
-        address indexed oldController,
-        address indexed newController
-    );
-
     /// @param _core Fei core address
     /// @param _podController Orca pod controller
     /// @param _memberToken Membership token that manages the Orca pod membership
@@ -58,11 +51,6 @@ contract PodFactory is CoreRef, IPodFactory {
         address _memberToken,
         address _podExecutor
     ) CoreRef(_core) {
-        require(_core != address(0), "Zero address");
-        require(_podController != address(0x0), "Zero address");
-        require(_memberToken != address(0x0), "Zero address");
-        require(_podExecutor != address(0x0), "Zero address");
-
         podExecutor = _podExecutor;
         podController = IControllerV1(_podController);
         memberToken = IMemberToken(_memberToken);
