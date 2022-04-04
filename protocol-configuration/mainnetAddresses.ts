@@ -1848,7 +1848,7 @@ const MainnetAddresses: MainnetAddresses = {
   },
   podController: {
     artifactName: 'IControllerV1',
-    address: '0xD89AAd5348A34E440E72f5F596De4fA7e291A3e8',
+    address: '0x17FDC2Eaf2bd46f3e1052CCbccD9e6AD0296C42c',
     category: AddressCategory.External
   },
   memberToken: {
