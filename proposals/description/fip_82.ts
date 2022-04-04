@@ -239,6 +239,21 @@ const fip_82: ProposalDescription = {
         ]
       ],
       description: 'Remove initial placeholder members from Protocol Pod'
+    },
+    //////////////////////    DISABLE POD MEMBERSHIP TRANSFERS   /////////////////
+    {
+      target: 'podAdminGateway',
+      values: '0',
+      method: 'lockMembershipTransfers(uint256)',
+      arguments: ['19'],
+      description: 'Disable membership transfers for TribalCouncil'
+    },
+    {
+      target: 'podAdminGateway',
+      values: '0',
+      method: 'lockMembershipTransfers(uint256)',
+      arguments: ['20'],
+      description: 'Disable membership transfers for Protocol Pod'
     }
   ],
   description: `

@@ -10,7 +10,7 @@ import {
 import { getImpersonatedSigner } from '@test/helpers';
 import { tribeCouncilPodConfig, protocolPodConfig, PodCreationConfig } from '@protocol/optimisticGovernance';
 import { abi as timelockABI } from '../../artifacts/contracts/dao/timelock/OptimisticTimelock.sol/OptimisticTimelock.json';
-import { abi as gnosisSafeABI } from '../../artifacts/contracts/pods/orcaInterfaces/IGnosisSafe.sol/IGnosisSafe.json';
+import { abi as gnosisSafeABI } from '../../artifacts/contracts/pods/interfaces/IGnosisSafe.sol/IGnosisSafe.json';
 import { Contract } from 'ethers';
 const toBN = ethers.BigNumber.from;
 
@@ -157,7 +157,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const tribalCouncilSafeAddress = await podFactory.getPodSafe(tribalCouncilPodId);
 
   // 1. Validate PodAdminGateway has PROPOSER role on TribalCouncil and Protocol Pod
-  // Validate TribalCouncil does not have a VetoController role
+  ///////////////  POD ADMIN GATEWAY  //////////////////////
   const tribalCouncilTimelock = contracts.tribalCouncilTimelock;
   const protocolTierTimelock = contracts.protocolPodTimelock;
   const gatewayIsProtocolPodProposer = await protocolTierTimelock.hasRole(
@@ -172,7 +172,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   );
   expect(gatewayIsCouncilProposer).to.be.true;
 
-  // 2. Validate that Tribal Council Safe, timelock and podAdmin are configured
+  ///////////////   TRIBAL COUNCIL  //////////////////
   const councilPodAdmin = await podFactory.getPodAdmin(tribalCouncilPodId);
   expect(councilPodAdmin).to.equal(addresses.podAdminGateway);
 
@@ -187,6 +187,9 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
     addresses.podExecutor
   );
   expect(podExecutorIsExecutor).to.be.true;
+
+  const councilMembershipLocked = await podFactory.getIsMembershipTransferLocked(tribalCouncilPodId);
+  expect(councilMembershipLocked).to.be.true;
 
   // 3. Validate that Tribal Council members are correctly set
   const councilMembers = await podFactory.getPodMembers(tribalCouncilPodId);
@@ -225,6 +228,9 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 
   const podMembers = await podFactory.getPodMembers(protocolPodId);
   validateArraysEqual(podMembers, protocolPodConfig.members);
+
+  const protocolPodMembersLocked = await podFactory.getIsMembershipTransferLocked(protocolPodId);
+  expect(protocolPodMembersLocked).to.be.true;
 
   ///////////// METADATA REGISTRY ////////////////////////
   const governanceMetadataRegistry = contracts.governanceMetadataRegistry;
