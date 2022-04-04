@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
+import {ControllerV1} from "@orcaprotocol/contracts/contracts/ControllerV1.sol";
 import {Vm} from "../../utils/Vm.sol";
 import {DSTest} from "../../utils/DSTest.sol";
 import {PodFactory} from "../../../pods/PodFactory.sol";
 import {PodAdminGateway} from "../../../pods/PodAdminGateway.sol";
-import {IPodAdminGateway} from "../../../pods/IPodAdminGateway.sol";
+import {IPodAdminGateway} from "../../../pods/interfaces/IPodAdminGateway.sol";
 import {mintOrcaTokens, getPodParams} from "../fixtures/Orca.sol";
-import {IPodFactory} from "../../../pods/IPodFactory.sol";
-import {IControllerV1} from "../../../pods/orcaInterfaces/IControllerV1.sol";
+import {IPodFactory} from "../../../pods/interfaces/IPodFactory.sol";
 import {ITimelock} from "../../../dao/timelock/ITimelock.sol";
 import {TribeRoles} from "../../../core/TribeRoles.sol";
 import {ICore} from "../../../core/ICore.sol";
@@ -264,7 +264,7 @@ contract PodAdminGatewayIntegrationTest is DSTest {
         podAdminGateway.transferPodAdmin(podId, newAdmin);
 
         // Validate admin set on pod contract was updated everywhere as expected
-        address orcaControllerReportedAdmin = IControllerV1(podController)
+        address orcaControllerReportedAdmin = ControllerV1(podController)
             .podAdmin(podId);
         assertEq(orcaControllerReportedAdmin, newAdmin);
 

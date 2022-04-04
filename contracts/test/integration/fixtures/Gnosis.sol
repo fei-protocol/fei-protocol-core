@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
-import {IGnosisSafe} from "../../../pods/orcaInterfaces/IGnosisSafe.sol";
+import {IGnosisSafe} from "../../../pods/interfaces/IGnosisSafe.sol";
 import {Vm} from "../../utils/Vm.sol";
 
 /// @notice Create a Gnosis Safe transaction

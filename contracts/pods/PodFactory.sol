@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
-import {IGnosisSafe} from "./orcaInterfaces/IGnosisSafe.sol";
-import {IControllerV1} from "./orcaInterfaces/IControllerV1.sol";
-import {IMemberToken} from "./orcaInterfaces/IMemberToken.sol";
-import {IPodFactory} from "./IPodFactory.sol";
+import {ControllerV1} from "@orcaprotocol/contracts/contracts/ControllerV1.sol";
+import {MemberToken} from "@orcaprotocol/contracts/contracts/MemberToken.sol";
+import {IGnosisSafe} from "./interfaces//IGnosisSafe.sol";
+import {IPodFactory} from "./interfaces/IPodFactory.sol";
 
 import {TribeRoles} from "../core/TribeRoles.sol";
 import {OptimisticTimelock} from "../dao/timelock/OptimisticTimelock.sol";
@@ -21,10 +21,10 @@ import {ICore} from "../core/ICore.sol";
 /// the only proposer and executor.
 contract PodFactory is CoreRef, IPodFactory {
     /// @notice Orca controller for Pod
-    IControllerV1 public override podController;
+    ControllerV1 public override podController;
 
     /// @notice Orca membership token for the pods. Handles permissioning pod members
-    IMemberToken private immutable memberToken;
+    MemberToken private immutable memberToken;
 
     /// @notice Public contract that will be granted to execute all timelocks created
     address public immutable podExecutor;
@@ -52,8 +52,8 @@ contract PodFactory is CoreRef, IPodFactory {
         address _podExecutor
     ) CoreRef(_core) {
         podExecutor = _podExecutor;
-        podController = IControllerV1(_podController);
-        memberToken = IMemberToken(_memberToken);
+        podController = ControllerV1(_podController);
+        memberToken = MemberToken(_memberToken);
     }
 
     ///////////////////// GETTERS ///////////////////////
@@ -116,7 +116,7 @@ contract PodFactory is CoreRef, IPodFactory {
         override
         returns (address)
     {
-        return IControllerV1(podController).podAdmin(podId);
+        return ControllerV1(podController).podAdmin(podId);
     }
 
     //////////////////// STATE-CHANGING API ////////////////////
@@ -145,7 +145,7 @@ contract PodFactory is CoreRef, IPodFactory {
         hasAnyOfTwoRoles(TribeRoles.GOVERNOR, TribeRoles.POD_DEPLOYER_ROLE)
     {
         address oldController = newPodController;
-        podController = IControllerV1(newPodController);
+        podController = ControllerV1(newPodController);
         emit UpdatePodController(oldController, newPodController);
     }
 

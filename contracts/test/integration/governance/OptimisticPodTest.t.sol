@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
+import {MemberToken} from "@orcaprotocol/contracts/contracts/MemberToken.sol";
+import {ControllerV1} from "@orcaprotocol/contracts/contracts/ControllerV1.sol";
 import {OptimisticTimelock} from "../../../dao/timelock/OptimisticTimelock.sol";
-import {IControllerV1} from "../../../pods/orcaInterfaces/IControllerV1.sol";
-import {IGnosisSafe} from "../../../pods/orcaInterfaces/IGnosisSafe.sol";
-import {IMemberToken} from "../../../pods/orcaInterfaces/IMemberToken.sol";
+import {IGnosisSafe} from "../../../pods/interfaces/IGnosisSafe.sol";
 
 import {createPod, setupOptimisticTimelock, mintOrcaTokens} from "../fixtures/Orca.sol";
 import {MainnetAddresses} from "../fixtures/MainnetAddresses.sol";
@@ -20,9 +20,9 @@ import {DSTest} from "../../utils/DSTest.sol";
 contract OptimisticPodIntegrationTest is DSTest {
     Vm public constant vm = Vm(HEVM_ADDRESS);
 
-    IMemberToken memberToken = IMemberToken(MainnetAddresses.MEMBER_TOKEN);
+    MemberToken memberToken = MemberToken(MainnetAddresses.MEMBER_TOKEN);
 
-    IControllerV1 controller = IControllerV1(MainnetAddresses.POD_CONTROLLER);
+    ControllerV1 controller = ControllerV1(MainnetAddresses.POD_CONTROLLER);
 
     address proposer = address(0x1);
     address executor = address(0x2);

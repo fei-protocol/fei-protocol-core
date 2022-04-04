@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import {ERC20VotesComp} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20VotesComp.sol";
 import {DSTest} from "../../utils/DSTest.sol";
-import {IPodFactory} from "../../../pods/IPodFactory.sol";
+import {IPodFactory} from "../../../pods/interfaces/IPodFactory.sol";
 import {Vm} from "../../utils/Vm.sol";
 import {TribeRoles} from "../../../core/TribeRoles.sol";
 import {NopeDAO} from "../../../dao/nopeDAO/NopeDAO.sol";

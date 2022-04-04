@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
-import {IGnosisSafe} from "../../../pods/orcaInterfaces/IGnosisSafe.sol";
+import {ControllerV1} from "@orcaprotocol/contracts/contracts/ControllerV1.sol";
+import {IGnosisSafe} from "../../../pods/interfaces/IGnosisSafe.sol";
 import {PodFactory} from "../../../pods/PodFactory.sol";
 import {PodExecutor} from "../../../pods/PodExecutor.sol";
 import {ITimelock} from "../../../dao/timelock/ITimelock.sol";
-import {IControllerV1} from "../../../pods/orcaInterfaces/IControllerV1.sol";
-import {IPodFactory} from "../../../pods/IPodFactory.sol";
+import {IPodFactory} from "../../../pods/interfaces/IPodFactory.sol";
 import {Core} from "../../../core/Core.sol";
 import {TribeRoles} from "../../../core/TribeRoles.sol";
 
@@ -124,8 +124,8 @@ contract PodFactoryIntegrationTest is DSTest {
 
         address newAdmin = address(0x10);
         vm.prank(podAdmin);
-        IControllerV1(podController).updatePodAdmin(podId, newAdmin);
-        assertEq(IControllerV1(podController).podAdmin(podId), newAdmin);
+        ControllerV1(podController).updatePodAdmin(podId, newAdmin);
+        assertEq(ControllerV1(podController).podAdmin(podId), newAdmin);
         assertEq(factory.getPodAdmin(podId), newAdmin);
     }
 
@@ -191,7 +191,7 @@ contract PodFactoryIntegrationTest is DSTest {
         vm.prank(feiDAOTimelock);
         (uint256 podAId, , ) = factory.createChildOptimisticPod(podConfig);
 
-        address podAAdmin = IControllerV1(podController).podAdmin(podAId);
+        address podAAdmin = ControllerV1(podController).podAdmin(podAId);
         assertEq(podAAdmin, podAdmin);
 
         podConfig.label = bytes32("B");
@@ -199,7 +199,7 @@ contract PodFactoryIntegrationTest is DSTest {
         (uint256 podBId, , ) = factory.createChildOptimisticPod(podConfig);
 
         assertEq(podBId, podAId + 1);
-        address podBAdmin = IControllerV1(podController).podAdmin(podBId);
+        address podBAdmin = ControllerV1(podController).podAdmin(podBId);
         assertEq(podBAdmin, podAdmin);
     }
 
@@ -224,10 +224,10 @@ contract PodFactoryIntegrationTest is DSTest {
         factory.burnerCreateChildOptimisticPods(configs);
 
         // Check pod admin
-        address setPodAdminA = IControllerV1(podController).podAdmin(podIds[0]);
+        address setPodAdminA = ControllerV1(podController).podAdmin(podIds[0]);
         assertEq(setPodAdminA, podAdmin);
 
-        address setPodAdminB = IControllerV1(podController).podAdmin(podIds[0]);
+        address setPodAdminB = ControllerV1(podController).podAdmin(podIds[0]);
         assertEq(setPodAdminB, podAdmin);
     }
 

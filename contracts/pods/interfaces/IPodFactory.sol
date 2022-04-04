@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
-import {IControllerV1} from "./orcaInterfaces/IControllerV1.sol";
+import {ControllerV1} from "@orcaprotocol/contracts/contracts/ControllerV1.sol";
 
 interface IPodFactory {
     /// @notice Configuration used when creating a pod
@@ -29,7 +29,7 @@ interface IPodFactory {
         address indexed newController
     );
 
-    function podController() external view returns (IControllerV1);
+    function podController() external view returns (ControllerV1);
 
     function getPodSafe(uint256 podId) external view returns (address);
 

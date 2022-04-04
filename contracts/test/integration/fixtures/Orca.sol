@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
-import {IMemberToken} from "../../../pods/orcaInterfaces/IMemberToken.sol";
-import {IControllerV1} from "../../../pods/orcaInterfaces/IControllerV1.sol";
-import {IInviteToken} from "../../../pods/orcaInterfaces/IInviteToken.sol";
-import {IPodFactory} from "../../../pods/IPodFactory.sol";
+import {MemberToken} from "@orcaprotocol/contracts/contracts/MemberToken.sol";
+import {ControllerV1} from "@orcaprotocol/contracts/contracts/ControllerV1.sol";
+import {InviteToken} from "@orcaprotocol/contracts/contracts/InviteToken.sol";
+import {IPodFactory} from "../../../pods/interfaces/IPodFactory.sol";
 import {OptimisticTimelock} from "../../../dao/timelock/OptimisticTimelock.sol";
 import {PodFactory} from "../../../pods/PodFactory.sol";
 import {Vm} from "../../utils/Vm.sol";
@@ -12,8 +12,8 @@ import {PodAdminGateway} from "../../../pods/PodAdminGateway.sol";
 import {MainnetAddresses} from "../fixtures/MainnetAddresses.sol";
 
 function createPod(
-    IControllerV1 controller,
-    IMemberToken memberToken,
+    ControllerV1 controller,
+    MemberToken memberToken,
     address[] memory members,
     address podAdmin
 ) returns (uint256) {
@@ -67,7 +67,7 @@ function mintOrcaTokens(
     address shipToken = 0x872EdeaD0c56930777A82978d4D7deAE3A2d1539;
     address priviledgedShip = 0x2149A222feD42fefc3A120B3DdA34482190fC666;
 
-    IInviteToken inviteToken = IInviteToken(shipToken);
+    InviteToken inviteToken = InviteToken(shipToken);
 
     vm.prank(priviledgedShip);
     inviteToken.mint(to, amount);

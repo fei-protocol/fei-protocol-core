@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
+import {MemberToken} from "@orcaprotocol/contracts/contracts/MemberToken.sol";
+import {ControllerV1} from "@orcaprotocol/contracts/contracts/ControllerV1.sol";
 import {TimelockController} from "@openzeppelin/contracts/governance/TimelockController.sol";
-import {IMemberToken} from "./orcaInterfaces/IMemberToken.sol";
 import {CoreRef} from "../refs/CoreRef.sol";
 import {ICore} from "../core/ICore.sol";
-import {IControllerV1} from "./orcaInterfaces/IControllerV1.sol";
 import {Core} from "../core/Core.sol";
 import {TribeRoles} from "../core/TribeRoles.sol";
-import {IPodAdminGateway} from "./IPodAdminGateway.sol";
-import {IPodFactory} from "./IPodFactory.sol";
+import {IPodAdminGateway} from "./interfaces/IPodAdminGateway.sol";
+import {IPodFactory} from "./interfaces/IPodFactory.sol";
 
 /// @title PodAdminGateway for TRIBE Governance pods
 /// @notice Acts as a gateway for admin functionality and vetos in the TRIBE governance pod system
@@ -17,7 +17,7 @@ import {IPodFactory} from "./IPodFactory.sol";
 ///
 contract PodAdminGateway is CoreRef, IPodAdminGateway {
     /// @notice Orca membership token for the pods. Handles permissioning pod members
-    IMemberToken private immutable memberToken;
+    MemberToken private immutable memberToken;
 
     /// @notice Pod factory which creates optimistic pods and acts as a source of information
     IPodFactory private immutable podFactory;
@@ -27,7 +27,7 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
         address _memberToken,
         address _podFactory
     ) CoreRef(_core) {
-        memberToken = IMemberToken(_memberToken);
+        memberToken = MemberToken(_memberToken);
         podFactory = IPodFactory(_podFactory);
     }
 
@@ -102,7 +102,7 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
 
     /// @notice Transfer a pod admin from this gateway to another address
     function _transferPodAdmin(uint256 _podId, address newPodAdmin) internal {
-        IControllerV1 podController = podFactory.podController();
+        ControllerV1 podController = podFactory.podController();
 
         address oldPodAdmin = address(this);
         emit UpdatePodAdmin(_podId, oldPodAdmin, newPodAdmin);
