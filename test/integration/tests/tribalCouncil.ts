@@ -8,6 +8,7 @@ import { ethers } from 'hardhat';
 import { NamedAddresses, NamedContracts } from '@custom-types/types';
 import { getImpersonatedSigner, resetFork } from '@test/helpers';
 import proposals from '@test/integration/proposals_config';
+import { forceEth } from '@test/integration/setup/utils';
 import { TestEndtoEndCoordinator } from '../setup';
 import { BigNumber } from 'ethers';
 import { tribalCouncilMembers } from '@protocol/optimisticGovernance';
@@ -43,6 +44,8 @@ describe.only('Tribal Council', function () {
   let feiDAOTimelockSigner: SignerWithAddress;
   let tribalCouncilTimelockSigner: SignerWithAddress;
   let podConfig: any;
+
+  const dummyRole = ethers.utils.id('DUMMY_ROLE');
 
   before(async () => {
     chai.use(CBN(ethers.BigNumber));
@@ -83,18 +86,20 @@ describe.only('Tribal Council', function () {
     feiDAOTimelockSigner = await getImpersonatedSigner(contractAddresses.feiDAOTimelock);
     tribalCouncilTimelockSigner = await getImpersonatedSigner(contractAddresses.tribalCouncilTimelock);
 
+    await forceEth(contractAddresses.tribalCouncilTimelock);
+    await forceEth(contractAddresses.feiDAOTimelock);
     // const snapshotId = await createFixture();
     // console.log({ snapshotId });
 
     podConfig = {
       members: [
-        '0x0000000000000000000000000000000000000001',
-        '0x0000000000000000000000000000000000000002',
-        '0x0000000000000000000000000000000000000003',
-        '0x0000000000000000000000000000000000000004'
+        '0x000000000000000000000000000000000000000D', // TODO: Complete with real member addresses
+        '0x000000000000000000000000000000000000000E',
+        '0x000000000000000000000000000000000000000F',
+        '0x0000000000000000000000000000000000000010'
       ],
       threshold: 2,
-      label: '0x47282', // TribalCouncil
+      label: '0x54726962616c436f726e63696c00000000000000000000000000000000000000', // TribalCouncil
       ensString: 'testPod.eth',
       imageUrl: 'testPod.com',
       minDelay: 86400,
@@ -146,7 +151,6 @@ describe.only('Tribal Council', function () {
   });
 
   it('can create a new role via the Role Bastion', async () => {
-    const dummyRole = ethers.utils.id('DUMMY_ROLE');
     await roleBastion.connect(tribalCouncilTimelockSigner).createRole(dummyRole);
 
     // Validate that the role was created ROLE_ADMIN role
@@ -155,9 +159,6 @@ describe.only('Tribal Council', function () {
   });
 
   it('can authorise a pod timelock with a role', async () => {
-    const dummyRole = ethers.utils.id('DUMMY_ROLE');
-    await roleBastion.connect(tribalCouncilTimelockSigner).createRole(dummyRole);
-
     // Grant new role to the created pod timelock
     const podTimelock = await podFactory.getPodTimelock(tribalCouncilPodId);
     await core.connect(tribalCouncilTimelockSigner).grantRole(dummyRole, podTimelock);
@@ -168,9 +169,6 @@ describe.only('Tribal Council', function () {
   });
 
   it('can revoke a role from a pod timelock', async () => {
-    const dummyRole = ethers.utils.id('DUMMY_ROLE');
-    await roleBastion.connect(tribalCouncilTimelockSigner).createRole(dummyRole);
-
     // Grant new role to the created pod timelock
     const podTimelock = await podFactory.getPodTimelock(tribalCouncilPodId);
     await core.connect(tribalCouncilTimelockSigner).grantRole(dummyRole, podTimelock);
