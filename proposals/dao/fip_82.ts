@@ -10,7 +10,7 @@ import {
 import { getImpersonatedSigner } from '@test/helpers';
 import { tribeCouncilPodConfig, protocolPodConfig, PodCreationConfig } from '@protocol/optimisticGovernance';
 import { abi as timelockABI } from '../../artifacts/contracts/dao/timelock/OptimisticTimelock.sol/OptimisticTimelock.json';
-import { abi as gnosisSafeABI } from '../../artifacts/contracts/pods/orcaInterfaces/IGnosisSafe.sol/IGnosisSafe.json';
+import { abi as gnosisSafeABI } from '../../artifacts/contracts/pods/interfaces/IGnosisSafe.sol/IGnosisSafe.json';
 import { Contract } from 'ethers';
 const toBN = ethers.BigNumber.from;
 

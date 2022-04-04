@@ -1,6 +1,6 @@
 import { ethers } from 'ethers';
 
-type PodConfig = {
+export type PodConfig = {
   members: string[];
   threshold: number;
   label: string;
