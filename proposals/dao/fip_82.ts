@@ -54,7 +54,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   );
   await podFactory.deployTransaction.wait();
   await mintOrcaToken(podFactory.address);
-  logging && console.log('DAO pod factory deployed to:', podFactory.address);
+  logging && console.log('Pod factory deployed to:', podFactory.address);
 
   // 3. Deploy PodAdminGateway contract
   const podAdminGatewayFactory = await ethers.getContractFactory('PodAdminGateway');
