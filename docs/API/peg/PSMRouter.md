@@ -1,105 +1,73 @@
-## `PSMRouter`
-
-the PSM router is an ungoverned, non custodial contract that allows user to seamlessly wrap and unwrap their WETH
-for trading against the PegStabilityModule.
+## <span id="PSMRouter"></span> `PSMRouter`
 
 
 
-### `ensure(uint256 deadline)`
+- [`ensure(uint256 deadline)`][PSMRouter-ensure-uint256-]
+- [`constructor(contract IPegStabilityModule _psm, contract IFei _fei)`][PSMRouter-constructor-contract-IPegStabilityModule-contract-IFei-]
+- [`getMintAmountOut(uint256 amountIn)`][PSMRouter-getMintAmountOut-uint256-]
+- [`getRedeemAmountOut(uint256 amountFeiIn)`][PSMRouter-getRedeemAmountOut-uint256-]
+- [`getMaxMintAmountOut()`][PSMRouter-getMaxMintAmountOut--]
+- [`getMaxRedeemAmountOut()`][PSMRouter-getMaxRedeemAmountOut--]
+- [`mint(address to, uint256 minAmountOut, uint256 ethAmountIn)`][PSMRouter-mint-address-uint256-uint256-]
+- [`mint(address to, uint256 minAmountOut, uint256 deadline, uint256 ethAmountIn)`][PSMRouter-mint-address-uint256-uint256-uint256-]
+- [`redeem(address to, uint256 amountFeiIn, uint256 minAmountOut)`][PSMRouter-redeem-address-uint256-uint256-]
+- [`redeem(address to, uint256 amountFeiIn, uint256 minAmountOut, uint256 deadline)`][PSMRouter-redeem-address-uint256-uint256-uint256-]
+- [`fallback()`][PSMRouter-fallback--]
+- [`_mint(address _to, uint256 _minAmountOut, uint256 _ethAmountIn)`][PSMRouter-_mint-address-uint256-uint256-]
+- [`_redeem(address to, uint256 amountFeiIn, uint256 minAmountOut)`][PSMRouter-_redeem-address-uint256-uint256-]
+- [`psm()`][IPSMRouter-psm--]
+- [`fei()`][IPSMRouter-fei--]
+### <span id="PSMRouter-ensure-uint256-"></span> `ensure(uint256 deadline)`
 
 
 
+### <span id="PSMRouter-constructor-contract-IPegStabilityModule-contract-IFei-"></span> `constructor(contract IPegStabilityModule _psm, contract IFei _fei)` (public)
 
 
 
-### `constructor(contract IPegStabilityModule _psm, contract IFei _fei)` (public)
+### <span id="PSMRouter-getMintAmountOut-uint256-"></span> `getMintAmountOut(uint256 amountIn) → uint256 amountFeiOut` (public)
 
 
 
-
-
-### `getMintAmountOut(uint256 amountIn) → uint256 amountFeiOut` (public)
-
-view only pass through function to get amount of FEI out with given amount of ETH in
+### <span id="PSMRouter-getRedeemAmountOut-uint256-"></span> `getRedeemAmountOut(uint256 amountFeiIn) → uint256 amountTokenOut` (public)
 
 
 
-### `getRedeemAmountOut(uint256 amountFeiIn) → uint256 amountTokenOut` (public)
-
-view only pass through function to get amount of ETH out with given amount of FEI in
+### <span id="PSMRouter-getMaxMintAmountOut--"></span> `getMaxMintAmountOut() → uint256` (external)
 
 
 
-### `getMaxMintAmountOut() → uint256` (external)
-
-the maximum mint amount out
+### <span id="PSMRouter-getMaxRedeemAmountOut--"></span> `getMaxRedeemAmountOut() → uint256` (external)
 
 
 
-### `getMaxRedeemAmountOut() → uint256` (external)
-
-the maximum redeem amount out
-
-
-
-### `mint(address to, uint256 minAmountOut, uint256 ethAmountIn) → uint256` (external)
-
-Mints fei to the given address, with a minimum amount required
-
+### <span id="PSMRouter-mint-address-uint256-uint256-"></span> `mint(address to, uint256 minAmountOut, uint256 ethAmountIn) → uint256` (external)
 
 This wraps ETH and then calls into the PSM to mint the fei. We return the amount of fei minted.
 
 
-### `mint(address to, uint256 minAmountOut, uint256 deadline, uint256 ethAmountIn) → uint256` (external)
-
-Mints fei to the given address, with a minimum amount required and a deadline
-
+### <span id="PSMRouter-mint-address-uint256-uint256-uint256-"></span> `mint(address to, uint256 minAmountOut, uint256 deadline, uint256 ethAmountIn) → uint256` (external)
 
 This wraps ETH and then calls into the PSM to mint the fei. We return the amount of fei minted.
 
 
-### `redeem(address to, uint256 amountFeiIn, uint256 minAmountOut) → uint256` (external)
-
-Redeems fei for ETH
-First pull user FEI into this contract
-Then call redeem on the PSM to turn the FEI into weth
-Withdraw all weth to eth in the router
-Send the eth to the specified recipient
+### <span id="PSMRouter-redeem-address-uint256-uint256-"></span> `redeem(address to, uint256 amountFeiIn, uint256 minAmountOut) → uint256` (external)
 
 
 
-
-### `redeem(address to, uint256 amountFeiIn, uint256 minAmountOut, uint256 deadline) → uint256` (external)
-
-Redeems fei for ETH
-First pull user FEI into this contract
-Then call redeem on the PSM to turn the FEI into weth
-Withdraw all weth to eth in the router
-Send the eth to the specified recipient
+### <span id="PSMRouter-redeem-address-uint256-uint256-uint256-"></span> `redeem(address to, uint256 amountFeiIn, uint256 minAmountOut, uint256 deadline) → uint256` (external)
 
 
 
-
-### `fallback()` (external)
-
-function to receive ether from the weth contract when the redeem function is called
-will not accept eth unless there is an active redemption.
+### <span id="PSMRouter-fallback--"></span> `fallback()` (external)
 
 
 
-### `_mint(address _to, uint256 _minAmountOut, uint256 _ethAmountIn) → uint256` (internal)
-
-helper function to wrap eth and handle mint call to PSM
+### <span id="PSMRouter-_mint-address-uint256-uint256-"></span> `_mint(address _to, uint256 _minAmountOut, uint256 _ethAmountIn) → uint256` (internal)
 
 
 
-### `_redeem(address to, uint256 amountFeiIn, uint256 minAmountOut) → uint256 amountOut` (internal)
-
-helper function to deposit user FEI, unwrap weth and send eth to the user
-the PSM router receives the weth, then sends it to the specified recipient.
-
-
-
+### <span id="PSMRouter-_redeem-address-uint256-uint256-"></span> `_redeem(address to, uint256 amountFeiIn, uint256 minAmountOut) → uint256 amountOut` (internal)
 
 
 

@@ -1,179 +1,134 @@
-## `IPegStabilityModule`
-
- The Fei PSM is a contract which holds a reserve of assets in order to exchange FEI at $1 of underlying assets with a fee.
-`mint()` - buy FEI for $1 of underlying tokens
-`redeem()` - sell FEI back for $1 of the same
-
-The contract has a reservesThreshold() of underlying meant to stand ready for redemptions. Any surplus reserves can be sent into the PCV using `allocateSurplus()`
-
-The contract is a
-PCVDeposit - to track reserves
-OracleRef - to determine price of underlying, and
-RateLimitedMinter - to stop infinite mints and related issues (but this is in the implementation due to inheritance-linearization difficulties)
-
-Inspired by MakerDAO PSM, code written without reference
+## <span id="IPegStabilityModule"></span> `IPegStabilityModule`
 
 
 
-
-### `mint(address to, uint256 amountIn, uint256 minAmountOut) → uint256 amountFeiOut` (external)
-
-mint `amountFeiOut` FEI to address `to` for `amountIn` underlying tokens
-
+- [`mint(address to, uint256 amountIn, uint256 minAmountOut)`][IPegStabilityModule-mint-address-uint256-uint256-]
+- [`redeem(address to, uint256 amountFeiIn, uint256 minAmountOut)`][IPegStabilityModule-redeem-address-uint256-uint256-]
+- [`allocateSurplus()`][IPegStabilityModule-allocateSurplus--]
+- [`setMintFee(uint256 newMintFeeBasisPoints)`][IPegStabilityModule-setMintFee-uint256-]
+- [`setRedeemFee(uint256 newRedeemFeeBasisPoints)`][IPegStabilityModule-setRedeemFee-uint256-]
+- [`setReservesThreshold(uint256 newReservesThreshold)`][IPegStabilityModule-setReservesThreshold-uint256-]
+- [`setSurplusTarget(contract IPCVDeposit newTarget)`][IPegStabilityModule-setSurplusTarget-contract-IPCVDeposit-]
+- [`getMintAmountOut(uint256 amountIn)`][IPegStabilityModule-getMintAmountOut-uint256-]
+- [`getRedeemAmountOut(uint256 amountFeiIn)`][IPegStabilityModule-getRedeemAmountOut-uint256-]
+- [`getMaxMintAmountOut()`][IPegStabilityModule-getMaxMintAmountOut--]
+- [`hasSurplus()`][IPegStabilityModule-hasSurplus--]
+- [`reservesSurplus()`][IPegStabilityModule-reservesSurplus--]
+- [`reservesThreshold()`][IPegStabilityModule-reservesThreshold--]
+- [`mintFeeBasisPoints()`][IPegStabilityModule-mintFeeBasisPoints--]
+- [`redeemFeeBasisPoints()`][IPegStabilityModule-redeemFeeBasisPoints--]
+- [`underlyingToken()`][IPegStabilityModule-underlyingToken--]
+- [`surplusTarget()`][IPegStabilityModule-surplusTarget--]
+- [`MAX_FEE()`][IPegStabilityModule-MAX_FEE--]
+- [`AllocateSurplus(address caller, uint256 amount)`][IPegStabilityModule-AllocateSurplus-address-uint256-]
+- [`MaxFeeUpdate(uint256 oldMaxFee, uint256 newMaxFee)`][IPegStabilityModule-MaxFeeUpdate-uint256-uint256-]
+- [`MintFeeUpdate(uint256 oldMintFee, uint256 newMintFee)`][IPegStabilityModule-MintFeeUpdate-uint256-uint256-]
+- [`RedeemFeeUpdate(uint256 oldRedeemFee, uint256 newRedeemFee)`][IPegStabilityModule-RedeemFeeUpdate-uint256-uint256-]
+- [`ReservesThresholdUpdate(uint256 oldReservesThreshold, uint256 newReservesThreshold)`][IPegStabilityModule-ReservesThresholdUpdate-uint256-uint256-]
+- [`SurplusTargetUpdate(contract IPCVDeposit oldTarget, contract IPCVDeposit newTarget)`][IPegStabilityModule-SurplusTargetUpdate-contract-IPCVDeposit-contract-IPCVDeposit-]
+- [`Redeem(address to, uint256 amountFeiIn, uint256 amountAssetOut)`][IPegStabilityModule-Redeem-address-uint256-uint256-]
+- [`Mint(address to, uint256 amountIn, uint256 amountFeiOut)`][IPegStabilityModule-Mint-address-uint256-uint256-]
+### <span id="IPegStabilityModule-mint-address-uint256-uint256-"></span> `mint(address to, uint256 amountIn, uint256 minAmountOut) → uint256 amountFeiOut` (external)
 
 see getMintAmountOut() to pre-calculate amount out
 
-### `redeem(address to, uint256 amountFeiIn, uint256 minAmountOut) → uint256 amountOut` (external)
-
-redeem `amountFeiIn` FEI for `amountOut` underlying tokens and send to address `to`
-
+### <span id="IPegStabilityModule-redeem-address-uint256-uint256-"></span> `redeem(address to, uint256 amountFeiIn, uint256 minAmountOut) → uint256 amountOut` (external)
 
 see getRedeemAmountOut() to pre-calculate amount out
 
-### `allocateSurplus()` (external)
+### <span id="IPegStabilityModule-allocateSurplus--"></span> `allocateSurplus()` (external)
 
-send any surplus reserves to the PCV allocation
 
 
+### <span id="IPegStabilityModule-setMintFee-uint256-"></span> `setMintFee(uint256 newMintFeeBasisPoints)` (external)
 
-### `setMintFee(uint256 newMintFeeBasisPoints)` (external)
 
-set the mint fee vs oracle price in basis point terms
 
+### <span id="IPegStabilityModule-setRedeemFee-uint256-"></span> `setRedeemFee(uint256 newRedeemFeeBasisPoints)` (external)
 
 
-### `setRedeemFee(uint256 newRedeemFeeBasisPoints)` (external)
 
-set the redemption fee vs oracle price in basis point terms
+### <span id="IPegStabilityModule-setReservesThreshold-uint256-"></span> `setReservesThreshold(uint256 newReservesThreshold)` (external)
 
 
 
-### `setReservesThreshold(uint256 newReservesThreshold)` (external)
+### <span id="IPegStabilityModule-setSurplusTarget-contract-IPCVDeposit-"></span> `setSurplusTarget(contract IPCVDeposit newTarget)` (external)
 
-set the ideal amount of reserves for the contract to hold for redemptions
 
 
+### <span id="IPegStabilityModule-getMintAmountOut-uint256-"></span> `getMintAmountOut(uint256 amountIn) → uint256 amountFeiOut` (external)
 
-### `setSurplusTarget(contract IPCVDeposit newTarget)` (external)
 
-set the target for sending surplus reserves
 
+### <span id="IPegStabilityModule-getRedeemAmountOut-uint256-"></span> `getRedeemAmountOut(uint256 amountFeiIn) → uint256 amountOut` (external)
 
 
-### `getMintAmountOut(uint256 amountIn) → uint256 amountFeiOut` (external)
 
-calculate the amount of FEI out for a given `amountIn` of underlying
+### <span id="IPegStabilityModule-getMaxMintAmountOut--"></span> `getMaxMintAmountOut() → uint256` (external)
 
 
 
-### `getRedeemAmountOut(uint256 amountFeiIn) → uint256 amountOut` (external)
+### <span id="IPegStabilityModule-hasSurplus--"></span> `hasSurplus() → bool` (external)
 
-calculate the amount of underlying out for a given `amountFeiIn` of FEI
 
 
+### <span id="IPegStabilityModule-reservesSurplus--"></span> `reservesSurplus() → int256` (external)
 
-### `getMaxMintAmountOut() → uint256` (external)
 
-the maximum mint amount out
 
+### <span id="IPegStabilityModule-reservesThreshold--"></span> `reservesThreshold() → uint256` (external)
 
 
-### `hasSurplus() → bool` (external)
 
-a flag for whether the current balance is above (true) or below and equal (false) to the reservesThreshold
+### <span id="IPegStabilityModule-mintFeeBasisPoints--"></span> `mintFeeBasisPoints() → uint256` (external)
 
 
 
-### `reservesSurplus() → int256` (external)
+### <span id="IPegStabilityModule-redeemFeeBasisPoints--"></span> `redeemFeeBasisPoints() → uint256` (external)
 
-an integer representing the positive surplus or negative deficit of contract balance vs reservesThreshold
 
 
+### <span id="IPegStabilityModule-underlyingToken--"></span> `underlyingToken() → contract IERC20` (external)
 
-### `reservesThreshold() → uint256` (external)
 
-the ideal amount of reserves for the contract to hold for redemptions
 
+### <span id="IPegStabilityModule-surplusTarget--"></span> `surplusTarget() → contract IPCVDeposit` (external)
 
 
-### `mintFeeBasisPoints() → uint256` (external)
 
-the mint fee vs oracle price in basis point terms
+### <span id="IPegStabilityModule-MAX_FEE--"></span> `MAX_FEE() → uint256` (external)
 
 
 
-### `redeemFeeBasisPoints() → uint256` (external)
+### <span id="IPegStabilityModule-AllocateSurplus-address-uint256-"></span> `AllocateSurplus(address caller, uint256 amount)`
 
-the redemption fee vs oracle price in basis point terms
 
 
+### <span id="IPegStabilityModule-MaxFeeUpdate-uint256-uint256-"></span> `MaxFeeUpdate(uint256 oldMaxFee, uint256 newMaxFee)`
 
-### `underlyingToken() → contract IERC20` (external)
 
-the underlying token exchanged for FEI
 
+### <span id="IPegStabilityModule-MintFeeUpdate-uint256-uint256-"></span> `MintFeeUpdate(uint256 oldMintFee, uint256 newMintFee)`
 
 
-### `surplusTarget() → contract IPCVDeposit` (external)
 
-the PCV deposit target to send surplus reserves
+### <span id="IPegStabilityModule-RedeemFeeUpdate-uint256-uint256-"></span> `RedeemFeeUpdate(uint256 oldRedeemFee, uint256 newRedeemFee)`
 
 
 
-### `MAX_FEE() → uint256` (external)
+### <span id="IPegStabilityModule-ReservesThresholdUpdate-uint256-uint256-"></span> `ReservesThresholdUpdate(uint256 oldReservesThreshold, uint256 newReservesThreshold)`
 
-the max mint and redeem fee in basis points
 
 
+### <span id="IPegStabilityModule-SurplusTargetUpdate-contract-IPCVDeposit-contract-IPCVDeposit-"></span> `SurplusTargetUpdate(contract IPCVDeposit oldTarget, contract IPCVDeposit newTarget)`
 
 
-### `AllocateSurplus(address caller, uint256 amount)`
 
-event emitted when excess PCV is allocated
+### <span id="IPegStabilityModule-Redeem-address-uint256-uint256-"></span> `Redeem(address to, uint256 amountFeiIn, uint256 amountAssetOut)`
 
 
 
-### `MaxFeeUpdate(uint256 oldMaxFee, uint256 newMaxFee)`
-
-event emitted when a new max fee is set
-
-
-
-### `MintFeeUpdate(uint256 oldMintFee, uint256 newMintFee)`
-
-event emitted when a new mint fee is set
-
-
-
-### `RedeemFeeUpdate(uint256 oldRedeemFee, uint256 newRedeemFee)`
-
-event emitted when a new redeem fee is set
-
-
-
-### `ReservesThresholdUpdate(uint256 oldReservesThreshold, uint256 newReservesThreshold)`
-
-event emitted when reservesThreshold is updated
-
-
-
-### `SurplusTargetUpdate(contract IPCVDeposit oldTarget, contract IPCVDeposit newTarget)`
-
-event emitted when surplus target is updated
-
-
-
-### `Redeem(address to, uint256 amountFeiIn, uint256 amountAssetOut)`
-
-event emitted upon a redemption
-
-
-
-### `Mint(address to, uint256 amountIn, uint256 amountFeiOut)`
-
-event emitted when fei gets minted
-
-
+### <span id="IPegStabilityModule-Mint-address-uint256-uint256-"></span> `Mint(address to, uint256 amountIn, uint256 amountFeiOut)`
 
 
 

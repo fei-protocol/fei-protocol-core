@@ -1,22 +1,15 @@
-## `BalanceGuard`
+## <span id="BalanceGuard"></span> `BalanceGuard`
 
 
 
+- [`check()`][BalanceGuard-check--]
+- [`getProtecActions()`][BalanceGuard-getProtecActions--]
+- [`Guarded(string reason)`][IGuard-Guarded-string-]
+### <span id="BalanceGuard-check--"></span> `check() → bool` (external)
 
 
 
-### `check() → bool` (external)
-
-
-
-
-
-### `getProtecActions() → address[] targets, bytes[] datas, uint256[] values` (external)
-
-
-
-
-
+### <span id="BalanceGuard-getProtecActions--"></span> `getProtecActions() → address[] targets, bytes[] datas, uint256[] values` (external)
 
 
 

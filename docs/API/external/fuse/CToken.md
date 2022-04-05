@@ -1,16 +1,9 @@
-## `CToken`
+## <span id="CToken"></span> `CToken`
 
 
 
-
-
-
-### `getCash() → uint256` (external)
-
-
-
-
-
+- [`getCash()`][CToken-getCash--]
+### <span id="CToken-getCash--"></span> `getCash() → uint256` (external)
 
 
 

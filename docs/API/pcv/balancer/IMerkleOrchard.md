@@ -1,34 +1,9 @@
-## `IMerkleOrchard`
+## <span id="IMerkleOrchard"></span> `IMerkleOrchard`
 
 
 
-
-
-
-### `claimDistributions(address claimer, struct IMerkleOrchard.Claim[] claims, contract IERC20[] tokens)` (external)
-
-
-
-
-
-
-
-### `Claim`
-
-
-uint256 distributionId
-
-
-uint256 balance
-
-
-address distributor
-
-
-uint256 tokenIndex
-
-
-bytes32[] merkleProof
+- [`claimDistributions(address claimer, struct IMerkleOrchard.Claim[] claims, contract IERC20[] tokens)`][IMerkleOrchard-claimDistributions-address-struct-IMerkleOrchard-Claim---contract-IERC20---]
+### <span id="IMerkleOrchard-claimDistributions-address-struct-IMerkleOrchard-Claim---contract-IERC20---"></span> `claimDistributions(address claimer, struct IMerkleOrchard.Claim[] claims, contract IERC20[] tokens)` (external)
 
 
 

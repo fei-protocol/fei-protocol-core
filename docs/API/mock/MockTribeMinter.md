@@ -1,22 +1,14 @@
-## `MockTribeMinter`
+## <span id="MockTribeMinter"></span> `MockTribeMinter`
 
 
 
+- [`constructor(contract ITribe _tribe)`][MockTribeMinter-constructor-contract-ITribe-]
+- [`mint(address to, uint256 amount)`][MockTribeMinter-mint-address-uint256-]
+### <span id="MockTribeMinter-constructor-contract-ITribe-"></span> `constructor(contract ITribe _tribe)` (public)
 
 
 
-### `constructor(contract ITribe _tribe)` (public)
-
-
-
-
-
-### `mint(address to, uint256 amount)` (external)
-
-
-
-
-
+### <span id="MockTribeMinter-mint-address-uint256-"></span> `mint(address to, uint256 amount)` (external)
 
 
 

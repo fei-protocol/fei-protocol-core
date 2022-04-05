@@ -1,0 +1,31 @@
+## <span id="{{anchor}}"></span> `{{name}}`
+
+{{{natspec.devdoc}}}
+
+{{#modifiers}}
+- [`{{name}}({{args}})`][{{anchor}}]
+{{/modifiers}}
+{{#functions}}
+- [`{{name}}({{args}})`][{{anchor}}]
+{{/functions}}
+{{#events}}
+- [`{{name}}({{args}})`][{{anchor}}]
+{{/events}}
+{{#ownModifiers}}
+### <span id="{{anchor}}"></span> `{{name}}({{args}})`
+
+{{{natspec.devdoc}}}
+
+{{/ownModifiers}}
+{{#ownFunctions}}
+### <span id="{{anchor}}"></span> `{{name}}({{args}}){{#if outputs}} → {{outputs}}{{/if}}` ({{visibility}})
+
+{{{natspec.devdoc}}}
+
+{{/ownFunctions}}
+{{#ownEvents}}
+### <span id="{{anchor}}"></span> `{{name}}({{args}})`
+
+{{{natspec.devdoc}}}
+
+{{/ownEvents}}

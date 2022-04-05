@@ -1,28 +1,19 @@
-## `PegExchangerDripper`
+## <span id="PegExchangerDripper"></span> `PegExchangerDripper`
 
 
 
+- [`drip()`][PegExchangerDripper-drip--]
+- [`isEligible()`][PegExchangerDripper-isEligible--]
+- [`recover()`][PegExchangerDripper-recover--]
+### <span id="PegExchangerDripper-drip--"></span> `drip()` (external)
 
 
 
-### `drip()` (external)
+### <span id="PegExchangerDripper-isEligible--"></span> `isEligible() → bool` (external)
 
 
 
-
-
-### `isEligible() → bool` (external)
-
-
-
-
-
-### `recover()` (external)
-
-
-
-
-
+### <span id="PegExchangerDripper-recover--"></span> `recover()` (external)
 
 
 

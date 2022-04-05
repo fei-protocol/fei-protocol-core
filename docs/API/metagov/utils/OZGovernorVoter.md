@@ -1,34 +1,64 @@
-## `OZGovernorVoter`
+## <span id="OZGovernorVoter"></span> `OZGovernorVoter`
 
 
 
+- [`ifMinterSelf()`][CoreRef-ifMinterSelf--]
+- [`onlyMinter()`][CoreRef-onlyMinter--]
+- [`onlyBurner()`][CoreRef-onlyBurner--]
+- [`onlyPCVController()`][CoreRef-onlyPCVController--]
+- [`onlyGovernorOrAdmin()`][CoreRef-onlyGovernorOrAdmin--]
+- [`onlyGovernor()`][CoreRef-onlyGovernor--]
+- [`onlyGuardianOrGovernor()`][CoreRef-onlyGuardianOrGovernor--]
+- [`isGovernorOrGuardianOrAdmin()`][CoreRef-isGovernorOrGuardianOrAdmin--]
+- [`onlyTribeRole(bytes32 role)`][CoreRef-onlyTribeRole-bytes32-]
+- [`hasAnyOfTwoRoles(bytes32 role1, bytes32 role2)`][CoreRef-hasAnyOfTwoRoles-bytes32-bytes32-]
+- [`hasAnyOfThreeRoles(bytes32 role1, bytes32 role2, bytes32 role3)`][CoreRef-hasAnyOfThreeRoles-bytes32-bytes32-bytes32-]
+- [`hasAnyOfFourRoles(bytes32 role1, bytes32 role2, bytes32 role3, bytes32 role4)`][CoreRef-hasAnyOfFourRoles-bytes32-bytes32-bytes32-bytes32-]
+- [`hasAnyOfFiveRoles(bytes32 role1, bytes32 role2, bytes32 role3, bytes32 role4, bytes32 role5)`][CoreRef-hasAnyOfFiveRoles-bytes32-bytes32-bytes32-bytes32-bytes32-]
+- [`onlyFei()`][CoreRef-onlyFei--]
+- [`whenNotPaused()`][Pausable-whenNotPaused--]
+- [`whenPaused()`][Pausable-whenPaused--]
+- [`propose(contract IOZGovernor governor, address[] targets, uint256[] values, bytes[] calldatas, string description)`][OZGovernorVoter-propose-contract-IOZGovernor-address---uint256---bytes---string-]
+- [`castVote(contract IOZGovernor governor, uint256 proposalId, uint8 support)`][OZGovernorVoter-castVote-contract-IOZGovernor-uint256-uint8-]
+- [`constructor(address coreAddress)`][CoreRef-constructor-address-]
+- [`_initialize(address)`][CoreRef-_initialize-address-]
+- [`setContractAdminRole(bytes32 newContractAdminRole)`][CoreRef-setContractAdminRole-bytes32-]
+- [`isContractAdmin(address _admin)`][CoreRef-isContractAdmin-address-]
+- [`pause()`][CoreRef-pause--]
+- [`unpause()`][CoreRef-unpause--]
+- [`core()`][CoreRef-core--]
+- [`fei()`][CoreRef-fei--]
+- [`tribe()`][CoreRef-tribe--]
+- [`feiBalance()`][CoreRef-feiBalance--]
+- [`tribeBalance()`][CoreRef-tribeBalance--]
+- [`_burnFeiHeld()`][CoreRef-_burnFeiHeld--]
+- [`_mintFei(address to, uint256 amount)`][CoreRef-_mintFei-address-uint256-]
+- [`_setContractAdminRole(bytes32 newContractAdminRole)`][CoreRef-_setContractAdminRole-bytes32-]
+- [`paused()`][Pausable-paused--]
+- [`_pause()`][Pausable-_pause--]
+- [`_unpause()`][Pausable-_unpause--]
+- [`_msgSender()`][Context-_msgSender--]
+- [`_msgData()`][Context-_msgData--]
+- [`CONTRACT_ADMIN_ROLE()`][ICoreRef-CONTRACT_ADMIN_ROLE--]
+- [`Proposed(contract IOZGovernor governor, uint256 proposalId)`][OZGovernorVoter-Proposed-contract-IOZGovernor-uint256-]
+- [`Voted(contract IOZGovernor governor, uint256 proposalId, uint256 weight, uint8 support)`][OZGovernorVoter-Voted-contract-IOZGovernor-uint256-uint256-uint8-]
+- [`Paused(address account)`][Pausable-Paused-address-]
+- [`Unpaused(address account)`][Pausable-Unpaused-address-]
+- [`CoreUpdate(address oldCore, address newCore)`][ICoreRef-CoreUpdate-address-address-]
+- [`ContractAdminRoleUpdate(bytes32 oldContractAdminRole, bytes32 newContractAdminRole)`][ICoreRef-ContractAdminRoleUpdate-bytes32-bytes32-]
+### <span id="OZGovernorVoter-propose-contract-IOZGovernor-address---uint256---bytes---string-"></span> `propose(contract IOZGovernor governor, address[] targets, uint256[] values, bytes[] calldatas, string description) → uint256` (external)
 
 
 
-### `propose(contract IOZGovernor governor, address[] targets, uint256[] values, bytes[] calldatas, string description) → uint256` (external)
-
-propose a new proposal on the target governor.
+### <span id="OZGovernorVoter-castVote-contract-IOZGovernor-uint256-uint8-"></span> `castVote(contract IOZGovernor governor, uint256 proposalId, uint8 support) → uint256` (external)
 
 
 
-### `castVote(contract IOZGovernor governor, uint256 proposalId, uint8 support) → uint256` (external)
-
-cast a vote on a given proposal on the target governor.
+### <span id="OZGovernorVoter-Proposed-contract-IOZGovernor-uint256-"></span> `Proposed(contract IOZGovernor governor, uint256 proposalId)`
 
 
 
-
-### `Proposed(contract IOZGovernor governor, uint256 proposalId)`
-
-
-
-
-
-### `Voted(contract IOZGovernor governor, uint256 proposalId, uint256 weight, uint8 support)`
-
-
-
-
+### <span id="OZGovernorVoter-Voted-contract-IOZGovernor-uint256-uint256-uint8-"></span> `Voted(contract IOZGovernor governor, uint256 proposalId, uint256 weight, uint8 support)`
 
 
 

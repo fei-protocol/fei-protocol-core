@@ -1,16 +1,9 @@
-## `CEther`
+## <span id="CEther"></span> `CEther`
 
 
 
-
-
-
-### `mint()` (external)
-
-
-
-
-
+- [`mint()`][CEther-mint--]
+### <span id="CEther-mint--"></span> `mint()` (external)
 
 
 

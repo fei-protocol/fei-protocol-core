@@ -1,16 +1,9 @@
-## `IPoolManager`
+## <span id="IPoolManager"></span> `IPoolManager`
 
 
 
-
-
-
-### `token() → address` (external)
-
-
-
-
-
+- [`token()`][IPoolManager-token--]
+### <span id="IPoolManager-token--"></span> `token() → address` (external)
 
 
 

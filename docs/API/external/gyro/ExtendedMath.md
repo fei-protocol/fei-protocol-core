@@ -1,68 +1,44 @@
-## `ExtendedMath`
-
-This contract contains math related utilities that allows to
-compute fixed-point exponentiation or perform scaled arithmetic operations
+## <span id="ExtendedMath"></span> `ExtendedMath`
 
 
 
-
-### `powf(int128 _x, int128 _y) → int128 _xExpy` (internal)
-
-Computes x**y where both `x` and `y` are fixed-point numbers
-
-
-
-### `mulPow(uint256 value, uint256 base, uint256 exponent, uint256 decimal) → uint256` (internal)
-
-Computes `value * base ** exponent` where all of the parameters
-are fixed point numbers scaled with `decimal`
+- [`powf(int128 _x, int128 _y)`][ExtendedMath-powf-int128-int128-]
+- [`mulPow(uint256 value, uint256 base, uint256 exponent, uint256 decimal)`][ExtendedMath-mulPow-uint256-uint256-uint256-uint256-]
+- [`scaledMul(uint256 a, uint256 b, uint256 _decimals)`][ExtendedMath-scaledMul-uint256-uint256-uint256-]
+- [`scaledMul(uint256 a, uint256 b)`][ExtendedMath-scaledMul-uint256-uint256-]
+- [`scaledDiv(uint256 a, uint256 b, uint256 _decimals)`][ExtendedMath-scaledDiv-uint256-uint256-uint256-]
+- [`scaledDiv(uint256 a, uint256 b)`][ExtendedMath-scaledDiv-uint256-uint256-]
+- [`scaledPow(uint256 base, uint256 exp, uint256 _decimals)`][ExtendedMath-scaledPow-uint256-uint256-uint256-]
+- [`scaledPow(uint256 base, uint256 exp)`][ExtendedMath-scaledPow-uint256-uint256-]
+### <span id="ExtendedMath-powf-int128-int128-"></span> `powf(int128 _x, int128 _y) → int128 _xExpy` (internal)
 
 
 
-### `scaledMul(uint256 a, uint256 b, uint256 _decimals) → uint256` (internal)
-
-Multiplies `a` and `b` scaling the result down by `_decimals`
-`scaledMul(a, b, 18)` with an initial scale of 18 decimals for `a` and `b`
-would keep the result to 18 decimals
-The result of the computation is floored
+### <span id="ExtendedMath-mulPow-uint256-uint256-uint256-uint256-"></span> `mulPow(uint256 value, uint256 base, uint256 exponent, uint256 decimal) → uint256` (internal)
 
 
 
-### `scaledMul(uint256 a, uint256 b) → uint256` (internal)
+### <span id="ExtendedMath-scaledMul-uint256-uint256-uint256-"></span> `scaledMul(uint256 a, uint256 b, uint256 _decimals) → uint256` (internal)
 
 
 
-
-
-### `scaledDiv(uint256 a, uint256 b, uint256 _decimals) → uint256` (internal)
-
-Divides `a` and `b` scaling the result up by `_decimals`
-`scaledDiv(a, b, 18)` with an initial scale of 18 decimals for `a` and `b`
-would keep the result to 18 decimals
-The result of the computation is floored
+### <span id="ExtendedMath-scaledMul-uint256-uint256-"></span> `scaledMul(uint256 a, uint256 b) → uint256` (internal)
 
 
 
-### `scaledDiv(uint256 a, uint256 b) → uint256` (internal)
-
-See `scaledDiv(uint256 a, uint256 b, uint256 _decimals)`
+### <span id="ExtendedMath-scaledDiv-uint256-uint256-uint256-"></span> `scaledDiv(uint256 a, uint256 b, uint256 _decimals) → uint256` (internal)
 
 
 
-### `scaledPow(uint256 base, uint256 exp, uint256 _decimals) → uint256` (internal)
-
-Computes a**b where a is a scaled fixed-point number and b is an integer
-This keeps a scale of `_decimals` for `a`
-The computation is performed in O(log n)
+### <span id="ExtendedMath-scaledDiv-uint256-uint256-"></span> `scaledDiv(uint256 a, uint256 b) → uint256` (internal)
 
 
 
-### `scaledPow(uint256 base, uint256 exp) → uint256` (internal)
-
-See `scaledPow(uint256 base, uint256 exp, uint256 _decimals)`
+### <span id="ExtendedMath-scaledPow-uint256-uint256-uint256-"></span> `scaledPow(uint256 base, uint256 exp, uint256 _decimals) → uint256` (internal)
 
 
 
+### <span id="ExtendedMath-scaledPow-uint256-uint256-"></span> `scaledPow(uint256 base, uint256 exp) → uint256` (internal)
 
 
 

@@ -1,28 +1,9 @@
-## `IAssetManager`
+## <span id="IAssetManager"></span> `IAssetManager`
 
 
 
-
-
-
-### `setPoolConfig(bytes32 poolId, struct IAssetManager.PoolConfig config)` (external)
-
-
-
-
-
-
-
-### `PoolConfig`
-
-
-uint64 targetPercentage
-
-
-uint64 criticalPercentage
-
-
-uint64 feePercentage
+- [`setPoolConfig(bytes32 poolId, struct IAssetManager.PoolConfig config)`][IAssetManager-setPoolConfig-bytes32-struct-IAssetManager-PoolConfig-]
+### <span id="IAssetManager-setPoolConfig-bytes32-struct-IAssetManager-PoolConfig-"></span> `setPoolConfig(bytes32 poolId, struct IAssetManager.PoolConfig config)` (external)
 
 
 

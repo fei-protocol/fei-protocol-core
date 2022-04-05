@@ -1,10 +1,4 @@
-## `ILendingPoolAddressesProvider`
-
-
-
-
-
-
+## <span id="ILendingPoolAddressesProvider"></span> `ILendingPoolAddressesProvider`
 
 
 

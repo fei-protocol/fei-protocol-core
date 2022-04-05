@@ -1,41 +1,24 @@
-## `ERC20PCVDepositWrapper`
-
-a lightweight contract to wrap ERC20 holding PCV contracts
-  @author Fei Protocol
-  When upgrading the PCVDeposit interface, there are many old contracts which do not support it.
-  The main use case for the new interface is to add read methods for the Collateralization Oracle.
-  Most PCVDeposits resistant balance method is simply returning the balance as a pass-through
-  If the PCVDeposit holds FEI it may be considered as protocol FEI
-
-  This wrapper can be used in the CR oracle which reduces the number of contract upgrades and reduces the complexity and risk of the upgrade
+## <span id="ERC20PCVDepositWrapper"></span> `ERC20PCVDepositWrapper`
 
 
 
-
-### `constructor(address _tokenDeposit, contract IERC20 _token, bool _isProtocolFeiDeposit)` (public)
-
-
-
-
-
-### `balance() → uint256` (public)
-
-returns total balance of PCV in the Deposit
+- [`constructor(address _tokenDeposit, contract IERC20 _token, bool _isProtocolFeiDeposit)`][ERC20PCVDepositWrapper-constructor-address-contract-IERC20-bool-]
+- [`balance()`][ERC20PCVDepositWrapper-balance--]
+- [`resistantBalanceAndFei()`][ERC20PCVDepositWrapper-resistantBalanceAndFei--]
+- [`balanceReportedIn()`][ERC20PCVDepositWrapper-balanceReportedIn--]
+### <span id="ERC20PCVDepositWrapper-constructor-address-contract-IERC20-bool-"></span> `constructor(address _tokenDeposit, contract IERC20 _token, bool _isProtocolFeiDeposit)` (public)
 
 
 
-### `resistantBalanceAndFei() → uint256, uint256` (public)
-
-returns the resistant balance and FEI in the deposit
+### <span id="ERC20PCVDepositWrapper-balance--"></span> `balance() → uint256` (public)
 
 
 
-### `balanceReportedIn() → address` (public)
-
-display the related token of the balance reported
+### <span id="ERC20PCVDepositWrapper-resistantBalanceAndFei--"></span> `resistantBalanceAndFei() → uint256, uint256` (public)
 
 
 
+### <span id="ERC20PCVDepositWrapper-balanceReportedIn--"></span> `balanceReportedIn() → address` (public)
 
 
 
