@@ -119,7 +119,7 @@ contract PodFactory is CoreRef, IPodFactory {
         override
         returns (address)
     {
-        return ControllerV1(podController).podAdmin(podId);
+        return podController.podAdmin(podId);
     }
 
     /// @notice Get whether membership transfers are enabled for a pod
@@ -129,7 +129,7 @@ contract PodFactory is CoreRef, IPodFactory {
         override
         returns (bool)
     {
-        return ControllerV1(podController).isTransferLocked(podId);
+        return podController.isTransferLocked(podId);
     }
 
     //////////////////// STATE-CHANGING API ////////////////////
