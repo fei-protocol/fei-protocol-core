@@ -13,6 +13,7 @@ import {ITimelock} from "../../../dao/timelock/ITimelock.sol";
 import {TribeRoles} from "../../../core/TribeRoles.sol";
 import {ICore} from "../../../core/ICore.sol";
 import {MainnetAddresses} from "../fixtures/MainnetAddresses.sol";
+import {Core} from "../../../core/Core.sol";
 
 contract PodAdminGatewayIntegrationTest is DSTest {
     Vm public constant vm = Vm(HEVM_ADDRESS);
@@ -34,6 +35,12 @@ contract PodAdminGatewayIntegrationTest is DSTest {
     function setUp() public {
         // 1.0 Deploy pod factory
         factory = new PodFactory(core, podController, memberToken, podExecutor);
+
+        // Grant the factory the relevant roles to disable membership locks
+        vm.startPrank(feiDAOTimelock);
+        Core(core).createRole(TribeRoles.POD_ADMIN, TribeRoles.GOVERNOR);
+        Core(core).grantRole(TribeRoles.POD_ADMIN, address(factory));
+        vm.stopPrank();
 
         // 2.0 Deploy multi-pod admin contract, to expose pod admin functionality
         podAdminGateway = new PodAdminGateway(
@@ -70,7 +77,7 @@ contract PodAdminGatewayIntegrationTest is DSTest {
         bool memberTransfersLocked = factory.getIsMembershipTransferLocked(
             podId
         );
-        assertFalse(memberTransfersLocked);
+        assertTrue(memberTransfersLocked);
     }
 
     /// @notice Validate that a podAdmin can be added for a particular pod by the GOVERNOR

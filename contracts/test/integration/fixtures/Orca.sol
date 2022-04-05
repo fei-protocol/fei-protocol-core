@@ -10,6 +10,8 @@ import {PodFactory} from "../../../pods/PodFactory.sol";
 import {Vm} from "../../utils/Vm.sol";
 import {PodAdminGateway} from "../../../pods/PodAdminGateway.sol";
 import {MainnetAddresses} from "../fixtures/MainnetAddresses.sol";
+import {TribeRoles} from "../../../core/TribeRoles.sol";
+import {Core} from "../../../core/Core.sol";
 
 function createPod(
     ControllerV1 controller,
@@ -131,6 +133,12 @@ function deployPodWithSystem(
         podExecutor
     );
     mintOrcaTokens(address(factory), 2, vm);
+
+    // Grant POD_ADMIN role to factory
+    vm.startPrank(MainnetAddresses.FEI_DAO_TIMELOCK);
+    Core(core).createRole(TribeRoles.POD_ADMIN, TribeRoles.GOVERNOR);
+    Core(core).grantRole(TribeRoles.POD_ADMIN, address(factory));
+    vm.stopPrank();
 
     // 2. Deploy PodAdminGateway
     PodAdminGateway podAdminGateway = new PodAdminGateway(
