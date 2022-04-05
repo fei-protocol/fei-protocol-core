@@ -1,0 +1,16 @@
+## `IPoolManager`
+
+
+
+
+
+
+### `token() → address` (external)
+
+
+
+
+
+
+
+

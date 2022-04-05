@@ -1,0 +1,16 @@
+## `IAutoRewardsDistributor`
+
+
+
+
+
+
+### `setAutoRewardsDistribution()` (external)
+
+
+
+
+
+
+
+

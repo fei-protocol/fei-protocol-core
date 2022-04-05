@@ -1,0 +1,16 @@
+## `IPausable`
+
+
+
+
+
+
+### `paused() → bool` (external)
+
+
+
+
+
+
+
+

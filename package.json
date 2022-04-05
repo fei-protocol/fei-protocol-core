@@ -34,7 +34,7 @@
     "deploy:fuse": "DEPLOY_FILE=compoundPCVDeposit npx hardhat run --network mainnet scripts/deploy/migrations.ts",
     "deploy:timelock": "DEPLOY_FILE=optimisticTimelockDeploy npx hardhat run --network mainnet scripts/deploy/migrations.ts",
     "deploy:stw": "DEPLOY_FILE=deployStakedTokenWrapper npx hardhat run --network mainnet scripts/deploy/migrations.ts",
-    "docs": "npx solidity-docgen -i ./contracts/ -o ./docs/API --solc-module solc-0.8",
+    "docs": "npx solidity-docgen -i ./contracts/ -e ./contracts/test -o ./docs/API --solc-module solc-0.8",
     "abis": "node scripts/utils/abis.js",
     "calldata": "npx hardhat run scripts/utils/getProposalCalldata.ts",
     "check-proposal": "ENABLE_MAINNET_FORKING=true npx hardhat run scripts/utils/checkProposal.ts",
