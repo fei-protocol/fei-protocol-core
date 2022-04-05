@@ -9,11 +9,11 @@ import {ITimelock} from "../../../dao/timelock/ITimelock.sol";
 import {IPodFactory} from "../../../pods/interfaces/IPodFactory.sol";
 import {Core} from "../../../core/Core.sol";
 import {TribeRoles} from "../../../core/TribeRoles.sol";
+import {PodAdminGateway} from "../../../pods/PodAdminGateway.sol";
 
 import {DSTest} from "../../utils/DSTest.sol";
 import {mintOrcaTokens, getPodParams} from "../fixtures/Orca.sol";
 import {DummyStorage} from "../../utils/Fixtures.sol";
-import {createGnosisTx} from "../fixtures/Gnosis.sol";
 import {Vm} from "../../utils/Vm.sol";
 import {MainnetAddresses} from "../fixtures/MainnetAddresses.sol";
 import {OptimisticTimelock} from "../../../dao/timelock/OptimisticTimelock.sol";
@@ -25,7 +25,7 @@ contract PodFactoryIntegrationTest is DSTest {
 
     PodFactory factory;
     PodExecutor podExecutor;
-    address private podAdmin = address(0x3);
+    address private podAdmin;
 
     bytes32 public constant PROPOSER_ROLE = keccak256("PROPOSER_ROLE");
     bytes32 public constant EXECUTOR_ROLE = keccak256("EXECUTOR_ROLE");
@@ -36,6 +36,8 @@ contract PodFactoryIntegrationTest is DSTest {
     address feiDAOTimelock = MainnetAddresses.FEI_DAO_TIMELOCK;
 
     function setUp() public {
+        // For now, deploy a PodAdmin, but then maybe do a follow up PR
+        // which breaks out the factory to include a lens
         podExecutor = new PodExecutor();
         factory = new PodFactory(
             core,
@@ -43,7 +45,35 @@ contract PodFactoryIntegrationTest is DSTest {
             memberToken,
             address(podExecutor)
         );
+
+        PodAdminGateway podAdminGateway = new PodAdminGateway(
+            core,
+            memberToken,
+            address(factory)
+        );
+        podAdmin = address(podAdminGateway);
         mintOrcaTokens(address(factory), 2, vm);
+
+        // Grant factory the PodAdmin role, to by default disable pod membership transfers
+        vm.startPrank(feiDAOTimelock);
+        Core(core).createRole(TribeRoles.POD_ADMIN, TribeRoles.GOVERNOR);
+        Core(core).grantRole(TribeRoles.POD_ADMIN, address(factory));
+        vm.stopPrank();
+    }
+
+    /// @notice Validate initial factory state
+    function testInitialState() public {
+        assertEq(address(factory.podController()), podController);
+        assertEq(factory.latestPodId(), 0);
+        assertEq(factory.burnerDeploymentUsed(), false);
+        assertEq(factory.podExecutor(), address(podExecutor));
+
+        // Validate has PodAdmin role
+        bool hasPodAdminRole = Core(core).hasRole(
+            TribeRoles.POD_ADMIN,
+            address(factory)
+        );
+        assertTrue(hasPodAdminRole);
     }
 
     /// @notice Validate that a non-authorised address fails to create a pod

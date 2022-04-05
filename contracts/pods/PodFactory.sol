@@ -10,6 +10,7 @@ import {TribeRoles} from "../core/TribeRoles.sol";
 import {OptimisticTimelock} from "../dao/timelock/OptimisticTimelock.sol";
 import {CoreRef} from "../refs/CoreRef.sol";
 import {ICore} from "../core/ICore.sol";
+import {IPodAdminGateway} from "./interfaces/IPodAdminGateway.sol";
 
 /// @notice Contract used by an Admin pod to manage child pods.
 
@@ -57,9 +58,6 @@ contract PodFactory is CoreRef, IPodFactory {
     }
 
     ///////////////////// GETTERS ///////////////////////
-
-    // TODO: Maybe break these getters out into a form of Lens contract?
-    // Abstract away underlying storage and getters
 
     /// @notice Get the address of the Gnosis safe that represents a pod
     /// @param podId Unique id for the orca pod
@@ -220,13 +218,15 @@ contract PodFactory is CoreRef, IPodFactory {
             _config.admin,
             podId
         );
-
         address timelock = createOptimisticTimelock(
             safeAddress,
             _config.minDelay,
             podExecutor,
             _config.admin
         );
+
+        // Disable membership transfers by default
+        IPodAdminGateway(_config.admin).lockMembershipTransfers(podId);
 
         // Set mapping from podId to timelock for reference
         getPodTimelock[podId] = timelock;
