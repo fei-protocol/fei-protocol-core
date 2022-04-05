@@ -13,4 +13,49 @@ interface IPodAdminGateway {
 
     // Veto functionality
     event VetoTimelock(uint256 indexed podId, address indexed timelock);
+
+    function getPodAddMemberRole(uint256 _podId)
+        external
+        pure
+        returns (bytes32);
+
+    function getPodRemoveMemberRole(uint256 _podId)
+        external
+        pure
+        returns (bytes32);
+
+    function getPodVetoRole(uint256 _podId) external pure returns (bytes32);
+
+    function getPodTransferAdminRole(uint256 _podId)
+        external
+        pure
+        returns (bytes32);
+
+    function getSetMembershipTransferLockRole(uint256 _podId)
+        external
+        pure
+        returns (bytes32);
+
+    function transferPodAdmin(uint256 _podId, address newPodAdmin) external;
+
+    function batchTransferPodAdmins(
+        uint256[] calldata _podIds,
+        address[] calldata newPodAdmins
+    ) external;
+
+    function addPodMember(uint256 _podId, address _member) external;
+
+    function batchAddPodMember(uint256 _podId, address[] calldata _members)
+        external;
+
+    function removePodMember(uint256 _podId, address _member) external;
+
+    function batchRemovePodMember(uint256 _podId, address[] calldata _members)
+        external;
+
+    function lockMembershipTransfers(uint256 _podId) external;
+
+    function unlockMembershipTransfers(uint256 _podId) external;
+
+    function veto(uint256 _podId, bytes32 proposalId) external;
 }
