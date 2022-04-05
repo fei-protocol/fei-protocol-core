@@ -1,0 +1,7 @@
+# Stability Mechanism
+
+FEI protocol is an asset backed stablecoin that uses exogenous collateral and incentives to maintain its peg. There are two stability mechanisms, the first stability mechanism is FEI DEX liquidity. At the time of writing there are currently over 200m FEI deposited in decentralized exchanges. The second stability mechanism is the Peg Stability Module (PSM). The PSM is an AMM that uses Protocol Controlled Value (PCV) to allow the exchange of FEI for another stablecoin at a 1:1 ratio minus a small exchange fee. The first stability mechanism of FEI liquidity on DEX's is the primary mechanism by which price stability is achieved. However, if the peg is breached on DEX's, the PSM is used as a fallback mechanism and arbitraguers will purchase FEI below $1 on DEX's and resell to the PSM atomically, thus restoring the peg. In the current system, the PSM is an important, but secondary mechanism as prices on DEX's offer better execution than the PSM.
+
+The main benefit of the PSM is its deep liquidity. The liquidity depth is only bounded by the PSM's balance of external stablecoin and its buffercap of FEI it can mint. It allows large trades to execute without any slippage or fear of frontrunning by MEV bots.
+
+Currently there is a TribeReserveStabilizer that can come online when the protocol is undercollateralized and sell TRIBE to recollateralize the protocol. This mechanism can only be activated when the protocol is less than 90% undercollateralized for over 24 hours.
