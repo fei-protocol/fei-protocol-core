@@ -245,7 +245,8 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
     tribalCouncilSafeAddress,
     protocolSafeAddress,
     addresses.roleBastion,
-    addresses.nopeDAO
+    addresses.nopeDAO,
+    addresses.podFactory
   );
 };
 
@@ -258,7 +259,8 @@ const validateTribeRoles = async (
   tribalCouncilSafeAddress: string,
   protocolPodSafeAddress: string,
   roleBastionAddress: string,
-  nopeDAOAddress: string
+  nopeDAOAddress: string,
+  podFactoryAddress: string
 ) => {
   // feiDAOTimelock added roles: POD_DEPLOYER_ROLE
   const daoIsPodDeployer = await core.hasRole(ethers.utils.id('POD_DEPLOYER_ROLE'), feiDAOTimelockAddress);
@@ -302,6 +304,10 @@ const validateTribeRoles = async (
   // NopeDAO role: POD_VETO_ADMIN
   const nopeDAOVetoRole = await core.hasRole(ethers.utils.id('POD_VETO_ADMIN'), nopeDAOAddress);
   expect(nopeDAOVetoRole).to.be.true;
+
+  // PodFactory role: POD_ADMIN
+  const podFactoryAdminRole = await core.hasRole(ethers.utils.id('POD_ADMIN'), podFactoryAddress);
+  expect(podFactoryAdminRole).to.be.true;
 };
 
 export { deploy, setup, teardown, validate };
