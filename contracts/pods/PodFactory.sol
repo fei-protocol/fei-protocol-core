@@ -134,6 +134,7 @@ contract PodFactory is CoreRef, IPodFactory {
 
     /// @notice Create a child Orca pod with optimistic timelock. Callable by the DAO and the Tribal Council
     ///         Returns podId, optimistic pod timelock address and the Pod Gnosis Safe address
+    ///         This will lock membership transfers by default
     function createChildOptimisticPod(PodConfig calldata _config)
         public
         override
@@ -144,7 +145,14 @@ contract PodFactory is CoreRef, IPodFactory {
             address
         )
     {
-        return _createChildOptimisticPod(_config);
+        (
+            uint256 podId,
+            address timelock,
+            address safe
+        ) = _createChildOptimisticPod(_config);
+
+        // Disable membership transfers by default
+        IPodAdminGateway(_config.admin).lockMembershipTransfers(podId);
     }
 
     /// @notice Migrate to a new podController. Upgrades are opt in
@@ -224,9 +232,6 @@ contract PodFactory is CoreRef, IPodFactory {
             podExecutor,
             _config.admin
         );
-
-        // Disable membership transfers by default
-        IPodAdminGateway(_config.admin).lockMembershipTransfers(podId);
 
         // Set mapping from podId to timelock for reference
         getPodTimelock[podId] = timelock;

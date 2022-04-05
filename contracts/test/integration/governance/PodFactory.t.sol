@@ -257,8 +257,15 @@ contract PodFactoryIntegrationTest is DSTest {
         address setPodAdminA = ControllerV1(podController).podAdmin(podIds[0]);
         assertEq(setPodAdminA, podAdmin);
 
-        address setPodAdminB = ControllerV1(podController).podAdmin(podIds[0]);
+        address setPodAdminB = ControllerV1(podController).podAdmin(podIds[1]);
         assertEq(setPodAdminB, podAdmin);
+
+        // Check that pods are unlocked
+        bool podALocked = factory.getIsMembershipTransferLocked(podIds[0]);
+        assertFalse(podALocked);
+
+        bool podBLocked = factory.getIsMembershipTransferLocked(podIds[1]);
+        assertFalse(podBLocked);
     }
 
     /// @notice Validate that can create a transaction in the pod and that it progresses to the timelock
