@@ -116,7 +116,7 @@ contract PodFactory is CoreRef, IPodFactory {
         override
         returns (address)
     {
-        return ControllerV1(podController).podAdmin(podId);
+        return podController.podAdmin(podId);
     }
 
     //////////////////// STATE-CHANGING API ////////////////////
@@ -145,7 +145,7 @@ contract PodFactory is CoreRef, IPodFactory {
         hasAnyOfTwoRoles(TribeRoles.GOVERNOR, TribeRoles.POD_DEPLOYER_ROLE)
     {
         address oldController = newPodController;
-        podController = ControllerV1(newPodController);
+        podController = newPodController;
         emit UpdatePodController(oldController, newPodController);
     }
 
