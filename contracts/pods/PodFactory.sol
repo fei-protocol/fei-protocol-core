@@ -165,7 +165,7 @@ contract PodFactory is CoreRef, IPodFactory {
         hasAnyOfTwoRoles(TribeRoles.GOVERNOR, TribeRoles.POD_DEPLOYER_ROLE)
     {
         address oldController = newPodController;
-        podController = newPodController;
+        podController = ControllerV1(newPodController);
         emit UpdatePodController(oldController, newPodController);
     }
 
