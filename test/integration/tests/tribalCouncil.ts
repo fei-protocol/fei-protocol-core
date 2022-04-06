@@ -136,10 +136,9 @@ describe.only('Tribal Council', function () {
   });
 
   it('should be able to toggle membership transfers', async () => {
-    // Waiting for membership transfer lock PR
-    // await podAdminGateway.connect(feiDAOTimelockSigner).lockMembershipTransfer(tribalCouncilPodId);
-    // const isLocked = await podAdminGateway.isMembershipTransferLocked(tribalCouncilPodId);
-    // expect(isLocked).to.be.true;
+    await podAdminGateway.connect(feiDAOTimelockSigner).unlockMembershipTransfers(tribalCouncilPodId);
+    const isLocked = await podFactory.getIsMembershipTransferLocked(tribalCouncilPodId);
+    expect(isLocked).to.be.false;
   });
 
   ///////////    TribalCouncil management of other pods  /////////////
