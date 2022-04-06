@@ -9,21 +9,22 @@ Welcome to the developer documentation of the Fei Protocol. Fei itself is a coll
 - [Governance](Governance.md)
 
 ### Protocol controlled value
-- [PCV management](PCVManagement.md)
-- [PCV deposits](PCVDeposits.md)
-- [Collaterisation](Collaterisation.md)
+- [PCV management](/protocol/PCVManagement.md)
+- [PCV deposits](/protocol/PCVDeposits.md)
+- [Collaterisation](/protocol/Collaterisation.md)
 
 ### Stability
-- [Stability mechanism](StabilityMechanism.md)
-- [Peg stability modules](PegStabilityModules.md)
+- [Stability mechanism](/protocol/StabilityMechanism.md)
+- [Peg stability modules](/protocol/PegStabilityModules.md)
 ### Protocol operation
-- [Access control](AccessControl.md)
-- [Security](Security.md)
-- [Monitoring](Monitoring.md)
+- [Access control](/protocol/AccessControl.md)
+- [Security](/protocol/Security.md)
+- [Monitoring](/protocol/Monitoring.md)
 
 ### How to contribute
-- [Developer environment](DevEnvironment.md)
-- [End-to-end tests](EndtoEndTests.md)
+- [Developer environment](/protocol/DevEnvironment.md)
+- [End-to-end tests](/protocol/EndtoEndTests.md)
 
 ### Smart contract API
+- [API](./API)
 
