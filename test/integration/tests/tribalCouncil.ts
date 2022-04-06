@@ -1,4 +1,5 @@
-import { PodFactory, PodAdminGateway } from '@custom-types/contracts';
+import hre from 'hardhat';
+import { PodFactory, PodAdminGateway, RoleBastion, Core } from '@custom-types/contracts';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
@@ -7,11 +8,23 @@ import { ethers } from 'hardhat';
 import { NamedAddresses, NamedContracts } from '@custom-types/types';
 import { getImpersonatedSigner, resetFork } from '@test/helpers';
 import proposals from '@test/integration/proposals_config';
+import { forceEth } from '@test/integration/setup/utils';
 import { TestEndtoEndCoordinator } from '../setup';
-import { BigNumber } from 'ethers';
+import { BigNumber, Contract } from 'ethers';
 import { tribalCouncilMembers } from '@protocol/optimisticGovernance';
+import { abi as gnosisSafeABI } from '../../../artifacts/contracts/pods/interfaces/IGnosisSafe.sol/IGnosisSafe.json';
+import GnosisSDK from '@gnosis.pm/safe-core-sdk';
 
+const EthersSafeSDK = GnosisSDK;
 const toBN = ethers.BigNumber.from;
+
+function createSafeTxArgs(safe: Contract, functionSig: string, args: string[]) {
+  return {
+    to: safe.address, // TODO: send to timelock
+    data: safe.interface.encodeFunctionData(functionSig, args), // TODO: Specify protocol contract to call
+    value: '0'
+  };
+}
 
 describe.only('Tribal Council', function () {
   let contracts: NamedContracts;
@@ -21,8 +34,14 @@ describe.only('Tribal Council', function () {
   let doLogging: boolean;
   let podFactory: PodFactory;
   let podAdminGateway: PodAdminGateway;
+  let core: Core;
+  let roleBastion: RoleBastion;
   let tribalCouncilPodId: BigNumber;
   let feiDAOTimelockSigner: SignerWithAddress;
+  let tribalCouncilTimelockSigner: SignerWithAddress;
+  let podConfig: any;
+
+  const dummyRole = ethers.utils.id('DUMMY_ROLE');
 
   before(async () => {
     chai.use(CBN(ethers.BigNumber));
@@ -49,13 +68,38 @@ describe.only('Tribal Council', function () {
     doLogging && console.log(`Loading environment...`);
     ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment());
     doLogging && console.log(`Environment loaded.`);
+
     podFactory = contracts.podFactory as PodFactory;
     podAdminGateway = contracts.podAdminGateway as PodAdminGateway;
+    core = contracts.core as Core;
+    roleBastion = contracts.roleBastion as RoleBastion;
+
     tribalCouncilPodId = await podFactory.getPodId(contractAddresses.tribalCouncilTimelock);
 
     feiDAOTimelockSigner = await getImpersonatedSigner(contractAddresses.feiDAOTimelock);
+    tribalCouncilTimelockSigner = await getImpersonatedSigner(contractAddresses.tribalCouncilTimelock);
+
+    await forceEth(contractAddresses.tribalCouncilTimelock);
+    await forceEth(contractAddresses.feiDAOTimelock);
+
+    podConfig = {
+      members: [
+        '0x000000000000000000000000000000000000000D',
+        '0x000000000000000000000000000000000000000E',
+        '0x000000000000000000000000000000000000000F',
+        '0x0000000000000000000000000000000000000010'
+      ],
+      threshold: 1,
+      label: '0x54726962616c436f726e63696c00000000000000000000000000000000000000', // TribalCouncil
+      ensString: 'testPod.eth',
+      imageUrl: 'testPod.com',
+      minDelay: 86400,
+      numMembers: 4,
+      admin: podAdminGateway.address
+    };
   });
 
+  ///////////////   DAO management of Tribal Council  //////////////
   it('should allow DAO to add members', async () => {
     const initialNumPodMembers = await podFactory.getNumMembers(tribalCouncilPodId);
 
@@ -82,15 +126,88 @@ describe.only('Tribal Council', function () {
     expect(!podMembers.includes(memberToBurn)).to.be.true;
   });
 
-  it('can authorise another address with a role', async () => {
-    // TODO: Follow up PR
+  it('should be able to toggle membership transfers', async () => {
+    await podAdminGateway.connect(feiDAOTimelockSigner).unlockMembershipTransfers(tribalCouncilPodId);
+    const isLocked = await podFactory.getIsMembershipTransferLocked(tribalCouncilPodId);
+    expect(isLocked).to.be.false;
   });
 
-  it('can veto a lower ranking pod', async () => {
-    // TODO: Follow up PR
+  ///////////    TribalCouncil management of other pods  /////////////
+  it('can create a child pod', async () => {
+    await podFactory.connect(tribalCouncilTimelockSigner).createChildOptimisticPod(podConfig);
+    const podId = await podFactory.latestPodId();
+    const numPodMembers = await podFactory.getNumMembers(podId);
+    expect(numPodMembers).to.equal(4);
   });
 
-  it('should allow a proposal to be proposed and executed', async () => {
-    // TODO: Test on testnet/mainnet
+  it('can create a new role via the Role Bastion', async () => {
+    await roleBastion.connect(tribalCouncilTimelockSigner).createRole(dummyRole);
+
+    // Validate that the role was created ROLE_ADMIN role
+    const roleAdmin = await core.getRoleAdmin(dummyRole);
+    expect(roleAdmin).to.equal(ethers.utils.id('ROLE_ADMIN'));
   });
+
+  it('can authorise a pod timelock with a role', async () => {
+    // Grant new role to the created pod timelock
+    const podTimelock = await podFactory.getPodTimelock(tribalCouncilPodId);
+    await core.connect(tribalCouncilTimelockSigner).grantRole(dummyRole, podTimelock);
+
+    // Validate has role
+    const hasRole = await core.hasRole(dummyRole, podTimelock);
+    expect(hasRole).to.equal(true);
+  });
+
+  it('can revoke a role from a pod timelock', async () => {
+    // Grant new role to the created pod timelock
+    const podTimelock = await podFactory.getPodTimelock(tribalCouncilPodId);
+    await core.connect(tribalCouncilTimelockSigner).grantRole(dummyRole, podTimelock);
+
+    // Revoke role
+    await core.connect(tribalCouncilTimelockSigner).revokeRole(dummyRole, podTimelock);
+
+    // Validate does not have role
+    const hasRole = await core.hasRole(dummyRole, podTimelock);
+    expect(hasRole).to.equal(false);
+  });
+
+  // ////////   TribalCouncil pod execution  //////////////
+  it.skip('should allow a proposal to be proposed and executed', async () => {
+    // Deploy a pod through which a proposal will be executed
+    await podFactory.connect(tribalCouncilTimelockSigner).createChildOptimisticPod(podConfig);
+    const podId = await podFactory.latestPodId();
+    const safeAddress = await podFactory.getPodSafe(podId);
+
+    const podMemberSigner = await getImpersonatedSigner('0x000000000000000000000000000000000000000D');
+
+    // 1.0 Create Safe instantiation
+    const podSafe = new ethers.Contract(safeAddress, gnosisSafeABI, podMemberSigner);
+
+    const safeSDK = await EthersSafeSDK.create({
+      ethers: ethers as unknown as any,
+      safeAddress: contractAddresses.tribalCouncilSafe,
+      providerOrSigner: podMemberSigner
+    });
+
+    // 2.0 Create Safe transaction on Safe. Threshold set to 1 on pod
+    //     - create a proposal that targets the Safe's timelock
+    //     - include in the proposal tx data that will then target a part of the protocol
+    const txArgs = createSafeTxArgs(podSafe, 'function test(uint256)', ['']);
+    console.log({ txArgs });
+    const safeTransaction = await safeSDK.createTransaction(txArgs);
+    console.log({ safeTransaction });
+
+    // This will go to the timelock, Fast forward time
+
+    // Have proposal executed. Verify effect on pod
+  });
+
+  // it('should allow TribalCouncil to veto a proposal through the pod', async () => {
+
+  // })
+
+  ////////////  NopeDAO veto   ///////////////
+  // it('should allow the nopeDAO to veto a proposal through the pod', async () => {
+
+  // })
 });

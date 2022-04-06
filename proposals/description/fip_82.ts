@@ -120,13 +120,6 @@ const fip_82: ProposalDescription = {
       target: 'core',
       values: '0',
       method: 'grantRole(bytes32,address)',
-      arguments: ['0x2d46c62aa6fbc9b550f22e00476aebb90f4ea69cd492a68db4d444217763330d', '{protocolPodTimelock}'],
-      description: 'Grant Protocol Pod VOTIUM_ADMIN_ROLE role. Protocol pod will be able to manage Votium bribes'
-    },
-    {
-      target: 'core',
-      values: '0',
-      method: 'grantRole(bytes32,address)',
       arguments: ['0xf62a46a499242191aaab61084d4912c2c0a8c48e3d70edfb5a9be2bc9e92622f', '{tribalCouncilSafe}'],
       description: 'Grant TribalCouncil Gnosis Safe address role to register metadata'
     },

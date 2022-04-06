@@ -54,7 +54,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   );
   await podFactory.deployTransaction.wait();
   await mintOrcaToken(podFactory.address);
-  logging && console.log('DAO pod factory deployed to:', podFactory.address);
+  logging && console.log('Pod factory deployed to:', podFactory.address);
 
   // 3. Deploy PodAdminGateway contract
   const podAdminGatewayFactory = await ethers.getContractFactory('PodAdminGateway');
@@ -278,10 +278,6 @@ const validateTribeRoles = async (
 
   const councilIsPodAdmin = await core.hasRole(ethers.utils.id('POD_ADMIN'), tribalCouncilTimelockAddress);
   expect(councilIsPodAdmin).to.be.true;
-
-  // Protocol pod timelock roles: Specific first pod duties role
-  const protocolPodIsVotiumRole = await core.hasRole(ethers.utils.id('VOTIUM_ADMIN_ROLE'), protocolPodTimelockAddress);
-  expect(protocolPodIsVotiumRole).to.be.true;
 
   // TribalCouncil Gnosis Safe roles: POD_METADATA_REGISTER_ROLE
   const councilHasMetadataRegisterRole = await core.hasRole(
