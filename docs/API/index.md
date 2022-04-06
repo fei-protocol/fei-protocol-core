@@ -1,2 +1,2 @@
 # API 
-[FeiDAO](/API/dao/governor/FeiDAO.md)
+[FeiDAO](/dao/governor/FeiDAO.md)
