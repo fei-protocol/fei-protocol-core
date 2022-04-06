@@ -6,7 +6,7 @@ Welcome to the developer documentation of the Fei Protocol. Fei itself is a coll
 ## Contents
 ### Protocol design, architecture and operation
 ## Governance
-- [Governance](Governance.md)
+- [Governance](/protocol/Governance.md)
 
 ### Protocol controlled value
 - [PCV management](/protocol/PCVManagement.md)
