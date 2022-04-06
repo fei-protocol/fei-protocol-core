@@ -15,3 +15,8 @@ The guardian role is required to use the pcv guardian, and withdraw funds from a
 Guards know how to check for issues, and what calldata to provide the Sentinel to resolve the issue (or protect the asset in question, or pause functionality, etc). Guards are useless on their own as they have no role in the Fei/Tribe system.
 
 The PCV Sentinel acts as automated extennsion of the Multisig Guardian.
+
+Currently there are no guards. Planned guards include:
+- fuse oracle liquidity monitoring
+- psm liquidity monitoring (unpause eth psm when others are low)
+- pcv deposit monitoring (pull assets to safety if underlying deposit compromised)
