@@ -5,26 +5,14 @@ import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
 import { ethers } from 'hardhat';
 import { NamedAddresses, NamedContracts } from '@custom-types/types';
-import { getImpersonatedSigner, resetFork, time } from '@test/helpers';
+import { getImpersonatedSigner, resetFork } from '@test/helpers';
 import proposals from '@test/integration/proposals_config';
 import { forceEth } from '@test/integration/setup/utils';
 import { TestEndtoEndCoordinator } from '../setup';
-import { BigNumber, Contract } from 'ethers';
+import { BigNumber } from 'ethers';
 import { tribalCouncilMembers } from '@protocol/optimisticGovernance';
-import { abi as gnosisSafeABI } from '../../../artifacts/contracts/pods/interfaces/IGnosisSafe.sol/IGnosisSafe.json';
-import { abi as timelockABI } from '../../../artifacts/contracts/dao/timelock/OptimisticTimelock.sol/OptimisticTimelock.json';
-import GnosisSDK from '@gnosis.pm/safe-core-sdk';
 
-const EthersSafeSDK = GnosisSDK;
 const toBN = ethers.BigNumber.from;
-
-function createSafeTxArgs(timelock: Contract, functionSig: string, args: string[]) {
-  return {
-    to: timelock.address, // Send to timelock, calling timelock.schedule()
-    data: timelock.interface.encodeFunctionData(functionSig, args),
-    value: '0'
-  };
-}
 
 describe('Tribal Council', function () {
   let contracts: NamedContracts;
@@ -170,110 +158,4 @@ describe('Tribal Council', function () {
     const hasRole = await core.hasRole(dummyRole, podTimelock);
     expect(hasRole).to.equal(false);
   });
-
-  // ////////   TribalCouncil pod execution  //////////////
-  it.only('should allow a proposal to be proposed and executed', async () => {
-    // Test structure:
-    //   - Deploys a pod
-    //   - Has the TribalCouncil grant that pod timelock a role to interact with the
-    //     protocol
-    //   - Creates a proposal on the pod Safe
-    //   - Executes the proposal and sends it to the pod's timelock
-    //   - Fast forwards time and executes the timelocked proposal
-    //   - Verifies that intended protocol action was taken
-    //
-    // The role and protocol action is that the POD_METADATA_REGISTER_ROLE role is being granted
-    // and the pod is calling to register a proposal on the `GovernanceMetadataRegistry.sol`
-
-    // 1. Deploy a pod through which a proposal will be executed
-    await podFactory.connect(tribalCouncilTimelockSigner).createChildOptimisticPod(podConfig);
-    const podId = await podFactory.latestPodId();
-    const safeAddress = await podFactory.getPodSafe(podId);
-    const timelockAddress = await podFactory.getPodTimelock(podId);
-
-    const podMemberSigner = await getImpersonatedSigner('0x000000000000000000000000000000000000000D');
-    console.log('safe address: ', safeAddress);
-
-    // 2.0 Instantiate Gnosis SDK
-    const podSafe = new ethers.Contract(safeAddress, gnosisSafeABI, podMemberSigner);
-    const podTimelock = new ethers.Contract(timelockAddress, timelockABI, podMemberSigner);
-    console.log({ podTimelock });
-
-    console.log('setting up safeSDK');
-    const safeSDK = await EthersSafeSDK.create({
-      ethers: ethers as unknown as any,
-      safeAddress: safeAddress,
-      providerOrSigner: podMemberSigner,
-      // configure for Mainnet, as e2e runs on forked Mainnet
-      contractNetworks: {
-        ['1']: {
-          multiSendAddress: '0xA238CBeb142c10Ef7Ad8442C6D1f9E89e07e7761'
-        }
-      }
-    });
-    console.log({ safeSDK });
-
-    // 3. TribalCouncil authorise pod with POD_METADATA_REGISTER_ROLE role
-    await contracts.core
-      .connect(tribalCouncilTimelockSigner)
-      .grantRole(ethers.utils.id('POD_METADATA_REGISTER_ROLE'), timelockAddress);
-    console.log('granted POD_METADATA_REGISTER_ROLE role');
-
-    // 3.0 Create transaction on Safe. Threshold set to 1 on pod
-    //     - create a proposal that targets the Safe's timelock
-    //     - include in the proposal tx data that will then target a part of the protocol
-    const proposalId = '1234';
-    const proposalMetadata = 'FIP_XX: This tests that the governance upgrade flow works';
-    const registryTxData = contracts.governanceMetadataRegistry.interface.encodeFunctionData('registerProposal', [
-      podId,
-      proposalId,
-      proposalMetadata
-    ]);
-    console.log({ registryTxData });
-    const txArgs = createSafeTxArgs(podTimelock, 'schedule', [
-      contractAddresses.governanceMetadataRegistry,
-      '0',
-      registryTxData,
-      '0',
-      '0x1',
-      '0'
-    ]);
-    console.log({ txArgs });
-    const safeTransaction = await safeSDK.createTransaction(txArgs);
-    console.log({ safeTransaction });
-
-    // 3.0 Execute transaction on Safe
-    const tx = await safeSDK.executeTransaction(safeTransaction);
-    await tx.wait();
-
-    // 4.0 Fast forward time on timelock
-    await time.increase(toBN(5));
-
-    // 5.0 Execute timelocked transaction - need to call via the podExecutor
-    const podExecutor = contracts.podExecutor;
-    const executeTx = await podExecutor.execute(
-      timelockAddress,
-      contractAddresses.governanceMetadataRegistry,
-      '0',
-      registryTxData,
-      '0',
-      '0x1',
-      '0'
-    );
-    await executeTx.wait();
-
-    // 6.0 Validate that proposal was executed, verify mock proposal registered
-    const isRegistered = await contracts.governanceMetadataRegistry.isProposalRegistered(
-      podId,
-      proposalId,
-      proposalMetadata
-    );
-    expect(isRegistered).to.equal(true);
-  });
-
-  ////////////  NopeDAO veto   ///////////////
-  // it('should allow the nopeDAO to veto a proposal through the pod', async () => {
-  // TODO: Setup a transaction as above, for proposal creation but call
-  // await podAdminGateway.veto(podId, proposalId)
-  // })
 });

@@ -82,29 +82,3 @@ export const protocolPodConfig: PodConfig = {
   numMembers: protocolPodMembers.length,
   placeHolderMembers: placeHolderPodMembers
 };
-
-type PodAdminPriviledges = {
-  ADD_MEMBER: string[];
-  REMOVE_MEMBER: string[];
-};
-
-const GOVERN_ROLE_ID = ethers.utils.id('GOVERN_ROLE');
-const ROLE_ADMIN_ID = ethers.utils.id('ROLE_ADMIN');
-const GUARDIAN_ROLE_ID = ethers.utils.id('GUARDIAN_ROLE');
-
-export const adminPriviledge = {
-  ADD_MEMBER: 0,
-  REMOVE_MEMBER: 1
-};
-
-// TribeRoles which are granted a form of admin control over the TribalCouncil
-export const tribalCouncilAdminTribeRoles: PodAdminPriviledges = {
-  ADD_MEMBER: [GOVERN_ROLE_ID],
-  REMOVE_MEMBER: [GOVERN_ROLE_ID, GUARDIAN_ROLE_ID]
-};
-
-// TribeRoles which are granted a form of control over the ProtocolTier pod
-export const protocolPodAdminTribeRoles: PodAdminPriviledges = {
-  ADD_MEMBER: [GOVERN_ROLE_ID, ROLE_ADMIN_ID],
-  REMOVE_MEMBER: [GOVERN_ROLE_ID, ROLE_ADMIN_ID, GUARDIAN_ROLE_ID]
-};
