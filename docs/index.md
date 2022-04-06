@@ -26,5 +26,5 @@ Welcome to the developer documentation of the Fei Protocol. Fei itself is a coll
 - [End-to-end tests](/protocol/EndtoEndTests.md)
 
 ### Smart contract API
-- [API](./API)
+- [API](./API/index.md)
 
