@@ -44,6 +44,11 @@ interface IPodFactory {
 
     function getPodThreshold(uint256 podId) external view returns (uint256);
 
+    function getIsMembershipTransferLocked(uint256 podId)
+        external
+        view
+        returns (bool);
+
     function getNextPodId() external view returns (uint256);
 
     function getPodAdmin(uint256 podId) external view returns (address);

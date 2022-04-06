@@ -13,6 +13,7 @@ import {ITimelock} from "../../../dao/timelock/ITimelock.sol";
 import {TribeRoles} from "../../../core/TribeRoles.sol";
 import {ICore} from "../../../core/ICore.sol";
 import {MainnetAddresses} from "../fixtures/MainnetAddresses.sol";
+import {Core} from "../../../core/Core.sol";
 
 contract PodAdminGatewayIntegrationTest is DSTest {
     Vm public constant vm = Vm(HEVM_ADDRESS);
@@ -34,6 +35,12 @@ contract PodAdminGatewayIntegrationTest is DSTest {
     function setUp() public {
         // 1.0 Deploy pod factory
         factory = new PodFactory(core, podController, memberToken, podExecutor);
+
+        // Grant the factory the relevant roles to disable membership locks
+        vm.startPrank(feiDAOTimelock);
+        Core(core).createRole(TribeRoles.POD_ADMIN, TribeRoles.GOVERNOR);
+        Core(core).grantRole(TribeRoles.POD_ADMIN, address(factory));
+        vm.stopPrank();
 
         // 2.0 Deploy multi-pod admin contract, to expose pod admin functionality
         podAdminGateway = new PodAdminGateway(
@@ -66,6 +73,11 @@ contract PodAdminGatewayIntegrationTest is DSTest {
             address(address(podAdminGateway))
         );
         assertTrue(hasProposerRole);
+
+        bool memberTransfersLocked = factory.getIsMembershipTransferLocked(
+            podId
+        );
+        assertTrue(memberTransfersLocked);
     }
 
     /// @notice Validate that a podAdmin can be added for a particular pod by the GOVERNOR
@@ -132,6 +144,31 @@ contract PodAdminGatewayIntegrationTest is DSTest {
         assertEq(podMembers[1], membersToAdd[0]);
     }
 
+    /// @notice Validate can lock membership transfers
+    function testLockMembershipTransfer() public {
+        vm.prank(feiDAOTimelock);
+        podAdminGateway.lockMembershipTransfers(podId);
+
+        bool memberTransfersLocked = factory.getIsMembershipTransferLocked(
+            podId
+        );
+        assertTrue(memberTransfersLocked);
+    }
+
+    /// @notice Validate can unlock membership transfers
+    function testUnLockMembershipTransfer() public {
+        vm.prank(feiDAOTimelock);
+        podAdminGateway.lockMembershipTransfers(podId);
+
+        vm.prank(feiDAOTimelock);
+        podAdminGateway.unlockMembershipTransfers(podId);
+
+        bool memberTransfersLocked = factory.getIsMembershipTransferLocked(
+            podId
+        );
+        assertFalse(memberTransfersLocked);
+    }
+
     /// @notice Validate that a non-PodAdmin fails to call a priviledged admin method
     function testNonAdminFailsToRemoveMember() public {
         vm.expectRevert(bytes("UNAUTHORIZED"));
@@ -165,8 +202,19 @@ contract PodAdminGatewayIntegrationTest is DSTest {
         );
     }
 
+    /// @notice Validate that specific set membership transfer lock role is set
+    function testGetSetMembershipLockRole() public {
+        bytes32 specificMembershipLockRole = keccak256(
+            abi.encode(podId, "ORCA_POD", "SET_MEMBERSHIP_TRANSFER_LOCK_ROLE")
+        );
+        assertEq(
+            specificMembershipLockRole,
+            podAdminGateway.getSetMembershipTransferLockRole(podId)
+        );
+    }
+
     /// @notice Validate that PodRemoveMemberRole is computed is expected
-    function testRemovePodAddMemberRole() public {
+    function testRemovePodMemberRole() public {
         bytes32 specificRemoveRole = keccak256(
             abi.encode(podId, "ORCA_POD", "POD_REMOVE_MEMBER_ROLE")
         );
