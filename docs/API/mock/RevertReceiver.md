@@ -1,16 +1,9 @@
-## `RevertReceiver`
+## <span id="RevertReceiver"></span> `RevertReceiver`
 
 
 
-
-
-
-### `fallback()` (external)
-
-
-
-
-
+- [`fallback()`][RevertReceiver-fallback--]
+### <span id="RevertReceiver-fallback--"></span> `fallback()` (external)
 
 
 

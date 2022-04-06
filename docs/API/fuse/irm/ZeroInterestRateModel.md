@@ -1,24 +1,14 @@
-## `ZeroInterestRateModel`
+## <span id="ZeroInterestRateModel"></span> `ZeroInterestRateModel`
 
 
 
+- [`getBorrowRate(uint256, uint256, uint256)`][ZeroInterestRateModel-getBorrowRate-uint256-uint256-uint256-]
+- [`getSupplyRate(uint256, uint256, uint256, uint256)`][ZeroInterestRateModel-getSupplyRate-uint256-uint256-uint256-uint256-]
+### <span id="ZeroInterestRateModel-getBorrowRate-uint256-uint256-uint256-"></span> `getBorrowRate(uint256, uint256, uint256) → uint256` (external)
 
 
 
-### `getBorrowRate(uint256, uint256, uint256) → uint256` (external)
-
-Calculates the current borrow interest rate per block
-
-
-
-
-### `getSupplyRate(uint256, uint256, uint256, uint256) → uint256` (external)
-
-Calculates the current supply interest rate per block
-
-
-
-
+### <span id="ZeroInterestRateModel-getSupplyRate-uint256-uint256-uint256-uint256-"></span> `getSupplyRate(uint256, uint256, uint256, uint256) → uint256` (external)
 
 
 

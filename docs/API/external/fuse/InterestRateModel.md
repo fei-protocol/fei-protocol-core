@@ -1,10 +1,4 @@
-## `InterestRateModel`
-
-
-
-
-
-
+## <span id="InterestRateModel"></span> `InterestRateModel`
 
 
 

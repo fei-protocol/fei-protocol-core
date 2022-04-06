@@ -1,82 +1,54 @@
-## `IRiskCurve`
+## <span id="IRiskCurve"></span> `IRiskCurve`
 
 
 
+- [`changeWeights()`][IRiskCurve-changeWeights--]
+- [`changeCurve(struct IRiskCurve.CurveParams curveParams)`][IRiskCurve-changeCurve-struct-IRiskCurve-CurveParams-]
+- [`isWeightChangeEligible()`][IRiskCurve-isWeightChangeEligible--]
+- [`getCurveParams()`][IRiskCurve-getCurveParams--]
+- [`getCurrentLeverage()`][IRiskCurve-getCurrentLeverage--]
+- [`getAssetWeight(address asset, uint256 leverage)`][IRiskCurve-getAssetWeight-address-uint256-]
+- [`getWeights(uint256 leverage)`][IRiskCurve-getWeights-uint256-]
+- [`getCurrentTargetAssetWeight(address asset)`][IRiskCurve-getCurrentTargetAssetWeight-address-]
+- [`getCurrentTargetWeights()`][IRiskCurve-getCurrentTargetWeights--]
+- [`getWeightChangeTime(uint256[] oldWeights, uint256[] newWeights)`][IRiskCurve-getWeightChangeTime-uint256---uint256---]
+### <span id="IRiskCurve-changeWeights--"></span> `changeWeights()` (external)
 
 
 
-### `changeWeights()` (external)
-
-kick off a new weight change using the current leverage and weight change time
+### <span id="IRiskCurve-changeCurve-struct-IRiskCurve-CurveParams-"></span> `changeCurve(struct IRiskCurve.CurveParams curveParams)` (external)
 
 
 
-### `changeCurve(struct IRiskCurve.CurveParams curveParams)` (external)
-
-change the risk curve parameters
+### <span id="IRiskCurve-isWeightChangeEligible--"></span> `isWeightChangeEligible() → bool` (external)
 
 
 
-### `isWeightChangeEligible() → bool` (external)
-
-determine whether or not to kick off a new weight change
+### <span id="IRiskCurve-getCurveParams--"></span> `getCurveParams() → struct IRiskCurve.CurveParams` (external)
 
 
 
-### `getCurveParams() → struct IRiskCurve.CurveParams` (external)
-
-return the risk curve parameters
+### <span id="IRiskCurve-getCurrentLeverage--"></span> `getCurrentLeverage() → uint256` (external)
 
 
 
-### `getCurrentLeverage() → uint256` (external)
-
-return the current leverage in the protocol, defined as PCV / protocol equity
+### <span id="IRiskCurve-getAssetWeight-address-uint256-"></span> `getAssetWeight(address asset, uint256 leverage) → uint256` (external)
 
 
 
-### `getAssetWeight(address asset, uint256 leverage) → uint256` (external)
-
-return the balancer weight of an asset at a given leverage
+### <span id="IRiskCurve-getWeights-uint256-"></span> `getWeights(uint256 leverage) → address[], uint256[]` (external)
 
 
 
-### `getWeights(uint256 leverage) → address[], uint256[]` (external)
-
-return the set of assets and their corresponding weights at a given leverage
+### <span id="IRiskCurve-getCurrentTargetAssetWeight-address-"></span> `getCurrentTargetAssetWeight(address asset) → uint256` (external)
 
 
 
-### `getCurrentTargetAssetWeight(address asset) → uint256` (external)
-
-return the target weight for an asset at current leverage
+### <span id="IRiskCurve-getCurrentTargetWeights--"></span> `getCurrentTargetWeights() → address[], uint256[]` (external)
 
 
 
-### `getCurrentTargetWeights() → address[], uint256[]` (external)
-
-return the set of assets and their corresponding weights at a current leverage
-
-
-
-### `getWeightChangeTime(uint256[] oldWeights, uint256[] newWeights) → uint256` (external)
-
-get the number of seconds to transition weights given the old and new weights
-
-
-
-
-
-### `CurveParams`
-
-
-address[] assets
-
-
-uint256[] baseWeights
-
-
-int256[] slopes
+### <span id="IRiskCurve-getWeightChangeTime-uint256---uint256---"></span> `getWeightChangeTime(uint256[] oldWeights, uint256[] newWeights) → uint256` (external)
 
 
 

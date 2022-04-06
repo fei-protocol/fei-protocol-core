@@ -1,197 +1,142 @@
-## `Tribe`
+## <span id="Tribe"></span> `Tribe`
 
 
 
+- [`constructor(address account, address minter_)`][Tribe-constructor-address-address-]
+- [`setMinter(address minter_)`][Tribe-setMinter-address-]
+- [`mint(address dst, uint256 rawAmount)`][Tribe-mint-address-uint256-]
+- [`allowance(address account, address spender)`][Tribe-allowance-address-address-]
+- [`approve(address spender, uint256 rawAmount)`][Tribe-approve-address-uint256-]
+- [`permit(address owner, address spender, uint256 rawAmount, uint256 deadline, uint8 v, bytes32 r, bytes32 s)`][Tribe-permit-address-address-uint256-uint256-uint8-bytes32-bytes32-]
+- [`balanceOf(address account)`][Tribe-balanceOf-address-]
+- [`transfer(address dst, uint256 rawAmount)`][Tribe-transfer-address-uint256-]
+- [`transferFrom(address src, address dst, uint256 rawAmount)`][Tribe-transferFrom-address-address-uint256-]
+- [`delegate(address delegatee)`][Tribe-delegate-address-]
+- [`delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)`][Tribe-delegateBySig-address-uint256-uint256-uint8-bytes32-bytes32-]
+- [`getCurrentVotes(address account)`][Tribe-getCurrentVotes-address-]
+- [`getPriorVotes(address account, uint256 blockNumber)`][Tribe-getPriorVotes-address-uint256-]
+- [`_delegate(address delegator, address delegatee)`][Tribe-_delegate-address-address-]
+- [`_transferTokens(address src, address dst, uint96 amount)`][Tribe-_transferTokens-address-address-uint96-]
+- [`_moveDelegates(address srcRep, address dstRep, uint96 amount)`][Tribe-_moveDelegates-address-address-uint96-]
+- [`_writeCheckpoint(address delegatee, uint32 nCheckpoints, uint96 oldVotes, uint96 newVotes)`][Tribe-_writeCheckpoint-address-uint32-uint96-uint96-]
+- [`safe32(uint256 n, string errorMessage)`][Tribe-safe32-uint256-string-]
+- [`safe96(uint256 n, string errorMessage)`][Tribe-safe96-uint256-string-]
+- [`add96(uint96 a, uint96 b, string errorMessage)`][Tribe-add96-uint96-uint96-string-]
+- [`sub96(uint96 a, uint96 b, string errorMessage)`][Tribe-sub96-uint96-uint96-string-]
+- [`getChainId()`][Tribe-getChainId--]
+- [`MinterChanged(address minter, address newMinter)`][Tribe-MinterChanged-address-address-]
+- [`DelegateChanged(address delegator, address fromDelegate, address toDelegate)`][Tribe-DelegateChanged-address-address-address-]
+- [`DelegateVotesChanged(address delegate, uint256 previousBalance, uint256 newBalance)`][Tribe-DelegateVotesChanged-address-uint256-uint256-]
+- [`Transfer(address from, address to, uint256 amount)`][Tribe-Transfer-address-address-uint256-]
+- [`Approval(address owner, address spender, uint256 amount)`][Tribe-Approval-address-address-uint256-]
+### <span id="Tribe-constructor-address-address-"></span> `constructor(address account, address minter_)` (public)
 
 
 
-### `constructor(address account, address minter_)` (public)
-
-Construct a new Tribe token
+### <span id="Tribe-setMinter-address-"></span> `setMinter(address minter_)` (external)
 
 
 
-
-### `setMinter(address minter_)` (external)
-
-Change the minter address
+### <span id="Tribe-mint-address-uint256-"></span> `mint(address dst, uint256 rawAmount)` (external)
 
 
 
-
-### `mint(address dst, uint256 rawAmount)` (external)
-
-Mint new tokens
+### <span id="Tribe-allowance-address-address-"></span> `allowance(address account, address spender) → uint256` (external)
 
 
 
-
-### `allowance(address account, address spender) → uint256` (external)
-
-Get the number of tokens `spender` is approved to spend on behalf of `account`
-
-
-
-
-### `approve(address spender, uint256 rawAmount) → bool` (external)
-
-Approve `spender` to transfer up to `amount` from `src`
-
+### <span id="Tribe-approve-address-uint256-"></span> `approve(address spender, uint256 rawAmount) → bool` (external)
 
 This will overwrite the approval amount for `spender`
  and is subject to issues noted [here](https://eips.ethereum.org/EIPS/eip-20#approve)
 
 
-### `permit(address owner, address spender, uint256 rawAmount, uint256 deadline, uint8 v, bytes32 r, bytes32 s)` (external)
-
-Triggers an approval from owner to spends
+### <span id="Tribe-permit-address-address-uint256-uint256-uint8-bytes32-bytes32-"></span> `permit(address owner, address spender, uint256 rawAmount, uint256 deadline, uint8 v, bytes32 r, bytes32 s)` (external)
 
 
 
-
-### `balanceOf(address account) → uint256` (external)
-
-Get the number of tokens held by the `account`
+### <span id="Tribe-balanceOf-address-"></span> `balanceOf(address account) → uint256` (external)
 
 
 
-
-### `transfer(address dst, uint256 rawAmount) → bool` (external)
-
-Transfer `amount` tokens from `msg.sender` to `dst`
+### <span id="Tribe-transfer-address-uint256-"></span> `transfer(address dst, uint256 rawAmount) → bool` (external)
 
 
 
-
-### `transferFrom(address src, address dst, uint256 rawAmount) → bool` (external)
-
-Transfer `amount` tokens from `src` to `dst`
+### <span id="Tribe-transferFrom-address-address-uint256-"></span> `transferFrom(address src, address dst, uint256 rawAmount) → bool` (external)
 
 
 
-
-### `delegate(address delegatee)` (public)
-
-Delegate votes from `msg.sender` to `delegatee`
+### <span id="Tribe-delegate-address-"></span> `delegate(address delegatee)` (public)
 
 
 
-
-### `delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)` (public)
-
-Delegates votes from signatory to `delegatee`
+### <span id="Tribe-delegateBySig-address-uint256-uint256-uint8-bytes32-bytes32-"></span> `delegateBySig(address delegatee, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s)` (public)
 
 
 
-
-### `getCurrentVotes(address account) → uint96` (external)
-
-Gets the current votes balance for `account`
+### <span id="Tribe-getCurrentVotes-address-"></span> `getCurrentVotes(address account) → uint96` (external)
 
 
 
-
-### `getPriorVotes(address account, uint256 blockNumber) → uint96` (public)
-
-Determine the prior number of votes for an account as of a block number
-
+### <span id="Tribe-getPriorVotes-address-uint256-"></span> `getPriorVotes(address account, uint256 blockNumber) → uint96` (public)
 
 Block number must be a finalized block or else this function will revert to prevent misinformation.
 
 
-### `_delegate(address delegator, address delegatee)` (internal)
+### <span id="Tribe-_delegate-address-address-"></span> `_delegate(address delegator, address delegatee)` (internal)
 
 
 
+### <span id="Tribe-_transferTokens-address-address-uint96-"></span> `_transferTokens(address src, address dst, uint96 amount)` (internal)
 
 
-### `_transferTokens(address src, address dst, uint96 amount)` (internal)
 
+### <span id="Tribe-_moveDelegates-address-address-uint96-"></span> `_moveDelegates(address srcRep, address dstRep, uint96 amount)` (internal)
 
 
 
+### <span id="Tribe-_writeCheckpoint-address-uint32-uint96-uint96-"></span> `_writeCheckpoint(address delegatee, uint32 nCheckpoints, uint96 oldVotes, uint96 newVotes)` (internal)
 
-### `_moveDelegates(address srcRep, address dstRep, uint96 amount)` (internal)
 
 
+### <span id="Tribe-safe32-uint256-string-"></span> `safe32(uint256 n, string errorMessage) → uint32` (internal)
 
 
 
-### `_writeCheckpoint(address delegatee, uint32 nCheckpoints, uint96 oldVotes, uint96 newVotes)` (internal)
+### <span id="Tribe-safe96-uint256-string-"></span> `safe96(uint256 n, string errorMessage) → uint96` (internal)
 
 
 
+### <span id="Tribe-add96-uint96-uint96-string-"></span> `add96(uint96 a, uint96 b, string errorMessage) → uint96` (internal)
 
 
-### `safe32(uint256 n, string errorMessage) → uint32` (internal)
 
+### <span id="Tribe-sub96-uint96-uint96-string-"></span> `sub96(uint96 a, uint96 b, string errorMessage) → uint96` (internal)
 
 
 
+### <span id="Tribe-getChainId--"></span> `getChainId() → uint256` (internal)
 
-### `safe96(uint256 n, string errorMessage) → uint96` (internal)
 
 
+### <span id="Tribe-MinterChanged-address-address-"></span> `MinterChanged(address minter, address newMinter)`
 
 
 
-### `add96(uint96 a, uint96 b, string errorMessage) → uint96` (internal)
+### <span id="Tribe-DelegateChanged-address-address-address-"></span> `DelegateChanged(address delegator, address fromDelegate, address toDelegate)`
 
 
 
+### <span id="Tribe-DelegateVotesChanged-address-uint256-uint256-"></span> `DelegateVotesChanged(address delegate, uint256 previousBalance, uint256 newBalance)`
 
 
-### `sub96(uint96 a, uint96 b, string errorMessage) → uint96` (internal)
 
+### <span id="Tribe-Transfer-address-address-uint256-"></span> `Transfer(address from, address to, uint256 amount)`
 
 
 
-
-### `getChainId() → uint256` (internal)
-
-
-
-
-
-
-### `MinterChanged(address minter, address newMinter)`
-
-An event thats emitted when the minter address is changed
-
-
-
-### `DelegateChanged(address delegator, address fromDelegate, address toDelegate)`
-
-An event thats emitted when an account changes its delegate
-
-
-
-### `DelegateVotesChanged(address delegate, uint256 previousBalance, uint256 newBalance)`
-
-An event thats emitted when a delegate account's vote balance changes
-
-
-
-### `Transfer(address from, address to, uint256 amount)`
-
-The standard EIP-20 transfer event
-
-
-
-### `Approval(address owner, address spender, uint256 amount)`
-
-The standard EIP-20 approval event
-
-
-
-
-### `Checkpoint`
-
-
-uint32 fromBlock
-
-
-uint96 votes
+### <span id="Tribe-Approval-address-address-uint256-"></span> `Approval(address owner, address spender, uint256 amount)`
 
 
 

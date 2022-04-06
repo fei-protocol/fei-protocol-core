@@ -1,186 +1,174 @@
-## `CollateralizationOracle`
+## <span id="CollateralizationOracle"></span> `CollateralizationOracle`
 
-Reads a list of PCVDeposit that report their amount of collateral
-        and the amount of protocol-owned FEI they manage, to deduce the
-        protocol-wide collateralization ratio.
 
 
+- [`ifMinterSelf()`][CoreRef-ifMinterSelf--]
+- [`onlyMinter()`][CoreRef-onlyMinter--]
+- [`onlyBurner()`][CoreRef-onlyBurner--]
+- [`onlyPCVController()`][CoreRef-onlyPCVController--]
+- [`onlyGovernorOrAdmin()`][CoreRef-onlyGovernorOrAdmin--]
+- [`onlyGovernor()`][CoreRef-onlyGovernor--]
+- [`onlyGuardianOrGovernor()`][CoreRef-onlyGuardianOrGovernor--]
+- [`isGovernorOrGuardianOrAdmin()`][CoreRef-isGovernorOrGuardianOrAdmin--]
+- [`onlyTribeRole(bytes32 role)`][CoreRef-onlyTribeRole-bytes32-]
+- [`hasAnyOfTwoRoles(bytes32 role1, bytes32 role2)`][CoreRef-hasAnyOfTwoRoles-bytes32-bytes32-]
+- [`hasAnyOfThreeRoles(bytes32 role1, bytes32 role2, bytes32 role3)`][CoreRef-hasAnyOfThreeRoles-bytes32-bytes32-bytes32-]
+- [`hasAnyOfFourRoles(bytes32 role1, bytes32 role2, bytes32 role3, bytes32 role4)`][CoreRef-hasAnyOfFourRoles-bytes32-bytes32-bytes32-bytes32-]
+- [`hasAnyOfFiveRoles(bytes32 role1, bytes32 role2, bytes32 role3, bytes32 role4, bytes32 role5)`][CoreRef-hasAnyOfFiveRoles-bytes32-bytes32-bytes32-bytes32-bytes32-]
+- [`onlyFei()`][CoreRef-onlyFei--]
+- [`whenNotPaused()`][Pausable-whenNotPaused--]
+- [`whenPaused()`][Pausable-whenPaused--]
+- [`constructor(address _core, address[] _deposits, address[] _tokens, address[] _oracles)`][CollateralizationOracle-constructor-address-address---address---address---]
+- [`isTokenInPcv(address token)`][CollateralizationOracle-isTokenInPcv-address-]
+- [`getTokensInPcv()`][CollateralizationOracle-getTokensInPcv--]
+- [`getTokenInPcv(uint256 i)`][CollateralizationOracle-getTokenInPcv-uint256-]
+- [`getDepositsForToken(address _token)`][CollateralizationOracle-getDepositsForToken-address-]
+- [`getDepositForToken(address token, uint256 i)`][CollateralizationOracle-getDepositForToken-address-uint256-]
+- [`addDeposit(address _deposit)`][CollateralizationOracle-addDeposit-address-]
+- [`addDeposits(address[] _deposits)`][CollateralizationOracle-addDeposits-address---]
+- [`_addDeposits(address[] _deposits)`][CollateralizationOracle-_addDeposits-address---]
+- [`_addDeposit(address _deposit)`][CollateralizationOracle-_addDeposit-address-]
+- [`removeDeposit(address _deposit)`][CollateralizationOracle-removeDeposit-address-]
+- [`removeDeposits(address[] _deposits)`][CollateralizationOracle-removeDeposits-address---]
+- [`_removeDeposit(address _deposit)`][CollateralizationOracle-_removeDeposit-address-]
+- [`swapDeposit(address _oldDeposit, address _newDeposit)`][CollateralizationOracle-swapDeposit-address-address-]
+- [`setOracle(address _token, address _newOracle)`][CollateralizationOracle-setOracle-address-address-]
+- [`setOracles(address[] _tokens, address[] _oracles)`][CollateralizationOracle-setOracles-address---address---]
+- [`_setOracles(address[] _tokens, address[] _oracles)`][CollateralizationOracle-_setOracles-address---address---]
+- [`_setOracle(address _token, address _newOracle)`][CollateralizationOracle-_setOracle-address-address-]
+- [`update()`][CollateralizationOracle-update--]
+- [`isOutdated()`][CollateralizationOracle-isOutdated--]
+- [`read()`][CollateralizationOracle-read--]
+- [`pcvStats()`][CollateralizationOracle-pcvStats--]
+- [`isOvercollateralized()`][CollateralizationOracle-isOvercollateralized--]
+- [`_initialize(address)`][CoreRef-_initialize-address-]
+- [`setContractAdminRole(bytes32 newContractAdminRole)`][CoreRef-setContractAdminRole-bytes32-]
+- [`isContractAdmin(address _admin)`][CoreRef-isContractAdmin-address-]
+- [`pause()`][CoreRef-pause--]
+- [`unpause()`][CoreRef-unpause--]
+- [`core()`][CoreRef-core--]
+- [`fei()`][CoreRef-fei--]
+- [`tribe()`][CoreRef-tribe--]
+- [`feiBalance()`][CoreRef-feiBalance--]
+- [`tribeBalance()`][CoreRef-tribeBalance--]
+- [`_burnFeiHeld()`][CoreRef-_burnFeiHeld--]
+- [`_mintFei(address to, uint256 amount)`][CoreRef-_mintFei-address-uint256-]
+- [`_setContractAdminRole(bytes32 newContractAdminRole)`][CoreRef-_setContractAdminRole-bytes32-]
+- [`paused()`][Pausable-paused--]
+- [`_pause()`][Pausable-_pause--]
+- [`_unpause()`][Pausable-_unpause--]
+- [`_msgSender()`][Context-_msgSender--]
+- [`_msgData()`][Context-_msgData--]
+- [`CONTRACT_ADMIN_ROLE()`][ICoreRef-CONTRACT_ADMIN_ROLE--]
+- [`DepositAdd(address from, address deposit, address token)`][CollateralizationOracle-DepositAdd-address-address-address-]
+- [`DepositRemove(address from, address deposit)`][CollateralizationOracle-DepositRemove-address-address-]
+- [`OracleUpdate(address from, address token, address oldOracle, address newOracle)`][CollateralizationOracle-OracleUpdate-address-address-address-address-]
+- [`Paused(address account)`][Pausable-Paused-address-]
+- [`Unpaused(address account)`][Pausable-Unpaused-address-]
+- [`CoreUpdate(address oldCore, address newCore)`][ICoreRef-CoreUpdate-address-address-]
+- [`ContractAdminRoleUpdate(bytes32 oldContractAdminRole, bytes32 newContractAdminRole)`][ICoreRef-ContractAdminRoleUpdate-bytes32-bytes32-]
+- [`Update(uint256 _peg)`][IOracle-Update-uint256-]
+### <span id="CollateralizationOracle-constructor-address-address---address---address---"></span> `constructor(address _core, address[] _deposits, address[] _tokens, address[] _oracles)` (public)
 
 
-### `constructor(address _core, address[] _deposits, address[] _tokens, address[] _oracles)` (public)
 
-CollateralizationOracle constructor
+### <span id="CollateralizationOracle-isTokenInPcv-address-"></span> `isTokenInPcv(address token) → bool` (external)
 
 
 
+### <span id="CollateralizationOracle-getTokensInPcv--"></span> `getTokensInPcv() → address[]` (external)
 
-### `isTokenInPcv(address token) → bool` (external)
 
-returns true if a token is held in the pcv
 
+### <span id="CollateralizationOracle-getTokenInPcv-uint256-"></span> `getTokenInPcv(uint256 i) → address` (external)
 
 
-### `getTokensInPcv() → address[]` (external)
 
-returns an array of the addresses of tokens held in the pcv.
+### <span id="CollateralizationOracle-getDepositsForToken-address-"></span> `getDepositsForToken(address _token) → address[]` (external)
 
 
 
-### `getTokenInPcv(uint256 i) → address` (external)
+### <span id="CollateralizationOracle-getDepositForToken-address-uint256-"></span> `getDepositForToken(address token, uint256 i) → address` (external)
 
-returns token at index i of the array of PCV tokens
 
 
+### <span id="CollateralizationOracle-addDeposit-address-"></span> `addDeposit(address _deposit)` (external)
 
-### `getDepositsForToken(address _token) → address[]` (external)
 
-returns an array of the deposits holding a given token.
 
+### <span id="CollateralizationOracle-addDeposits-address---"></span> `addDeposits(address[] _deposits)` (external)
 
 
-### `getDepositForToken(address token, uint256 i) → address` (external)
 
-returns the address of deposit at index i of token _token
+### <span id="CollateralizationOracle-_addDeposits-address---"></span> `_addDeposits(address[] _deposits)` (internal)
 
 
 
-### `addDeposit(address _deposit)` (external)
+### <span id="CollateralizationOracle-_addDeposit-address-"></span> `_addDeposit(address _deposit)` (internal)
 
-Add a PCVDeposit to the list of deposits inspected by the
-        collateralization ratio oracle.
-        note : this function reverts if the deposit is already in the list.
-        note : this function reverts if the deposit's token has no oracle.
 
 
+### <span id="CollateralizationOracle-removeDeposit-address-"></span> `removeDeposit(address _deposit)` (external)
 
 
-### `addDeposits(address[] _deposits)` (external)
 
-adds a list of multiple PCV deposits. See addDeposit.
+### <span id="CollateralizationOracle-removeDeposits-address---"></span> `removeDeposits(address[] _deposits)` (external)
 
 
 
-### `_addDeposits(address[] _deposits)` (internal)
+### <span id="CollateralizationOracle-_removeDeposit-address-"></span> `_removeDeposit(address _deposit)` (internal)
 
 
 
+### <span id="CollateralizationOracle-swapDeposit-address-address-"></span> `swapDeposit(address _oldDeposit, address _newDeposit)` (external)
 
 
-### `_addDeposit(address _deposit)` (internal)
 
+### <span id="CollateralizationOracle-setOracle-address-address-"></span> `setOracle(address _token, address _newOracle)` (external)
 
 
 
+### <span id="CollateralizationOracle-setOracles-address---address---"></span> `setOracles(address[] _tokens, address[] _oracles)` (public)
 
-### `removeDeposit(address _deposit)` (external)
 
-Remove a PCVDeposit from the list of deposits inspected by
-        the collateralization ratio oracle.
-        note : this function reverts if the input deposit is not found.
 
+### <span id="CollateralizationOracle-_setOracles-address---address---"></span> `_setOracles(address[] _tokens, address[] _oracles)` (internal)
 
 
 
-### `removeDeposits(address[] _deposits)` (external)
+### <span id="CollateralizationOracle-_setOracle-address-address-"></span> `_setOracle(address _token, address _newOracle)` (internal)
 
-removes a list of multiple PCV deposits. See removeDeposit.
 
 
+### <span id="CollateralizationOracle-update--"></span> `update()` (external)
 
-### `_removeDeposit(address _deposit)` (internal)
 
 
+### <span id="CollateralizationOracle-isOutdated--"></span> `isOutdated() → bool` (external)
 
 
 
-### `swapDeposit(address _oldDeposit, address _newDeposit)` (external)
+### <span id="CollateralizationOracle-read--"></span> `read() → struct Decimal.D256 collateralRatio, bool validityStatus` (public)
 
-Swap a PCVDeposit with a new one, for instance when a new version
-        of a deposit (holding the same token) is deployed.
 
 
+### <span id="CollateralizationOracle-pcvStats--"></span> `pcvStats() → uint256 protocolControlledValue, uint256 userCirculatingFei, int256 protocolEquity, bool validityStatus` (public)
 
 
-### `setOracle(address _token, address _newOracle)` (external)
 
-Set the price feed oracle (in USD) for a given asset.
+### <span id="CollateralizationOracle-isOvercollateralized--"></span> `isOvercollateralized() → bool` (external)
 
 
 
+### <span id="CollateralizationOracle-DepositAdd-address-address-address-"></span> `DepositAdd(address from, address deposit, address token)`
 
-### `setOracles(address[] _tokens, address[] _oracles)` (public)
 
-adds a list of token oracles. See setOracle.
 
+### <span id="CollateralizationOracle-DepositRemove-address-address-"></span> `DepositRemove(address from, address deposit)`
 
 
-### `_setOracles(address[] _tokens, address[] _oracles)` (internal)
 
-
-
-
-
-### `_setOracle(address _token, address _newOracle)` (internal)
-
-
-
-
-
-### `update()` (external)
-
-update all oracles required for this oracle to work that are not
-        paused themselves.
-
-
-
-### `isOutdated() → bool` (external)
-
-
-
-
-
-### `read() → struct Decimal.D256 collateralRatio, bool validityStatus` (public)
-
-Get the current collateralization ratio of the protocol.
-
-
-
-
-### `pcvStats() → uint256 protocolControlledValue, uint256 userCirculatingFei, int256 protocolEquity, bool validityStatus` (public)
-
-returns the Protocol-Controlled Value, User-circulating FEI, and
-        Protocol Equity.
-
-
-
-
-### `isOvercollateralized() → bool` (external)
-
-returns true if the protocol is overcollateralized. Overcollateralization
-        is defined as the protocol having more assets in its PCV (Protocol
-        Controlled Value) than the circulating (user-owned) FEI, i.e.
-        a positive Protocol Equity.
-
-
-
-
-### `DepositAdd(address from, address deposit, address token)`
-
-
-
-
-
-### `DepositRemove(address from, address deposit)`
-
-
-
-
-
-### `OracleUpdate(address from, address token, address oldOracle, address newOracle)`
-
-
-
-
+### <span id="CollateralizationOracle-OracleUpdate-address-address-address-address-"></span> `OracleUpdate(address from, address token, address oldOracle, address newOracle)`
 
 
 

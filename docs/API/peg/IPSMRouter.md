@@ -1,65 +1,45 @@
-## `IPSMRouter`
+## <span id="IPSMRouter"></span> `IPSMRouter`
 
 
 
+- [`psm()`][IPSMRouter-psm--]
+- [`fei()`][IPSMRouter-fei--]
+- [`getMintAmountOut(uint256 amountIn)`][IPSMRouter-getMintAmountOut-uint256-]
+- [`getRedeemAmountOut(uint256 amountFeiIn)`][IPSMRouter-getRedeemAmountOut-uint256-]
+- [`getMaxMintAmountOut()`][IPSMRouter-getMaxMintAmountOut--]
+- [`getMaxRedeemAmountOut()`][IPSMRouter-getMaxRedeemAmountOut--]
+- [`mint(address _to, uint256 _minAmountOut, uint256 ethAmountIn)`][IPSMRouter-mint-address-uint256-uint256-]
+- [`redeem(address to, uint256 amountFeiIn, uint256 minAmountOut)`][IPSMRouter-redeem-address-uint256-uint256-]
+### <span id="IPSMRouter-psm--"></span> `psm() → contract IPegStabilityModule` (external)
 
 
 
-### `psm() → contract IPegStabilityModule` (external)
-
-reference to the PegStabilityModule that this router interacts with
+### <span id="IPSMRouter-fei--"></span> `fei() → contract IFei` (external)
 
 
 
-### `fei() → contract IFei` (external)
-
-reference to the FEI contract used.
+### <span id="IPSMRouter-getMintAmountOut-uint256-"></span> `getMintAmountOut(uint256 amountIn) → uint256 amountFeiOut` (external)
 
 
 
-### `getMintAmountOut(uint256 amountIn) → uint256 amountFeiOut` (external)
-
-calculate the amount of FEI out for a given `amountIn` of underlying
+### <span id="IPSMRouter-getRedeemAmountOut-uint256-"></span> `getRedeemAmountOut(uint256 amountFeiIn) → uint256 amountOut` (external)
 
 
 
-### `getRedeemAmountOut(uint256 amountFeiIn) → uint256 amountOut` (external)
-
-calculate the amount of underlying out for a given `amountFeiIn` of FEI
+### <span id="IPSMRouter-getMaxMintAmountOut--"></span> `getMaxMintAmountOut() → uint256` (external)
 
 
 
-### `getMaxMintAmountOut() → uint256` (external)
-
-the maximum mint amount out
+### <span id="IPSMRouter-getMaxRedeemAmountOut--"></span> `getMaxRedeemAmountOut() → uint256` (external)
 
 
 
-### `getMaxRedeemAmountOut() → uint256` (external)
-
-the maximum redeem amount out
-
-
-
-### `mint(address _to, uint256 _minAmountOut, uint256 ethAmountIn) → uint256` (external)
-
-Mints fei to the given address, with a minimum amount required
-
+### <span id="IPSMRouter-mint-address-uint256-uint256-"></span> `mint(address _to, uint256 _minAmountOut, uint256 ethAmountIn) → uint256` (external)
 
 This wraps ETH and then calls into the PSM to mint the fei. We return the amount of fei minted.
 
 
-### `redeem(address to, uint256 amountFeiIn, uint256 minAmountOut) → uint256 amountOut` (external)
-
-Redeems fei for ETH
-First pull user FEI into this contract
-Then call redeem on the PSM to turn the FEI into weth
-Withdraw all weth to eth in the router
-Send the eth to the specified recipient
-
-
-
-
+### <span id="IPSMRouter-redeem-address-uint256-uint256-"></span> `redeem(address to, uint256 amountFeiIn, uint256 minAmountOut) → uint256 amountOut` (external)
 
 
 

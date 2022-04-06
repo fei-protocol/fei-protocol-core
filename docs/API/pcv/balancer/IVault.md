@@ -1,34 +1,49 @@
-## `IVault`
-
-
+## <span id="IVault"></span> `IVault`
 
 Full external interface for the Vault core contract - no external or public methods exist in the contract that
 don't override one of these declarations.
 
-
-### `hasApprovedRelayer(address user, address relayer) → bool` (external)
-
-
+- [`hasApprovedRelayer(address user, address relayer)`][IVault-hasApprovedRelayer-address-address-]
+- [`setRelayerApproval(address sender, address relayer, bool approved)`][IVault-setRelayerApproval-address-address-bool-]
+- [`getInternalBalance(address user, contract IERC20[] tokens)`][IVault-getInternalBalance-address-contract-IERC20---]
+- [`manageUserBalance(struct IVault.UserBalanceOp[] ops)`][IVault-manageUserBalance-struct-IVault-UserBalanceOp---]
+- [`registerPool(enum IVault.PoolSpecialization specialization)`][IVault-registerPool-enum-IVault-PoolSpecialization-]
+- [`getPool(bytes32 poolId)`][IVault-getPool-bytes32-]
+- [`registerTokens(bytes32 poolId, contract IERC20[] tokens, address[] assetManagers)`][IVault-registerTokens-bytes32-contract-IERC20---address---]
+- [`deregisterTokens(bytes32 poolId, contract IERC20[] tokens)`][IVault-deregisterTokens-bytes32-contract-IERC20---]
+- [`getPoolTokenInfo(bytes32 poolId, contract IERC20 token)`][IVault-getPoolTokenInfo-bytes32-contract-IERC20-]
+- [`getPoolTokens(bytes32 poolId)`][IVault-getPoolTokens-bytes32-]
+- [`joinPool(bytes32 poolId, address sender, address recipient, struct IVault.JoinPoolRequest request)`][IVault-joinPool-bytes32-address-address-struct-IVault-JoinPoolRequest-]
+- [`exitPool(bytes32 poolId, address sender, address payable recipient, struct IVault.ExitPoolRequest request)`][IVault-exitPool-bytes32-address-address-payable-struct-IVault-ExitPoolRequest-]
+- [`swap(struct IVault.SingleSwap singleSwap, struct IVault.FundManagement funds, uint256 limit, uint256 deadline)`][IVault-swap-struct-IVault-SingleSwap-struct-IVault-FundManagement-uint256-uint256-]
+- [`batchSwap(enum IVault.SwapKind kind, struct IVault.BatchSwapStep[] swaps, contract IAsset[] assets, struct IVault.FundManagement funds, int256[] limits, uint256 deadline)`][IVault-batchSwap-enum-IVault-SwapKind-struct-IVault-BatchSwapStep---contract-IAsset---struct-IVault-FundManagement-int256---uint256-]
+- [`queryBatchSwap(enum IVault.SwapKind kind, struct IVault.BatchSwapStep[] swaps, contract IAsset[] assets, struct IVault.FundManagement funds)`][IVault-queryBatchSwap-enum-IVault-SwapKind-struct-IVault-BatchSwapStep---contract-IAsset---struct-IVault-FundManagement-]
+- [`managePoolBalance(struct IVault.PoolBalanceOp[] ops)`][IVault-managePoolBalance-struct-IVault-PoolBalanceOp---]
+- [`setPaused(bool paused)`][IVault-setPaused-bool-]
+- [`RelayerApprovalChanged(address relayer, address sender, bool approved)`][IVault-RelayerApprovalChanged-address-address-bool-]
+- [`InternalBalanceChanged(address user, contract IERC20 token, int256 delta)`][IVault-InternalBalanceChanged-address-contract-IERC20-int256-]
+- [`ExternalBalanceTransfer(contract IERC20 token, address sender, address recipient, uint256 amount)`][IVault-ExternalBalanceTransfer-contract-IERC20-address-address-uint256-]
+- [`PoolRegistered(bytes32 poolId, address poolAddress, enum IVault.PoolSpecialization specialization)`][IVault-PoolRegistered-bytes32-address-enum-IVault-PoolSpecialization-]
+- [`TokensRegistered(bytes32 poolId, contract IERC20[] tokens, address[] assetManagers)`][IVault-TokensRegistered-bytes32-contract-IERC20---address---]
+- [`TokensDeregistered(bytes32 poolId, contract IERC20[] tokens)`][IVault-TokensDeregistered-bytes32-contract-IERC20---]
+- [`PoolBalanceChanged(bytes32 poolId, address liquidityProvider, contract IERC20[] tokens, int256[] deltas, uint256[] protocolFeeAmounts)`][IVault-PoolBalanceChanged-bytes32-address-contract-IERC20---int256---uint256---]
+- [`Swap(bytes32 poolId, contract IERC20 tokenIn, contract IERC20 tokenOut, uint256 amountIn, uint256 amountOut)`][IVault-Swap-bytes32-contract-IERC20-contract-IERC20-uint256-uint256-]
+- [`PoolBalanceManaged(bytes32 poolId, address assetManager, contract IERC20 token, int256 cashDelta, int256 managedDelta)`][IVault-PoolBalanceManaged-bytes32-address-contract-IERC20-int256-int256-]
+### <span id="IVault-hasApprovedRelayer-address-address-"></span> `hasApprovedRelayer(address user, address relayer) → bool` (external)
 
 Returns true if `user` has approved `relayer` to act as a relayer for them.
 
-### `setRelayerApproval(address sender, address relayer, bool approved)` (external)
-
-
+### <span id="IVault-setRelayerApproval-address-address-bool-"></span> `setRelayerApproval(address sender, address relayer, bool approved)` (external)
 
 Allows `relayer` to act as a relayer for `sender` if `approved` is true, and disallows it otherwise.
 
 Emits a `RelayerApprovalChanged` event.
 
-### `getInternalBalance(address user, contract IERC20[] tokens) → uint256[]` (external)
-
-
+### <span id="IVault-getInternalBalance-address-contract-IERC20---"></span> `getInternalBalance(address user, contract IERC20[] tokens) → uint256[]` (external)
 
 Returns `user`'s Internal Balance for a set of tokens.
 
-### `manageUserBalance(struct IVault.UserBalanceOp[] ops)` (external)
-
-
+### <span id="IVault-manageUserBalance-struct-IVault-UserBalanceOp---"></span> `manageUserBalance(struct IVault.UserBalanceOp[] ops)` (external)
 
 Performs a set of user balance operations, which involve Internal Balance (deposit, withdraw or transfer)
 and plain ERC20 transfers using the Vault's allowance. This last feature is particularly useful for relayers, as
@@ -36,9 +51,7 @@ it lets integrators reuse a user's Vault allowance.
 
 For each operation, if the caller is not `sender`, it must be an authorized relayer for them.
 
-### `registerPool(enum IVault.PoolSpecialization specialization) → bytes32` (external)
-
-
+### <span id="IVault-registerPool-enum-IVault-PoolSpecialization-"></span> `registerPool(enum IVault.PoolSpecialization specialization) → bytes32` (external)
 
 Registers the caller account as a Pool with a given specialization setting. Returns the Pool's ID, which
 is used in all Pool-related functions. Pools cannot be deregistered, nor can the Pool's specialization be
@@ -52,15 +65,11 @@ multiple Pools may share the same contract.
 
 Emits a `PoolRegistered` event.
 
-### `getPool(bytes32 poolId) → address, enum IVault.PoolSpecialization` (external)
-
-
+### <span id="IVault-getPool-bytes32-"></span> `getPool(bytes32 poolId) → address, enum IVault.PoolSpecialization` (external)
 
 Returns a Pool's contract address and specialization setting.
 
-### `registerTokens(bytes32 poolId, contract IERC20[] tokens, address[] assetManagers)` (external)
-
-
+### <span id="IVault-registerTokens-bytes32-contract-IERC20---address---"></span> `registerTokens(bytes32 poolId, contract IERC20[] tokens, address[] assetManagers)` (external)
 
 Registers `tokens` for the `poolId` Pool. Must be called by the Pool's contract.
 
@@ -83,9 +92,7 @@ different Asset Manager.
 
 Emits a `TokensRegistered` event.
 
-### `deregisterTokens(bytes32 poolId, contract IERC20[] tokens)` (external)
-
-
+### <span id="IVault-deregisterTokens-bytes32-contract-IERC20---"></span> `deregisterTokens(bytes32 poolId, contract IERC20[] tokens)` (external)
 
 Deregisters `tokens` for the `poolId` Pool. Must be called by the Pool's contract.
 
@@ -97,9 +104,7 @@ A deregistered token can be re-registered later on, possibly with a different As
 
 Emits a `TokensDeregistered` event.
 
-### `getPoolTokenInfo(bytes32 poolId, contract IERC20 token) → uint256 cash, uint256 managed, uint256 lastChangeBlock, address assetManager` (external)
-
-
+### <span id="IVault-getPoolTokenInfo-bytes32-contract-IERC20-"></span> `getPoolTokenInfo(bytes32 poolId, contract IERC20 token) → uint256 cash, uint256 managed, uint256 lastChangeBlock, address assetManager` (external)
 
 Returns detailed information for a Pool's registered token.
 
@@ -117,9 +122,7 @@ change for this purpose, and will update `lastChangeBlock`.
 
 `assetManager` is the Pool's token Asset Manager.
 
-### `getPoolTokens(bytes32 poolId) → contract IERC20[] tokens, uint256[] balances, uint256 lastChangeBlock` (external)
-
-
+### <span id="IVault-getPoolTokens-bytes32-"></span> `getPoolTokens(bytes32 poolId) → contract IERC20[] tokens, uint256[] balances, uint256 lastChangeBlock` (external)
 
 Returns a Pool's registered tokens, the total balance for each, and the latest block when *any* of
 the tokens' `balances` changed.
@@ -134,9 +137,7 @@ Total balances include both tokens held by the Vault and those withdrawn by the 
 the amounts used by joins, exits and swaps. For a detailed breakdown of token balances, use `getPoolTokenInfo`
 instead.
 
-### `joinPool(bytes32 poolId, address sender, address recipient, struct IVault.JoinPoolRequest request)` (external)
-
-
+### <span id="IVault-joinPool-bytes32-address-address-struct-IVault-JoinPoolRequest-"></span> `joinPool(bytes32 poolId, address sender, address recipient, struct IVault.JoinPoolRequest request)` (external)
 
 Called by users to join a Pool, which transfers tokens from `sender` into the Pool's balance. This will
 trigger custom Pool behavior, which will typically grant something in return to `recipient` - often tokenized
@@ -169,9 +170,7 @@ directly to the Pool's contract, as is `recipient`.
 
 Emits a `PoolBalanceChanged` event.
 
-### `exitPool(bytes32 poolId, address sender, address payable recipient, struct IVault.ExitPoolRequest request)` (external)
-
-
+### <span id="IVault-exitPool-bytes32-address-address-payable-struct-IVault-ExitPoolRequest-"></span> `exitPool(bytes32 poolId, address sender, address payable recipient, struct IVault.ExitPoolRequest request)` (external)
 
 Called by users to exit a Pool, which transfers tokens from the Pool's balance to `recipient`. This will
 trigger custom Pool behavior, which will typically ask for something in return from `sender` - often tokenized
@@ -207,9 +206,7 @@ passed directly to the Pool's contract.
 
 Emits a `PoolBalanceChanged` event.
 
-### `swap(struct IVault.SingleSwap singleSwap, struct IVault.FundManagement funds, uint256 limit, uint256 deadline) → uint256` (external)
-
-
+### <span id="IVault-swap-struct-IVault-SingleSwap-struct-IVault-FundManagement-uint256-uint256-"></span> `swap(struct IVault.SingleSwap singleSwap, struct IVault.FundManagement funds, uint256 limit, uint256 deadline) → uint256` (external)
 
 Performs a swap with a single Pool.
 
@@ -223,9 +220,7 @@ Internal Balance usage and the recipient are determined by the `funds` struct.
 
 Emits a `Swap` event.
 
-### `batchSwap(enum IVault.SwapKind kind, struct IVault.BatchSwapStep[] swaps, contract IAsset[] assets, struct IVault.FundManagement funds, int256[] limits, uint256 deadline) → int256[]` (external)
-
-
+### <span id="IVault-batchSwap-enum-IVault-SwapKind-struct-IVault-BatchSwapStep---contract-IAsset---struct-IVault-FundManagement-int256---uint256-"></span> `batchSwap(enum IVault.SwapKind kind, struct IVault.BatchSwapStep[] swaps, contract IAsset[] assets, struct IVault.FundManagement funds, int256[] limits, uint256 deadline) → int256[]` (external)
 
 Performs a series of swaps with one or multiple Pools. In each individual swap, the caller determines either
 the amount of tokens sent to or received from the Pool, depending on the `kind` value.
@@ -255,9 +250,7 @@ equivalent `swap` call.
 
 Emits `Swap` events.
 
-### `queryBatchSwap(enum IVault.SwapKind kind, struct IVault.BatchSwapStep[] swaps, contract IAsset[] assets, struct IVault.FundManagement funds) → int256[] assetDeltas` (external)
-
-
+### <span id="IVault-queryBatchSwap-enum-IVault-SwapKind-struct-IVault-BatchSwapStep---contract-IAsset---struct-IVault-FundManagement-"></span> `queryBatchSwap(enum IVault.SwapKind kind, struct IVault.BatchSwapStep[] swaps, contract IAsset[] assets, struct IVault.FundManagement funds) → int256[] assetDeltas` (external)
 
 Simulates a call to `batchSwap`, returning an array of Vault asset deltas. Calls to `swap` cannot be
 simulated directly, but an equivalent `batchSwap` call can and will yield the exact same result.
@@ -273,9 +266,7 @@ approve them for the Vault, or even know a user's address.
 Note that this function is not 'view' (due to implementation details): the client code must explicitly execute
 eth_call instead of eth_sendTransaction.
 
-### `managePoolBalance(struct IVault.PoolBalanceOp[] ops)` (external)
-
-
+### <span id="IVault-managePoolBalance-struct-IVault-PoolBalanceOp---"></span> `managePoolBalance(struct IVault.PoolBalanceOp[] ops)` (external)
 
 Performs a set of Pool balance operations, which may be either withdrawals, deposits or updates.
 
@@ -284,9 +275,7 @@ operations of different kinds, with different Pools and tokens, at once.
 
 For each operation, the caller must be registered as the Asset Manager for `token` in `poolId`.
 
-### `setPaused(bool paused)` (external)
-
-
+### <span id="IVault-setPaused-bool-"></span> `setPaused(bool paused)` (external)
 
 Safety mechanism to pause most Vault operations in the event of an emergency - typically detection of an
 error in some part of the system.
@@ -302,16 +291,11 @@ While the contract is paused, the following features are disabled:
 
 Internal Balance can still be withdrawn, and Pools exited.
 
-
-### `RelayerApprovalChanged(address relayer, address sender, bool approved)`
-
-
+### <span id="IVault-RelayerApprovalChanged-address-address-bool-"></span> `RelayerApprovalChanged(address relayer, address sender, bool approved)`
 
 Emitted every time a relayer is approved or disapproved by `setRelayerApproval`.
 
-### `InternalBalanceChanged(address user, contract IERC20 token, int256 delta)`
-
-
+### <span id="IVault-InternalBalanceChanged-address-contract-IERC20-int256-"></span> `InternalBalanceChanged(address user, contract IERC20 token, int256 delta)`
 
 Emitted when a user's Internal Balance changes, either from calls to `manageUserBalance`, or through
 interacting with Pools using Internal Balance.
@@ -319,221 +303,31 @@ interacting with Pools using Internal Balance.
 Because Internal Balance works exclusively with ERC20 tokens, ETH deposits and withdrawals will use the WETH
 address.
 
-### `ExternalBalanceTransfer(contract IERC20 token, address sender, address recipient, uint256 amount)`
-
-
+### <span id="IVault-ExternalBalanceTransfer-contract-IERC20-address-address-uint256-"></span> `ExternalBalanceTransfer(contract IERC20 token, address sender, address recipient, uint256 amount)`
 
 Emitted when a user's Vault ERC20 allowance is used by the Vault to transfer tokens to an external account.
 
-### `PoolRegistered(bytes32 poolId, address poolAddress, enum IVault.PoolSpecialization specialization)`
-
-
+### <span id="IVault-PoolRegistered-bytes32-address-enum-IVault-PoolSpecialization-"></span> `PoolRegistered(bytes32 poolId, address poolAddress, enum IVault.PoolSpecialization specialization)`
 
 Emitted when a Pool is registered by calling `registerPool`.
 
-### `TokensRegistered(bytes32 poolId, contract IERC20[] tokens, address[] assetManagers)`
-
-
+### <span id="IVault-TokensRegistered-bytes32-contract-IERC20---address---"></span> `TokensRegistered(bytes32 poolId, contract IERC20[] tokens, address[] assetManagers)`
 
 Emitted when a Pool registers tokens by calling `registerTokens`.
 
-### `TokensDeregistered(bytes32 poolId, contract IERC20[] tokens)`
-
-
+### <span id="IVault-TokensDeregistered-bytes32-contract-IERC20---"></span> `TokensDeregistered(bytes32 poolId, contract IERC20[] tokens)`
 
 Emitted when a Pool deregisters tokens by calling `deregisterTokens`.
 
-### `PoolBalanceChanged(bytes32 poolId, address liquidityProvider, contract IERC20[] tokens, int256[] deltas, uint256[] protocolFeeAmounts)`
-
-
+### <span id="IVault-PoolBalanceChanged-bytes32-address-contract-IERC20---int256---uint256---"></span> `PoolBalanceChanged(bytes32 poolId, address liquidityProvider, contract IERC20[] tokens, int256[] deltas, uint256[] protocolFeeAmounts)`
 
 Emitted when a user joins or exits a Pool by calling `joinPool` or `exitPool`, respectively.
 
-### `Swap(bytes32 poolId, contract IERC20 tokenIn, contract IERC20 tokenOut, uint256 amountIn, uint256 amountOut)`
-
-
+### <span id="IVault-Swap-bytes32-contract-IERC20-contract-IERC20-uint256-uint256-"></span> `Swap(bytes32 poolId, contract IERC20 tokenIn, contract IERC20 tokenOut, uint256 amountIn, uint256 amountOut)`
 
 Emitted for each individual swap performed by `swap` or `batchSwap`.
 
-### `PoolBalanceManaged(bytes32 poolId, address assetManager, contract IERC20 token, int256 cashDelta, int256 managedDelta)`
-
-
+### <span id="IVault-PoolBalanceManaged-bytes32-address-contract-IERC20-int256-int256-"></span> `PoolBalanceManaged(bytes32 poolId, address assetManager, contract IERC20 token, int256 cashDelta, int256 managedDelta)`
 
 Emitted when a Pool's token Asset Manager alters its balance via `managePoolBalance`.
-
-
-### `UserBalanceOp`
-
-
-enum IVault.UserBalanceOpKind kind
-
-
-contract IAsset asset
-
-
-uint256 amount
-
-
-address sender
-
-
-address payable recipient
-
-
-### `JoinPoolRequest`
-
-
-contract IAsset[] assets
-
-
-uint256[] maxAmountsIn
-
-
-bytes userData
-
-
-bool fromInternalBalance
-
-
-### `ExitPoolRequest`
-
-
-contract IAsset[] assets
-
-
-uint256[] minAmountsOut
-
-
-bytes userData
-
-
-bool toInternalBalance
-
-
-### `SingleSwap`
-
-
-bytes32 poolId
-
-
-enum IVault.SwapKind kind
-
-
-contract IAsset assetIn
-
-
-contract IAsset assetOut
-
-
-uint256 amount
-
-
-bytes userData
-
-
-### `BatchSwapStep`
-
-
-bytes32 poolId
-
-
-uint256 assetInIndex
-
-
-uint256 assetOutIndex
-
-
-uint256 amount
-
-
-bytes userData
-
-
-### `FundManagement`
-
-
-address sender
-
-
-bool fromInternalBalance
-
-
-address payable recipient
-
-
-bool toInternalBalance
-
-
-### `PoolBalanceOp`
-
-
-enum IVault.PoolBalanceOpKind kind
-
-
-bytes32 poolId
-
-
-contract IERC20 token
-
-
-uint256 amount
-
-
-
-### `UserBalanceOpKind`
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-### `PoolSpecialization`
-
-
-
-
-
-
-
-
-
-
-
-### `PoolBalanceChangeKind`
-
-
-
-
-
-
-
-
-### `SwapKind`
-
-
-
-
-
-
-
-
-### `PoolBalanceOpKind`
-
-
-
-
-
-
-
-
-
-
 

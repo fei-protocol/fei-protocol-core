@@ -1,28 +1,19 @@
-## `IPCVDepositBalances`
+## <span id="IPCVDepositBalances"></span> `IPCVDepositBalances`
 
 
 
+- [`balance()`][IPCVDepositBalances-balance--]
+- [`balanceReportedIn()`][IPCVDepositBalances-balanceReportedIn--]
+- [`resistantBalanceAndFei()`][IPCVDepositBalances-resistantBalanceAndFei--]
+### <span id="IPCVDepositBalances-balance--"></span> `balance() → uint256` (external)
 
 
 
-### `balance() → uint256` (external)
-
-gets the effective balance of "balanceReportedIn" token if the deposit were fully withdrawn
+### <span id="IPCVDepositBalances-balanceReportedIn--"></span> `balanceReportedIn() → address` (external)
 
 
 
-### `balanceReportedIn() → address` (external)
-
-gets the token address in which this deposit returns its balance
-
-
-
-### `resistantBalanceAndFei() → uint256, uint256` (external)
-
-gets the resistant token balance and protocol owned fei of this deposit
-
-
-
+### <span id="IPCVDepositBalances-resistantBalanceAndFei--"></span> `resistantBalanceAndFei() → uint256, uint256` (external)
 
 
 

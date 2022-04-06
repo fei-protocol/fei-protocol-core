@@ -1,23 +1,14 @@
-## `MergerGate`
+## <span id="MergerGate"></span> `MergerGate`
 
 
 
-
-
-
-### `floop()` (external)
-
-ensures Rari proposal 9 has executed
-
+- [`floop()`][MergerGate-floop--]
+- [`OnePlusOneEqualsThree(string note)`][MergerGate-OnePlusOneEqualsThree-string-]
+### <span id="MergerGate-floop--"></span> `floop()` (external)
 
 uses MakerDAO variable naming conventions for obvious reasons: https://github.com/makerdao/dss/issues/28
 
-
-### `OnePlusOneEqualsThree(string note)`
-
-
-
-
+### <span id="MergerGate-OnePlusOneEqualsThree-string-"></span> `OnePlusOneEqualsThree(string note)`
 
 
 

@@ -1,287 +1,211 @@
-## `TribalChief`
+## <span id="TribalChief"></span> `TribalChief`
+
+
+
+- [`initializer()`][Initializable-initializer--]
+- [`onlyInitializing()`][Initializable-onlyInitializing--]
+- [`nonReentrant()`][ReentrancyGuard-nonReentrant--]
+- [`ifMinterSelf()`][CoreRef-ifMinterSelf--]
+- [`onlyMinter()`][CoreRef-onlyMinter--]
+- [`onlyBurner()`][CoreRef-onlyBurner--]
+- [`onlyPCVController()`][CoreRef-onlyPCVController--]
+- [`onlyGovernorOrAdmin()`][CoreRef-onlyGovernorOrAdmin--]
+- [`onlyGovernor()`][CoreRef-onlyGovernor--]
+- [`onlyGuardianOrGovernor()`][CoreRef-onlyGuardianOrGovernor--]
+- [`isGovernorOrGuardianOrAdmin()`][CoreRef-isGovernorOrGuardianOrAdmin--]
+- [`onlyTribeRole(bytes32 role)`][CoreRef-onlyTribeRole-bytes32-]
+- [`hasAnyOfTwoRoles(bytes32 role1, bytes32 role2)`][CoreRef-hasAnyOfTwoRoles-bytes32-bytes32-]
+- [`hasAnyOfThreeRoles(bytes32 role1, bytes32 role2, bytes32 role3)`][CoreRef-hasAnyOfThreeRoles-bytes32-bytes32-bytes32-]
+- [`hasAnyOfFourRoles(bytes32 role1, bytes32 role2, bytes32 role3, bytes32 role4)`][CoreRef-hasAnyOfFourRoles-bytes32-bytes32-bytes32-bytes32-]
+- [`hasAnyOfFiveRoles(bytes32 role1, bytes32 role2, bytes32 role3, bytes32 role4, bytes32 role5)`][CoreRef-hasAnyOfFiveRoles-bytes32-bytes32-bytes32-bytes32-bytes32-]
+- [`onlyFei()`][CoreRef-onlyFei--]
+- [`whenNotPaused()`][Pausable-whenNotPaused--]
+- [`whenPaused()`][Pausable-whenPaused--]
+- [`constructor(address coreAddress)`][TribalChief-constructor-address-]
+- [`initialize(address _core, contract IERC20 _tribe)`][TribalChief-initialize-address-contract-IERC20-]
+- [`updateBlockReward(uint256 newBlockReward)`][TribalChief-updateBlockReward-uint256-]
+- [`lockPool(uint256 _pid)`][TribalChief-lockPool-uint256-]
+- [`unlockPool(uint256 _pid)`][TribalChief-unlockPool-uint256-]
+- [`governorAddPoolMultiplier(uint256 _pid, uint64 lockLength, uint64 newRewardsMultiplier)`][TribalChief-governorAddPoolMultiplier-uint256-uint64-uint64-]
+- [`governorWithdrawTribe(uint256 amount)`][TribalChief-governorWithdrawTribe-uint256-]
+- [`numPools()`][TribalChief-numPools--]
+- [`openUserDeposits(uint256 pid, address user)`][TribalChief-openUserDeposits-uint256-address-]
+- [`getTotalStakedInPool(uint256 pid, address user)`][TribalChief-getTotalStakedInPool-uint256-address-]
+- [`add(uint120 allocPoint, contract IERC20 _stakedToken, contract IRewarder _rewarder, struct TribalChief.RewardData[] rewardData)`][TribalChief-add-uint120-contract-IERC20-contract-IRewarder-struct-TribalChief-RewardData---]
+- [`set(uint256 _pid, uint120 _allocPoint, contract IRewarder _rewarder, bool overwrite)`][TribalChief-set-uint256-uint120-contract-IRewarder-bool-]
+- [`resetRewards(uint256 _pid)`][TribalChief-resetRewards-uint256-]
+- [`pendingRewards(uint256 _pid, address _user)`][TribalChief-pendingRewards-uint256-address-]
+- [`massUpdatePools(uint256[] pids)`][TribalChief-massUpdatePools-uint256---]
+- [`tribePerBlock()`][TribalChief-tribePerBlock--]
+- [`updatePool(uint256 pid)`][TribalChief-updatePool-uint256-]
+- [`deposit(uint256 pid, uint256 amount, uint64 lockLength)`][TribalChief-deposit-uint256-uint256-uint64-]
+- [`withdrawAllAndHarvest(uint256 pid, address to)`][TribalChief-withdrawAllAndHarvest-uint256-address-]
+- [`withdrawFromDeposit(uint256 pid, uint256 amount, address to, uint256 index)`][TribalChief-withdrawFromDeposit-uint256-uint256-address-uint256-]
+- [`harvest(uint256 pid, address to)`][TribalChief-harvest-uint256-address-]
+- [`emergencyWithdraw(uint256 pid, address to)`][TribalChief-emergencyWithdraw-uint256-address-]
+- [`_initialize(address)`][CoreRef-_initialize-address-]
+- [`setContractAdminRole(bytes32 newContractAdminRole)`][CoreRef-setContractAdminRole-bytes32-]
+- [`isContractAdmin(address _admin)`][CoreRef-isContractAdmin-address-]
+- [`pause()`][CoreRef-pause--]
+- [`unpause()`][CoreRef-unpause--]
+- [`core()`][CoreRef-core--]
+- [`fei()`][CoreRef-fei--]
+- [`tribe()`][CoreRef-tribe--]
+- [`feiBalance()`][CoreRef-feiBalance--]
+- [`tribeBalance()`][CoreRef-tribeBalance--]
+- [`_burnFeiHeld()`][CoreRef-_burnFeiHeld--]
+- [`_mintFei(address to, uint256 amount)`][CoreRef-_mintFei-address-uint256-]
+- [`_setContractAdminRole(bytes32 newContractAdminRole)`][CoreRef-_setContractAdminRole-bytes32-]
+- [`paused()`][Pausable-paused--]
+- [`_pause()`][Pausable-_pause--]
+- [`_unpause()`][Pausable-_unpause--]
+- [`_msgSender()`][Context-_msgSender--]
+- [`_msgData()`][Context-_msgData--]
+- [`CONTRACT_ADMIN_ROLE()`][ICoreRef-CONTRACT_ADMIN_ROLE--]
+- [`Deposit(address user, uint256 pid, uint256 amount, uint256 depositID)`][TribalChief-Deposit-address-uint256-uint256-uint256-]
+- [`Withdraw(address user, uint256 pid, uint256 amount, address to)`][TribalChief-Withdraw-address-uint256-uint256-address-]
+- [`EmergencyWithdraw(address user, uint256 pid, uint256 amount, address to)`][TribalChief-EmergencyWithdraw-address-uint256-uint256-address-]
+- [`Harvest(address user, uint256 pid, uint256 amount)`][TribalChief-Harvest-address-uint256-uint256-]
+- [`LogPoolAddition(uint256 pid, uint256 allocPoint, contract IERC20 stakedToken, contract IRewarder rewarder)`][TribalChief-LogPoolAddition-uint256-uint256-contract-IERC20-contract-IRewarder-]
+- [`LogSetPool(uint256 pid, uint256 allocPoint, contract IRewarder rewarder, bool overwrite)`][TribalChief-LogSetPool-uint256-uint256-contract-IRewarder-bool-]
+- [`LogPoolMultiplier(uint256 pid, uint128 lockLength, uint256 multiplier)`][TribalChief-LogPoolMultiplier-uint256-uint128-uint256-]
+- [`LogUpdatePool(uint256 pid, uint128 lastRewardBlock, uint256 lpSupply, uint256 accTribePerShare)`][TribalChief-LogUpdatePool-uint256-uint128-uint256-uint256-]
+- [`TribeWithdraw(uint256 amount)`][TribalChief-TribeWithdraw-uint256-]
+- [`NewTribePerBlock(uint256 amount)`][TribalChief-NewTribePerBlock-uint256-]
+- [`PoolLocked(bool locked, uint256 pid)`][TribalChief-PoolLocked-bool-uint256-]
+- [`Paused(address account)`][Pausable-Paused-address-]
+- [`Unpaused(address account)`][Pausable-Unpaused-address-]
+- [`CoreUpdate(address oldCore, address newCore)`][ICoreRef-CoreUpdate-address-address-]
+- [`ContractAdminRoleUpdate(bytes32 oldContractAdminRole, bytes32 newContractAdminRole)`][ICoreRef-ContractAdminRoleUpdate-bytes32-bytes32-]
+### <span id="TribalChief-constructor-address-"></span> `constructor(address coreAddress)` (public)
 
-The idea for this TribalChief contract is to be the owner of tribe token
-that is deposited into this contract.
-This contract was forked from sushiswap and has been modified to distribute staking rewards in tribe.
-All legacy code that relied on MasterChef V1 has been removed so that this contract will pay out staking rewards in tribe.
-The assumption this code makes is that this MasterChief contract will be funded before going live and offering staking rewards.
-This contract will not have the ability to mint tribe.
 
 
+### <span id="TribalChief-initialize-address-contract-IERC20-"></span> `initialize(address _core, contract IERC20 _tribe)` (external)
 
 
-### `constructor(address coreAddress)` (public)
 
-The way this function is constructed, you will not be able to
-call initialize after this function is constructed, effectively
-only allowing TribalChief to be used through delegate calls.
+### <span id="TribalChief-updateBlockReward-uint256-"></span> `updateBlockReward(uint256 newBlockReward)` (external)
 
 
 
+### <span id="TribalChief-lockPool-uint256-"></span> `lockPool(uint256 _pid)` (external)
 
-### `initialize(address _core, contract IERC20 _tribe)` (external)
 
 
+### <span id="TribalChief-unlockPool-uint256-"></span> `unlockPool(uint256 _pid)` (external)
 
 
 
-### `updateBlockReward(uint256 newBlockReward)` (external)
+### <span id="TribalChief-governorAddPoolMultiplier-uint256-uint64-uint64-"></span> `governorAddPoolMultiplier(uint256 _pid, uint64 lockLength, uint64 newRewardsMultiplier)` (external)
 
-Allows governor to change the amount of tribe per block
-make sure to call the update pool function before hitting this function
-this will ensure that all of the rewards a user earned previously get paid out
 
 
+### <span id="TribalChief-governorWithdrawTribe-uint256-"></span> `governorWithdrawTribe(uint256 amount)` (external)
 
 
-### `lockPool(uint256 _pid)` (external)
 
-Allows governor to lock the pool so the users cannot withdraw
-until their lockup period is over
+### <span id="TribalChief-numPools--"></span> `numPools() → uint256` (public)
 
 
 
+### <span id="TribalChief-openUserDeposits-uint256-address-"></span> `openUserDeposits(uint256 pid, address user) → uint256` (public)
 
-### `unlockPool(uint256 _pid)` (external)
 
-Allows governor to unlock the pool so that users can withdraw
-before their tokens have been locked for the entire lockup period
 
+### <span id="TribalChief-getTotalStakedInPool-uint256-address-"></span> `getTotalStakedInPool(uint256 pid, address user) → uint256` (public)
 
 
 
-### `governorAddPoolMultiplier(uint256 _pid, uint64 lockLength, uint64 newRewardsMultiplier)` (external)
+### <span id="TribalChief-add-uint120-contract-IERC20-contract-IRewarder-struct-TribalChief-RewardData---"></span> `add(uint120 allocPoint, contract IERC20 _stakedToken, contract IRewarder _rewarder, struct TribalChief.RewardData[] rewardData)` (external)
 
-Allows governor to change the pool multiplier
-Unlocks the pool if the new multiplier is greater than the old one
 
 
+### <span id="TribalChief-set-uint256-uint120-contract-IRewarder-bool-"></span> `set(uint256 _pid, uint120 _allocPoint, contract IRewarder _rewarder, bool overwrite)` (public)
 
 
-### `governorWithdrawTribe(uint256 amount)` (external)
 
-sends tokens back to governance treasury. Only callable by governance
+### <span id="TribalChief-resetRewards-uint256-"></span> `resetRewards(uint256 _pid)` (public)
 
 
 
+### <span id="TribalChief-pendingRewards-uint256-address-"></span> `pendingRewards(uint256 _pid, address _user) → uint256` (external)
 
-### `numPools() → uint256` (public)
 
-Returns the number of pools.
 
+### <span id="TribalChief-massUpdatePools-uint256---"></span> `massUpdatePools(uint256[] pids)` (external)
 
 
-### `openUserDeposits(uint256 pid, address user) → uint256` (public)
 
-Returns the number of user deposits in a single pool.
+### <span id="TribalChief-tribePerBlock--"></span> `tribePerBlock() → uint256` (public)
 
 
 
-### `getTotalStakedInPool(uint256 pid, address user) → uint256` (public)
+### <span id="TribalChief-updatePool-uint256-"></span> `updatePool(uint256 pid)` (public)
 
-Returns the amount a user deposited in a single pool.
 
 
+### <span id="TribalChief-deposit-uint256-uint256-uint64-"></span> `deposit(uint256 pid, uint256 amount, uint64 lockLength)` (public)
 
-### `add(uint120 allocPoint, contract IERC20 _stakedToken, contract IRewarder _rewarder, struct TribalChief.RewardData[] rewardData)` (external)
 
-Add a new pool. Can only be called by the governor.
 
+### <span id="TribalChief-withdrawAllAndHarvest-uint256-address-"></span> `withdrawAllAndHarvest(uint256 pid, address to)` (external)
 
 
 
-### `set(uint256 _pid, uint120 _allocPoint, contract IRewarder _rewarder, bool overwrite)` (public)
+### <span id="TribalChief-withdrawFromDeposit-uint256-uint256-address-uint256-"></span> `withdrawFromDeposit(uint256 pid, uint256 amount, address to, uint256 index)` (public)
 
-Update the given pool's TRIBE allocation point and `IRewarder` contract.
-Can only be called by the governor.
 
 
+### <span id="TribalChief-harvest-uint256-address-"></span> `harvest(uint256 pid, address to)` (public)
 
 
-### `resetRewards(uint256 _pid)` (public)
 
-Reset the given pool's TRIBE allocation to 0 and unlock the pool.
-Can only be called by the governor or guardian.
+### <span id="TribalChief-emergencyWithdraw-uint256-address-"></span> `emergencyWithdraw(uint256 pid, address to)` (public)
 
 
 
+### <span id="TribalChief-Deposit-address-uint256-uint256-uint256-"></span> `Deposit(address user, uint256 pid, uint256 amount, uint256 depositID)`
 
-### `pendingRewards(uint256 _pid, address _user) → uint256` (external)
 
-View function to see all pending TRIBE on frontend.
 
+### <span id="TribalChief-Withdraw-address-uint256-uint256-address-"></span> `Withdraw(address user, uint256 pid, uint256 amount, address to)`
 
 
 
-### `massUpdatePools(uint256[] pids)` (external)
+### <span id="TribalChief-EmergencyWithdraw-address-uint256-uint256-address-"></span> `EmergencyWithdraw(address user, uint256 pid, uint256 amount, address to)`
 
-Update reward variables for all pools. Be careful of gas spending!
 
 
+### <span id="TribalChief-Harvest-address-uint256-uint256-"></span> `Harvest(address user, uint256 pid, uint256 amount)`
 
 
-### `tribePerBlock() → uint256` (public)
 
-Calculates and returns the `amount` of TRIBE per block.
+### <span id="TribalChief-LogPoolAddition-uint256-uint256-contract-IERC20-contract-IRewarder-"></span> `LogPoolAddition(uint256 pid, uint256 allocPoint, contract IERC20 stakedToken, contract IRewarder rewarder)`
 
 
 
-### `updatePool(uint256 pid)` (public)
+### <span id="TribalChief-LogSetPool-uint256-uint256-contract-IRewarder-bool-"></span> `LogSetPool(uint256 pid, uint256 allocPoint, contract IRewarder rewarder, bool overwrite)`
 
-Update reward variables of the given pool.
 
 
+### <span id="TribalChief-LogPoolMultiplier-uint256-uint128-uint256-"></span> `LogPoolMultiplier(uint256 pid, uint128 lockLength, uint256 multiplier)`
 
 
-### `deposit(uint256 pid, uint256 amount, uint64 lockLength)` (public)
 
-Deposit tokens to earn TRIBE allocation.
+### <span id="TribalChief-LogUpdatePool-uint256-uint128-uint256-uint256-"></span> `LogUpdatePool(uint256 pid, uint128 lastRewardBlock, uint256 lpSupply, uint256 accTribePerShare)`
 
 
 
+### <span id="TribalChief-TribeWithdraw-uint256-"></span> `TribeWithdraw(uint256 amount)`
 
-### `withdrawAllAndHarvest(uint256 pid, address to)` (external)
 
-Withdraw staked tokens from pool.
 
+### <span id="TribalChief-NewTribePerBlock-uint256-"></span> `NewTribePerBlock(uint256 amount)`
 
 
 
-### `withdrawFromDeposit(uint256 pid, uint256 amount, address to, uint256 index)` (public)
-
-Withdraw tokens from pool.
-
-
-
-
-### `harvest(uint256 pid, address to)` (public)
-
-Harvest proceeds for transaction sender to `to`.
-
-
-
-
-### `emergencyWithdraw(uint256 pid, address to)` (public)
-
-Withdraw without caring about rewards. EMERGENCY ONLY.
-
-
-
-
-
-### `Deposit(address user, uint256 pid, uint256 amount, uint256 depositID)`
-
-
-
-
-
-### `Withdraw(address user, uint256 pid, uint256 amount, address to)`
-
-
-
-
-
-### `EmergencyWithdraw(address user, uint256 pid, uint256 amount, address to)`
-
-
-
-
-
-### `Harvest(address user, uint256 pid, uint256 amount)`
-
-
-
-
-
-### `LogPoolAddition(uint256 pid, uint256 allocPoint, contract IERC20 stakedToken, contract IRewarder rewarder)`
-
-
-
-
-
-### `LogSetPool(uint256 pid, uint256 allocPoint, contract IRewarder rewarder, bool overwrite)`
-
-
-
-
-
-### `LogPoolMultiplier(uint256 pid, uint128 lockLength, uint256 multiplier)`
-
-
-
-
-
-### `LogUpdatePool(uint256 pid, uint128 lastRewardBlock, uint256 lpSupply, uint256 accTribePerShare)`
-
-
-
-
-
-### `TribeWithdraw(uint256 amount)`
-
-tribe withdraw event
-
-
-
-### `NewTribePerBlock(uint256 amount)`
-
-
-
-
-
-### `PoolLocked(bool locked, uint256 pid)`
-
-
-
-
-
-
-### `UserInfo`
-
-
-int256 rewardDebt
-
-
-uint256 virtualAmount
-
-
-### `DepositInfo`
-
-
-uint256 amount
-
-
-uint128 unlockBlock
-
-
-uint128 multiplier
-
-
-### `PoolInfo`
-
-
-uint256 virtualTotalSupply
-
-
-uint256 accTribePerShare
-
-
-uint128 lastRewardBlock
-
-
-uint120 allocPoint
-
-
-bool unlocked
-
-
-### `RewardData`
-
-
-uint128 lockLength
-
-
-uint128 rewardMultiplier
+### <span id="TribalChief-PoolLocked-bool-uint256-"></span> `PoolLocked(bool locked, uint256 pid)`
 
 
 

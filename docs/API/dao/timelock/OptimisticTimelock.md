@@ -1,29 +1,88 @@
-## `OptimisticTimelock`
+## <span id="OptimisticTimelock"></span> `OptimisticTimelock`
 
 
 
+- [`ifMinterSelf()`][CoreRef-ifMinterSelf--]
+- [`onlyMinter()`][CoreRef-onlyMinter--]
+- [`onlyBurner()`][CoreRef-onlyBurner--]
+- [`onlyPCVController()`][CoreRef-onlyPCVController--]
+- [`onlyGovernorOrAdmin()`][CoreRef-onlyGovernorOrAdmin--]
+- [`onlyGovernor()`][CoreRef-onlyGovernor--]
+- [`onlyGuardianOrGovernor()`][CoreRef-onlyGuardianOrGovernor--]
+- [`isGovernorOrGuardianOrAdmin()`][CoreRef-isGovernorOrGuardianOrAdmin--]
+- [`onlyTribeRole(bytes32 role)`][CoreRef-onlyTribeRole-bytes32-]
+- [`hasAnyOfTwoRoles(bytes32 role1, bytes32 role2)`][CoreRef-hasAnyOfTwoRoles-bytes32-bytes32-]
+- [`hasAnyOfThreeRoles(bytes32 role1, bytes32 role2, bytes32 role3)`][CoreRef-hasAnyOfThreeRoles-bytes32-bytes32-bytes32-]
+- [`hasAnyOfFourRoles(bytes32 role1, bytes32 role2, bytes32 role3, bytes32 role4)`][CoreRef-hasAnyOfFourRoles-bytes32-bytes32-bytes32-bytes32-]
+- [`hasAnyOfFiveRoles(bytes32 role1, bytes32 role2, bytes32 role3, bytes32 role4, bytes32 role5)`][CoreRef-hasAnyOfFiveRoles-bytes32-bytes32-bytes32-bytes32-bytes32-]
+- [`onlyFei()`][CoreRef-onlyFei--]
+- [`whenNotPaused()`][Pausable-whenNotPaused--]
+- [`whenPaused()`][Pausable-whenPaused--]
+- [`onlyRoleOrOpenRole(bytes32 role)`][TimelockController-onlyRoleOrOpenRole-bytes32-]
+- [`onlyRole(bytes32 role)`][AccessControl-onlyRole-bytes32-]
+- [`constructor(address core_, uint256 minDelay, address[] proposers, address[] executors)`][OptimisticTimelock-constructor-address-uint256-address---address---]
+- [`becomeAdmin()`][OptimisticTimelock-becomeAdmin--]
+- [`_initialize(address)`][CoreRef-_initialize-address-]
+- [`setContractAdminRole(bytes32 newContractAdminRole)`][CoreRef-setContractAdminRole-bytes32-]
+- [`isContractAdmin(address _admin)`][CoreRef-isContractAdmin-address-]
+- [`pause()`][CoreRef-pause--]
+- [`unpause()`][CoreRef-unpause--]
+- [`core()`][CoreRef-core--]
+- [`fei()`][CoreRef-fei--]
+- [`tribe()`][CoreRef-tribe--]
+- [`feiBalance()`][CoreRef-feiBalance--]
+- [`tribeBalance()`][CoreRef-tribeBalance--]
+- [`_burnFeiHeld()`][CoreRef-_burnFeiHeld--]
+- [`_mintFei(address to, uint256 amount)`][CoreRef-_mintFei-address-uint256-]
+- [`_setContractAdminRole(bytes32 newContractAdminRole)`][CoreRef-_setContractAdminRole-bytes32-]
+- [`paused()`][Pausable-paused--]
+- [`_pause()`][Pausable-_pause--]
+- [`_unpause()`][Pausable-_unpause--]
+- [`receive()`][TimelockController-receive--]
+- [`isOperation(bytes32 id)`][TimelockController-isOperation-bytes32-]
+- [`isOperationPending(bytes32 id)`][TimelockController-isOperationPending-bytes32-]
+- [`isOperationReady(bytes32 id)`][TimelockController-isOperationReady-bytes32-]
+- [`isOperationDone(bytes32 id)`][TimelockController-isOperationDone-bytes32-]
+- [`getTimestamp(bytes32 id)`][TimelockController-getTimestamp-bytes32-]
+- [`getMinDelay()`][TimelockController-getMinDelay--]
+- [`hashOperation(address target, uint256 value, bytes data, bytes32 predecessor, bytes32 salt)`][TimelockController-hashOperation-address-uint256-bytes-bytes32-bytes32-]
+- [`hashOperationBatch(address[] targets, uint256[] values, bytes[] datas, bytes32 predecessor, bytes32 salt)`][TimelockController-hashOperationBatch-address---uint256---bytes---bytes32-bytes32-]
+- [`schedule(address target, uint256 value, bytes data, bytes32 predecessor, bytes32 salt, uint256 delay)`][TimelockController-schedule-address-uint256-bytes-bytes32-bytes32-uint256-]
+- [`scheduleBatch(address[] targets, uint256[] values, bytes[] datas, bytes32 predecessor, bytes32 salt, uint256 delay)`][TimelockController-scheduleBatch-address---uint256---bytes---bytes32-bytes32-uint256-]
+- [`cancel(bytes32 id)`][TimelockController-cancel-bytes32-]
+- [`execute(address target, uint256 value, bytes data, bytes32 predecessor, bytes32 salt)`][TimelockController-execute-address-uint256-bytes-bytes32-bytes32-]
+- [`executeBatch(address[] targets, uint256[] values, bytes[] datas, bytes32 predecessor, bytes32 salt)`][TimelockController-executeBatch-address---uint256---bytes---bytes32-bytes32-]
+- [`updateDelay(uint256 newDelay)`][TimelockController-updateDelay-uint256-]
+- [`supportsInterface(bytes4 interfaceId)`][AccessControl-supportsInterface-bytes4-]
+- [`hasRole(bytes32 role, address account)`][AccessControl-hasRole-bytes32-address-]
+- [`_checkRole(bytes32 role, address account)`][AccessControl-_checkRole-bytes32-address-]
+- [`getRoleAdmin(bytes32 role)`][AccessControl-getRoleAdmin-bytes32-]
+- [`grantRole(bytes32 role, address account)`][AccessControl-grantRole-bytes32-address-]
+- [`revokeRole(bytes32 role, address account)`][AccessControl-revokeRole-bytes32-address-]
+- [`renounceRole(bytes32 role, address account)`][AccessControl-renounceRole-bytes32-address-]
+- [`_setupRole(bytes32 role, address account)`][AccessControl-_setupRole-bytes32-address-]
+- [`_setRoleAdmin(bytes32 role, bytes32 adminRole)`][AccessControl-_setRoleAdmin-bytes32-bytes32-]
+- [`_grantRole(bytes32 role, address account)`][AccessControl-_grantRole-bytes32-address-]
+- [`_revokeRole(bytes32 role, address account)`][AccessControl-_revokeRole-bytes32-address-]
+- [`_msgSender()`][Context-_msgSender--]
+- [`_msgData()`][Context-_msgData--]
+- [`CONTRACT_ADMIN_ROLE()`][ICoreRef-CONTRACT_ADMIN_ROLE--]
+- [`Paused(address account)`][Pausable-Paused-address-]
+- [`Unpaused(address account)`][Pausable-Unpaused-address-]
+- [`CallScheduled(bytes32 id, uint256 index, address target, uint256 value, bytes data, bytes32 predecessor, uint256 delay)`][TimelockController-CallScheduled-bytes32-uint256-address-uint256-bytes-bytes32-uint256-]
+- [`CallExecuted(bytes32 id, uint256 index, address target, uint256 value, bytes data)`][TimelockController-CallExecuted-bytes32-uint256-address-uint256-bytes-]
+- [`Cancelled(bytes32 id)`][TimelockController-Cancelled-bytes32-]
+- [`MinDelayChange(uint256 oldDuration, uint256 newDuration)`][TimelockController-MinDelayChange-uint256-uint256-]
+- [`RoleAdminChanged(bytes32 role, bytes32 previousAdminRole, bytes32 newAdminRole)`][IAccessControl-RoleAdminChanged-bytes32-bytes32-bytes32-]
+- [`RoleGranted(bytes32 role, address account, address sender)`][IAccessControl-RoleGranted-bytes32-address-address-]
+- [`RoleRevoked(bytes32 role, address account, address sender)`][IAccessControl-RoleRevoked-bytes32-address-address-]
+- [`CoreUpdate(address oldCore, address newCore)`][ICoreRef-CoreUpdate-address-address-]
+- [`ContractAdminRoleUpdate(bytes32 oldContractAdminRole, bytes32 newContractAdminRole)`][ICoreRef-ContractAdminRoleUpdate-bytes32-bytes32-]
+### <span id="OptimisticTimelock-constructor-address-uint256-address---address---"></span> `constructor(address core_, uint256 minDelay, address[] proposers, address[] executors)` (public)
 
 
 
-### `constructor(address core_, uint256 minDelay, address[] proposers, address[] executors)` (public)
-
-
-
-
-
-### `becomeAdmin()` (public)
-
-allow guardian or governor to assume timelock admin roles
-        This more elegantly achieves optimistic timelock as follows:
-        - veto: grant self PROPOSER_ROLE and cancel
-        - pause proposals: revoke PROPOSER_ROLE from target
-        - pause execution: revoke EXECUTOR_ROLE from target
-        - set new proposer: revoke old proposer and add new one
-
-        In addition it allows for much more granular and flexible access for multisig operators
-
-
-
+### <span id="OptimisticTimelock-becomeAdmin--"></span> `becomeAdmin()` (public)
 
 
 

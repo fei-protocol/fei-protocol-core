@@ -66,8 +66,6 @@
     "hardhat-contract-sizer": "^2.5.1",
     "hardhat-gas-reporter": "^1.0.8",
     "merkletreejs": "^0.2.31",
-    "solc-0.8": "npm:solc@^0.8.13",
-    "solidity-docgen": "0.5.16",
     "string-template": "^1.0.0"
   },
   "devDependencies": {
@@ -97,6 +95,8 @@
     "prettier-plugin-solidity": "^1.0.0-beta.19",
     "solhint": "^3.3.7",
     "solhint-plugin-prettier": "^0.0.5",
+    "solc-0.8": "npm:solc@^0.8.13",
+    "solidity-docgen": "0.5.16",
     "solidity-coverage": "^0.7.20",
     "ts-node": "^10.7.0",
     "tsconfig-paths": "^3.14.1",

@@ -1,284 +1,149 @@
-## `ABDKMath64x64`
+## <span id="ABDKMath64x64"></span> `ABDKMath64x64`
 
-*
-Smart contract library of mathematical functions operating with signed
-64.64-bit fixed point numbers.  Signed 64.64-bit fixed point number is
-basically a simple fraction whose numerator is signed 128-bit integer and
-denominator is 2^64.  As long as denominator is always the same, there is no
-need to store it, thus in Solidity signed 64.64-bit fixed point numbers are
-represented by int128 type holding only the numerator.
-/
 
 
+- [`uint256toInt128(uint256 input)`][ABDKMath64x64-uint256toInt128-uint256-]
+- [`int128toUint256(int128 input)`][ABDKMath64x64-int128toUint256-int128-]
+- [`int128toUint64(int128 input)`][ABDKMath64x64-int128toUint64-int128-]
+- [`fromInt(int256 x)`][ABDKMath64x64-fromInt-int256-]
+- [`toInt(int128 x)`][ABDKMath64x64-toInt-int128-]
+- [`fromUInt(uint256 x)`][ABDKMath64x64-fromUInt-uint256-]
+- [`fromScaled(uint256 x, uint256 decimal)`][ABDKMath64x64-fromScaled-uint256-uint256-]
+- [`toUInt(int128 x)`][ABDKMath64x64-toUInt-int128-]
+- [`from128x128(int256 x)`][ABDKMath64x64-from128x128-int256-]
+- [`to128x128(int128 x)`][ABDKMath64x64-to128x128-int128-]
+- [`add(int128 x, int128 y)`][ABDKMath64x64-add-int128-int128-]
+- [`sub(int128 x, int128 y)`][ABDKMath64x64-sub-int128-int128-]
+- [`mul(int128 x, int128 y)`][ABDKMath64x64-mul-int128-int128-]
+- [`muli(int128 x, int256 y)`][ABDKMath64x64-muli-int128-int256-]
+- [`mulu(int128 x, uint256 y)`][ABDKMath64x64-mulu-int128-uint256-]
+- [`div(int128 x, int128 y)`][ABDKMath64x64-div-int128-int128-]
+- [`divi(int256 x, int256 y)`][ABDKMath64x64-divi-int256-int256-]
+- [`divu(uint256 x, uint256 y)`][ABDKMath64x64-divu-uint256-uint256-]
+- [`neg(int128 x)`][ABDKMath64x64-neg-int128-]
+- [`abs(int128 x)`][ABDKMath64x64-abs-int128-]
+- [`inv(int128 x)`][ABDKMath64x64-inv-int128-]
+- [`avg(int128 x, int128 y)`][ABDKMath64x64-avg-int128-int128-]
+- [`gavg(int128 x, int128 y)`][ABDKMath64x64-gavg-int128-int128-]
+- [`pow(int128 x, uint256 y)`][ABDKMath64x64-pow-int128-uint256-]
+- [`sqrt(int128 x)`][ABDKMath64x64-sqrt-int128-]
+- [`log_2(int128 x)`][ABDKMath64x64-log_2-int128-]
+- [`ln(int128 x)`][ABDKMath64x64-ln-int128-]
+- [`exp_2(int128 x)`][ABDKMath64x64-exp_2-int128-]
+- [`exp(int128 x)`][ABDKMath64x64-exp-int128-]
+### <span id="ABDKMath64x64-uint256toInt128-uint256-"></span> `uint256toInt128(uint256 input) → int128` (internal)
 
 
-### `uint256toInt128(uint256 input) → int128` (internal)
 
+### <span id="ABDKMath64x64-int128toUint256-int128-"></span> `int128toUint256(int128 input) → uint256` (internal)
 
 
 
+### <span id="ABDKMath64x64-int128toUint64-int128-"></span> `int128toUint64(int128 input) → uint64` (internal)
 
-### `int128toUint256(int128 input) → uint256` (internal)
 
 
+### <span id="ABDKMath64x64-fromInt-int256-"></span> `fromInt(int256 x) → int128` (internal)
 
 
 
-### `int128toUint64(int128 input) → uint64` (internal)
+### <span id="ABDKMath64x64-toInt-int128-"></span> `toInt(int128 x) → int64` (internal)
 
 
 
+### <span id="ABDKMath64x64-fromUInt-uint256-"></span> `fromUInt(uint256 x) → int128` (internal)
 
 
-### `fromInt(int256 x) → int128` (internal)
 
-*
-Convert signed 256-bit integer number into signed 64.64-bit fixed point
-number.  Revert on overflow.
+### <span id="ABDKMath64x64-fromScaled-uint256-uint256-"></span> `fromScaled(uint256 x, uint256 decimal) → int128` (internal)
 
 
 
+### <span id="ABDKMath64x64-toUInt-int128-"></span> `toUInt(int128 x) → uint64` (internal)
 
 
-### `toInt(int128 x) → int64` (internal)
 
-*
-Convert signed 64.64 fixed point number into signed 64-bit integer number
-rounding down.
+### <span id="ABDKMath64x64-from128x128-int256-"></span> `from128x128(int256 x) → int128` (internal)
 
 
 
+### <span id="ABDKMath64x64-to128x128-int128-"></span> `to128x128(int128 x) → int256` (internal)
 
 
-### `fromUInt(uint256 x) → int128` (internal)
 
-*
-Convert unsigned 256-bit integer number into signed 64.64-bit fixed point
-number.  Revert on overflow.
+### <span id="ABDKMath64x64-add-int128-int128-"></span> `add(int128 x, int128 y) → int128` (internal)
 
 
 
+### <span id="ABDKMath64x64-sub-int128-int128-"></span> `sub(int128 x, int128 y) → int128` (internal)
 
 
-### `fromScaled(uint256 x, uint256 decimal) → int128` (internal)
 
-*
-Convert unsigned 256-bit integer number scaled with 10^decimals into signed 64.64-bit fixed point
-number.  Revert on overflow.
+### <span id="ABDKMath64x64-mul-int128-int128-"></span> `mul(int128 x, int128 y) → int128` (internal)
 
 
 
+### <span id="ABDKMath64x64-muli-int128-int256-"></span> `muli(int128 x, int256 y) → int256` (internal)
 
 
-### `toUInt(int128 x) → uint64` (internal)
 
-*
-Convert signed 64.64 fixed point number into unsigned 64-bit integer
-number rounding down.  Revert on underflow.
+### <span id="ABDKMath64x64-mulu-int128-uint256-"></span> `mulu(int128 x, uint256 y) → uint256` (internal)
 
 
 
+### <span id="ABDKMath64x64-div-int128-int128-"></span> `div(int128 x, int128 y) → int128` (internal)
 
 
-### `from128x128(int256 x) → int128` (internal)
 
-*
-Convert signed 128.128 fixed point number into signed 64.64-bit fixed point
-number rounding down.  Revert on overflow.
+### <span id="ABDKMath64x64-divi-int256-int256-"></span> `divi(int256 x, int256 y) → int128` (internal)
 
 
 
+### <span id="ABDKMath64x64-divu-uint256-uint256-"></span> `divu(uint256 x, uint256 y) → int128` (internal)
 
 
-### `to128x128(int128 x) → int256` (internal)
 
-*
-Convert signed 64.64 fixed point number into signed 128.128 fixed point
-number.
+### <span id="ABDKMath64x64-neg-int128-"></span> `neg(int128 x) → int128` (internal)
 
 
 
+### <span id="ABDKMath64x64-abs-int128-"></span> `abs(int128 x) → int128` (internal)
 
 
-### `add(int128 x, int128 y) → int128` (internal)
 
-*
-Calculate x + y.  Revert on overflow.
+### <span id="ABDKMath64x64-inv-int128-"></span> `inv(int128 x) → int128` (internal)
 
 
 
+### <span id="ABDKMath64x64-avg-int128-int128-"></span> `avg(int128 x, int128 y) → int128` (internal)
 
 
-### `sub(int128 x, int128 y) → int128` (internal)
 
-*
-Calculate x - y.  Revert on overflow.
+### <span id="ABDKMath64x64-gavg-int128-int128-"></span> `gavg(int128 x, int128 y) → int128` (internal)
 
 
 
+### <span id="ABDKMath64x64-pow-int128-uint256-"></span> `pow(int128 x, uint256 y) → int128` (internal)
 
 
-### `mul(int128 x, int128 y) → int128` (internal)
 
-*
-Calculate x * y rounding down.  Revert on overflow.
+### <span id="ABDKMath64x64-sqrt-int128-"></span> `sqrt(int128 x) → int128` (internal)
 
 
 
+### <span id="ABDKMath64x64-log_2-int128-"></span> `log_2(int128 x) → int128` (internal)
 
 
-### `muli(int128 x, int256 y) → int256` (internal)
 
-*
-Calculate x * y rounding towards zero, where x is signed 64.64 fixed point
-number and y is signed 256-bit integer number.  Revert on overflow.
+### <span id="ABDKMath64x64-ln-int128-"></span> `ln(int128 x) → int128` (internal)
 
 
 
+### <span id="ABDKMath64x64-exp_2-int128-"></span> `exp_2(int128 x) → int128` (internal)
 
 
-### `mulu(int128 x, uint256 y) → uint256` (internal)
 
-*
-Calculate x * y rounding down, where x is signed 64.64 fixed point number
-and y is unsigned 256-bit integer number.  Revert on overflow.
-
-
-
-
-
-### `div(int128 x, int128 y) → int128` (internal)
-
-*
-Calculate x / y rounding towards zero.  Revert on overflow or when y is
-zero.
-
-
-
-
-
-### `divi(int256 x, int256 y) → int128` (internal)
-
-*
-Calculate x / y rounding towards zero, where x and y are signed 256-bit
-integer numbers.  Revert on overflow or when y is zero.
-
-
-
-
-
-### `divu(uint256 x, uint256 y) → int128` (internal)
-
-*
-Calculate x / y rounding towards zero, where x and y are unsigned 256-bit
-integer numbers.  Revert on overflow or when y is zero.
-
-
-
-
-
-### `neg(int128 x) → int128` (internal)
-
-*
-Calculate -x.  Revert on overflow.
-
-
-
-
-
-### `abs(int128 x) → int128` (internal)
-
-*
-Calculate |x|.  Revert on overflow.
-
-
-
-
-
-### `inv(int128 x) → int128` (internal)
-
-*
-Calculate 1 / x rounding towards zero.  Revert on overflow or when x is
-zero.
-
-
-
-
-
-### `avg(int128 x, int128 y) → int128` (internal)
-
-*
-Calculate arithmetics average of x and y, i.e. (x + y) / 2 rounding down.
-
-
-
-
-
-### `gavg(int128 x, int128 y) → int128` (internal)
-
-*
-Calculate geometric average of x and y, i.e. sqrt (x * y) rounding down.
-Revert on overflow or in case x * y is negative.
-
-
-
-
-
-### `pow(int128 x, uint256 y) → int128` (internal)
-
-*
-Calculate x^y assuming 0^0 is 1, where x is signed 64.64 fixed point number
-and y is unsigned 256-bit integer number.  Revert on overflow.
-
-
-
-
-
-### `sqrt(int128 x) → int128` (internal)
-
-*
-Calculate sqrt (x) rounding down.  Revert if x < 0.
-
-
-
-
-
-### `log_2(int128 x) → int128` (internal)
-
-*
-Calculate binary logarithm of x.  Revert if x <= 0.
-
-
-
-
-
-### `ln(int128 x) → int128` (internal)
-
-*
-Calculate natural logarithm of x.  Revert if x <= 0.
-
-
-
-
-
-### `exp_2(int128 x) → int128` (internal)
-
-*
-Calculate binary exponent of x.  Revert on overflow.
-
-
-
-
-
-### `exp(int128 x) → int128` (internal)
-
-*
-Calculate natural exponent of x.  Revert on overflow.
-
-
-
-
-
+### <span id="ABDKMath64x64-exp-int128-"></span> `exp(int128 x) → int128` (internal)
 
 
 

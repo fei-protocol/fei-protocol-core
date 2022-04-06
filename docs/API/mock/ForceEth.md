@@ -1,22 +1,14 @@
-## `ForceEth`
+## <span id="ForceEth"></span> `ForceEth`
 
 
 
+- [`receive()`][ForceEth-receive--]
+- [`forceEth(address to)`][ForceEth-forceEth-address-]
+### <span id="ForceEth-receive--"></span> `receive()` (external)
 
 
 
-### `receive()` (external)
-
-
-
-
-
-### `forceEth(address to)` (public)
-
-
-
-
-
+### <span id="ForceEth-forceEth-address-"></span> `forceEth(address to)` (public)
 
 
 

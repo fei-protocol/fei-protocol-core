@@ -1,48 +1,39 @@
-## `PegExchanger`
+## <span id="PegExchanger"></span> `PegExchanger`
 
 
 
+- [`constructor(address tribeRariDAO)`][PegExchanger-constructor-address-]
+- [`exchange(uint256 amount)`][PegExchanger-exchange-uint256-]
+- [`isExpired()`][PegExchanger-isExpired--]
+- [`setExpirationTimestamp(uint256 timestamp)`][PegExchanger-setExpirationTimestamp-uint256-]
+- [`rgtAccept()`][MergerBase-rgtAccept--]
+- [`tribeAccept()`][MergerBase-tribeAccept--]
+- [`setBothPartiesAccepted()`][MergerBase-setBothPartiesAccepted--]
+- [`Exchange(address from, uint256 amountIn, uint256 amountOut)`][PegExchanger-Exchange-address-uint256-uint256-]
+- [`SetExpiry(address caller, uint256 expiry)`][PegExchanger-SetExpiry-address-uint256-]
+- [`Accept(address dao)`][MergerBase-Accept-address-]
+- [`Enabled(address caller)`][MergerBase-Enabled-address-]
+### <span id="PegExchanger-constructor-address-"></span> `constructor(address tribeRariDAO)` (public)
 
 
 
-### `constructor(address tribeRariDAO)` (public)
+### <span id="PegExchanger-exchange-uint256-"></span> `exchange(uint256 amount)` (public)
 
 
 
-
-
-### `exchange(uint256 amount)` (public)
-
-call to exchange held RGT with TRIBE
+### <span id="PegExchanger-isExpired--"></span> `isExpired() → bool` (public)
 
 
 
-
-### `isExpired() → bool` (public)
-
-tells whether or not the contract is expired.
+### <span id="PegExchanger-setExpirationTimestamp-uint256-"></span> `setExpirationTimestamp(uint256 timestamp)` (public)
 
 
 
-
-### `setExpirationTimestamp(uint256 timestamp)` (public)
-
-the expiry must be set to at least MIN_EXPIRY_WINDOW in the future.
+### <span id="PegExchanger-Exchange-address-uint256-uint256-"></span> `Exchange(address from, uint256 amountIn, uint256 amountOut)`
 
 
 
-
-### `Exchange(address from, uint256 amountIn, uint256 amountOut)`
-
-
-
-
-
-### `SetExpiry(address caller, uint256 expiry)`
-
-
-
-
+### <span id="PegExchanger-SetExpiry-address-uint256-"></span> `SetExpiry(address caller, uint256 expiry)`
 
 
 
