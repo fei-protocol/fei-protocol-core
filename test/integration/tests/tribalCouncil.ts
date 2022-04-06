@@ -10,24 +10,20 @@ import { getImpersonatedSigner, resetFork } from '@test/helpers';
 import proposals from '@test/integration/proposals_config';
 import { forceEth } from '@test/integration/setup/utils';
 import { TestEndtoEndCoordinator } from '../setup';
-import { BigNumber } from 'ethers';
+import { BigNumber, Contract } from 'ethers';
 import { tribalCouncilMembers } from '@protocol/optimisticGovernance';
+import { abi as gnosisSafeABI } from '../../../artifacts/contracts/pods/interfaces/IGnosisSafe.sol/IGnosisSafe.json';
+import GnosisSDK from '@gnosis.pm/safe-core-sdk';
 
+const EthersSafeSDK = GnosisSDK;
 const toBN = ethers.BigNumber.from;
 
-async function createFixture(): Promise<number> {
-  // evm_snapshot takes a snapshot of blockchain state
-  return hre.network.provider.send('evm_snapshot', []);
-}
-
-async function useFixture(snapshotId: string): Promise<number> {
-  // evm_revert reverts to a snapshot id
-  await hre.network.provider.send('evm_revert', [snapshotId]);
-  // sets chain state up to mirror deployment
-
-  // Recreate snapshot
-  const newSnapshotId = await hre.network.provider.send('evm_snapshot', []);
-  return newSnapshotId;
+function createSafeTxArgs(safe: Contract, functionSig: string, args: string[]) {
+  return {
+    to: safe.address, // TODO: send to timelock
+    data: safe.interface.encodeFunctionData(functionSig, args), // TODO: Specify protocol contract to call
+    value: '0'
+  };
 }
 
 describe.only('Tribal Council', function () {
@@ -69,9 +65,6 @@ describe.only('Tribal Council', function () {
 
     e2eCoord = new TestEndtoEndCoordinator(config, proposals);
 
-    // const newSnapshotId = await useFixture('0x130');
-    // console.log({ newSnapshotId });
-
     doLogging && console.log(`Loading environment...`);
     ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment());
     doLogging && console.log(`Environment loaded.`);
@@ -88,17 +81,15 @@ describe.only('Tribal Council', function () {
 
     await forceEth(contractAddresses.tribalCouncilTimelock);
     await forceEth(contractAddresses.feiDAOTimelock);
-    // const snapshotId = await createFixture();
-    // console.log({ snapshotId });
 
     podConfig = {
       members: [
-        '0x000000000000000000000000000000000000000D', // TODO: Complete with real member addresses
+        '0x000000000000000000000000000000000000000D',
         '0x000000000000000000000000000000000000000E',
         '0x000000000000000000000000000000000000000F',
         '0x0000000000000000000000000000000000000010'
       ],
-      threshold: 2,
+      threshold: 1,
       label: '0x54726962616c436f726e63696c00000000000000000000000000000000000000', // TribalCouncil
       ensString: 'testPod.eth',
       imageUrl: 'testPod.com',
@@ -181,9 +172,35 @@ describe.only('Tribal Council', function () {
   });
 
   // ////////   TribalCouncil pod execution  //////////////
-  // it('should allow a proposal to be proposed and executed', async () => {
-  // TODO
-  // });
+  it.skip('should allow a proposal to be proposed and executed', async () => {
+    // Deploy a pod through which a proposal will be executed
+    await podFactory.connect(tribalCouncilTimelockSigner).createChildOptimisticPod(podConfig);
+    const podId = await podFactory.latestPodId();
+    const safeAddress = await podFactory.getPodSafe(podId);
+
+    const podMemberSigner = await getImpersonatedSigner('0x000000000000000000000000000000000000000D');
+
+    // 1.0 Create Safe instantiation
+    const podSafe = new ethers.Contract(safeAddress, gnosisSafeABI, podMemberSigner);
+
+    const safeSDK = await EthersSafeSDK.create({
+      ethers: ethers as unknown as any,
+      safeAddress: contractAddresses.tribalCouncilSafe,
+      providerOrSigner: podMemberSigner
+    });
+
+    // 2.0 Create Safe transaction on Safe. Threshold set to 1 on pod
+    //     - create a proposal that targets the Safe's timelock
+    //     - include in the proposal tx data that will then target a part of the protocol
+    const txArgs = createSafeTxArgs(podSafe, 'function test(uint256)', ['']);
+    console.log({ txArgs });
+    const safeTransaction = await safeSDK.createTransaction(txArgs);
+    console.log({ safeTransaction });
+
+    // This will go to the timelock, Fast forward time
+
+    // Have proposal executed. Verify effect on pod
+  });
 
   // it('should allow TribalCouncil to veto a proposal through the pod', async () => {
 
