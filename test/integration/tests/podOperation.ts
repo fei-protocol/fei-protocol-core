@@ -9,7 +9,7 @@ import { getImpersonatedSigner, resetFork, time, initialiseGnosisSDK } from '@te
 import proposals from '@test/integration/proposals_config';
 import { forceEth } from '@test/integration/setup/utils';
 import { TestEndtoEndCoordinator } from '../setup';
-import { Contract } from 'ethers';
+import { BigNumberish, Contract } from 'ethers';
 import { abi as timelockABI } from '../../../artifacts/contracts/dao/timelock/OptimisticTimelock.sol/OptimisticTimelock.json';
 
 const toBN = ethers.BigNumber.from;
@@ -32,16 +32,13 @@ describe('Pod operation and veto', function () {
   let podAdminGateway: PodAdminGateway;
   let tribalCouncilTimelockSigner: SignerWithAddress;
   let podConfig: any;
-  let podId;
+  let podId: BigNumberish;
   let timelockAddress: string;
+  let podTimelock: Contract;
+  let registryTxData: string;
 
   const proposalId = '1234';
   const proposalMetadata = 'FIP_XX: This tests that the governance upgrade flow works';
-  const registryTxData = contracts.governanceMetadataRegistry.interface.encodeFunctionData('registerProposal', [
-    podId,
-    proposalId,
-    proposalMetadata
-  ]);
 
   before(async () => {
     chai.use(CBN(ethers.BigNumber));
@@ -114,7 +111,7 @@ describe('Pod operation and veto', function () {
     console.log('safe address: ', safeAddress);
 
     // 2.0 Instantiate Gnosis SDK
-    const podTimelock = new ethers.Contract(timelockAddress, timelockABI, podMemberSigner);
+    podTimelock = new ethers.Contract(timelockAddress, timelockABI, podMemberSigner);
     const safeSDK = await initialiseGnosisSDK(podMemberSigner, safeAddress);
 
     // 3. TribalCouncil authorise pod with POD_METADATA_REGISTER_ROLE role
@@ -126,6 +123,11 @@ describe('Pod operation and veto', function () {
     // 3.0 Create transaction on Safe. Threshold set to 1 on pod
     //     - create a proposal that targets the Safe's timelock
     //     - include in the proposal tx data that will then target a part of the protocol
+    registryTxData = contracts.governanceMetadataRegistry.interface.encodeFunctionData('registerProposal', [
+      podId,
+      proposalId,
+      proposalMetadata
+    ]);
     const txArgs = createSafeTxArgs(podTimelock, 'schedule', [
       contractAddresses.governanceMetadataRegistry,
       '0',
@@ -174,5 +176,35 @@ describe('Pod operation and veto', function () {
     //    call the podAdminGateway.veto() method with the proposalId that is in the timelock
     // 2. Have a member with >quorum TRIBE vote for proposal
     // 3. Validate that proposal is executed
+    const userWithTribe = await getImpersonatedSigner(contractAddresses.feiDAOTimelock);
+    const timelockProposalId = await podTimelock.hashOperation(
+      contractAddresses.governanceMetadataRegistry,
+      '0',
+      registryTxData,
+      '0',
+      '0x1',
+      '0'
+    );
+
+    // User proposes on NopeDAO
+    const nopeDAO = contracts.nopeDAO;
+    const description = 'Veto proposal';
+    const calldatas = contracts.podAdminGateway.interface.encodeFunctionData('veto', [podId, timelockProposalId]);
+    const targets = [contractAddresses.podAdminGateway];
+    const values = [0];
+
+    const proposeTx = await nopeDAO.propose(targets, values, calldatas, description);
+    const { args } = (await proposeTx.wait()).events.find((elem) => elem.event === 'ProposalCreated');
+    const nopeDAOProposalId = args.proposalId;
+
+    // Use the proposalID to vote for this proposal on the nopeDAO
+    await nopeDAO.connect(userWithTribe).castVote(nopeDAOProposalId, 1);
+
+    const descriptionHash = ethers.utils.id(description);
+    await nopeDAO.execute(targets, values, calldatas, descriptionHash);
+
+    // Validate proposal was nope'd
+    const readyTimestamp = await podTimelock.getTimestamp(timelockProposalId);
+    expect(readyTimestamp).to.equal(0);
   });
 });
