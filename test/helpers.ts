@@ -2,9 +2,11 @@ import hre, { ethers, artifacts, network } from 'hardhat';
 import chai from 'chai';
 import CBN from 'chai-bn';
 import { Core, Core__factory } from '@custom-types/contracts';
-import { BigNumber, BigNumberish, Contract } from 'ethers';
+import { BigNumber, BigNumberish, Contract, Signer } from 'ethers';
 import { NamedAddresses } from '@custom-types/types';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
+import EthersAdapter from '@gnosis.pm/safe-ethers-lib';
+import Safe from '@gnosis.pm/safe-core-sdk';
 
 // use default BigNumber
 chai.use(CBN(ethers.BigNumber));
@@ -300,6 +302,14 @@ async function performDAOAction(
   );
 }
 
+async function initialiseGnosisSDK(safeOwner: Signer, safeAddress: string): Promise<Safe> {
+  const ethAdapter = new EthersAdapter({
+    ethers,
+    signer: safeOwner
+  });
+  return Safe.create({ ethAdapter, safeAddress });
+}
+
 export {
   // utils
   ZERO_ADDRESS,
@@ -323,5 +333,6 @@ export {
   resetTime,
   resetFork,
   overwriteChainlinkAggregator,
-  performDAOAction
+  performDAOAction,
+  initialiseGnosisSDK
 };
