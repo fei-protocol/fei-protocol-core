@@ -56,7 +56,6 @@ contract NopeDAOIntegrationTest is DSTest {
             MainnetAddresses.POD_CONTROLLER,
             MainnetAddresses.MEMBER_TOKEN,
             podExecutor,
-            podAdmin,
             vm,
             MainnetAddresses.FEI_DAO_TIMELOCK
         );

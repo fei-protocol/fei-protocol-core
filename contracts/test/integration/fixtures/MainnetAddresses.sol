@@ -9,5 +9,5 @@ library MainnetAddresses {
     address public constant MEMBER_TOKEN =
         0x0762aA185b6ed2dCA77945Ebe92De705e0C37AE3;
     address public constant POD_CONTROLLER =
-        0xD89AAd5348A34E440E72f5F596De4fA7e291A3e8;
+        0x17FDC2Eaf2bd46f3e1052CCbccD9e6AD0296C42c;
 }
