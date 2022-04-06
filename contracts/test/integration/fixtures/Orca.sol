@@ -113,7 +113,6 @@ function deployPodWithSystem(
     address podController,
     address memberToken,
     address podExecutor,
-    address podAdmin,
     Vm vm,
     address podDeployer // must be GOVERNOR or have POD_DEPLOYER_ROLE
 )
@@ -146,9 +145,10 @@ function deployPodWithSystem(
         MainnetAddresses.MEMBER_TOKEN,
         address(factory)
     );
-    podAdmin = address(podAdminGateway);
 
-    (IPodFactory.PodConfig memory podConfig, ) = getPodParams(podAdmin);
+    (IPodFactory.PodConfig memory podConfig, ) = getPodParams(
+        address(podAdminGateway)
+    );
 
     vm.deal(address(factory), 1000 ether);
     vm.prank(podDeployer);

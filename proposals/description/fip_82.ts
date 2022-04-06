@@ -183,7 +183,7 @@ const fip_82: ProposalDescription = {
       values: '0',
       method: 'batchAddPodMember(uint256 _podId,address[] memory _members)',
       arguments: [
-        '23',
+        '24',
         [
           '0x000000000000000000000000000000000000000D', // TODO: Complete with real member addresses
           '0x000000000000000000000000000000000000000E',
@@ -203,7 +203,7 @@ const fip_82: ProposalDescription = {
       values: '0',
       method: 'batchRemovePodMember(uint256 _podId, address[] memory)',
       arguments: [
-        '23', // TODO: Replace hardcoded value with real podId
+        '24', // TODO: Replace hardcoded value with real podId
         [
           '0x0000000000000000000000000000000000000004',
           '0x0000000000000000000000000000000000000005',
@@ -223,7 +223,7 @@ const fip_82: ProposalDescription = {
       values: '0',
       method: 'batchAddPodMember(uint256 _podId,address[] memory _members)',
       arguments: [
-        '24', // TODO: Replace with real protocol pod ID
+        '25', // TODO: Replace with real protocol pod ID
         [
           '0x0000000000000000000000000000000000000009', // TODO: Complete with real member addresses
           '0x000000000000000000000000000000000000000A',
@@ -239,7 +239,7 @@ const fip_82: ProposalDescription = {
       values: '0',
       method: 'batchRemovePodMember(uint256 _podId, address[] memory)',
       arguments: [
-        '24', // TODO: Replace with real protocol pod ID
+        '25', // TODO: Replace with real protocol pod ID
         [
           '0x0000000000000000000000000000000000000004',
           '0x0000000000000000000000000000000000000005',
@@ -255,14 +255,14 @@ const fip_82: ProposalDescription = {
       target: 'podAdminGateway',
       values: '0',
       method: 'lockMembershipTransfers(uint256 _podId)',
-      arguments: ['23'],
+      arguments: ['24'],
       description: 'Lock TribalCouncil pod membership transfers'
     },
     {
       target: 'podAdminGateway',
       values: '0',
       method: 'lockMembershipTransfers(uint256 _podId)',
-      arguments: ['24'],
+      arguments: ['25'],
       description: 'Lock protocol pod pod membership transfers'
     }
   ],

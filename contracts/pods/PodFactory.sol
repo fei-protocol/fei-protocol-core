@@ -153,6 +153,7 @@ contract PodFactory is CoreRef, IPodFactory {
 
         // Disable membership transfers by default
         IPodAdminGateway(_config.admin).lockMembershipTransfers(podId);
+        return (podId, timelock, safe);
     }
 
     /// @notice Migrate to a new podController. Upgrades are opt in
