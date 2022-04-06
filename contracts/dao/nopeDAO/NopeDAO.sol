@@ -28,7 +28,7 @@ contract NopeDAO is
         Governor("NopeDAO")
         GovernorSettings(
             0, /* 0 blocks */
-            345600, /* 4 days */
+            4 days,
             0
         )
         GovernorVotesComp(_tribe)

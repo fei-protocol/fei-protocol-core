@@ -160,6 +160,16 @@ const fip_82: ProposalDescription = {
       ],
       description: 'Grant POD_VETO_ADMIN role to NopeDAO'
     },
+    {
+      target: 'core',
+      values: '0',
+      method: 'grantRole(bytes32,address)',
+      arguments: [
+        '0x6ecc8dff15d98038e3ff32bfe76768123628cfdd2c3d11f2ec23c5433a9d4ba3', // POD_ADMIN
+        '{podFactory}'
+      ],
+      description: 'Grant POD_ADMIN role to PodFactory, to allow'
+    },
     //////////////    Configure Membership of Council and Pod /////////////
     {
       target: 'podAdminGateway',
@@ -232,6 +242,21 @@ const fip_82: ProposalDescription = {
         ]
       ],
       description: 'Remove initial placeholder members from Protocol Pod'
+    },
+    //////////////    Lock burner pods /////////////
+    {
+      target: 'podAdminGateway',
+      values: '0',
+      method: 'lockMembershipTransfers(uint256 _podId)',
+      arguments: ['24'],
+      description: 'Lock TribalCouncil pod membership transfers'
+    },
+    {
+      target: 'podAdminGateway',
+      values: '0',
+      method: 'lockMembershipTransfers(uint256 _podId)',
+      arguments: ['25'],
+      description: 'Lock protocol pod pod membership transfers'
     }
   ],
   description: `

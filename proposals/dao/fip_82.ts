@@ -157,7 +157,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const tribalCouncilSafeAddress = await podFactory.getPodSafe(tribalCouncilPodId);
 
   // 1. Validate PodAdminGateway has PROPOSER role on TribalCouncil and Protocol Pod
-  // Validate TribalCouncil does not have a VetoController role
+  ///////////////  POD ADMIN GATEWAY  //////////////////////
   const tribalCouncilTimelock = contracts.tribalCouncilTimelock;
   const protocolTierTimelock = contracts.protocolPodTimelock;
   const gatewayIsProtocolPodProposer = await protocolTierTimelock.hasRole(
@@ -172,7 +172,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   );
   expect(gatewayIsCouncilProposer).to.be.true;
 
-  // 2. Validate that Tribal Council Safe, timelock and podAdmin are configured
+  ///////////////   TRIBAL COUNCIL  //////////////////
   const councilPodAdmin = await podFactory.getPodAdmin(tribalCouncilPodId);
   expect(councilPodAdmin).to.equal(addresses.podAdminGateway);
 
@@ -187,6 +187,9 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
     addresses.podExecutor
   );
   expect(podExecutorIsExecutor).to.be.true;
+
+  const councilMembershipLocked = await podFactory.getIsMembershipTransferLocked(tribalCouncilPodId);
+  expect(councilMembershipLocked).to.be.true;
 
   // 3. Validate that Tribal Council members are correctly set
   const councilMembers = await podFactory.getPodMembers(tribalCouncilPodId);
@@ -226,6 +229,9 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const podMembers = await podFactory.getPodMembers(protocolPodId);
   validateArraysEqual(podMembers, protocolPodConfig.members);
 
+  const protocolPodMembersLocked = await podFactory.getIsMembershipTransferLocked(protocolPodId);
+  expect(protocolPodMembersLocked).to.be.true;
+
   ///////////// METADATA REGISTRY ////////////////////////
   const governanceMetadataRegistry = contracts.governanceMetadataRegistry;
   const isProposalRegistered = await governanceMetadataRegistry.isProposalRegistered(0, 0, 'test');
@@ -239,7 +245,8 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
     tribalCouncilSafeAddress,
     protocolSafeAddress,
     addresses.roleBastion,
-    addresses.nopeDAO
+    addresses.nopeDAO,
+    addresses.podFactory
   );
 };
 
@@ -252,7 +259,8 @@ const validateTribeRoles = async (
   tribalCouncilSafeAddress: string,
   protocolPodSafeAddress: string,
   roleBastionAddress: string,
-  nopeDAOAddress: string
+  nopeDAOAddress: string,
+  podFactoryAddress: string
 ) => {
   // feiDAOTimelock added roles: POD_DEPLOYER_ROLE
   const daoIsPodDeployer = await core.hasRole(ethers.utils.id('POD_DEPLOYER_ROLE'), feiDAOTimelockAddress);
@@ -292,6 +300,10 @@ const validateTribeRoles = async (
   // NopeDAO role: POD_VETO_ADMIN
   const nopeDAOVetoRole = await core.hasRole(ethers.utils.id('POD_VETO_ADMIN'), nopeDAOAddress);
   expect(nopeDAOVetoRole).to.be.true;
+
+  // PodFactory role: POD_ADMIN
+  const podFactoryAdminRole = await core.hasRole(ethers.utils.id('POD_ADMIN'), podFactoryAddress);
+  expect(podFactoryAdminRole).to.be.true;
 };
 
 export { deploy, setup, teardown, validate };
