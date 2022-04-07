@@ -307,7 +307,15 @@ async function initialiseGnosisSDK(safeOwner: Signer, safeAddress: string): Prom
     ethers,
     signer: safeOwner
   });
-  return Safe.create({ ethAdapter, safeAddress });
+  const { chainId } = await safeOwner.provider.getNetwork();
+  const contractNetworks = {
+    [chainId]: {
+      multiSendAddress: '0x8D29bE29923b68abfDD21e541b9374737B49cdAD',
+      safeMasterCopyAddress: '0x34CfAC646f301356fAa8B21e94227e3583Fe3F5F',
+      safeProxyFactoryAddress: '0x76E2cFc1F5Fa8F6a5b3fC4c8F4788F0116861F9B'
+    }
+  };
+  return Safe.create({ ethAdapter, safeAddress, contractNetworks });
 }
 
 export {

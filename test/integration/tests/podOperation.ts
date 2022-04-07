@@ -14,7 +14,7 @@ import { abi as timelockABI } from '../../../artifacts/contracts/dao/timelock/Op
 
 const toBN = ethers.BigNumber.from;
 
-function createSafeTxArgs(timelock: Contract, functionSig: string, args: string[]) {
+function createSafeTxArgs(timelock: Contract, functionSig: string, args: any[]) {
   return {
     to: timelock.address, // Send to timelock, calling timelock.schedule()
     data: timelock.interface.encodeFunctionData(functionSig, args),
@@ -108,7 +108,6 @@ describe('Pod operation and veto', function () {
     timelockAddress = await podFactory.getPodTimelock(podId);
 
     const podMemberSigner = await getImpersonatedSigner('0x000000000000000000000000000000000000000D');
-    console.log('safe address: ', safeAddress);
 
     // 2.0 Instantiate Gnosis SDK
     podTimelock = new ethers.Contract(timelockAddress, timelockABI, podMemberSigner);
@@ -118,7 +117,6 @@ describe('Pod operation and veto', function () {
     await contracts.core
       .connect(tribalCouncilTimelockSigner)
       .grantRole(ethers.utils.id('POD_METADATA_REGISTER_ROLE'), timelockAddress);
-    console.log('granted POD_METADATA_REGISTER_ROLE role');
 
     // 3.0 Create transaction on Safe. Threshold set to 1 on pod
     //     - create a proposal that targets the Safe's timelock
@@ -128,12 +126,14 @@ describe('Pod operation and veto', function () {
       proposalId,
       proposalMetadata
     ]);
+    console.log({ registryTxData });
+
     const txArgs = createSafeTxArgs(podTimelock, 'schedule', [
       contractAddresses.governanceMetadataRegistry,
-      '0',
+      0,
       registryTxData,
-      '0',
-      '0x1',
+      '0x0000000000000000000000000000000000000000000000000000000000000000',
+      '0x0000000000000000000000000000000000000000000000000000000000000001',
       '0'
     ]);
     console.log({ txArgs });
@@ -141,6 +141,7 @@ describe('Pod operation and veto', function () {
     console.log({ safeTransaction });
 
     // 3.0 Execute transaction on Safe
+    // Fails here
     const executeTxResponse = await safeSDK.executeTransaction(safeTransaction);
     await executeTxResponse.transactionResponse?.wait();
   });
@@ -154,10 +155,10 @@ describe('Pod operation and veto', function () {
     const executeTx = await podExecutor.execute(
       timelockAddress,
       contractAddresses.governanceMetadataRegistry,
-      '0',
+      0,
       registryTxData,
-      '0',
-      '0x1',
+      '0x0000000000000000000000000000000000000000000000000000000000000000',
+      '0x0000000000000000000000000000000000000000000000000000000000000001',
       '0'
     );
     await executeTx.wait();
@@ -179,10 +180,10 @@ describe('Pod operation and veto', function () {
     const userWithTribe = await getImpersonatedSigner(contractAddresses.feiDAOTimelock);
     const timelockProposalId = await podTimelock.hashOperation(
       contractAddresses.governanceMetadataRegistry,
-      '0',
+      0,
       registryTxData,
-      '0',
-      '0x1',
+      '0x0000000000000000000000000000000000000000000000000000000000000000',
+      '0x0000000000000000000000000000000000000000000000000000000000000001',
       '0'
     );
 
