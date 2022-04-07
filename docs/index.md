@@ -9,7 +9,7 @@ Welcome to the developer documentation of the Fei Protocol. Fei itself is a coll
 ### Protocol controlled value
 - [PCV management](/protocol/PCVManagement.md)
 - [PCV deposits](/protocol/PCVDeposits.md)
-- [Collaterisation](/protocol/Collaterisation.md)
+- [Collateralization](/protocol/Collateralization.md)
 
 ### Stability
 - [Stability mechanism](/protocol/StabilityMechanism.md)
