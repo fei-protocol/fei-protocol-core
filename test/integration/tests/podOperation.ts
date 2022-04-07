@@ -12,8 +12,6 @@ import { TestEndtoEndCoordinator } from '../setup';
 import { BigNumberish, Contract } from 'ethers';
 import { abi as timelockABI } from '../../../artifacts/contracts/dao/timelock/OptimisticTimelock.sol/OptimisticTimelock.json';
 
-const toBN = ethers.BigNumber.from;
-
 function createSafeTxArgs(timelock: Contract, functionSig: string, args: any[]) {
   return {
     to: timelock.address, // Send to timelock, calling timelock.schedule()
@@ -39,6 +37,7 @@ describe('Pod operation and veto', function () {
 
   const proposalId = '1234';
   const proposalMetadata = 'FIP_XX: This tests that the governance upgrade flow works';
+  const timelockDelay = '10';
 
   before(async () => {
     chai.use(CBN(ethers.BigNumber));
@@ -126,7 +125,10 @@ describe('Pod operation and veto', function () {
       proposalId,
       proposalMetadata
     ]);
-    console.log({ registryTxData });
+
+    // Grant the Pod Safe and timelock eth
+    await forceEth(safeAddress);
+    await forceEth(timelockAddress);
 
     const txArgs = createSafeTxArgs(podTimelock, 'schedule', [
       contractAddresses.governanceMetadataRegistry,
@@ -134,21 +136,18 @@ describe('Pod operation and veto', function () {
       registryTxData,
       '0x0000000000000000000000000000000000000000000000000000000000000000',
       '0x0000000000000000000000000000000000000000000000000000000000000001',
-      '0'
+      timelockDelay
     ]);
-    console.log({ txArgs });
     const safeTransaction = await safeSDK.createTransaction(txArgs);
-    console.log({ safeTransaction });
 
     // 3.0 Execute transaction on Safe
-    // Fails here
     const executeTxResponse = await safeSDK.executeTransaction(safeTransaction);
     await executeTxResponse.transactionResponse?.wait();
   });
 
-  it.only('should allow a proposal to be proposed and executed', async () => {
+  it('should allow a proposal to be proposed and executed', async () => {
     // Fast forward time on timelock
-    await time.increase(toBN(5));
+    await time.increase(timelockDelay);
 
     // Execute timelocked transaction - need to call via the podExecutor
     const podExecutor = contracts.podExecutor;
@@ -158,8 +157,7 @@ describe('Pod operation and veto', function () {
       0,
       registryTxData,
       '0x0000000000000000000000000000000000000000000000000000000000000000',
-      '0x0000000000000000000000000000000000000000000000000000000000000001',
-      '0'
+      '0x0000000000000000000000000000000000000000000000000000000000000001'
     );
     await executeTx.wait();
 
@@ -177,20 +175,21 @@ describe('Pod operation and veto', function () {
     //    call the podAdminGateway.veto() method with the proposalId that is in the timelock
     // 2. Have a member with >quorum TRIBE vote for proposal
     // 3. Validate that proposal is executed
-    const userWithTribe = await getImpersonatedSigner(contractAddresses.feiDAOTimelock);
+    await time.increase('1');
+
+    const userWithTribe = await getImpersonatedSigner(contractAddresses.multisig);
     const timelockProposalId = await podTimelock.hashOperation(
       contractAddresses.governanceMetadataRegistry,
       0,
       registryTxData,
       '0x0000000000000000000000000000000000000000000000000000000000000000',
-      '0x0000000000000000000000000000000000000000000000000000000000000001',
-      '0'
+      '0x0000000000000000000000000000000000000000000000000000000000000002'
     );
 
     // User proposes on NopeDAO
     const nopeDAO = contracts.nopeDAO;
     const description = 'Veto proposal';
-    const calldatas = contracts.podAdminGateway.interface.encodeFunctionData('veto', [podId, timelockProposalId]);
+    const calldatas = [contracts.podAdminGateway.interface.encodeFunctionData('veto', [podId, timelockProposalId])];
     const targets = [contractAddresses.podAdminGateway];
     const values = [0];
 
