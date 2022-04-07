@@ -102,6 +102,14 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
   await contracts.veBal.connect(balAuthorizerSigner).apply_smart_wallet_checker();
 
   // add veBalDelegatorPCVDeposit as a smartwallet on the smartwallet checker
+  // note: this is using the Angle multisig address, because the Angle smart
+  // wallet checker is added on veBAL, on this local fork. The veBAL contract
+  // does not currently have a smart wallet checker, so there is no way to
+  // whitelist smart contracts. Instead of deploying a fake smart wallet checker,
+  // I'm using the Angle one, and I whitelist the veBalDelegatorPCVDeposit on it.
+  // When this proposal executes onchain, the Balancer team will have deployed
+  // their own smartwallet checker, and will have whitelisted the veBalDelegatorPCVDeposit
+  // to vote-lock B-80BAL-20WETH into veBAL.
   const ANGLE_MULTISIG_ADDRESS = '0xdC4e6DFe07EFCa50a197DF15D9200883eF4Eb1c8';
   await forceEth(ANGLE_MULTISIG_ADDRESS);
   const angleMultisigSigner = await getImpersonatedSigner(ANGLE_MULTISIG_ADDRESS);
