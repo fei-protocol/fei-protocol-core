@@ -10,18 +10,18 @@ import { forceEth } from '@test/integration/setup/utils';
 import { Core } from '@custom-types/contracts';
 const toBN = ethers.BigNumber.from;
 
-before(async () => {
-  chai.use(CBN(ethers.BigNumber));
-  chai.use(solidity);
-  await resetFork();
-});
-
 describe('e2e-dao', function () {
   let contracts: NamedContracts;
   let contractAddresses: NamedAddresses;
   let deployAddress: string;
   let e2eCoord: TestEndtoEndCoordinator;
   let doLogging: boolean;
+
+  before(async () => {
+    chai.use(CBN(ethers.BigNumber));
+    chai.use(solidity);
+    await resetFork();
+  });
 
   before(async function () {
     // Setup test environment and get contracts
@@ -147,13 +147,15 @@ describe('e2e-dao', function () {
     });
 
     it('governor can assume timelock admin', async () => {
-      const { timelock } = contractAddresses;
+      // oldTimelock has had Governor revoked, so apply to newTimelock
+      const { feiDAOTimelock } = contractAddresses;
       const { optimisticTimelock } = contracts;
 
-      await optimisticTimelock.connect(await ethers.getSigner(timelock)).becomeAdmin();
+      const newTimelockSigner = await getImpersonatedSigner(feiDAOTimelock);
+      await optimisticTimelock.connect(newTimelockSigner).becomeAdmin();
 
       const admin = await optimisticTimelock.TIMELOCK_ADMIN_ROLE();
-      expect(await optimisticTimelock.hasRole(admin, timelock)).to.be.true;
+      expect(await optimisticTimelock.hasRole(admin, feiDAOTimelock)).to.be.true;
     });
 
     it('proposal can execute on tribalChief', async () => {
@@ -217,14 +219,13 @@ describe('e2e-dao', function () {
         const id = ethers.utils.id(element);
         const numRoles = await core.getRoleMemberCount(id);
         doLogging && console.log(`Role count for ${element}: ${numRoles}`);
-        expect(numRoles.toNumber()).to.be.equal(accessRights[element].length);
+        expect(numRoles.toNumber()).to.be.equal(accessRights[element].length, 'role ' + element);
       }
     });
 
     it('should have granted contracts correct roles', async function () {
       const core: Core = contracts.core as Core;
       const accessControl = e2eCoord.getAccessControlMapping();
-
       const roles = Object.keys(accessControl);
 
       for (let i = 0; i < roles.length; i++) {
@@ -233,8 +234,11 @@ describe('e2e-dao', function () {
         for (let i = 0; i < accessControl[element].length; i++) {
           const contractAddress = accessControl[element][i];
           doLogging && console.log(`${element} contract address: ${contractAddress}`);
-          const isMinter = await core.hasRole(id, contractAddress);
-          expect(isMinter).to.be.true;
+          const hasRole = await core.hasRole(id, contractAddress);
+          expect(hasRole).to.be.equal(
+            true,
+            'expect contract ' + accessControl[element][i] + ' expected to have role ' + element
+          );
         }
       }
 

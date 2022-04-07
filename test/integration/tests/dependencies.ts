@@ -73,8 +73,14 @@ describe('e2e-dependencies', function () {
         for (let j = 0; j < contracts.length; j++) {
           const contract = contracts[j];
           const category = addresses[contract].category;
-          expect(category).to.not.be.equal(AddressCategory.External);
-          expect(category).to.not.be.equal(AddressCategory.Deprecated);
+          expect(category).to.not.be.equal(
+            AddressCategory.External,
+            'contract ' + contract + ' expected not to be External'
+          );
+          expect(category).to.not.be.equal(
+            AddressCategory.Deprecated,
+            'contract ' + contract + ' expected not to be Deprecated'
+          );
 
           expect(deprecated).to.not.contain(contract);
         }
@@ -102,7 +108,12 @@ describe('e2e-dependencies', function () {
           crDeposits.push(deposit);
 
           doLogging && console.log(`${element} contract address: ${deposit}`);
-          expect(addresses[deposit].category).to.not.be.equal('Deprecated');
+          if (addresses[deposit]) {
+            // addresses[deposit] may be undefined if a deposit is added to the
+            // dependencies and permissions/collateralizationOracle files, but
+            // is not yet deployed on the mainnet (i.e. in mainnetAddresses.ts).
+            expect(addresses[deposit].category).to.not.be.equal('Deprecated');
+          }
         }
       }
 
@@ -114,7 +125,7 @@ describe('e2e-dependencies', function () {
         const category = addresses[element].category;
 
         if (category === 'PCV') {
-          expect(crDeposits).to.contain(element);
+          expect(crDeposits).to.contain(element, 'expected in crDeposits');
         }
       }
     });
@@ -129,7 +140,7 @@ describe('e2e-dependencies', function () {
           const dependency = contractDependencies[j];
           doLogging && console.log(`Checking contract dependency: ${dependency}`);
           expect(dependencies).to.haveOwnProperty(dependency);
-          expect(dependencies[dependency].contractDependencies).to.contain(contract);
+          expect(dependencies[dependency].contractDependencies).to.contain(contract, 'dependencies of ' + dependency);
         }
       }
     });

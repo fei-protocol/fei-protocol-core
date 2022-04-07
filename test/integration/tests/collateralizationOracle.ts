@@ -14,11 +14,6 @@ import {
   NamedStaticPCVDepositWrapper
 } from '@custom-types/contracts';
 
-before(async () => {
-  chai.use(CBN(ethers.BigNumber));
-  chai.use(solidity);
-});
-
 describe('e2e-collateralization', function () {
   let contracts: NamedContracts;
   let contractAddresses: NamedAddresses;
@@ -26,19 +21,13 @@ describe('e2e-collateralization', function () {
   let e2eCoord: TestEndtoEndCoordinator;
   let doLogging: boolean;
 
-  const allNames = [
-    '500k Idle FEI Senior Tranche',
-    '2M Visor FEI-USDC 0.05% fee pool',
-    '500k Barnbridge Senior',
-    '2.5M Idle FEI Best Yield',
-    '100k INDEX Token',
-    '50m Ondo LaaS',
-    'Kashi 1m DPI-FEI',
-    'Kashi 2.5m SUSHI-FEI',
-    'Kashi 2.5m TRIBE-FEI',
-    'Kashi 2.5m WETH-FEI'
-  ];
+  const allNames = [];
   const eth = ethers.constants.WeiPerEther;
+
+  before(async () => {
+    chai.use(CBN(ethers.BigNumber));
+    chai.use(solidity);
+  });
 
   before(async function () {
     // Setup test environment and get contracts
@@ -59,6 +48,14 @@ describe('e2e-collateralization', function () {
     doLogging && console.log(`Loading environment...`);
     ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment());
     doLogging && console.log(`Environment loaded.`);
+
+    const namedStaticPCVDepositWrapper: NamedStaticPCVDepositWrapper =
+      contracts.namedStaticPCVDepositWrapper as NamedStaticPCVDepositWrapper;
+    const numDeposits = Number(await namedStaticPCVDepositWrapper.numDeposits());
+    for (let i = 0; i < numDeposits; i++) {
+      const deposit = await namedStaticPCVDepositWrapper.pcvDeposits(i);
+      allNames.push(deposit.depositName);
+    }
   });
 
   describe('Collateralization Oracle Guardian', async function () {
@@ -90,16 +87,6 @@ describe('e2e-collateralization', function () {
   });
 
   describe('Named PCVDeposit Wrapper', async function () {
-    it('can fetch all names', async function () {
-      const namedStaticPCVDepositWrapper: NamedStaticPCVDepositWrapper =
-        contracts.namedStaticPCVDepositWrapper as NamedStaticPCVDepositWrapper;
-      const numDeposits = Number(await namedStaticPCVDepositWrapper.numDeposits());
-      for (let i = 0; i < numDeposits; i++) {
-        const deposit = await namedStaticPCVDepositWrapper.pcvDeposits(i);
-        expect(allNames).to.includes(deposit.depositName);
-      }
-    });
-
     it('can fetch all underlying token addresses', async function () {
       const namedStaticPCVDepositWrapper: NamedStaticPCVDepositWrapper =
         contracts.namedStaticPCVDepositWrapper as NamedStaticPCVDepositWrapper;
@@ -162,7 +149,15 @@ describe('e2e-collateralization', function () {
 
         const numTokens = (await collateralizationOracle.getDepositsForToken(element)).length;
         doLogging && console.log(`Address count for token ${addresses[i]}: ${numTokens}`);
-        expect(numTokens).to.be.equal(collateralizationAddresses[addresses[i]].length);
+        expect(numTokens).to.be.equal(
+          collateralizationAddresses[addresses[i]].length,
+          'bad number of deposits for token ' +
+            element +
+            ' - expected ' +
+            collateralizationAddresses[addresses[i]].length +
+            ' but got ' +
+            numTokens
+        );
       }
     });
 

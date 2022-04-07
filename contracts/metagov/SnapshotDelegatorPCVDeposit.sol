@@ -1,31 +1,38 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
-import "../PCVDeposit.sol";
+import "../core/TribeRoles.sol";
+import "../pcv/PCVDeposit.sol";
 
 interface DelegateRegistry {
     function setDelegate(bytes32 id, address delegate) external;
 
     function clearDelegate(bytes32 id) external;
 
-    function delegation(address delegator, bytes32 id) external view returns(address delegatee);
+    function delegation(address delegator, bytes32 id)
+        external
+        view
+        returns (address delegatee);
 }
 
 /// @title Snapshot Delegator PCV Deposit
 /// @author Fei Protocol
 contract SnapshotDelegatorPCVDeposit is PCVDeposit {
-
-    event DelegateUpdate(address indexed oldDelegate, address indexed newDelegate);
+    event DelegateUpdate(
+        address indexed oldDelegate,
+        address indexed newDelegate
+    );
 
     /// @notice the Gnosis delegate registry used by snapshot
-    DelegateRegistry public constant DELEGATE_REGISTRY = DelegateRegistry(0x469788fE6E9E9681C6ebF3bF78e7Fd26Fc015446);
-    
+    DelegateRegistry public constant DELEGATE_REGISTRY =
+        DelegateRegistry(0x469788fE6E9E9681C6ebF3bF78e7Fd26Fc015446);
+
     /// @notice the token that is being used for snapshot
     IERC20 public immutable token;
 
     /// @notice the keccak encoded spaceId of the snapshot space
     bytes32 public spaceId;
-    
+
     /// @notice the snapshot delegate for the deposit
     address public delegate;
 
@@ -59,7 +66,7 @@ contract SnapshotDelegatorPCVDeposit is PCVDeposit {
     function deposit() external override {}
 
     /// @notice returns total balance of PCV in the Deposit
-    function balance() public view override returns (uint256) {
+    function balance() public view virtual override returns (uint256) {
         return token.balanceOf(address(this));
     }
 
@@ -68,15 +75,27 @@ contract SnapshotDelegatorPCVDeposit is PCVDeposit {
         return address(token);
     }
 
+    /// @notice sets the snapshot space ID
+    function setSpaceId(bytes32 _spaceId)
+        external
+        onlyTribeRole(TribeRoles.METAGOVERNANCE_VOTE_ADMIN)
+    {
+        spaceId = _spaceId;
+    }
+
     /// @notice sets the snapshot delegate
-    /// @dev callable by governor or admin
-    function setDelegate(address newDelegate) external onlyGovernorOrAdmin {
+    function setDelegate(address newDelegate)
+        external
+        onlyTribeRole(TribeRoles.METAGOVERNANCE_VOTE_ADMIN)
+    {
         _delegate(newDelegate);
     }
 
     /// @notice clears the delegate from snapshot
-    /// @dev callable by governor or guardian
-    function clearDelegate() external onlyGuardianOrGovernor {
+    function clearDelegate()
+        external
+        onlyTribeRole(TribeRoles.METAGOVERNANCE_VOTE_ADMIN)
+    {
         address oldDelegate = delegate;
         DELEGATE_REGISTRY.clearDelegate(spaceId);
 

@@ -104,7 +104,11 @@ library ExtendedMath {
     /**
      * @notice See `scaledPow(uint256 base, uint256 exp, uint256 _decimals)`
      */
-    function scaledPow(uint256 base, uint256 exp) internal pure returns (uint256) {
+    function scaledPow(uint256 base, uint256 exp)
+        internal
+        pure
+        returns (uint256)
+    {
         return scaledPow(base, exp, decimals);
     }
 }

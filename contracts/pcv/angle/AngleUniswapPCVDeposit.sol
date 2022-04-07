@@ -74,18 +74,44 @@ contract AngleUniswapPCVDeposit is UniswapPCVDeposit {
         IStableMaster _stableMaster,
         IPoolManager _poolManager,
         IStakingRewards _stakingRewards
-    ) UniswapPCVDeposit(_core, _pair, _router, _oracle, _backupOracle, _maxBasisPointsFromPegLP) {
+    )
+        UniswapPCVDeposit(
+            _core,
+            _pair,
+            _router,
+            _oracle,
+            _backupOracle,
+            _maxBasisPointsFromPegLP
+        )
+    {
         stableMaster = _stableMaster;
         poolManager = _poolManager;
         stakingRewards = _stakingRewards;
-        require(_poolManager.token() == address(fei()), "AngleUniswapPCVDeposit: invalid poolManager");
-        require(_stableMaster.agToken() == token, "AngleUniswapPCVDeposit: invalid stableMaster");
-        require(_stakingRewards.stakingToken() == _pair, "AngleUniswapPCVDeposit: invalid stakingRewards");
+        require(
+            _poolManager.token() == address(fei()),
+            "AngleUniswapPCVDeposit: invalid poolManager"
+        );
+        require(
+            _stableMaster.agToken() == token,
+            "AngleUniswapPCVDeposit: invalid stableMaster"
+        );
+        require(
+            _stakingRewards.stakingToken() == _pair,
+            "AngleUniswapPCVDeposit: invalid stakingRewards"
+        );
 
         // Approve FEI on StableMaster to be able to mint agTokens
-        SafeERC20.safeApprove(IERC20(address(fei())), address(_stableMaster), type(uint256).max);
+        SafeERC20.safeApprove(
+            IERC20(address(fei())),
+            address(_stableMaster),
+            type(uint256).max
+        );
         // Approve LP tokens on StakingRewards to earn ANGLE rewards
-        SafeERC20.safeApprove(IERC20(_pair), address(_stakingRewards), type(uint256).max);
+        SafeERC20.safeApprove(
+            IERC20(_pair),
+            address(_stakingRewards),
+            type(uint256).max
+        );
     }
 
     /// @notice claim staking rewards
@@ -95,41 +121,31 @@ contract AngleUniswapPCVDeposit is UniswapPCVDeposit {
 
     /// @notice mint agToken from FEI
     /// @dev the call will revert if slippage is too high compared to oracle.
-    function mintAgToken(uint256 amountFei)
-        public
-        onlyPCVController
-    {
+    function mintAgToken(uint256 amountFei) public onlyPCVController {
         // compute minimum amount out
-        uint256 minAgTokenOut = Decimal.from(amountFei)
-          .div(readOracle())
-          .mul(Constants.BASIS_POINTS_GRANULARITY - maxBasisPointsFromPegLP)
-          .div(Constants.BASIS_POINTS_GRANULARITY)
-          .asUint256();
+        uint256 minAgTokenOut = Decimal
+            .from(amountFei)
+            .div(readOracle())
+            .mul(Constants.BASIS_POINTS_GRANULARITY - maxBasisPointsFromPegLP)
+            .div(Constants.BASIS_POINTS_GRANULARITY)
+            .asUint256();
 
         // mint FEI to self
         _mintFei(address(this), amountFei);
 
         // mint agToken from FEI
-        stableMaster.mint(
-            amountFei,
-            address(this),
-            poolManager,
-            minAgTokenOut
-        );
+        stableMaster.mint(amountFei, address(this), poolManager, minAgTokenOut);
     }
 
     /// @notice burn agToken for FEI
     /// @dev the call will revert if slippage is too high compared to oracle
-    function burnAgToken(uint256 amountAgToken)
-        public
-        onlyPCVController
-    {
+    function burnAgToken(uint256 amountAgToken) public onlyPCVController {
         // compute minimum of FEI out for agTokens burnt
         uint256 minFeiOut = readOracle() // FEI per X
-          .mul(amountAgToken)
-          .mul(Constants.BASIS_POINTS_GRANULARITY - maxBasisPointsFromPegLP)
-          .div(Constants.BASIS_POINTS_GRANULARITY)
-          .asUint256();
+            .mul(amountAgToken)
+            .mul(Constants.BASIS_POINTS_GRANULARITY - maxBasisPointsFromPegLP)
+            .div(Constants.BASIS_POINTS_GRANULARITY)
+            .asUint256();
 
         // burn agTokens for FEI
         stableMaster.burn(
@@ -146,10 +162,7 @@ contract AngleUniswapPCVDeposit is UniswapPCVDeposit {
 
     /// @notice burn ALL agToken held for FEI
     /// @dev see burnAgToken(uint256 amount).
-    function burnAgTokenAll()
-        external
-        onlyPCVController
-    {
+    function burnAgTokenAll() external onlyPCVController {
         burnAgToken(IERC20(token).balanceOf(address(this)));
     }
 
@@ -158,7 +171,11 @@ contract AngleUniswapPCVDeposit is UniswapPCVDeposit {
     /// @dev also approves the router for the new pair token and underlying token
     function setPair(address _pair) public override onlyGovernor {
         super.setPair(_pair);
-        SafeERC20.safeApprove(IERC20(_pair), address(stakingRewards), type(uint256).max);
+        SafeERC20.safeApprove(
+            IERC20(_pair),
+            address(stakingRewards),
+            type(uint256).max
+        );
     }
 
     /// @notice set a new stakingRewards address
@@ -176,10 +193,7 @@ contract AngleUniswapPCVDeposit is UniswapPCVDeposit {
 
     /// @notice set a new poolManager address
     /// @param _poolManager the new poolManager
-    function setPoolManager(IPoolManager _poolManager)
-        public
-        onlyGovernor
-    {
+    function setPoolManager(IPoolManager _poolManager) public onlyGovernor {
         require(
             address(_poolManager) != address(0),
             "AngleUniswapPCVDeposit: zero address"
@@ -190,15 +204,24 @@ contract AngleUniswapPCVDeposit is UniswapPCVDeposit {
     /// @notice amount of pair liquidity owned by this contract
     /// @return amount of LP tokens
     function liquidityOwned() public view override returns (uint256) {
-        return pair.balanceOf(address(this)) + stakingRewards.balanceOf(address(this));
+        return
+            pair.balanceOf(address(this)) +
+            stakingRewards.balanceOf(address(this));
     }
 
-    function _removeLiquidity(uint256 liquidity) internal override returns (uint256) {
+    function _removeLiquidity(uint256 liquidity)
+        internal
+        override
+        returns (uint256)
+    {
         stakingRewards.withdraw(liquidity);
         return super._removeLiquidity(liquidity);
     }
 
-    function _addLiquidity(uint256 tokenAmount, uint256 feiAmount) internal override {
+    function _addLiquidity(uint256 tokenAmount, uint256 feiAmount)
+        internal
+        override
+    {
         super._addLiquidity(tokenAmount, feiAmount);
         uint256 lpBalanceAfter = pair.balanceOf(address(this));
         stakingRewards.stake(lpBalanceAfter);

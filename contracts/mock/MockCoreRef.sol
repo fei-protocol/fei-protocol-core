@@ -4,20 +4,19 @@ pragma solidity ^0.8.4;
 import "../refs/CoreRef.sol";
 
 contract MockCoreRef is CoreRef {
-	constructor(address core) CoreRef(core) {
-		_setContractAdminRole(keccak256("MOCK_CORE_REF_ADMIN"));
-	}
+    constructor(address core) CoreRef(core) {
+        _setContractAdminRole(keccak256("MOCK_CORE_REF_ADMIN"));
+    }
 
-	function testMinter() public view onlyMinter {}
+    function testMinter() public view onlyMinter {}
 
-	function testBurner() public view onlyBurner {}
+    function testBurner() public view onlyBurner {}
 
-	function testPCVController() public view onlyPCVController {}
+    function testPCVController() public view onlyPCVController {}
 
-	function testGovernor() public view onlyGovernor {}
+    function testGovernor() public view onlyGovernor {}
 
-	function testGuardian() public view onlyGuardianOrGovernor {}
+    function testGuardian() public view onlyGuardianOrGovernor {}
 
-	function testOnlyGovernorOrAdmin() public view onlyGovernorOrAdmin {}
+    function testOnlyGovernorOrAdmin() public view onlyGovernorOrAdmin {}
 }
-

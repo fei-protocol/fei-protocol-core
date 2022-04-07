@@ -10,6 +10,7 @@ dotenv.config();
 // Multisig
 const voterAddress = '0xB8f482539F2d3Ae2C9ea6076894df36D1f632775';
 const proposalName = process.env.DEPLOY_FILE;
+const doSetup = process.env.DO_SETUP;
 
 if (!proposalName) {
   throw new Error('DEPLOY_FILE env variable not set');
@@ -19,7 +20,7 @@ if (!proposalName) {
  * Take in a hardhat proposal object and output the proposal calldatas
  * See `proposals/utils/getProposalCalldata.js` on how to construct the proposal calldata
  */
-async function checkProposal(proposalName: string) {
+async function checkProposal(proposalName: string, doSetup?: string) {
   // Get the upgrade setup, run and teardown scripts
   const proposalFuncs: UpgradeFuncs = await import(`@proposals/dao/${proposalName}`);
 
@@ -27,7 +28,7 @@ async function checkProposal(proposalName: string) {
 
   const contractAddresses = getAllContractAddresses();
 
-  if (process.env.DO_SETUP) {
+  if (doSetup) {
     console.log('Setup');
     await proposalFuncs.setup(
       contractAddresses,
@@ -60,7 +61,7 @@ async function checkProposal(proposalName: string) {
   );
 }
 
-checkProposal(proposalName)
+checkProposal(proposalName, doSetup)
   .then(() => process.exit(0))
   .catch((err) => {
     console.log(err);

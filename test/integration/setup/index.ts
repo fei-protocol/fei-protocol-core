@@ -1,3 +1,4 @@
+import { ethers } from 'hardhat';
 import { permissions } from '@protocol/permissions';
 import { getAllContractAddresses, getAllContracts } from './loadContracts';
 import {
@@ -21,6 +22,8 @@ import constructProposal from '@scripts/utils/constructProposal';
 import '@nomiclabs/hardhat-ethers';
 import { resetFork } from '@test/helpers';
 import simulateOAProposal from '@scripts/utils/simulateOAProposal';
+import { forceEth } from '@test/integration/setup/utils';
+import { getImpersonatedSigner } from '@test/helpers';
 
 /**
  * Coordinate initialising an end-to-end testing environment
@@ -31,8 +34,9 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
   private mainnetContracts: NamedContracts;
   private afterUpgradeContracts: NamedContracts;
   private afterUpgradeAddresses: NamedAddresses;
+  private proposals: any;
 
-  constructor(private config: Config, private proposals: any) {
+  constructor(private config: Config, proposals?: any) {
     this.proposals = proposals;
   }
 
@@ -60,13 +64,16 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
     // Grant privileges to deploy address
     await sudo(existingContracts, this.config.logging);
 
-    const proposalNames = Object.keys(this.proposals);
-    for (let i = 0; i < proposalNames.length; i++) {
-      existingContracts = await this.applyUpgrade(
-        existingContracts,
-        proposalNames[i],
-        this.proposals[proposalNames[i]]
-      );
+    // If proposals exist, simulate the upgrade
+    if (this.proposals) {
+      const proposalNames = Object.keys(this.proposals);
+      for (let i = 0; i < proposalNames.length; i++) {
+        existingContracts = await this.applyUpgrade(
+          existingContracts,
+          proposalNames[i],
+          this.proposals[proposalNames[i]]
+        );
+      }
     }
 
     this.afterUpgradeAddresses = {
@@ -78,7 +85,11 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
   }
 
   /**
-   * Apply an upgrade to the locally instantiated protocol
+   * Apply an upgrade to the locally instantiated protocol.
+   *
+   * This will take a proposal, run the `setup()` function and then simulate that proposal locally.
+   * Following this, it will perform any `teardown()` behaviour and call the proposal `validate()` function.
+   * This `validate()` function verifies basic state and properties about the upgrade are satisfied.
    */
   async applyUpgrade(
     existingContracts: NamedContracts,

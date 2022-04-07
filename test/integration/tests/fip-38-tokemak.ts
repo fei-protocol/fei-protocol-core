@@ -10,22 +10,21 @@ import { forceEth } from '@test/integration/setup/utils';
 const toBN = ethers.BigNumber.from;
 const tenPow18 = toBN('1000000000000000000');
 
-const TOKEMAK_MANAGER_ROLLOVER_ADDRESS = '0x878510cde784681e4d10ca3eae6a8495d06902d2'; // has the rollover role
+const TOKEMAK_MANAGER_ROLLOVER_ADDRESS = '0x90b6C61B102eA260131aB48377E143D6EB3A9d4B'; // has the rollover role
 const TOKEMAK_MANAGER_ADDRESS = '0xa86e412109f77c45a3bc1c5870b880492fb86a14'; // tokemak manager
-const TOKE_HOLDER_ADDRESS = '0x96f98ed74639689c3a11daf38ef86e59f43417d3'; // TOKE staking contract
 const IPFS_JSON_FILE_HASH = 'QmP4Vzg45jExr3mcNsx9xxV1fNft95uVzgZGeLtkBXgpkx';
 
-before(async () => {
-  chai.use(CBN(ethers.BigNumber));
-  chai.use(solidity);
-  await resetFork();
-});
-
-describe.skip('e2e-fip-38-tokemak', function () {
+describe.only('e2e-fip-38-tokemak', function () {
   let contracts: NamedContracts;
   let deployAddress: string;
   let e2eCoord: TestEndtoEndCoordinator;
   let doLogging: boolean;
+
+  before(async () => {
+    chai.use(CBN(ethers.BigNumber));
+    chai.use(solidity);
+    await resetFork();
+  });
 
   before(async function () {
     // Setup test environment and get contracts
@@ -65,15 +64,16 @@ describe.skip('e2e-fip-38-tokemak', function () {
     // request to withdraw 10k ETH
     await ethTokemakPCVDeposit.requestWithdrawal(tenPow18.mul(toBN(10_000)));
 
-    // Advance block by 1 tokemak cycle
-    const currentBlock = await time.latestBlock();
-    await time.advanceBlockTo(currentBlock + 6400);
-
     // impersonate the rollover signer, and make the Tokemak pool go to next cycle
     await forceEth(TOKEMAK_MANAGER_ROLLOVER_ADDRESS);
     const tokemakRolloverSigner = await getImpersonatedSigner(TOKEMAK_MANAGER_ROLLOVER_ADDRESS);
-    const tokemakManagerAbi = ['function completeRollover(string calldata rewardsIpfsHash)'];
+    const tokemakManagerAbi = [
+      'function nextCycleStartTime() view returns (uint256)',
+      'function completeRollover(string calldata rewardsIpfsHash)'
+    ];
     const tokemakManager = new ethers.Contract(TOKEMAK_MANAGER_ADDRESS, tokemakManagerAbi, tokemakRolloverSigner);
+    const cycleEnd = await tokemakManager.nextCycleStartTime();
+    await time.increaseTo(cycleEnd + 1);
     await tokemakManager.completeRollover(IPFS_JSON_FILE_HASH);
 
     // Perform withdraw
@@ -84,59 +84,5 @@ describe.skip('e2e-fip-38-tokemak', function () {
     expect((await ethers.provider.getBalance(ethTokemakPCVDeposit.address)).toString()).to.be.equal(
       ethers.utils.parseEther('10000')
     );
-  });
-
-  it('should be able to deposit TOKE, and withdraw', async function () {
-    const {
-      tokeTokemakPCVDeposit,
-      toke, // TOKE ERC20
-      tToke // Tokemak TOKE reactor
-    } = contracts;
-
-    // should start with 0 TOKE, 0 tTOKE
-    expect((await tToke.balanceOf(tokeTokemakPCVDeposit.address)).toString()).to.be.equal(ethers.utils.parseEther('0'));
-    expect((await toke.balanceOf(tokeTokemakPCVDeposit.address)).toString()).to.be.equal(ethers.utils.parseEther('0'));
-
-    // Acquire TOKE (this is mocked, real execution will be an OTC for 6M TRIBE)
-    await forceEth(TOKE_HOLDER_ADDRESS);
-    const tokeSigner = await getImpersonatedSigner(TOKE_HOLDER_ADDRESS);
-    await toke.connect(tokeSigner).transfer(tokeTokemakPCVDeposit.address, tenPow18.mul(toBN(100_000)));
-
-    // deposit should now hold 100k TOKE
-    expect((await toke.balanceOf(tokeTokemakPCVDeposit.address)).toString()).to.be.equal(
-      ethers.utils.parseEther('100000')
-    );
-
-    // call deposit()
-    await tokeTokemakPCVDeposit.deposit();
-
-    // deposit should now hold 0 TOKE, 100k tTOKE
-    expect((await toke.balanceOf(tokeTokemakPCVDeposit.address)).toString()).to.be.equal(ethers.utils.parseEther('0'));
-    expect((await tToke.balanceOf(tokeTokemakPCVDeposit.address)).toString()).to.be.equal(
-      ethers.utils.parseEther('100000')
-    );
-
-    // request to withdraw 100k TOKE
-    await tokeTokemakPCVDeposit.requestWithdrawal(tenPow18.mul(toBN(100_000)));
-
-    // Advance block by 1 tokemak cycle
-    const currentBlock = await time.latestBlock();
-    await time.advanceBlockTo(currentBlock + 6400);
-
-    // impersonate the rollover signer, and make the Tokemak pool go to next cycle
-    await forceEth(TOKEMAK_MANAGER_ROLLOVER_ADDRESS);
-    const tokemakRolloverSigner = await getImpersonatedSigner(TOKEMAK_MANAGER_ROLLOVER_ADDRESS);
-    const tokemakManagerAbi = ['function completeRollover(string calldata rewardsIpfsHash)'];
-    const tokemakManager = new ethers.Contract(TOKEMAK_MANAGER_ADDRESS, tokemakManagerAbi, tokemakRolloverSigner);
-    await tokemakManager.completeRollover(IPFS_JSON_FILE_HASH);
-
-    // Perform withdraw
-    await tokeTokemakPCVDeposit.withdraw(tokeTokemakPCVDeposit.address, tenPow18.mul(toBN(100_000)));
-
-    // Should end with 0 tTOKE, 100k TOKE
-    expect((await toke.balanceOf(tokeTokemakPCVDeposit.address)).toString()).to.be.equal(
-      ethers.utils.parseEther('100000')
-    );
-    expect((await tToke.balanceOf(tokeTokemakPCVDeposit.address)).toString()).to.be.equal(ethers.utils.parseEther('0'));
   });
 });

@@ -14,7 +14,6 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
   This wrapper can be used in the CR oracle which reduces the number of contract upgrades and reduces the complexity and risk of the upgrade
 */
 contract ERC20PCVDepositWrapper is IPCVDepositBalances {
-    
     /// @notice the referenced token deposit
     address public tokenDeposit;
 
@@ -24,7 +23,11 @@ contract ERC20PCVDepositWrapper is IPCVDepositBalances {
     /// @notice a flag for whether to report the balance as protocol owned FEI
     bool public isProtocolFeiDeposit;
 
-    constructor(address _tokenDeposit, IERC20 _token, bool _isProtocolFeiDeposit) {
+    constructor(
+        address _tokenDeposit,
+        IERC20 _token,
+        bool _isProtocolFeiDeposit
+    ) {
         tokenDeposit = _tokenDeposit;
         token = _token;
         isProtocolFeiDeposit = _isProtocolFeiDeposit;
@@ -36,7 +39,12 @@ contract ERC20PCVDepositWrapper is IPCVDepositBalances {
     }
 
     /// @notice returns the resistant balance and FEI in the deposit
-    function resistantBalanceAndFei() public view override returns (uint256, uint256) {
+    function resistantBalanceAndFei()
+        public
+        view
+        override
+        returns (uint256, uint256)
+    {
         uint256 resistantBalance = balance();
         uint256 reistantFei = isProtocolFeiDeposit ? resistantBalance : 0;
         return (resistantBalance, reistantFei);

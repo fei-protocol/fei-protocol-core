@@ -17,12 +17,6 @@ const dripAmount = toBN(4000000).mul(toBN(10).pow(toBN(18)));
 // this is 1 week in seconds
 const dripFrequency = 604800;
 
-before(async () => {
-  chai.use(CBN(ethers.BigNumber));
-  chai.use(solidity);
-  await resetFork();
-});
-
 describe('e2e-pcv', function () {
   let contracts: NamedContracts;
   let contractAddresses: NamedAddresses;
@@ -31,6 +25,12 @@ describe('e2e-pcv', function () {
   let doLogging: boolean;
 
   const tenPow18 = ethers.constants.WeiPerEther;
+
+  before(async () => {
+    chai.use(CBN(ethers.BigNumber));
+    chai.use(solidity);
+    await resetFork();
+  });
 
   before(async function () {
     // Setup test environment and get contracts
@@ -63,12 +63,12 @@ describe('e2e-pcv', function () {
       await contracts.lusd.connect(signer).transfer(contracts.bammDeposit.address, ethers.constants.WeiPerEther);
 
       await contracts.bammDeposit.deposit();
-      expect(await contracts.bammDeposit.balance()).to.be.at.least(toBN(89_000_000).mul(tenPow18));
+      expect(await contracts.bammDeposit.balance()).to.be.at.least(toBN(1_000_000).mul(tenPow18));
 
-      await contracts.bammDeposit.withdraw(contractAddresses.feiDAOTimelock, toBN(89_000_000).mul(tenPow18));
+      await contracts.bammDeposit.withdraw(contractAddresses.feiDAOTimelock, toBN(1_000_000).mul(tenPow18));
 
       const lusdBalanceAfter = await contracts.lusd.balanceOf(contracts.feiDAOTimelock.address);
-      expect(lusdBalanceAfter).to.be.bignumber.equal(toBN(89_000_000).mul(tenPow18));
+      expect(lusdBalanceAfter).to.be.bignumber.equal(toBN(1_000_000).mul(tenPow18));
     });
   });
 
@@ -108,22 +108,26 @@ describe('e2e-pcv', function () {
     });
   });
 
-  /// pause this test as it has been disabled for FIP-62
-  /// PCVDripController now sends funds to the eth PSM
-  describe.skip('Drip Controller', async () => {
-    it('drip controller can withdraw from PCV deposit to stabiliser', async function () {
-      const ethReserveStabilizer = contracts.ethReserveStabilizer;
+  describe('Drip Controller', async () => {
+    before(async function () {
+      // unpause contracts if needed
+      if (await contracts.ethPSM.paused()) await contracts.ethPSM.unpause();
+      if (await contracts.aaveEthPCVDripController.paused()) await contracts.aaveEthPCVDripController.unpause();
+    });
+
+    it('drip controller can withdraw from PCV deposit to PSM', async function () {
+      const ethPsm = contracts.ethPSM;
       const aaveEthPCVDeposit = contracts.aaveEthPCVDeposit;
       const pcvDripper = contracts.aaveEthPCVDripController;
       const fei = contracts.fei;
 
       const userFeiBalanceBefore = await fei.balanceOf(deployAddress);
-      let stabilizerBalanceBefore = await ethReserveStabilizer.balance();
+      let balanceBefore = await ethPsm.balance();
 
       const dripAmount = await pcvDripper.dripAmount();
-      if (stabilizerBalanceBefore.gt(dripAmount)) {
-        await ethReserveStabilizer.withdraw(deployAddress, stabilizerBalanceBefore);
-        stabilizerBalanceBefore = await ethReserveStabilizer.balance();
+      if (balanceBefore.gt(dripAmount)) {
+        await ethPsm.withdraw(deployAddress, balanceBefore);
+        balanceBefore = await ethPsm.balance();
       }
 
       const pcvDepositBefore = await aaveEthPCVDeposit.balance();
@@ -135,8 +139,8 @@ describe('e2e-pcv', function () {
       const pcvDepositAfter = toBN(await aaveEthPCVDeposit.balance());
       await expectApprox(pcvDepositAfter, pcvDepositBefore.sub(dripAmount), '100');
 
-      const stabilizerBalanceAfter = toBN(await ethReserveStabilizer.balance());
-      await expectApprox(stabilizerBalanceAfter, stabilizerBalanceBefore.add(dripAmount), '100');
+      const balanceAfter = toBN(await ethPsm.balance());
+      await expectApprox(balanceAfter, balanceBefore.add(dripAmount), '100');
 
       const feiIncentive = await pcvDripper.incentiveAmount();
 

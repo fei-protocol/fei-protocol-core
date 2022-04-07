@@ -28,26 +28,41 @@ interface IRiskCurve {
 
     // ----------- Read-only API -----------
     /// @notice determine whether or not to kick off a new weight change
-    function isWeightChangeEligible() external view returns(bool);
+    function isWeightChangeEligible() external view returns (bool);
 
     /// @notice return the risk curve parameters
-    function getCurveParams() external view returns(CurveParams memory);
- 
+    function getCurveParams() external view returns (CurveParams memory);
+
     /// @notice return the current leverage in the protocol, defined as PCV / protocol equity
-    function getCurrentLeverage() external view returns(uint256);
+    function getCurrentLeverage() external view returns (uint256);
 
     /// @notice return the balancer weight of an asset at a given leverage
-    function getAssetWeight(address asset, uint256 leverage) external view returns(uint256);
-    
+    function getAssetWeight(address asset, uint256 leverage)
+        external
+        view
+        returns (uint256);
+
     /// @notice return the set of assets and their corresponding weights at a given leverage
-    function getWeights(uint256 leverage) external view returns(address[] memory, uint256[] memory);
+    function getWeights(uint256 leverage)
+        external
+        view
+        returns (address[] memory, uint256[] memory);
 
     /// @notice return the target weight for an asset at current leverage
-    function getCurrentTargetAssetWeight(address asset) external view returns(uint256);
+    function getCurrentTargetAssetWeight(address asset)
+        external
+        view
+        returns (uint256);
 
     /// @notice return the set of assets and their corresponding weights at a current leverage
-    function getCurrentTargetWeights() external view returns(address[] memory, uint256[] memory);
+    function getCurrentTargetWeights()
+        external
+        view
+        returns (address[] memory, uint256[] memory);
 
     /// @notice get the number of seconds to transition weights given the old and new weights
-    function getWeightChangeTime(uint256[] memory oldWeights, uint256[] memory newWeights) external view returns(uint256);
-}   
+    function getWeightChangeTime(
+        uint256[] memory oldWeights,
+        uint256[] memory newWeights
+    ) external view returns (uint256);
+}

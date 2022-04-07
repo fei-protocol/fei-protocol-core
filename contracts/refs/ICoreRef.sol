@@ -10,11 +10,12 @@ interface ICoreRef {
 
     event CoreUpdate(address indexed oldCore, address indexed newCore);
 
-    event ContractAdminRoleUpdate(bytes32 indexed oldContractAdminRole, bytes32 indexed newContractAdminRole);
+    event ContractAdminRoleUpdate(
+        bytes32 indexed oldContractAdminRole,
+        bytes32 indexed newContractAdminRole
+    );
 
     // ----------- Governor only state changing api -----------
-
-    function setCore(address newCore) external;
 
     function setContractAdminRole(bytes32 newContractAdminRole) external;
 

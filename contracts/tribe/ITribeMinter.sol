@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 interface ITribe is IERC20 {
     function mint(address to, uint256 amount) external;
+
     function setMinter(address newMinter) external;
 }
 
@@ -12,9 +13,18 @@ interface ITribe is IERC20 {
 /// @author Fei Protocol
 interface ITribeMinter {
     // ----------- Events -----------
-    event AnnualMaxInflationUpdate(uint256 oldAnnualMaxInflationBasisPoints, uint256 newAnnualMaxInflationBasisPoints);
-    event TribeTreasuryUpdate(address indexed oldTribeTreasury, address indexed newTribeTreasury);
-    event TribeRewardsDripperUpdate(address indexed oldTribeRewardsDripper, address indexed newTribeRewardsDripper);
+    event AnnualMaxInflationUpdate(
+        uint256 oldAnnualMaxInflationBasisPoints,
+        uint256 newAnnualMaxInflationBasisPoints
+    );
+    event TribeTreasuryUpdate(
+        address indexed oldTribeTreasury,
+        address indexed newTribeTreasury
+    );
+    event TribeRewardsDripperUpdate(
+        address indexed oldTribeRewardsDripper,
+        address indexed newTribeRewardsDripper
+    );
 
     // ----------- Public state changing api -----------
 
@@ -32,12 +42,14 @@ interface ITribeMinter {
 
     function setTribeRewardsDripper(address newTribeRewardsDripper) external;
 
-    function setAnnualMaxInflationBasisPoints(uint256 newAnnualMaxInflationBasisPoints) external;
+    function setAnnualMaxInflationBasisPoints(
+        uint256 newAnnualMaxInflationBasisPoints
+    ) external;
 
     // ----------- Getters -----------
 
     function annualMaxInflationBasisPoints() external view returns (uint256);
-    
+
     function idealBufferCap() external view returns (uint256);
 
     function tribeCirculatingSupply() external view returns (uint256);

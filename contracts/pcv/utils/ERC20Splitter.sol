@@ -5,7 +5,6 @@ import "./PCVSplitter.sol";
 /// @title ERC20Splitter
 /// @notice a contract to split token held to multiple locations
 contract ERC20Splitter is PCVSplitter {
-
     /// @notice token to split
     IERC20 public token;
 
@@ -21,10 +20,7 @@ contract ERC20Splitter is PCVSplitter {
         IERC20 _token,
         address[] memory _pcvDeposits,
         uint256[] memory _ratios
-    ) 
-        CoreRef(_core)
-        PCVSplitter(_pcvDeposits, _ratios)
-    {
+    ) CoreRef(_core) PCVSplitter(_pcvDeposits, _ratios) {
         token = _token;
     }
 
@@ -33,7 +29,10 @@ contract ERC20Splitter is PCVSplitter {
         _allocate(token.balanceOf(address(this)));
     }
 
-    function _allocateSingle(uint256 amount, address pcvDeposit) internal override {
-        token.transfer(pcvDeposit, amount);        
+    function _allocateSingle(uint256 amount, address pcvDeposit)
+        internal
+        override
+    {
+        token.transfer(pcvDeposit, amount);
     }
 }

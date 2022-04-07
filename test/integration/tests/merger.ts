@@ -4,21 +4,13 @@ import { solidity } from 'ethereum-waffle';
 import { ethers } from 'hardhat';
 import { NamedAddresses, NamedContracts } from '@custom-types/types';
 import { getImpersonatedSigner, resetFork, time } from '@test/helpers';
-import proposals from '@test/integration/proposals_config';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
-import { TRIBERagequit, PegExchanger, PegExchangerDripper } from '@custom-types/contracts';
+import proposals from '@test/integration/proposals_config';
+import { PegExchanger, PegExchangerDripper } from '@custom-types/contracts';
 import { expectApprox, expectRevert } from '@test/helpers';
-import { createTree } from '@scripts/utils/merkle';
-import { solidityKeccak256 } from 'ethers/lib/utils';
 import { forceEth } from '../setup/utils';
 
 const toBN = ethers.BigNumber.from;
-
-before(async () => {
-  chai.use(CBN(ethers.BigNumber));
-  chai.use(solidity);
-  await resetFork();
-});
 
 describe('e2e-merger', function () {
   let contracts: NamedContracts;
@@ -26,6 +18,12 @@ describe('e2e-merger', function () {
   let deployAddress: string;
   let e2eCoord: TestEndtoEndCoordinator;
   let doLogging: boolean;
+
+  before(async () => {
+    chai.use(CBN(ethers.BigNumber));
+    chai.use(solidity);
+    await resetFork();
+  });
 
   before(async function () {
     // Setup test environment and get contracts
@@ -48,7 +46,7 @@ describe('e2e-merger', function () {
     doLogging && console.log(`Environment loaded.`);
   });
 
-  describe('PegExchanger', async () => {
+  describe.skip('PegExchanger', async () => {
     const RGT_WHALE = '0x20017a30D3156D4005bDA08C40Acda0A6aE209B1';
 
     it('drips correctly before expiration', async function () {

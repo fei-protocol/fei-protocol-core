@@ -6,13 +6,13 @@ export const permissions = {
     'pcvEquityMinter',
     'collateralizationOracleKeeper',
     'optimisticMinter',
-    'agEurAngleUniswapPCVDeposit',
-    'daiPSM',
+    'daiFixedPricePSM',
     'ethPSM',
-    'lusdPSM'
+    'lusdPSM',
+    'balancerDepositFeiWeth'
   ],
   BURNER_ROLE: [],
-  GOVERN_ROLE: ['core', 'timelock', 'feiDAOTimelock'],
+  GOVERN_ROLE: ['core', 'feiDAOTimelock', 'rariTimelock'],
   PCV_CONTROLLER_ROLE: [
     'feiDAOTimelock',
     'ratioPCVControllerV2',
@@ -21,14 +21,17 @@ export const permissions = {
     'daiPCVDripController',
     'lusdPCVDripController',
     'ethPSMFeiSkimmer',
-    'daiPSMFeiSkimmer',
     'lusdPSMFeiSkimmer'
   ],
-  GUARDIAN_ROLE: ['multisig', 'pcvGuardian'],
-  ORACLE_ADMIN_ROLE: ['collateralizationOracleGuardian', 'optimisticTimelock'],
+  GUARDIAN_ROLE: ['multisig', 'pcvGuardian', 'pcvSentinel'],
+  ORACLE_ADMIN_ROLE: ['collateralizationOracleGuardian', 'optimisticTimelock', 'opsOptimisticTimelock'],
   SWAP_ADMIN_ROLE: ['pcvEquityMinter', 'optimisticTimelock'],
   BALANCER_MANAGER_ADMIN_ROLE: [],
   PSM_ADMIN_ROLE: [],
   TRIBAL_CHIEF_ADMIN_ROLE: ['optimisticTimelock', 'tribalChiefSyncV2'],
-  VOTIUM_ADMIN_ROLE: ['opsOptimisticTimelock']
+  VOTIUM_ADMIN_ROLE: ['opsOptimisticTimelock'],
+  PCV_GUARDIAN_ADMIN_ROLE: ['optimisticTimelock'],
+  METAGOVERNANCE_VOTE_ADMIN: ['feiDAOTimelock', 'opsOptimisticTimelock'],
+  METAGOVERNANCE_TOKEN_STAKING: ['feiDAOTimelock', 'opsOptimisticTimelock'],
+  METAGOVERNANCE_GAUGE_ADMIN: ['feiDAOTimelock', 'optimisticTimelock']
 };

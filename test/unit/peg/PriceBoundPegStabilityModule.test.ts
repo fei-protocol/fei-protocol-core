@@ -494,7 +494,7 @@ describe('PriceBoundPegStabilityModule', function () {
       it('fails when token is not approved to be spent by the PSM', async () => {
         await expectRevert(
           psm.connect(impersonatedSigners[userAddress]).mint(userAddress, mintAmount, 0),
-          'ERC20: transfer amount exceeds balance'
+          'ERC20: insufficient allowance'
         );
       });
 
@@ -871,7 +871,7 @@ describe('PriceBoundPegStabilityModule', function () {
         await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, 100);
         await expectRevert(
           psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, 100, 0),
-          'ERC20: transfer amount exceeds allowance'
+          'ERC20: insufficient allowance'
         );
       });
     });
