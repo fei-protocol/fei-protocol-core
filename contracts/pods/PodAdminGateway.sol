@@ -19,18 +19,10 @@ import {IPodFactory} from "./interfaces/IPodFactory.sol";
 ///     3. Transferring a pod member
 ///     4. Toggling a pod membership transfer switch
 contract PodAdminGateway is CoreRef, IPodAdminGateway {
-    /// @notice Orca membership token for the pods. Handles permissioning pod members
-    MemberToken private immutable memberToken;
-
     /// @notice Pod factory which creates optimistic pods and acts as a source of information
     IPodFactory private immutable podFactory;
 
-    constructor(
-        address _core,
-        address _memberToken,
-        address _podFactory
-    ) CoreRef(_core) {
-        memberToken = MemberToken(_memberToken);
+    constructor(address _core, address _podFactory) CoreRef(_core) {
         podFactory = IPodFactory(_podFactory);
     }
 
@@ -157,11 +149,16 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
             getPodAddMemberRole(_podId)
         )
     {
-        _addMemberToPod(_podId, _member);
+        MemberToken memberToken = podFactory.getMemberToken();
+        _addMemberToPod(_podId, _member, memberToken);
     }
 
     /// @notice Internal method to add a member to a pod
-    function _addMemberToPod(uint256 _podId, address _member) internal {
+    function _addMemberToPod(
+        uint256 _podId,
+        address _member,
+        MemberToken memberToken
+    ) internal {
         emit AddPodMember(_podId, _member);
         memberToken.mint(_member, _podId, bytes(""));
     }
@@ -178,8 +175,9 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
         )
     {
         uint256 numMembers = _members.length;
+        MemberToken memberToken = podFactory.getMemberToken();
         for (uint256 i = 0; i < numMembers; ) {
-            _addMemberToPod(_podId, _members[i]);
+            _addMemberToPod(_podId, _members[i], memberToken);
             // i is constrained by being < _members.length
             unchecked {
                 i += 1;
@@ -199,11 +197,16 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
             getPodRemoveMemberRole(_podId)
         )
     {
-        _removePodMember(_podId, _member);
+        MemberToken memberToken = podFactory.getMemberToken();
+        _removePodMember(_podId, _member, memberToken);
     }
 
     /// @notice Internal method to remove a member from a pod
-    function _removePodMember(uint256 _podId, address _member) internal {
+    function _removePodMember(
+        uint256 _podId,
+        address _member,
+        MemberToken memberToken
+    ) internal {
         emit RemovePodMember(_podId, _member);
         memberToken.burn(_member, _podId);
     }
@@ -221,8 +224,9 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
         )
     {
         uint256 numMembers = _members.length;
+        MemberToken memberToken = podFactory.getMemberToken();
         for (uint256 i = 0; i < numMembers; ) {
-            _removePodMember(_podId, _members[i]);
+            _removePodMember(_podId, _members[i], memberToken);
 
             // i is constrained by being < _members.length
             unchecked {

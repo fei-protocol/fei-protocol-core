@@ -43,11 +43,7 @@ contract PodAdminGatewayIntegrationTest is DSTest {
         vm.stopPrank();
 
         // 2.0 Deploy multi-pod admin contract, to expose pod admin functionality
-        podAdminGateway = new PodAdminGateway(
-            core,
-            memberToken,
-            address(factory)
-        );
+        podAdminGateway = new PodAdminGateway(core, address(factory));
 
         // 3.0 Make config for pod, mint Orca tokens to factory
         (IPodFactory.PodConfig memory config, ) = getPodParams(
