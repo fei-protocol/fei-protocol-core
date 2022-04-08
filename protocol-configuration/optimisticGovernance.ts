@@ -55,30 +55,3 @@ export const tribeCouncilPodConfig: PodConfig = {
   numMembers: tribalCouncilMembers.length,
   placeHolderMembers: placeHolderCouncilMembers
 };
-
-export const protocolPodMembers = [
-  '0x0000000000000000000000000000000000000009', // TODO: Complete with real member addresses
-  '0x000000000000000000000000000000000000000A',
-  '0x000000000000000000000000000000000000000B',
-  '0x000000000000000000000000000000000000000C',
-  '0x000000000000000000000000000000000000000D'
-];
-
-export const placeHolderPodMembers = [
-  '0x0000000000000000000000000000000000000004',
-  '0x0000000000000000000000000000000000000005',
-  '0x0000000000000000000000000000000000000006',
-  '0x0000000000000000000000000000000000000007',
-  '0x0000000000000000000000000000000000000008'
-];
-
-export const protocolPodConfig: PodConfig = {
-  members: protocolPodMembers,
-  threshold: 3,
-  label: '0x50726f746f636f6c506f64000000000000000000000000000000000000000000', // ProtocolPod
-  ensString: 'protocolPod.eth',
-  imageUrl: 'protocolPod.com',
-  minDelay: 172800, // 2 days
-  numMembers: protocolPodMembers.length,
-  placeHolderMembers: placeHolderPodMembers
-};

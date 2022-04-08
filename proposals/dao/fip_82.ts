@@ -8,11 +8,10 @@ import {
   ValidateUpgradeFunc
 } from '@custom-types/types';
 import { getImpersonatedSigner } from '@test/helpers';
-import { tribeCouncilPodConfig, protocolPodConfig, PodCreationConfig } from '@protocol/optimisticGovernance';
+import { tribeCouncilPodConfig, PodCreationConfig } from '@protocol/optimisticGovernance';
 import { abi as timelockABI } from '../../artifacts/contracts/dao/timelock/OptimisticTimelock.sol/OptimisticTimelock.json';
 import { abi as gnosisSafeABI } from '../../artifacts/contracts/pods/interfaces/IGnosisSafe.sol/IGnosisSafe.json';
 import { Contract } from 'ethers';
-const toBN = ethers.BigNumber.from;
 
 const validateArraysEqual = (arrayA: string[], arrayB: string[]) => {
   arrayA.every((a) => expect(arrayB.map((b) => b.toLowerCase()).includes(a.toLowerCase())));
@@ -77,41 +76,23 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     minDelay: tribeCouncilPodConfig.minDelay
   };
 
-  const protocolTierPod: PodCreationConfig = {
-    members: protocolPodConfig.placeHolderMembers,
-    threshold: protocolPodConfig.threshold,
-    label: protocolPodConfig.label,
-    ensString: protocolPodConfig.ensString,
-    imageUrl: protocolPodConfig.imageUrl,
-    admin: podAdminGateway.address,
-    minDelay: protocolPodConfig.minDelay
-  };
-
-  const pods = [tribalCouncilPod, protocolTierPod];
+  const pods = [tribalCouncilPod];
   await podFactory.burnerCreateChildOptimisticPods(pods);
 
-  const protocolPodId = await podFactory.latestPodId();
-  const tribalCouncilPodId = protocolPodId.sub(toBN(1));
+  const tribalCouncilPodId = await podFactory.latestPodId();
 
   logging && console.log('TribalCouncil pod Id: ', tribalCouncilPodId.toString());
-  logging && console.log('Protocol tier pod Id: ', protocolPodId.toString());
 
   const councilTimelockAddress = await podFactory.getPodTimelock(tribalCouncilPodId);
-  const protocolPodTimelockAddress = await podFactory.getPodTimelock(protocolPodId);
   const councilSafeAddress = await podFactory.getPodSafe(tribalCouncilPodId);
-  const protocolPodSafeAddress = await podFactory.getPodSafe(protocolPodId);
 
   logging && console.log('Tribal council timelock deployed to: ', councilTimelockAddress);
-  logging && console.log('Protocol pod timelock deployed to: ', protocolPodTimelockAddress);
   logging && console.log('Tribal council Gnosis safe is: ', councilSafeAddress);
-  logging && console.log('Protocol pod safe is: ', protocolPodSafeAddress);
 
   // 5. Create contract artifacts for timelocks, so address is available to DAO script
   const mockSigner = await getImpersonatedSigner(deployAddress);
   const tribalCouncilTimelock = new ethers.Contract(councilTimelockAddress, timelockABI, mockSigner);
-  const protocolPodTimelock = new ethers.Contract(protocolPodTimelockAddress, timelockABI, mockSigner);
   const tribalCouncilSafe = new ethers.Contract(councilSafeAddress, gnosisSafeABI, mockSigner);
-  const protocolPodSafe = new ethers.Contract(protocolPodSafeAddress, gnosisSafeABI, mockSigner);
 
   // 6. Deploy GovernanceMetadataRegistry contract
   const metadataRegistryFactory = await ethers.getContractFactory('GovernanceMetadataRegistry');
@@ -135,10 +116,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     podExecutor,
     podFactory,
     tribalCouncilTimelock,
-    protocolPodTimelock,
     podAdminGateway,
     tribalCouncilSafe,
-    protocolPodSafe,
     governanceMetadataRegistry,
     roleBastion,
     nopeDAO
@@ -159,13 +138,6 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   // 1. Validate PodAdminGateway has PROPOSER role on TribalCouncil and Protocol Pod
   ///////////////  POD ADMIN GATEWAY  //////////////////////
   const tribalCouncilTimelock = contracts.tribalCouncilTimelock;
-  const protocolTierTimelock = contracts.protocolPodTimelock;
-  const gatewayIsProtocolPodProposer = await protocolTierTimelock.hasRole(
-    ethers.utils.id('PROPOSER_ROLE'),
-    addresses.podAdminGateway
-  );
-  expect(gatewayIsProtocolPodProposer).to.be.true;
-
   const gatewayIsCouncilProposer = await tribalCouncilTimelock.hasRole(
     ethers.utils.id('PROPOSER_ROLE'),
     addresses.podAdminGateway
@@ -202,35 +174,6 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(councilThreshold).to.equal(tribeCouncilPodConfig.threshold);
 
   ////////////////////// PROTOCOL TIER POD ///////////////////////////////
-  // 1. Validate that the protocolTierPod Safe, timelock and podAdmin are configured
-  const protocolPodId = await podFactory.getPodId(addresses.protocolPodTimelock);
-  const protocolSafeAddress = await podFactory.getPodSafe(protocolPodId);
-
-  const protocolPodAdmin = await podFactory.getPodAdmin(protocolPodId);
-  expect(protocolPodAdmin).to.equal(addresses.podAdminGateway);
-
-  const protocolTimelock = contracts.protocolPodTimelock;
-  const protocolSafeIsProposer = await protocolTimelock.hasRole(ethers.utils.id('PROPOSER_ROLE'), protocolSafeAddress);
-  expect(protocolSafeIsProposer).to.be.true;
-
-  const publicExecutorIsPodExecutor = await protocolTimelock.hasRole(
-    ethers.utils.id('EXECUTOR_ROLE'),
-    addresses.podExecutor
-  );
-  expect(publicExecutorIsPodExecutor).to.be.true;
-
-  // 3. Validate that protocol tier pod members Council members are correctly set
-  const numPodMembers = await podFactory.getNumMembers(protocolPodId);
-  expect(numPodMembers).to.equal(protocolPodConfig.numMembers);
-
-  const podThreshold = await podFactory.getPodThreshold(protocolPodId);
-  expect(podThreshold).to.equal(protocolPodConfig.threshold);
-
-  const podMembers = await podFactory.getPodMembers(protocolPodId);
-  validateArraysEqual(podMembers, protocolPodConfig.members);
-
-  const protocolPodMembersLocked = await podFactory.getIsMembershipTransferLocked(protocolPodId);
-  expect(protocolPodMembersLocked).to.be.true;
 
   ///////////// METADATA REGISTRY ////////////////////////
   const governanceMetadataRegistry = contracts.governanceMetadataRegistry;
@@ -241,9 +184,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
     contracts.core,
     addresses.feiDAOTimelock,
     addresses.tribalCouncilTimelock,
-    addresses.protocolPodTimelock,
     tribalCouncilSafeAddress,
-    protocolSafeAddress,
     addresses.roleBastion,
     addresses.nopeDAO,
     addresses.podFactory
@@ -255,9 +196,7 @@ const validateTribeRoles = async (
   core: Contract,
   feiDAOTimelockAddress: string,
   tribalCouncilTimelockAddress: string,
-  protocolPodTimelockAddress: string,
   tribalCouncilSafeAddress: string,
-  protocolPodSafeAddress: string,
   roleBastionAddress: string,
   nopeDAOAddress: string,
   podFactoryAddress: string
@@ -285,13 +224,6 @@ const validateTribeRoles = async (
     tribalCouncilSafeAddress
   );
   expect(councilHasMetadataRegisterRole).to.be.true;
-
-  // Protocol pod Gnosis Safe roles: POD_METADATA_REGISTER_ROLE
-  const protocolPodHasMetadataRegisterRole = await core.hasRole(
-    ethers.utils.id('POD_METADATA_REGISTER_ROLE'),
-    protocolPodSafeAddress
-  );
-  expect(protocolPodHasMetadataRegisterRole).to.be.true;
 
   // RoleBastion role: GOVERNOR
   const roleBastion = await core.hasRole(ethers.utils.id('GOVERN_ROLE'), roleBastionAddress);
