@@ -1086,6 +1086,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x0C462Dbb9EC8cD1630f1728B2CFD2769d09f0dd5',
     category: AddressCategory.External
   },
+  comp: {
+    artifactName: 'Tribe', // using Tribe instead of IERC20 to have delegate()
+    address: '0xc00e94Cb662C3520282E6f5717214004A7f26888',
+    category: AddressCategory.External
+  },
   aRai: {
     artifactName: 'IERC20',
     address: '0xc9BC48c72154ef3e5425641a3c747242112a46AF',

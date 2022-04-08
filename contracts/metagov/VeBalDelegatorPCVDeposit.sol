@@ -4,13 +4,15 @@ pragma solidity ^0.8.0;
 import "./SnapshotDelegatorPCVDeposit.sol";
 import "./utils/VoteEscrowTokenManager.sol";
 import "./utils/LiquidityGaugeManager.sol";
+import "./utils/GovernorVoter.sol";
 
 /// @title 80-BAL-20-WETH BPT PCV Deposit
 /// @author Fei Protocol
 contract VeBalDelegatorPCVDeposit is
     SnapshotDelegatorPCVDeposit,
     VoteEscrowTokenManager,
-    LiquidityGaugeManager
+    LiquidityGaugeManager,
+    GovernorVoter
 {
     address public constant B_80BAL_20WETH =
         0x5c6Ee304399DBdB9C8Ef030aB642B10820DB8F56;
@@ -34,6 +36,7 @@ contract VeBalDelegatorPCVDeposit is
             365 * 86400 // vote-escrow time = 1 year
         )
         LiquidityGaugeManager(BALANCER_GAUGE_CONTROLLER)
+        GovernorVoter()
     {}
 
     /// @notice returns total balance of PCV in the Deposit

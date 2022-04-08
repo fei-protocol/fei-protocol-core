@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 import "./SnapshotDelegatorPCVDeposit.sol";
 import "./utils/VoteEscrowTokenManager.sol";
 import "./utils/LiquidityGaugeManager.sol";
-import "./utils/OZGovernorVoter.sol";
+import "./utils/GovernorVoter.sol";
 
 /// @title ANGLE Token PCV Deposit
 /// @author Fei Protocol
@@ -12,7 +12,7 @@ contract AngleDelegatorPCVDeposit is
     SnapshotDelegatorPCVDeposit,
     VoteEscrowTokenManager,
     LiquidityGaugeManager,
-    OZGovernorVoter
+    GovernorVoter
 {
     address private constant ANGLE_TOKEN =
         0x31429d1856aD1377A8A0079410B297e1a9e214c2;
@@ -38,7 +38,7 @@ contract AngleDelegatorPCVDeposit is
             4 * 365 * 86400 // vote-escrow time = 4 years
         )
         LiquidityGaugeManager(ANGLE_GAUGE_MANAGER)
-        OZGovernorVoter()
+        GovernorVoter()
     {}
 
     /// @notice returns total balance of PCV in the Deposit
