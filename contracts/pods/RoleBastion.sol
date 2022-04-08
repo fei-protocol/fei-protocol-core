@@ -22,6 +22,7 @@ contract RoleBastion is CoreRef {
     function createRole(bytes32 role)
         external
         onlyTribeRole(TribeRoles.ROLE_ADMIN)
+        whenNotPaused
     {
         require(role != bytes32(0), "Can not create zero role");
 

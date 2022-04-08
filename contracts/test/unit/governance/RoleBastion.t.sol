@@ -10,6 +10,7 @@ import {Core} from "../../../core/Core.sol";
 
 contract RoleBastionTest is DSTest {
     address tribalCouncil = address(0x1);
+    address guardian = address(0x2);
 
     FeiTestAddresses addresses;
     Core core;
@@ -25,19 +26,25 @@ contract RoleBastionTest is DSTest {
         // 1. Grant tribalCouncil ROLE_ADMIN role
         vm.startPrank(addresses.governorAddress);
         core.createRole(TribeRoles.ROLE_ADMIN, TribeRoles.GOVERNOR);
-        core.grantRole(TribeRoles.ROLE_ADMIN, address(tribalCouncil));
+        core.grantRole(TribeRoles.ROLE_ADMIN, tribalCouncil);
         vm.stopPrank();
 
         // 2. Grant roleBastion GOVERNOR
         vm.startPrank(addresses.governorAddress);
         core.grantRole(TribeRoles.GOVERNOR, address(roleBastion));
         vm.stopPrank();
+
+        // 3. Create a mock Guardian to pause the contract
+        vm.startPrank(addresses.governorAddress);
+        core.createRole(TribeRoles.GUARDIAN, TribeRoles.GOVERNOR);
+        core.grantRole(TribeRoles.GUARDIAN, guardian);
+        vm.stopPrank();
     }
 
     /// @notice Validate initial state of roleCreator
     function testInitialState() public {
         assertTrue(core.hasRole(TribeRoles.GOVERNOR, address(roleBastion)));
-        assertTrue(core.hasRole(TribeRoles.ROLE_ADMIN, address(tribalCouncil)));
+        assertTrue(core.hasRole(TribeRoles.ROLE_ADMIN, tribalCouncil));
     }
 
     /// @notice Validate that roleCreator can create a role
@@ -69,6 +76,7 @@ contract RoleBastionTest is DSTest {
 
     /// @notice Validate that roleCreator can not create an already existing role
     function testCanNotCreateExistingRole() public {
+        // TODO: Checkout if this is a false positive
         bytes32 existingRole = TribeRoles.MINTER;
 
         vm.startPrank(tribalCouncil);
@@ -85,5 +93,18 @@ contract RoleBastionTest is DSTest {
         vm.expectRevert(bytes("Can not create zero role"));
         roleBastion.createRole(zeroRole);
         vm.stopPrank();
+    }
+
+    /// @notice Validate can not create a role when paused
+    function testCanPause() public {
+        vm.prank(guardian);
+        roleBastion.pause();
+
+        bool isPaused = roleBastion.paused();
+        assertTrue(isPaused);
+
+        vm.startPrank(tribalCouncil);
+        vm.expectRevert(bytes("Pausable: paused"));
+        roleBastion.createRole(keccak256("DUMMY_ROLE"));
     }
 }
