@@ -379,7 +379,7 @@ const MainnetAddresses: MainnetAddresses = {
   gaugeLensBpt30Fei70WethGauge: {
     artifactName: 'CurveGaugeLens',
     address: '0xa8E388a1f19f2b33Be8bf2cCeC43641C10b4D1e5',
-    category: AddressCategory.PCV
+    category: AddressCategory.External // not really External, but not PCV
   },
   balancerLensBpt30Fei70Weth: {
     artifactName: 'BalancerPool2Lens',

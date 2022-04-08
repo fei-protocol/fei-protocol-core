@@ -125,7 +125,8 @@ const dependencies: DependencyMap = {
       'balancerDepositFeiWeth',
       'delayedPCVMoverWethUniToBal',
       'angleDelegatorPCVDeposit',
-      'uniswapLensAgEurUniswapGauge'
+      'uniswapLensAgEurUniswapGauge',
+      'veBalDelegatorPCVDeposit'
     ]
   },
   fei: {
@@ -624,7 +625,9 @@ const dependencies: DependencyMap = {
       'chainlinkBALEthOracle',
       'chainlinkEthUsdOracleWrapper',
       'collateralizationOracle',
-      'balancerDepositBalWeth'
+      'balancerDepositBalWeth',
+      'balancerLensVeBalBal',
+      'balancerLensVeBalWeth'
     ]
   },
   chainlinkBALEthOracle: {
@@ -651,7 +654,10 @@ const dependencies: DependencyMap = {
       'collateralizationOracle',
       'uniswapPCVDeposit',
       'balancerDepositBalWeth',
-      'balancerDepositFeiWeth'
+      'balancerDepositFeiWeth',
+      'balancerLensBpt30Fei70Weth',
+      'balancerLensVeBalBal',
+      'balancerLensVeBalWeth'
     ]
   },
   chainlinkEurUsdOracleWrapper: {
@@ -690,7 +696,7 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core', 'chainlinkEthUsdOracleWrapper', 'chainlinkCREAMEthOracle', 'collateralizationOracle']
   },
   oneConstantOracle: {
-    contractDependencies: ['core', 'collateralizationOracle', 'balancerDepositFeiWeth']
+    contractDependencies: ['core', 'collateralizationOracle', 'balancerDepositFeiWeth', 'balancerLensBpt30Fei70Weth']
   },
   tribeUsdCompositeOracle: {
     contractDependencies: [
@@ -984,6 +990,18 @@ const dependencies: DependencyMap = {
   },
   timelock: {
     contractDependencies: ['feiDAOTimelock']
+  },
+  veBalDelegatorPCVDeposit: {
+    contractDependencies: ['core', 'balancerLensVeBalBal', 'balancerLensVeBalWeth']
+  },
+  balancerLensBpt30Fei70Weth: {
+    contractDependencies: ['oneConstantOracle', 'chainlinkEthUsdOracleWrapper']
+  },
+  balancerLensVeBalBal: {
+    contractDependencies: ['veBalDelegatorPCVDeposit', 'balUsdCompositeOracle', 'chainlinkEthUsdOracleWrapper']
+  },
+  balancerLensVeBalWeth: {
+    contractDependencies: ['veBalDelegatorPCVDeposit', 'balUsdCompositeOracle', 'chainlinkEthUsdOracleWrapper']
   }
 };
 
