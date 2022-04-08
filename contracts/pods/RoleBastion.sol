@@ -30,5 +30,9 @@ contract RoleBastion is CoreRef {
         require(roleAdmin == bytes32(0), "Role already exists");
         emit BastionRoleCreate(role, TribeRoles.ROLE_ADMIN);
         core().createRole(role, TribeRoles.ROLE_ADMIN);
+
+        // TODO: DAO vote to transfer all roles which have admins of GOVERNOR
+        // VOTIUM, admin GOVERNOR
+        //  transfer
     }
 }

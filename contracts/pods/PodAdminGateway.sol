@@ -27,6 +27,11 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
     }
 
     ////////////////////////   GETTERS   ////////////////////////////////
+    // TODO: Whatever global set of roles are, map them one to one to the specific pod roles.
+    // Pod specific roles:
+    // ADMIN: If can add, should be able to remove and lock transfers. Should also be able to veto
+    // GUARDIAN: Can remove and veto 
+    // 
 
     /// @notice Calculate the specific pod admin role related to adding pod members
     function getPodAddMemberRole(uint256 _podId)
@@ -60,6 +65,7 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
     }
 
     /// @notice Calculate the specific pod transfer admin role
+    // TODO: Remove this - not needed
     function getPodTransferAdminRole(uint256 _podId)
         public
         pure
@@ -283,6 +289,8 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
             TribeRoles.GOVERNOR,
             TribeRoles.POD_VETO_ADMIN,
             TribeRoles.GUARDIAN,
+            // TODO: Pod specific admin 
+            // TODO: Global pod admin
             getPodVetoRole(_podId)
         )
     {

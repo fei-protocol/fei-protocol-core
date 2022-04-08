@@ -12,8 +12,6 @@ import {CoreRef} from "../refs/CoreRef.sol";
 import {ICore} from "../core/ICore.sol";
 import {IPodAdminGateway} from "./interfaces/IPodAdminGateway.sol";
 
-/// @notice Contract used by an Admin pod to manage child pods.
-
 /// @dev This contract is primarily a factory contract which an admin
 /// can use to deploy more optimistic governance pods. It will create an
 /// Orca pod and deploy an optimistic timelock alongside it.
@@ -55,6 +53,8 @@ contract PodFactory is CoreRef, IPodFactory {
         podExecutor = _podExecutor;
         podController = ControllerV1(_podController);
         memberToken = MemberToken(_memberToken);
+
+        // TODO: Deploy initial pod in the constructor here. Remove burner method
     }
 
     ///////////////////// GETTERS ///////////////////////
@@ -143,6 +143,7 @@ contract PodFactory is CoreRef, IPodFactory {
     function createChildOptimisticPod(PodConfig calldata _config)
         public
         override
+        // TODO: POD_ADMIN rather than POD_DEPLOYER_ROLE
         hasAnyOfTwoRoles(TribeRoles.GOVERNOR, TribeRoles.POD_DEPLOYER_ROLE)
         returns (
             uint256,
@@ -161,18 +162,6 @@ contract PodFactory is CoreRef, IPodFactory {
         return (podId, timelock, safe);
     }
 
-    /// @notice Migrate to a new podController. Upgrades are opt in
-    ///         and state is transitioned by the Orca controllers
-    /// @dev Expects that breaking changes are not introduced by the podController
-    function updatePodController(address newPodController)
-        external
-        override
-        hasAnyOfTwoRoles(TribeRoles.GOVERNOR, TribeRoles.POD_DEPLOYER_ROLE)
-    {
-        address oldController = newPodController;
-        podController = ControllerV1(newPodController);
-        emit UpdatePodController(oldController, newPodController);
-    }
 
     /// @notice One time use at deploy time function to create childOptimisticTimelocks
     function burnerCreateChildOptimisticPods(PodConfig[] calldata _config)
@@ -232,24 +221,32 @@ contract PodFactory is CoreRef, IPodFactory {
             _config.admin,
             podId
         );
-        address timelock = createOptimisticTimelock(
-            safeAddress,
-            _config.minDelay,
-            podExecutor,
-            _config.admin
-        );
 
-        // Set mapping from podId to timelock for reference
-        getPodTimelock[podId] = timelock;
-        getPodId[timelock] = podId;
-        latestPodId = podId;
-
+        address timelock;
+        // TODO: Add option to avoid setting a timelock
+        if (minDelay != 0) {
+            // TODO: Enforce min delay if defined
+            require(minDelay >= 1 days) {
+                timelock = createOptimisticTimelock(
+                safeAddress,
+                _config.minDelay,
+                podExecutor,
+                _config.admin
+            );
+            // Set mapping from podId to timelock for reference
+            getPodTimelock[podId] = timelock;
+            getPodId[timelock] = podId;
+            latestPodId = podId;
+            }
+            
+        }
         emit CreatePod(podId, safeAddress);
         return (podId, timelock, safeAddress);
     }
 
     /// @notice Create an Orca pod - a Gnosis Safe with a membership wrapper
-    function createPod(
+    // TODO: Prefix with _ to signal internal
+    function _createPod(
         address[] calldata _members,
         uint256 _threshold,
         bytes32 _label,
@@ -277,21 +274,27 @@ contract PodFactory is CoreRef, IPodFactory {
     ///        allows any address to execute a ready transaction
     /// @param vetoController Address which manages veto rights over a pod timelock
     ///        Will also be able to propose
+    // TODO: Prefix with _
     function createOptimisticTimelock(
         address safeAddress,
         uint256 minDelay,
         address publicExecutor,
-        address vetoController
+        address podAdmin
     ) internal returns (address) {
-        address[] memory proposers = new address[](2);
+        // TODO: Validate minDelay
+        address[] memory proposers = new address[](2);  // cancel timelock
         proposers[0] = safeAddress;
-        proposers[1] = vetoController;
+        // Note: If you migrate the podAdmin, then it will not have the timelock propsoer role. So it
+        // will not be able to cancel the timelock.
+        // TODO: Remove podAdminGateway
+        proposers[1] = podAdmin;
 
         address[] memory executors = new address[](2);
         executors[0] = safeAddress;
         executors[1] = publicExecutor;
 
-        OptimisticTimelock timelock = new OptimisticTimelock(
+        // TODODODODODO: Use TimelockController from OZ
+        OptimisticTimelock timelock = new TimelockController(
             address(core()),
             minDelay,
             proposers,
@@ -300,4 +303,7 @@ contract PodFactory is CoreRef, IPodFactory {
         emit CreateOptimisticTimelock(address(timelock));
         return address(timelock);
     }
+
+
+    // TODO: Way to make Orca pod without timelock
 }

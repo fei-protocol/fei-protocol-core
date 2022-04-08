@@ -27,18 +27,6 @@ const fip_82: ProposalDescription = {
     {
       target: 'core',
       values: '0',
-      method: 'grantRole(bytes32,address)',
-      arguments: [
-        '0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096', // ROLE_ADMIN
-        '{feiDAOTimelock}' // Fei DAI timelock
-      ],
-      description: `
-      Grant FEI DAO timelock ROLE_ADMIN, so it is able to manage roles and grant roles that are managed
-      by this role.`
-    },
-    {
-      target: 'core',
-      values: '0',
       method: 'createRole(bytes32,bytes32)',
       arguments: [
         '0x1c4afb10045e2ffba702b04df46e551f6f2c584499b4abe7b6136efe6b05a34d', // POD_DEPLOYER_ROLE
@@ -85,6 +73,18 @@ const fip_82: ProposalDescription = {
       target: 'core',
       values: '0',
       method: 'grantRole(bytes32,address)',
+      arguments: [
+        '0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096', // ROLE_ADMIN
+        '{feiDAOTimelock}' // Fei DAI timelock
+      ],
+      description: `
+      Grant FEI DAO timelock ROLE_ADMIN, so it is able to manage roles and grant roles that are managed
+      by this role.`
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'grantRole(bytes32,address)',
       // Admin of POD_VETO_ADMIN role is ROLE_ADMIN. ROLE_ADMIN is granted to GOVERNOR
       arguments: ['0x29af6c210963c1cf458c6a5bf082996cf54b23ebba0c0fb8ae110e8e43371c71', '{tribalCouncilTimelock}'],
       description: `
@@ -97,6 +97,7 @@ const fip_82: ProposalDescription = {
       values: '0',
       method: 'grantRole(bytes32,address)',
       arguments: ['0x1c4afb10045e2ffba702b04df46e551f6f2c584499b4abe7b6136efe6b05a34d', '{tribalCouncilTimelock}'],
+      // TODO: Update to POD_ADMIN, changing
       description: 'Grant POD_DEPLOYER_ROLE to TribalCouncil timelock. TribalCouncil will be able to deploy pods'
     },
     {
@@ -110,6 +111,7 @@ const fip_82: ProposalDescription = {
       description: 'Grant POD_ADMIN role to TribalCouncil timelock'
     },
     {
+      // TODO: Also remove
       target: 'core',
       values: '0',
       method: 'grantRole(bytes32,address)',
@@ -120,6 +122,7 @@ const fip_82: ProposalDescription = {
       target: 'core',
       values: '0',
       method: 'grantRole(bytes32,address)',
+      // POD_METADATA_REGISTER_ROLE, to allow safe to register data
       arguments: ['0xf62a46a499242191aaab61084d4912c2c0a8c48e3d70edfb5a9be2bc9e92622f', '{tribalCouncilSafe}'],
       description: 'Grant TribalCouncil Gnosis Safe address role to register metadata'
     },
@@ -151,7 +154,7 @@ const fip_82: ProposalDescription = {
         '0x6ecc8dff15d98038e3ff32bfe76768123628cfdd2c3d11f2ec23c5433a9d4ba3', // POD_ADMIN
         '{podFactory}'
       ],
-      description: 'Grant POD_ADMIN role to PodFactory, to allow'
+      description: 'Grant POD_ADMIN role to PodFactory, to allow it to call lock membership transfers'
     },
     //////////////    Configure Membership of Council and Pod /////////////
     {
@@ -159,7 +162,9 @@ const fip_82: ProposalDescription = {
       values: '0',
       method: 'batchAddPodMember(uint256 _podId,address[] memory _members)',
       arguments: [
-        '24',
+        '24', // hardcode tribalcouncil id - memberToken.getNextPodId()
+        // TODO: Sync up with Orca on how to prevent podId changing underfoot
+        // Otherwise this will brick the proposal
         [
           '0x000000000000000000000000000000000000000D', // TODO: Complete with real member addresses
           '0x000000000000000000000000000000000000000E',
