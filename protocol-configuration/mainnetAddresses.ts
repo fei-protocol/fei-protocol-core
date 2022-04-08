@@ -371,6 +371,31 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x4f9463405F5bC7b4C1304222c1dF76EFbD81a407',
     category: AddressCategory.External
   },
+  veBalDelegatorPCVDeposit: {
+    artifactName: 'VeBalDelegatorPCVDeposit',
+    address: '0xc4EAc760C2C631eE0b064E39888b89158ff808B2',
+    category: AddressCategory.Governance
+  },
+  gaugeLensBpt30Fei70WethGauge: {
+    artifactName: 'CurveGaugeLens',
+    address: '0xa8E388a1f19f2b33Be8bf2cCeC43641C10b4D1e5',
+    category: AddressCategory.PCV
+  },
+  balancerLensBpt30Fei70Weth: {
+    artifactName: 'BalancerPool2Lens',
+    address: '0xb31F75550e97A2C4c7AC8d4355032B8AE8b9584D',
+    category: AddressCategory.PCV
+  },
+  balancerLensVeBalBal: {
+    artifactName: 'BalancerPool2Lens',
+    address: '0x8cbA3149b95084A61bBAb9e01110b0fB92C9a289',
+    category: AddressCategory.PCV
+  },
+  balancerLensVeBalWeth: {
+    artifactName: 'BalancerPool2Lens',
+    address: '0xD8Eb546726d449fC1dEd06DFeCa800A2fa8bB930',
+    category: AddressCategory.PCV
+  },
   d3poolConvexPCVDeposit: {
     artifactName: 'ConvexPCVDeposit',
     address: '0x5ae217dE26f6Ff5F481C6e10ec48b2cf2fc857C8',
