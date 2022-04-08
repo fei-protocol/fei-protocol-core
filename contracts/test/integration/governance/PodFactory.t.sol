@@ -36,6 +36,8 @@ contract PodFactoryIntegrationTest is DSTest {
     address feiDAOTimelock = MainnetAddresses.FEI_DAO_TIMELOCK;
 
     function setUp() public {
+        // For now, deploy a PodAdmin, but then maybe do a follow up PR
+        // which breaks out the factory to include a lens
         podExecutor = new PodExecutor();
         factory = new PodFactory(
             core,
@@ -46,6 +48,7 @@ contract PodFactoryIntegrationTest is DSTest {
 
         PodAdminGateway podAdminGateway = new PodAdminGateway(
             core,
+            memberToken,
             address(factory)
         );
         podAdmin = address(podAdminGateway);
@@ -62,9 +65,8 @@ contract PodFactoryIntegrationTest is DSTest {
     function testInitialState() public {
         assertEq(address(factory.podController()), podController);
         assertEq(factory.latestPodId(), 0);
-        assertEq(factory.podExecutor(), address(podExecutor));
         assertEq(factory.burnerDeploymentUsed(), false);
-        assertEq(address(factory.getMemberToken()), memberToken);
+        assertEq(factory.podExecutor(), address(podExecutor));
 
         // Validate has PodAdmin role
         bool hasPodAdminRole = Core(core).hasRole(
@@ -229,41 +231,6 @@ contract PodFactoryIntegrationTest is DSTest {
         assertEq(podBId, podAId + 1);
         address podBAdmin = ControllerV1(podController).podAdmin(podBId);
         assertEq(podBAdmin, podAdmin);
-    }
-
-    function testBurnerPodDeploy() public {
-        (IPodFactory.PodConfig memory podConfigA, ) = getPodParams(podAdmin);
-        podConfigA.label = bytes32("A");
-
-        (IPodFactory.PodConfig memory podConfigB, ) = getPodParams(podAdmin);
-        podConfigB.label = bytes32("B");
-
-        IPodFactory.PodConfig[] memory configs = new IPodFactory.PodConfig[](2);
-        configs[0] = podConfigA;
-        configs[1] = podConfigB;
-
-        vm.prank(feiDAOTimelock);
-        (uint256[] memory podIds, , ) = factory.burnerCreateChildOptimisticPods(
-            configs
-        );
-        assertTrue(factory.burnerDeploymentUsed());
-
-        vm.expectRevert(bytes("Burner deployment already used"));
-        factory.burnerCreateChildOptimisticPods(configs);
-
-        // Check pod admin
-        address setPodAdminA = ControllerV1(podController).podAdmin(podIds[0]);
-        assertEq(setPodAdminA, podAdmin);
-
-        address setPodAdminB = ControllerV1(podController).podAdmin(podIds[1]);
-        assertEq(setPodAdminB, podAdmin);
-
-        // Check that pods are unlocked
-        bool podALocked = factory.getIsMembershipTransferLocked(podIds[0]);
-        assertFalse(podALocked);
-
-        bool podBLocked = factory.getIsMembershipTransferLocked(podIds[1]);
-        assertFalse(podBLocked);
     }
 
     /// @notice Validate that can create a transaction in the pod and that it progresses to the timelock

@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
-import {MemberToken} from "@orcaprotocol/contracts/contracts/MemberToken.sol";
 import {ControllerV1} from "@orcaprotocol/contracts/contracts/ControllerV1.sol";
 
 interface IPodFactory {
@@ -29,8 +28,6 @@ interface IPodFactory {
         address indexed oldController,
         address indexed newController
     );
-
-    function getMemberToken() external view returns (MemberToken);
 
     function podController() external view returns (ControllerV1);
 
@@ -62,14 +59,6 @@ interface IPodFactory {
             uint256,
             address,
             address
-        );
-
-    function burnerCreateChildOptimisticPods(PodConfig[] calldata _config)
-        external
-        returns (
-            uint256[] memory,
-            address[] memory,
-            address[] memory
         );
 
     function updatePodController(address newPodController) external;

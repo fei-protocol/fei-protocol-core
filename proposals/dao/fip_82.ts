@@ -57,7 +57,11 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 
   // 3. Deploy PodAdminGateway contract
   const podAdminGatewayFactory = await ethers.getContractFactory('PodAdminGateway');
-  const podAdminGateway = await podAdminGatewayFactory.deploy(addresses.core, podFactory.address);
+  const podAdminGateway = await podAdminGatewayFactory.deploy(
+    addresses.core,
+    addresses.memberToken,
+    podFactory.address
+  );
   await podAdminGateway.deployTransaction.wait();
   logging && console.log(`Deployed PodAdminGateway at ${podAdminGateway.address}`);
 
@@ -72,7 +76,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     minDelay: tribeCouncilPodConfig.minDelay
   };
 
-  await podFactory.burnerCreateChildOptimisticPods([tribalCouncilPod]);
+  await podFactory.createChildOptimisticPod(tribalCouncilPod);
 
   const tribalCouncilPodId = await podFactory.latestPodId();
 

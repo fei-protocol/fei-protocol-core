@@ -142,6 +142,7 @@ function deployPodWithSystem(
     // 2. Deploy PodAdminGateway
     PodAdminGateway podAdminGateway = new PodAdminGateway(
         MainnetAddresses.CORE,
+        MainnetAddresses.MEMBER_TOKEN,
         address(factory)
     );
 
