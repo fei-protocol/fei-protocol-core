@@ -76,8 +76,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     minDelay: tribeCouncilPodConfig.minDelay
   };
 
-  const pods = [tribalCouncilPod];
-  await podFactory.burnerCreateChildOptimisticPods(pods);
+  await podFactory.createChildOptimisticPod(tribalCouncilPod);
 
   const tribalCouncilPodId = await podFactory.latestPodId();
 

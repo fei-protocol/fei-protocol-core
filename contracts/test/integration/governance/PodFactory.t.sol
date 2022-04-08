@@ -233,41 +233,6 @@ contract PodFactoryIntegrationTest is DSTest {
         assertEq(podBAdmin, podAdmin);
     }
 
-    function testBurnerPodDeploy() public {
-        (IPodFactory.PodConfig memory podConfigA, ) = getPodParams(podAdmin);
-        podConfigA.label = bytes32("A");
-
-        (IPodFactory.PodConfig memory podConfigB, ) = getPodParams(podAdmin);
-        podConfigB.label = bytes32("B");
-
-        IPodFactory.PodConfig[] memory configs = new IPodFactory.PodConfig[](2);
-        configs[0] = podConfigA;
-        configs[1] = podConfigB;
-
-        vm.prank(feiDAOTimelock);
-        (uint256[] memory podIds, , ) = factory.burnerCreateChildOptimisticPods(
-            configs
-        );
-        assertTrue(factory.burnerDeploymentUsed());
-
-        vm.expectRevert(bytes("Burner deployment already used"));
-        factory.burnerCreateChildOptimisticPods(configs);
-
-        // Check pod admin
-        address setPodAdminA = ControllerV1(podController).podAdmin(podIds[0]);
-        assertEq(setPodAdminA, podAdmin);
-
-        address setPodAdminB = ControllerV1(podController).podAdmin(podIds[1]);
-        assertEq(setPodAdminB, podAdmin);
-
-        // Check that pods are unlocked
-        bool podALocked = factory.getIsMembershipTransferLocked(podIds[0]);
-        assertFalse(podALocked);
-
-        bool podBLocked = factory.getIsMembershipTransferLocked(podIds[1]);
-        assertFalse(podBLocked);
-    }
-
     /// @notice Validate that can create a transaction in the pod and that it progresses to the timelock
     function testCreateTxInOptimisticPod() public {
         vm.warp(1);

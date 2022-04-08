@@ -169,41 +169,6 @@ contract PodFactory is CoreRef, IPodFactory {
         emit UpdatePodController(oldController, newPodController);
     }
 
-    /// @notice One time use at deploy time function to create childOptimisticTimelocks
-    function burnerCreateChildOptimisticPods(PodConfig[] calldata _config)
-        external
-        override
-        returns (
-            uint256[] memory,
-            address[] memory,
-            address[] memory
-        )
-    {
-        require(
-            burnerDeploymentUsed == false,
-            "Burner deployment already used"
-        );
-
-        uint256[] memory podIds = new uint256[](_config.length);
-        address[] memory timelocks = new address[](_config.length);
-        address[] memory safes = new address[](_config.length);
-
-        {
-            for (uint256 i = 0; i < _config.length; i += 1) {
-                (
-                    uint256 podId,
-                    address timelock,
-                    address safe
-                ) = _createChildOptimisticPod(_config[i]);
-                podIds[i] = podId;
-                timelocks[i] = timelock;
-                safes[i] = safe;
-            }
-        }
-        burnerDeploymentUsed = true;
-        return (podIds, timelocks, safes);
-    }
-
     ////////////////////////     INTERNAL          ////////////////////////////
 
     /// @notice Internal method to create a child optimistic pod

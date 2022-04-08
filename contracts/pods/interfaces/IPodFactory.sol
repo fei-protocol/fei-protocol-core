@@ -62,12 +62,4 @@ interface IPodFactory {
         );
 
     function updatePodController(address newPodController) external;
-
-    function burnerCreateChildOptimisticPods(PodConfig[] calldata _config)
-        external
-        returns (
-            uint256[] memory,
-            address[] memory,
-            address[] memory
-        );
 }
