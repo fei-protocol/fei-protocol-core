@@ -2,6 +2,7 @@ import { ProposalCategory, ProposalsConfigMap } from '@custom-types/types';
 
 // import fip_xx_proposal from '@proposals/description/fip_xx';
 import fip_92 from '@proposals/description/fip_92';
+import fip_94 from '@proposals/description/fip_94';
 
 const proposals: ProposalsConfigMap = {
   /*
@@ -23,6 +24,15 @@ const proposals: ProposalsConfigMap = {
     affectedContractSignoff: [''],
     deprecatedContractSignoff: [''],
     category: ProposalCategory.DAO
+  },
+  fip_94: {
+    deploy: false,
+    proposalId: null,
+    affectedContractSignoff: ['rariTimelock'],
+    deprecatedContractSignoff: [],
+    category: ProposalCategory.DAO,
+    totalValue: 0,
+    proposal: fip_94
   }
 };
 
