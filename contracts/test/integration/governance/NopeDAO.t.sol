@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
+import {TimelockController} from "@openzeppelin/contracts/governance/TimelockController.sol";
 import {ERC20VotesComp} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20VotesComp.sol";
 import {DSTest} from "../../utils/DSTest.sol";
 import {IPodFactory} from "../../../pods/interfaces/IPodFactory.sol";
@@ -11,7 +12,6 @@ import {Core} from "../../../core/Core.sol";
 import {PodFactory} from "../../../pods/PodFactory.sol";
 import {MainnetAddresses} from "../fixtures/MainnetAddresses.sol";
 import {deployPodWithSystem} from "../fixtures/Orca.sol";
-import {OptimisticTimelock} from "../../../dao/timelock/OptimisticTimelock.sol";
 import {PodAdminGateway} from "../../../pods/PodAdminGateway.sol";
 import {DummyStorage} from "../../utils/Fixtures.sol";
 
@@ -156,7 +156,7 @@ contract NopeDAOIntegrationTest is DSTest {
         DummyStorage dummyContract = new DummyStorage();
         assertEq(dummyContract.getVariable(), 5);
 
-        OptimisticTimelock timelockContract = OptimisticTimelock(
+        TimelockController timelockContract = TimelockController(
             payable(podTimelock)
         );
 

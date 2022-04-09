@@ -24,7 +24,7 @@ interface IPodFactory {
     }
 
     event CreatePod(uint256 indexed podId, address indexed safeAddress);
-    event CreateOptimisticTimelock(address indexed timelock);
+    event CreateTimelock(address indexed timelock);
     event UpdatePodController(
         address indexed oldController,
         address indexed newController
@@ -71,6 +71,4 @@ interface IPodFactory {
             address[] memory,
             address[] memory
         );
-
-    function updatePodController(address newPodController) external;
 }

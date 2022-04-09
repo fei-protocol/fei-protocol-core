@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
+import {TimelockController} from "@openzeppelin/contracts/governance/TimelockController.sol";
 import {ControllerV1} from "@orcaprotocol/contracts/contracts/ControllerV1.sol";
 import {IGnosisSafe} from "../../../pods/interfaces/IGnosisSafe.sol";
 import {PodFactory} from "../../../pods/PodFactory.sol";
@@ -16,7 +17,6 @@ import {mintOrcaTokens, getPodParams} from "../fixtures/Orca.sol";
 import {DummyStorage} from "../../utils/Fixtures.sol";
 import {Vm} from "../../utils/Vm.sol";
 import {MainnetAddresses} from "../fixtures/MainnetAddresses.sol";
-import {OptimisticTimelock} from "../../../dao/timelock/OptimisticTimelock.sol";
 
 /// @notice Validate PodFactory critical functionality such as creating pods
 ///  @dev PodAdmin can not also be a pod member
@@ -157,16 +157,6 @@ contract PodFactoryIntegrationTest is DSTest {
         assertEq(factory.getPodAdmin(podId), newAdmin);
     }
 
-    function testUpdatePodController() public {
-        address newController = address(0x10);
-
-        vm.prank(feiDAOTimelock);
-        factory.updatePodController(newController);
-
-        address updatedContoller = address(factory.podController());
-        assertEq(updatedContoller, newController);
-    }
-
     /// @notice Creates a child pod with an optimistic timelock attached
     function testDeployOptimisticGovernancePod() public {
         (IPodFactory.PodConfig memory podConfig, ) = getPodParams(podAdmin);
@@ -281,7 +271,7 @@ contract PodFactoryIntegrationTest is DSTest {
         (, address podTimelock, address safe) = factory
             .createChildOptimisticPod(podConfig);
 
-        OptimisticTimelock timelockContract = OptimisticTimelock(
+        TimelockController timelockContract = TimelockController(
             payable(podTimelock)
         );
 

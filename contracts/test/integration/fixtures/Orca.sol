@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
+import {TimelockController} from "@openzeppelin/contracts/governance/TimelockController.sol";
 import {MemberToken} from "@orcaprotocol/contracts/contracts/MemberToken.sol";
 import {ControllerV1} from "@orcaprotocol/contracts/contracts/ControllerV1.sol";
 import {InviteToken} from "@orcaprotocol/contracts/contracts/InviteToken.sol";
 import {IPodFactory} from "../../../pods/interfaces/IPodFactory.sol";
-import {OptimisticTimelock} from "../../../dao/timelock/OptimisticTimelock.sol";
 import {PodFactory} from "../../../pods/PodFactory.sol";
 import {Vm} from "../../utils/Vm.sol";
 import {PodAdminGateway} from "../../../pods/PodAdminGateway.sol";
@@ -40,18 +40,17 @@ function createPod(
     return expectedPodId;
 }
 
-function setupOptimisticTimelock(
+function setupTimelock(
     address proposer,
     address executor,
     address core
-) returns (OptimisticTimelock) {
+) returns (TimelockController) {
     address[] memory proposers = new address[](1);
     proposers[0] = proposer;
 
     address[] memory executors = new address[](1);
     executors[0] = executor;
-    OptimisticTimelock timelock = new OptimisticTimelock(
-        core,
+    TimelockController timelock = new TimelockController(
         0,
         proposers,
         executors
