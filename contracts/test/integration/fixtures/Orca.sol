@@ -74,23 +74,15 @@ function mintOrcaTokens(
     inviteToken.mint(to, amount);
 }
 
-function getPodParams(address admin)
-    pure
-    returns (IPodFactory.PodConfig memory, uint256)
-{
+function getPodParams() pure returns (IPodFactory.PodConfig memory) {
     uint256 threshold = 1;
     bytes32 label = bytes32("hellopod");
     string memory ensString = "hellopod.eth";
     string memory imageUrl = "hellopod.com";
     uint256 minDelay = 2 days;
 
-    // Private key of one of the Safe owners. Used to generate signatures in tests
-    uint256 ownerPrivateKey = uint256(
-        0x34d96150245786c2b8d4a4afc62b14b1f1ad3357542a1231c56b4cb292f9e48f
-    );
-
     address[] memory members = new address[](3);
-    members[0] = address(0xf5C8389EBeb26d5F1CaFcAB53a894a4c7912cdf0);
+    members[0] = address(0x201);
     members[1] = address(0x201);
     members[2] = address(0x202);
 
@@ -100,10 +92,9 @@ function getPodParams(address admin)
         label: label,
         ensString: ensString,
         imageUrl: imageUrl,
-        admin: admin,
         minDelay: minDelay
     });
-    return (config, ownerPrivateKey);
+    return config;
 }
 
 /// @dev Deploy pod factory and use to create a pod
@@ -112,8 +103,8 @@ function deployPodWithSystem(
     address podController,
     address memberToken,
     address podExecutor,
-    Vm vm,
-    address podDeployer // must be GOVERNOR or have POD_DEPLOYER_ROLE
+    address podDeployer, // must be GOVERNOR or have POD_DEPLOYER_ROLE
+    Vm vm
 )
     returns (
         uint256,
@@ -124,30 +115,31 @@ function deployPodWithSystem(
         IPodFactory.PodConfig memory
     )
 {
-    // 1. Deploy PodFactory
+    IPodFactory.PodConfig memory podConfig = getPodParams();
+
+    // 1. Deploy PodAdminGateway
+    PodAdminGateway podAdminGateway = new PodAdminGateway(
+        MainnetAddresses.CORE,
+        memberToken,
+        podController
+    );
+
+    // 2. Deploy PodFactory
     PodFactory factory = new PodFactory(
         core,
         podController,
         memberToken,
-        podExecutor
+        podExecutor,
+        address(podAdminGateway)
     );
     mintOrcaTokens(address(factory), 2, vm);
+    factory.deployGenesisPod(podConfig);
 
     // Grant POD_ADMIN role to factory
     vm.startPrank(MainnetAddresses.FEI_DAO_TIMELOCK);
     Core(core).createRole(TribeRoles.POD_ADMIN, TribeRoles.GOVERNOR);
     Core(core).grantRole(TribeRoles.POD_ADMIN, address(factory));
     vm.stopPrank();
-
-    // 2. Deploy PodAdminGateway
-    PodAdminGateway podAdminGateway = new PodAdminGateway(
-        MainnetAddresses.CORE,
-        address(factory)
-    );
-
-    (IPodFactory.PodConfig memory podConfig, ) = getPodParams(
-        address(podAdminGateway)
-    );
 
     vm.deal(address(factory), 1000 ether);
     vm.prank(podDeployer);

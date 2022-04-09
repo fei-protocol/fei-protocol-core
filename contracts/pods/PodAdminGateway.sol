@@ -20,10 +20,18 @@ import {IPodFactory} from "./interfaces/IPodFactory.sol";
 ///     4. Toggling a pod membership transfer switch
 contract PodAdminGateway is CoreRef, IPodAdminGateway {
     /// @notice Pod factory which creates optimistic pods and acts as a source of information
-    IPodFactory private immutable podFactory;
+    MemberToken public immutable memberToken;
 
-    constructor(address _core, address _podFactory) CoreRef(_core) {
-        podFactory = IPodFactory(_podFactory);
+    /// @notice Pod controller for the pods
+    ControllerV1 public immutable podController;
+
+    constructor(
+        address _core,
+        address _memberToken,
+        address _podController
+    ) CoreRef(_core) {
+        memberToken = MemberToken(_memberToken);
+        podController = ControllerV1(_podController);
     }
 
     ////////////////////////   GETTERS   ////////////////////////////////
@@ -94,7 +102,6 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
             getPodAddMemberRole(_podId)
         )
     {
-        MemberToken memberToken = podFactory.getMemberToken();
         _addMemberToPod(_podId, _member, memberToken);
     }
 
@@ -120,7 +127,6 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
         )
     {
         uint256 numMembers = _members.length;
-        MemberToken memberToken = podFactory.getMemberToken();
         for (uint256 i = 0; i < numMembers; ) {
             _addMemberToPod(_podId, _members[i], memberToken);
             // i is constrained by being < _members.length
@@ -142,7 +148,6 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
             getPodRemoveMemberRole(_podId)
         )
     {
-        MemberToken memberToken = podFactory.getMemberToken();
         _removePodMember(_podId, _member, memberToken);
     }
 
@@ -169,7 +174,6 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
         )
     {
         uint256 numMembers = _members.length;
-        MemberToken memberToken = podFactory.getMemberToken();
         for (uint256 i = 0; i < numMembers; ) {
             _removePodMember(_podId, _members[i], memberToken);
 
@@ -212,7 +216,6 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
 
     /// @notice Internal method to toggle a pod membership transfer lock
     function _setMembershipTransferLock(uint256 _podId, bool _lock) internal {
-        ControllerV1 podController = podFactory.podController();
         podController.setPodTransferLock(_podId, _lock);
         emit PodMembershipTransferLock(_podId, _lock);
     }
@@ -221,7 +224,11 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
 
     /// @notice Allow a proposal to be vetoed in a pod timelock
     /// @dev Permissioned to GOVERNOR, POD_ADMIN, GUARDIAN and specific POD_VETO_ROLE
-    function veto(uint256 _podId, bytes32 proposalId)
+    function veto(
+        uint256 _podId,
+        address _podTimelock,
+        bytes32 _proposalId
+    )
         external
         override
         hasAnyOfFourRoles(
@@ -233,8 +240,7 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
             getPodVetoRole(_podId)
         )
     {
-        address timelock = podFactory.getPodTimelock(_podId);
-        emit VetoTimelock(_podId, timelock);
-        TimelockController(payable(timelock)).cancel(proposalId);
+        emit VetoTimelock(_podId, _podTimelock, _proposalId);
+        TimelockController(payable(_podTimelock)).cancel(_proposalId);
     }
 }

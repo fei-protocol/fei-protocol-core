@@ -12,7 +12,11 @@ interface IPodAdminGateway {
     event PodMembershipTransferLock(uint256 indexed podId, bool lock);
 
     // Veto functionality
-    event VetoTimelock(uint256 indexed podId, address indexed timelock);
+    event VetoTimelock(
+        uint256 indexed podId,
+        address indexed timelock,
+        bytes32 proposalId
+    );
 
     function getPodAddMemberRole(uint256 _podId)
         external
@@ -45,5 +49,9 @@ interface IPodAdminGateway {
 
     function unlockMembershipTransfers(uint256 _podId) external;
 
-    function veto(uint256 _podId, bytes32 proposalId) external;
+    function veto(
+        uint256 _podId,
+        address _podTimelock,
+        bytes32 proposalId
+    ) external;
 }

@@ -33,8 +33,19 @@ contract PodAdminGatewayIntegrationTest is DSTest {
     address feiDAOTimelock = MainnetAddresses.FEI_DAO_TIMELOCK;
 
     function setUp() public {
-        // 1.0 Deploy pod factory
-        factory = new PodFactory(core, podController, memberToken, podExecutor);
+        // 1.0 Deploy pod admin gateway, to expose pod admin functionality
+        podAdminGateway = new PodAdminGateway(core, memberToken, podController);
+
+        // 2.0 Deploy pod factory
+        factory = new PodFactory(
+            core,
+            podController,
+            memberToken,
+            podExecutor,
+            address(podAdminGateway)
+        );
+
+        factory.deployGenesisPod(podConfig);
 
         // Grant the factory the relevant roles to disable membership locks
         vm.startPrank(feiDAOTimelock);
@@ -42,17 +53,12 @@ contract PodAdminGatewayIntegrationTest is DSTest {
         Core(core).grantRole(TribeRoles.POD_ADMIN, address(factory));
         vm.stopPrank();
 
-        // 2.0 Deploy multi-pod admin contract, to expose pod admin functionality
-        podAdminGateway = new PodAdminGateway(core, address(factory));
-
-        // 3.0 Make config for pod, mint Orca tokens to factory
-        (IPodFactory.PodConfig memory config, ) = getPodParams(
-            address(podAdminGateway)
-        );
+        // 3. Make config for pod, mint Orca tokens to factory
+        IPodFactory.PodConfig memory config = getPodParams();
         podConfig = config;
         mintOrcaTokens(address(factory), 2, vm);
 
-        // 4.0 Create pod
+        // 4. Create pod
         vm.prank(feiDAOTimelock);
         (podId, timelock, safe) = factory.createChildOptimisticPod(podConfig);
     }
@@ -265,7 +271,7 @@ contract PodAdminGatewayIntegrationTest is DSTest {
         vm.expectRevert(
             bytes("TimelockController: operation cannot be cancelled")
         );
-        podAdminGateway.veto(podId, bytes32("5"));
+        podAdminGateway.veto(podId, timelock, bytes32("5"));
     }
 
     /// @notice Validate that the veto role functions
@@ -286,6 +292,6 @@ contract PodAdminGatewayIntegrationTest is DSTest {
         vm.expectRevert(
             bytes("TimelockController: operation cannot be cancelled")
         );
-        podAdminGateway.veto(podId, bytes32("5"));
+        podAdminGateway.veto(podId, timelock, bytes32("5"));
     }
 }

@@ -53,13 +53,20 @@ contract NopeDAOIntegrationTest is DSTest {
         vm.stopPrank();
 
         // Create pod, using a podFactory
-        (podId, podTimelock, safe, factory, podAdmin, podConfig) = deployPodWithSystem(
+        (
+            podId,
+            podTimelock,
+            safe,
+            factory,
+            podAdmin,
+            podConfig
+        ) = deployPodWithSystem(
             MainnetAddresses.CORE,
             MainnetAddresses.POD_CONTROLLER,
             MainnetAddresses.MEMBER_TOKEN,
             podExecutor,
-            vm,
-            MainnetAddresses.FEI_DAO_TIMELOCK
+            MainnetAddresses.FEI_DAO_TIMELOCK,
+            vm
         );
     }
 
@@ -168,7 +175,6 @@ contract NopeDAOIntegrationTest is DSTest {
             bytes4(keccak256(bytes("setVariable(uint256)"))),
             newDummyContractVar
         );
-
 
         vm.prank(safe);
         timelockContract.schedule(

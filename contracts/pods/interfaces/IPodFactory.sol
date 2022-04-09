@@ -11,7 +11,6 @@ interface IPodFactory {
     /// @param label Metadata, Human readable label for the pod
     /// @param ensString Metadata, ENS name of the pod
     /// @param imageUrl Metadata, URL to a image to represent the pod in frontends
-    /// @param admin The admin of the pod - able to add and remove pod members. Expected to be set to a Gateway contract
     /// @param minDelay Delay on the timelock
     struct PodConfig {
         address[] members;
@@ -19,7 +18,6 @@ interface IPodFactory {
         bytes32 label;
         string ensString;
         string imageUrl;
-        address admin;
         uint256 minDelay;
     }
 
@@ -29,6 +27,14 @@ interface IPodFactory {
         address indexed oldController,
         address indexed newController
     );
+
+    function deployGenesisPod(PodConfig calldata _config)
+        external
+        returns (
+            uint256,
+            address,
+            address
+        );
 
     function getMemberToken() external view returns (MemberToken);
 
@@ -62,13 +68,5 @@ interface IPodFactory {
             uint256,
             address,
             address
-        );
-
-    function burnerCreateChildOptimisticPods(PodConfig[] calldata _config)
-        external
-        returns (
-            uint256[] memory,
-            address[] memory,
-            address[] memory
         );
 }

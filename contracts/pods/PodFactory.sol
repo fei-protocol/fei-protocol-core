@@ -10,7 +10,7 @@ import {IPodFactory} from "./interfaces/IPodFactory.sol";
 import {TribeRoles} from "../core/TribeRoles.sol";
 import {CoreRef} from "../refs/CoreRef.sol";
 import {ICore} from "../core/ICore.sol";
-import {IPodAdminGateway} from "./interfaces/IPodAdminGateway.sol";
+import {PodAdminGateway} from "./PodAdminGateway.sol";
 
 /// @dev This contract is primarily a factory contract which an admin
 /// can use to deploy more optimistic governance pods. It will create an
@@ -20,13 +20,16 @@ import {IPodAdminGateway} from "./interfaces/IPodAdminGateway.sol";
 /// the only proposer and executor.
 contract PodFactory is CoreRef, IPodFactory {
     /// @notice Orca controller for Pod
-    ControllerV1 public override podController;
+    ControllerV1 public immutable override podController;
 
     /// @notice Orca membership token for the pods. Handles permissioning pod members
-    MemberToken private immutable memberToken;
+    MemberToken public immutable memberToken;
 
     /// @notice Public contract that will be granted to execute all timelocks created
     address public immutable podExecutor;
+
+    /// @notice Pod admin gateway, through which admin functionality on pods is accessed
+    PodAdminGateway public immutable podAdminGateway;
 
     /// @notice Mapping between podId and it's timelock
     mapping(uint256 => address) public override getPodTimelock;
@@ -37,24 +40,25 @@ contract PodFactory is CoreRef, IPodFactory {
     /// @notice Latest pod created
     uint256 public latestPodId;
 
-    /// @notice Burner function used flag
-    bool public burnerDeploymentUsed = false;
+    /// @notice Track whether the one time use initial pod deploy has been used
+    bool public genesisDeployed;
 
     /// @param _core Fei core address
     /// @param _podController Orca pod controller
     /// @param _memberToken Membership token that manages the Orca pod membership
     /// @param _podExecutor Public contract that will be granted to execute all timelocks created
+    /// @param _podAdminGateway Pod admin gateway, through which admin functionality on pods is accessed
     constructor(
         address _core,
         address _podController,
         address _memberToken,
-        address _podExecutor
+        address _podExecutor,
+        address _podAdminGateway
     ) CoreRef(_core) {
         podExecutor = _podExecutor;
         podController = ControllerV1(_podController);
         memberToken = MemberToken(_memberToken);
-
-        // TODO: Deploy initial pod in the constructor here. Remove burner method
+        podAdminGateway = PodAdminGateway(_podAdminGateway);
     }
 
     ///////////////////// GETTERS ///////////////////////
@@ -135,7 +139,25 @@ contract PodFactory is CoreRef, IPodFactory {
         return podController.isTransferLocked(podId);
     }
 
+    function deployGenesisPod(PodConfig calldata _config)
+        external
+        override
+        returns (
+            uint256,
+            address,
+            address
+        )
+    {
+        require(!genesisDeployed, "Genesis pod already been deployed");
+        genesisDeployed = true;
+        return createChildOptimisticPod(_config);
+    }
+
     //////////////////// STATE-CHANGING API ////////////////////
+    // Need to be able to deploy a pod initially
+    // Do not want to use a burner method
+    // Need it to be an automatic deploy - can't deploy it in the DAO script, as need the
+    // podId
 
     /// @notice Create a child Orca pod with timelock. Callable by the DAO and the Tribal Council
     ///         Returns podId, pod timelock address and the Pod Gnosis Safe address
@@ -158,43 +180,8 @@ contract PodFactory is CoreRef, IPodFactory {
         ) = _createChildOptimisticPod(_config);
 
         // Disable membership transfers by default
-        IPodAdminGateway(_config.admin).lockMembershipTransfers(podId);
+        podAdminGateway.lockMembershipTransfers(podId);
         return (podId, timelock, safe);
-    }
-
-    /// @notice One time use at deploy time function to create childOptimisticTimelocks
-    function burnerCreateChildOptimisticPods(PodConfig[] calldata _config)
-        external
-        override
-        returns (
-            uint256[] memory,
-            address[] memory,
-            address[] memory
-        )
-    {
-        require(
-            burnerDeploymentUsed == false,
-            "Burner deployment already used"
-        );
-
-        uint256[] memory podIds = new uint256[](_config.length);
-        address[] memory timelocks = new address[](_config.length);
-        address[] memory safes = new address[](_config.length);
-
-        {
-            for (uint256 i = 0; i < _config.length; i += 1) {
-                (
-                    uint256 podId,
-                    address timelock,
-                    address safe
-                ) = _createChildOptimisticPod(_config[i]);
-                podIds[i] = podId;
-                timelocks[i] = timelock;
-                safes[i] = safe;
-            }
-        }
-        burnerDeploymentUsed = true;
-        return (podIds, timelocks, safes);
     }
 
     ////////////////////////     INTERNAL          ////////////////////////////
@@ -217,7 +204,7 @@ contract PodFactory is CoreRef, IPodFactory {
             _config.label,
             _config.ensString,
             _config.imageUrl,
-            _config.admin,
+            address(podAdminGateway),
             podId
         );
 
@@ -231,7 +218,7 @@ contract PodFactory is CoreRef, IPodFactory {
                     safeAddress,
                     _config.minDelay,
                     podExecutor,
-                    _config.admin
+                    address(podAdminGateway)
                 )
             );
             // Set mapping from podId to timelock for reference
@@ -248,11 +235,11 @@ contract PodFactory is CoreRef, IPodFactory {
     /// @notice Create an Orca pod - a Gnosis Safe with a membership wrapper
     // TODO: Prefix with _ to signal internal
     function _createPod(
-        address[] calldata _members,
+        address[] memory _members,
         uint256 _threshold,
         bytes32 _label,
-        string calldata _ensString,
-        string calldata _imageUrl,
+        string memory _ensString,
+        string memory _imageUrl,
         address _admin,
         uint256 podId
     ) internal returns (address) {
