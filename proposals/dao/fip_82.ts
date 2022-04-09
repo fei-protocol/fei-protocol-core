@@ -9,7 +9,7 @@ import {
 } from '@custom-types/types';
 import { getImpersonatedSigner } from '@test/helpers';
 import { tribeCouncilPodConfig, PodCreationConfig } from '@protocol/optimisticGovernance';
-import { abi as timelockABI } from '../../artifacts/contracts/dao/timelock/OptimisticTimelock.sol/OptimisticTimelock.json';
+import { abi as timelockABI } from '../../artifacts/contracts/dao/timelock/TimelockController.sol/TimelockController.json';
 import { abi as gnosisSafeABI } from '../../artifacts/contracts/pods/interfaces/IGnosisSafe.sol/IGnosisSafe.json';
 import { Contract } from 'ethers';
 

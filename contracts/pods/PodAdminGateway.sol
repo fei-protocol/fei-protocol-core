@@ -64,20 +64,6 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
         return keccak256(abi.encode(_podId, "ORCA_POD", "POD_VETO_ROLE"));
     }
 
-    /// @notice Calculate the specific pod transfer admin role
-    // TODO: Remove this - not needed
-    function getPodTransferAdminRole(uint256 _podId)
-        public
-        pure
-        override
-        returns (bytes32)
-    {
-        return
-            keccak256(
-                abi.encode(_podId, "ORCA_POD", "POD_TRANSFER_ADMIN_ROLE")
-            );
-    }
-
     /// @notice Calculate the specific pod membership transfer lock role
     function getSetMembershipTransferLockRole(uint256 _podId)
         public
@@ -96,53 +82,6 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
     }
 
     /////////////////////////    ADMIN PRIVILEDGES       ////////////////////////////
-
-    /// @notice Transfer the pod admin address for a pod to another address
-    function transferPodAdmin(uint256 _podId, address newPodAdmin)
-        external
-        override
-        hasAnyOfThreeRoles(
-            TribeRoles.GOVERNOR,
-            TribeRoles.POD_ADMIN,
-            getPodTransferAdminRole(_podId)
-        )
-    {
-        _transferPodAdmin(_podId, newPodAdmin);
-    }
-
-    /// @notice Batch transfer the pod admin address for several pods
-    /// @dev Mass transfer of podAdmins only expected to be performed by GOVERNOR or POD_ADMIN
-    function batchTransferPodAdmins(
-        uint256[] calldata _podIds,
-        address[] calldata newPodAdmins
-    )
-        external
-        override
-        hasAnyOfTwoRoles(TribeRoles.GOVERNOR, TribeRoles.POD_ADMIN)
-    {
-        require(
-            _podIds.length == newPodAdmins.length,
-            "MISMATCHED_ARG_LENGTHS"
-        );
-        uint256 numPodsToTransfer = _podIds.length;
-        for (uint256 i = 0; i < numPodsToTransfer; ) {
-            _transferPodAdmin(_podIds[i], newPodAdmins[i]);
-
-            // i is bounded by numPodsToTransfer
-            unchecked {
-                i += 1;
-            }
-        }
-    }
-
-    /// @notice Transfer a pod admin from this gateway to another address
-    function _transferPodAdmin(uint256 _podId, address newPodAdmin) internal {
-        ControllerV1 podController = podFactory.podController();
-
-        address oldPodAdmin = address(this);
-        emit UpdatePodAdmin(_podId, oldPodAdmin, newPodAdmin);
-        podController.updatePodAdmin(_podId, newPodAdmin);
-    }
 
     /// @notice Admin functionality to add a member to a pod
     /// @dev Permissioned to GOVERNOR, POD_ADMIN and POD_ADD_MEMBER_ROLE

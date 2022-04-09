@@ -26,22 +26,10 @@ interface IPodAdminGateway {
 
     function getPodVetoRole(uint256 _podId) external pure returns (bytes32);
 
-    function getPodTransferAdminRole(uint256 _podId)
-        external
-        pure
-        returns (bytes32);
-
     function getSetMembershipTransferLockRole(uint256 _podId)
         external
         pure
         returns (bytes32);
-
-    function transferPodAdmin(uint256 _podId, address newPodAdmin) external;
-
-    function batchTransferPodAdmins(
-        uint256[] calldata _podIds,
-        address[] calldata newPodAdmins
-    ) external;
 
     function addPodMember(uint256 _podId, address _member) external;
 

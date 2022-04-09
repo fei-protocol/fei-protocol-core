@@ -187,17 +187,6 @@ contract PodAdminGatewayIntegrationTest is DSTest {
         assertEq(specificVetoRole, podAdminGateway.getPodVetoRole(podId));
     }
 
-    /// @notice Validate that specific admin transfer role is computed correctly
-    function testGetTransferAdminRole() public {
-        bytes32 specificTransferAdminRole = keccak256(
-            abi.encode(podId, "ORCA_POD", "POD_TRANSFER_ADMIN_ROLE")
-        );
-        assertEq(
-            specificTransferAdminRole,
-            podAdminGateway.getPodTransferAdminRole(podId)
-        );
-    }
-
     /// @notice Validate that specific set membership transfer lock role is set
     function testGetSetMembershipLockRole() public {
         bytes32 specificMembershipLockRole = keccak256(
@@ -298,21 +287,5 @@ contract PodAdminGatewayIntegrationTest is DSTest {
             bytes("TimelockController: operation cannot be cancelled")
         );
         podAdminGateway.veto(podId, bytes32("5"));
-    }
-
-    /// @notice Validate that the pod admin contract can be transferred to another admin
-    function testTransferPodAdmin() public {
-        address newAdmin = address(0x11);
-
-        vm.prank(feiDAOTimelock);
-        podAdminGateway.transferPodAdmin(podId, newAdmin);
-
-        // Validate admin set on pod contract was updated everywhere as expected
-        address orcaControllerReportedAdmin = ControllerV1(podController)
-            .podAdmin(podId);
-        assertEq(orcaControllerReportedAdmin, newAdmin);
-
-        address podFactoryReportedAdmin = factory.getPodAdmin(podId);
-        assertEq(podFactoryReportedAdmin, newAdmin);
     }
 }

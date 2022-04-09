@@ -82,7 +82,7 @@ function getPodParams(address admin)
     bytes32 label = bytes32("hellopod");
     string memory ensString = "hellopod.eth";
     string memory imageUrl = "hellopod.com";
-    uint256 minDelay = 0;
+    uint256 minDelay = 2 days;
 
     // Private key of one of the Safe owners. Used to generate signatures in tests
     uint256 ownerPrivateKey = uint256(
@@ -120,7 +120,8 @@ function deployPodWithSystem(
         address,
         address,
         address,
-        address
+        address,
+        IPodFactory.PodConfig memory
     )
 {
     // 1. Deploy PodFactory
@@ -158,6 +159,7 @@ function deployPodWithSystem(
         podTimelock,
         safe,
         address(factory),
-        address(podAdminGateway)
+        address(podAdminGateway),
+        podConfig
     );
 }

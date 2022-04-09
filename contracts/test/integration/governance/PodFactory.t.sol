@@ -282,7 +282,6 @@ contract PodFactoryIntegrationTest is DSTest {
             newDummyContractVar
         );
 
-        uint256 timelockDelay = 500;
         vm.prank(safe);
         timelockContract.schedule(
             address(dummyContract),
@@ -290,7 +289,7 @@ contract PodFactoryIntegrationTest is DSTest {
             timelockExecutionTxData,
             bytes32(0),
             bytes32("1"),
-            timelockDelay
+            podConfig.minDelay
         );
 
         // 4. Validate that transaction is in timelock
@@ -304,8 +303,8 @@ contract PodFactoryIntegrationTest is DSTest {
         assertTrue(timelockContract.isOperationPending(txHash));
 
         // 5. Fast forward to execution time in timelock
-        vm.warp(timelockDelay + 10);
-        vm.roll(timelockDelay + 10);
+        vm.warp(podConfig.minDelay + 10);
+        vm.roll(podConfig.minDelay + 10);
 
         // 6. Execute transaction and validate state is updated
         podExecutor.execute(
