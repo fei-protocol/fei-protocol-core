@@ -20,7 +20,7 @@ const fip_82: ProposalDescription = {
       method: 'createRole(bytes32,bytes32)',
       arguments: [
         '0x6ecc8dff15d98038e3ff32bfe76768123628cfdd2c3d11f2ec23c5433a9d4ba3', // POD_ADMIN
-        '0x899bd46557473cb80307a9dabc297131ced39608330a2d29b2d52b660c03923e' // GOVERN_ROLE
+        '0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096' // ROLE_ADMIN
       ],
       description: 'Create POD_ADMIN role'
     },
