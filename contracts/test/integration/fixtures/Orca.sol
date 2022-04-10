@@ -75,16 +75,25 @@ function mintOrcaTokens(
 }
 
 function getPodParams() pure returns (IPodFactory.PodConfig memory) {
-    uint256 threshold = 1;
     bytes32 label = bytes32("hellopod");
+    return getBasePodParams(label);
+}
+
+function getGenesisPodParams() pure returns (IPodFactory.PodConfig memory) {
+    bytes32 label = bytes32("tribalcouncil");
+    return getBasePodParams(label);
+}
+
+function getBasePodParams(bytes32 label) pure returns (IPodFactory.PodConfig memory) {
+    uint256 threshold = 1;
     string memory ensString = "hellopod.eth";
     string memory imageUrl = "hellopod.com";
     uint256 minDelay = 2 days;
 
     address[] memory members = new address[](3);
     members[0] = address(0x201);
-    members[1] = address(0x201);
-    members[2] = address(0x202);
+    members[1] = address(0x202);
+    members[2] = address(0x203);
 
     IPodFactory.PodConfig memory config = IPodFactory.PodConfig({
         members: members,
@@ -133,7 +142,6 @@ function deployPodWithSystem(
         address(podAdminGateway)
     );
     mintOrcaTokens(address(factory), 2, vm);
-    factory.deployGenesisPod(podConfig);
 
     // Grant POD_ADMIN role to factory
     vm.startPrank(MainnetAddresses.FEI_DAO_TIMELOCK);

@@ -205,13 +205,14 @@ contract NopeDAOIntegrationTest is DSTest {
         values[0] = uint256(0);
 
         bytes[] memory calldatas = new bytes[](1);
-        bytes memory data = abi.encodePacked(
-            bytes4(keccak256(bytes("veto(uint256,bytes32)"))),
+        bytes memory data = abi.encodeWithSignature(
+            "veto(uint256,address,bytes32)",
             podId,
+            address(timelockContract),
             timelockProposalId
         );
         calldatas[0] = data;
-
+        
         string memory description = "Veto proposal";
         bytes32 descriptionHash = keccak256(bytes(description));
 

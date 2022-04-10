@@ -44,9 +44,7 @@ contract PodAdminGatewayIntegrationTest is DSTest {
             podExecutor,
             address(podAdminGateway)
         );
-
-        factory.deployGenesisPod(podConfig);
-
+        
         // Grant the factory the relevant roles to disable membership locks
         vm.startPrank(feiDAOTimelock);
         Core(core).createRole(TribeRoles.POD_ADMIN, TribeRoles.GOVERNOR);

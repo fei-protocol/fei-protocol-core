@@ -13,7 +13,7 @@ import {TribeRoles} from "../../../core/TribeRoles.sol";
 import {PodAdminGateway} from "../../../pods/PodAdminGateway.sol";
 
 import {DSTest} from "../../utils/DSTest.sol";
-import {mintOrcaTokens, getPodParams} from "../fixtures/Orca.sol";
+import {mintOrcaTokens, getPodParams, getGenesisPodParams} from "../fixtures/Orca.sol";
 import {DummyStorage} from "../../utils/Fixtures.sol";
 import {Vm} from "../../utils/Vm.sol";
 import {MainnetAddresses} from "../fixtures/MainnetAddresses.sol";
@@ -76,13 +76,33 @@ contract PodFactoryIntegrationTest is DSTest {
             address(factory)
         );
         assertTrue(hasPodAdminRole);
-
-        // Validate genesis pod deployment
     }
 
     function testDeployGenesisPod() public {
-        // 3. Make config for pod, mint Orca tokens to factory
-        IPodFactory.PodConfig memory config = getPodParams();
+        IPodFactory.PodConfig memory genesisConfig = getGenesisPodParams();
+        (uint256 genesisPodId, address genesisTimelock, address genesisSafe) = factory.deployGenesisPod(genesisConfig);
+
+        uint256 numMembers = factory.getNumMembers(genesisPodId);
+        assertEq(numMembers, genesisConfig.members.length);
+
+        uint256 storedThreshold = factory.getPodThreshold(genesisPodId);
+        assertEq(storedThreshold, genesisConfig.threshold);
+
+        address[] memory storedMembers = factory.getPodMembers(genesisPodId);
+        assertEq(storedMembers[0], genesisConfig.members[0]);
+        assertEq(storedMembers[1], genesisConfig.members[1]);
+        assertEq(storedMembers[2], genesisConfig.members[2]);
+
+        uint256 latestPodId = factory.latestPodId();
+        assertEq(latestPodId, genesisPodId);
+    }
+
+    function testCanOnlyDeployGenesisOnce() public {
+        IPodFactory.PodConfig memory genesisConfig = getGenesisPodParams();
+        (uint256 genesisPodId, address genesisTimelock, address genesisSafe) = factory.deployGenesisPod(genesisConfig);
+        
+        IPodFactory.PodConfig memory config = getPodParams();     
+        vm.expectRevert(bytes("Genesis pod already deployed"));
         factory.deployGenesisPod(config);
     }
 
@@ -102,6 +122,11 @@ contract PodFactoryIntegrationTest is DSTest {
 
         vm.prank(feiDAOTimelock);
         factory.createChildOptimisticPod(podConfig);
+    }
+
+    function testGetNextPodId() public {
+        uint256 nextPodId = factory.getNextPodId();
+        assertGt(nextPodId, 10);
     }
 
     /// @notice Validate that the PodDeployerRole is able to deploy pods
@@ -128,12 +153,7 @@ contract PodFactoryIntegrationTest is DSTest {
         factory.createChildOptimisticPod(podConfig);
     }
 
-    function testGetNextPodId() public {
-        uint256 nextPodId = factory.getNextPodId();
-        assertGt(nextPodId, 10);
-    }
-
-    function testGnosisGetters() public {
+    function testPodDeployment() public {
         IPodFactory.PodConfig memory podConfig = getPodParams();
 
         vm.prank(feiDAOTimelock);

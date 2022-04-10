@@ -139,6 +139,7 @@ contract PodFactory is CoreRef, IPodFactory {
         return podController.isTransferLocked(podId);
     }
 
+    /// @notice Deploy the genesis pod, one time use method
     function deployGenesisPod(PodConfig calldata _config)
         external
         override
@@ -148,9 +149,9 @@ contract PodFactory is CoreRef, IPodFactory {
             address
         )
     {
-        require(!genesisDeployed, "Genesis pod already been deployed");
+        require(!genesisDeployed, "Genesis pod already deployed");
         genesisDeployed = true;
-        return createChildOptimisticPod(_config);
+        return _createChildOptimisticPod(_config);
     }
 
     //////////////////// STATE-CHANGING API ////////////////////
