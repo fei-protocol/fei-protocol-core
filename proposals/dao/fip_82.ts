@@ -178,7 +178,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const isProposalRegistered = await governanceMetadataRegistry.isProposalRegistered(0, 0, 'test');
   expect(isProposalRegistered).to.be.false;
 
-  await validateTribeRoles(
+  await validateContractRoles(
     contracts.core,
     addresses.feiDAOTimelock,
     addresses.tribalCouncilTimelock,
@@ -187,10 +187,12 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
     addresses.nopeDAO,
     addresses.podFactory
   );
+
+  await validateTransferredRoleAdmins(contracts.core);
 };
 
 // Validate that the relevant timelocks and Safes have the relevant TribeRoles
-const validateTribeRoles = async (
+const validateContractRoles = async (
   core: Contract,
   feiDAOTimelockAddress: string,
   tribalCouncilTimelockAddress: string,
@@ -228,6 +230,19 @@ const validateTribeRoles = async (
   // PodFactory role: POD_ADMIN
   const podFactoryAdminRole = await core.hasRole(ethers.utils.id('POD_ADMIN'), podFactoryAddress);
   expect(podFactoryAdminRole).to.be.true;
+};
+
+const validateTransferredRoleAdmins = async (core: Contract) => {
+  const ROLE_ADMIN = ethers.utils.id('ROLE_ADMIN');
+
+  await expect(core.getRoleAdmin(ethers.utils.id('ORACLE_ADMIN_ROLE'))).to.be.equal(ROLE_ADMIN);
+  await expect(core.getRoleAdmin(ethers.utils.id('TRIBAL_CHIEF_ADMIN_ROLE'))).to.be.equal(ROLE_ADMIN);
+  await expect(core.getRoleAdmin(ethers.utils.id('PCV_GUARDIAN_ADMIN_ROLE'))).to.be.equal(ROLE_ADMIN);
+  await expect(core.getRoleAdmin(ethers.utils.id('METAGOVERNANCE_VOTE_ADMIN'))).to.be.equal(ROLE_ADMIN);
+  await expect(core.getRoleAdmin(ethers.utils.id('METAGOVERNANCE_TOKEN_STAKING'))).to.be.equal(ROLE_ADMIN);
+  await expect(core.getRoleAdmin(ethers.utils.id('METAGOVERNANCE_GAUGE_ADMIN'))).to.be.equal(ROLE_ADMIN);
+  await expect(core.getRoleAdmin(ethers.utils.id('SWAP_ADMIN_ROLE'))).to.be.equal(ROLE_ADMIN);
+  await expect(core.getRoleAdmin(ethers.utils.id('VOTIUM_ADMIN_ROLE'))).to.be.equal(ROLE_ADMIN);
 };
 
 export { deploy, setup, teardown, validate };
