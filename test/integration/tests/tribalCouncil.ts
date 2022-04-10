@@ -10,7 +10,7 @@ import proposals from '@test/integration/proposals_config';
 import { forceEth } from '@test/integration/setup/utils';
 import { TestEndtoEndCoordinator } from '../setup';
 import { BigNumber } from 'ethers';
-import { tribalCouncilMembers } from '@protocol/optimisticGovernance';
+import { tribalCouncilMembers, MIN_TIMELOCK_DELAY } from '@protocol/optimisticGovernance';
 
 const toBN = ethers.BigNumber.from;
 
@@ -81,7 +81,7 @@ describe('Tribal Council', function () {
       label: '0x54726962616c436f726e63696c00000000000000000000000000000000000000', // TribalCouncil
       ensString: 'testPod.eth',
       imageUrl: 'testPod.com',
-      minDelay: 2,
+      minDelay: MIN_TIMELOCK_DELAY,
       numMembers: 4,
       admin: podAdminGateway.address
     };
@@ -131,7 +131,7 @@ describe('Tribal Council', function () {
   it('can create a new role via the Role Bastion', async () => {
     await roleBastion.connect(tribalCouncilTimelockSigner).createRole(dummyRole);
 
-    // Validate that the role was created ROLE_ADMIN role
+    // Validate that the role was created with the admin set to ROLE_ADMIN
     const roleAdmin = await core.getRoleAdmin(dummyRole);
     expect(roleAdmin).to.equal(ethers.utils.id('ROLE_ADMIN'));
   });

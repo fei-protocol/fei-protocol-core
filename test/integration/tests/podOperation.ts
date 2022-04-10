@@ -1,4 +1,4 @@
-import { PodFactory, PodAdminGateway } from '@custom-types/contracts';
+import { PodFactory } from '@custom-types/contracts';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
@@ -10,7 +10,8 @@ import proposals from '@test/integration/proposals_config';
 import { forceEth } from '@test/integration/setup/utils';
 import { TestEndtoEndCoordinator } from '../setup';
 import { BigNumberish, Contract } from 'ethers';
-import { abi as timelockABI } from '../../../artifacts/contracts/dao/timelock/OptimisticTimelock.sol/OptimisticTimelock.json';
+import { abi as timelockABI } from '../../../artifacts/@openzeppelin/contracts/governance/TimelockController.sol/TimelockController.json';
+import { MIN_TIMELOCK_DELAY } from '@protocol/optimisticGovernance';
 
 function createSafeTxArgs(timelock: Contract, functionSig: string, args: any[]) {
   return {
@@ -27,7 +28,6 @@ describe('Pod operation and veto', function () {
   let e2eCoord: TestEndtoEndCoordinator;
   let doLogging: boolean;
   let podFactory: PodFactory;
-  let podAdminGateway: PodAdminGateway;
   let tribalCouncilTimelockSigner: SignerWithAddress;
   let podConfig: any;
   let podId: BigNumberish;
@@ -37,7 +37,6 @@ describe('Pod operation and veto', function () {
 
   const proposalId = '1234';
   const proposalMetadata = 'FIP_XX: This tests that the governance upgrade flow works';
-  const timelockDelay = '10';
 
   before(async () => {
     chai.use(CBN(ethers.BigNumber));
@@ -45,7 +44,7 @@ describe('Pod operation and veto', function () {
     await resetFork();
   });
 
-  before(async function () {
+  beforeEach(async function () {
     // Setup test environment and get contracts
     const version = 1;
     deployAddress = (await ethers.getSigners())[0];
@@ -66,7 +65,6 @@ describe('Pod operation and veto', function () {
     doLogging && console.log(`Environment loaded.`);
 
     podFactory = contracts.podFactory as PodFactory;
-    podAdminGateway = contracts.podAdminGateway as PodAdminGateway;
     tribalCouncilTimelockSigner = await getImpersonatedSigner(contractAddresses.tribalCouncilTimelock);
 
     await forceEth(contractAddresses.tribalCouncilTimelock);
@@ -83,9 +81,8 @@ describe('Pod operation and veto', function () {
       label: '0x54726962616c436f726e63696c00000000000000000000000000000000000000', // TribalCouncil
       ensString: 'testPod.eth',
       imageUrl: 'testPod.com',
-      minDelay: 2,
-      numMembers: 4,
-      admin: podAdminGateway.address
+      minDelay: MIN_TIMELOCK_DELAY,
+      numMembers: 4
     };
 
     // Test Fixture:
@@ -106,13 +103,13 @@ describe('Pod operation and veto', function () {
     const safeAddress = await podFactory.getPodSafe(podId);
     timelockAddress = await podFactory.getPodTimelock(podId);
 
-    const podMemberSigner = await getImpersonatedSigner('0x000000000000000000000000000000000000000D');
+    const podMemberSigner = await getImpersonatedSigner(podConfig.members[0]);
 
     // 2.0 Instantiate Gnosis SDK
     podTimelock = new ethers.Contract(timelockAddress, timelockABI, podMemberSigner);
     const safeSDK = await initialiseGnosisSDK(podMemberSigner, safeAddress);
 
-    // 3. TribalCouncil authorise pod with POD_METADATA_REGISTER_ROLE role
+    // 3. TribalCouncil authorises pod with POD_METADATA_REGISTER_ROLE role
     await contracts.core
       .connect(tribalCouncilTimelockSigner)
       .grantRole(ethers.utils.id('POD_METADATA_REGISTER_ROLE'), timelockAddress);
@@ -136,7 +133,7 @@ describe('Pod operation and veto', function () {
       registryTxData,
       '0x0000000000000000000000000000000000000000000000000000000000000000',
       '0x0000000000000000000000000000000000000000000000000000000000000001',
-      timelockDelay
+      podConfig.minDelay
     ]);
     const safeTransaction = await safeSDK.createTransaction(txArgs);
 
@@ -147,7 +144,7 @@ describe('Pod operation and veto', function () {
 
   it('should allow a proposal to be proposed and executed', async () => {
     // Fast forward time on timelock
-    await time.increase(timelockDelay);
+    await time.increase(podConfig.minDelay);
 
     // Execute timelocked transaction - need to call via the podExecutor
     const podExecutor = contracts.podExecutor;
@@ -175,21 +172,21 @@ describe('Pod operation and veto', function () {
     //    call the podAdminGateway.veto() method with the proposalId that is in the timelock
     // 2. Have a member with >quorum TRIBE vote for proposal
     // 3. Validate that proposal is executed
-    await time.increase('1');
-
     const userWithTribe = await getImpersonatedSigner(contractAddresses.multisig);
     const timelockProposalId = await podTimelock.hashOperation(
       contractAddresses.governanceMetadataRegistry,
       0,
       registryTxData,
       '0x0000000000000000000000000000000000000000000000000000000000000000',
-      '0x0000000000000000000000000000000000000000000000000000000000000002'
+      '0x0000000000000000000000000000000000000000000000000000000000000001'
     );
 
     // User proposes on NopeDAO
     const nopeDAO = contracts.nopeDAO;
     const description = 'Veto proposal';
-    const calldatas = [contracts.podAdminGateway.interface.encodeFunctionData('veto', [podId, timelockProposalId])];
+    const calldatas = [
+      contracts.podAdminGateway.interface.encodeFunctionData('veto', [podId, podTimelock.address, timelockProposalId])
+    ];
     const targets = [contractAddresses.podAdminGateway];
     const values = [0];
 

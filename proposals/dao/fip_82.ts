@@ -74,7 +74,6 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     label: tribeCouncilPodConfig.label,
     ensString: tribeCouncilPodConfig.ensString,
     imageUrl: tribeCouncilPodConfig.imageUrl,
-    admin: podAdminGateway.address,
     minDelay: tribeCouncilPodConfig.minDelay
   };
 
