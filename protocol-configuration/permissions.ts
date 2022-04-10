@@ -36,6 +36,6 @@ export const permissions = {
   METAGOVERNANCE_GAUGE_ADMIN: ['feiDAOTimelock', 'optimisticTimelock'],
   ROLE_ADMIN: ['feiDAOTimelock', 'tribalCouncilTimelock'],
   POD_METADATA_REGISTER_ROLE: ['tribalCouncilSafe'],
-  POD_VETO_ADMIN: ['tribalCouncilTimelock', 'nopeDAO'],
+  POD_VETO_ADMIN: ['nopeDAO'],
   POD_ADMIN: ['tribalCouncilTimelock', 'podFactory']
 };

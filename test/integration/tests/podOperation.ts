@@ -24,7 +24,6 @@ function createSafeTxArgs(timelock: Contract, functionSig: string, args: any[]) 
 describe('Pod operation and veto', function () {
   let contracts: NamedContracts;
   let contractAddresses: NamedAddresses;
-  let deployAddress: SignerWithAddress;
   let e2eCoord: TestEndtoEndCoordinator;
   let doLogging: boolean;
   let podFactory: PodFactory;
@@ -47,14 +46,14 @@ describe('Pod operation and veto', function () {
   beforeEach(async function () {
     // Setup test environment and get contracts
     const version = 1;
-    deployAddress = (await ethers.getSigners())[0];
-    if (!deployAddress) throw new Error(`No deploy address!`);
+    // Set deploy address to Tom's address. This has Orca SHIP
+    const deployAddress = '0x64c4Bffb220818F0f2ee6DAe7A2F17D92b359c5d';
 
     doLogging = Boolean(process.env.LOGGING);
 
     const config = {
       logging: doLogging,
-      deployAddress: deployAddress.address,
+      deployAddress,
       version: version
     };
 
@@ -98,9 +97,9 @@ describe('Pod operation and veto', function () {
     // and the pod is calling to register a proposal on the `GovernanceMetadataRegistry.sol`
 
     // 1. Deploy a pod through which a proposal will be executed
-    await podFactory.connect(tribalCouncilTimelockSigner).createOptimisticPod(podConfig);
-    podId = await podFactory.latestPodId();
-    const safeAddress = await podFactory.getPodSafe(podId);
+    const deployTx = await podFactory.connect(tribalCouncilTimelockSigner).createOptimisticPod(podConfig);
+    const { args } = (await deployTx.wait()).events.find((elem) => elem.event === 'CreatePod');
+    const safeAddress = await podFactory.getPodSafe(args.podId);
     timelockAddress = await podFactory.getPodTimelock(podId);
 
     const podMemberSigner = await getImpersonatedSigner(podConfig.members[0]);

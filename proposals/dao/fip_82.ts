@@ -63,7 +63,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     podAdminGateway.address // PodAdminGateway
   );
   await podFactory.deployTransaction.wait();
-  await transferOrcaTokens(addresses.orcaERC20Address, deployAddress, podFactory.address, 2);
+  await transferOrcaTokens(addresses.orcaShipToken, deployAddress, podFactory.address, 2);
   logging && console.log('Pod factory deployed to:', podFactory.address);
 
   // 4. Create TribalCouncil and Protocol Tier pods
@@ -203,12 +203,9 @@ const validateTribeRoles = async (
   const daoIsPodDeployer = await core.hasRole(ethers.utils.id('ROLE_ADMIN'), feiDAOTimelockAddress);
   expect(daoIsPodDeployer).to.be.true;
 
-  // TribalCouncilTimelock roles: ROLE_ADMIN, POD_ADMIN, POD_VETO_ADMIN
+  // TribalCouncilTimelock roles: ROLE_ADMIN, POD_ADMIN
   const councilIsRoleAdmin = await core.hasRole(ethers.utils.id('ROLE_ADMIN'), tribalCouncilTimelockAddress);
   expect(councilIsRoleAdmin).to.be.true;
-
-  const councilIsPodVetoAdmin = await core.hasRole(ethers.utils.id('POD_VETO_ADMIN'), tribalCouncilTimelockAddress);
-  expect(councilIsPodVetoAdmin).to.be.true;
 
   const councilIsPodAdmin = await core.hasRole(ethers.utils.id('POD_ADMIN'), tribalCouncilTimelockAddress);
   expect(councilIsPodAdmin).to.be.true;

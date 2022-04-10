@@ -99,7 +99,7 @@ contract PodFactoryIntegrationTest is DSTest {
         assertEq(storedMembers[1], genesisConfig.members[1]);
         assertEq(storedMembers[2], genesisConfig.members[2]);
 
-        assertEq(factory.getNumberOfPods(), 0);
+        assertEq(factory.getNumberOfPods(), 1);
     }
 
     function testCanOnlyDeployGenesisOnce() public {
@@ -217,6 +217,14 @@ contract PodFactoryIntegrationTest is DSTest {
         // Min delay of timelock
         assertEq(timelockContract.getMinDelay(), podConfig.minDelay);
 
+        // Validate factory does not have TIMELOCK_ADMIN_ROLE
+        assertFalse(
+            timelockContract.hasRole(
+                timelockContract.TIMELOCK_ADMIN_ROLE(),
+                address(factory)
+            )
+        );
+
         //// Validate that membership transfers are disabled
         bool membershipLocked = factory.getIsMembershipTransferLocked(podId);
         assertEq(membershipLocked, true);
@@ -270,7 +278,7 @@ contract PodFactoryIntegrationTest is DSTest {
 
         vm.prank(feiDAOTimelock);
         (uint256 podAId, , ) = factory.createOptimisticPod(podConfig);
-        assertEq(factory.getNumberOfPods(), 0);
+        assertEq(factory.getNumberOfPods(), 1);
 
         address podAAdmin = ControllerV1(podController).podAdmin(podAId);
         assertEq(podAAdmin, podAdmin);
@@ -278,7 +286,7 @@ contract PodFactoryIntegrationTest is DSTest {
         podConfig.label = bytes32("B");
         vm.prank(feiDAOTimelock);
         (uint256 podBId, , ) = factory.createOptimisticPod(podConfig);
-        assertEq(factory.getNumberOfPods(), 1);
+        assertEq(factory.getNumberOfPods(), 2);
 
         assertEq(podBId, podAId + 1);
         address podBAdmin = ControllerV1(podController).podAdmin(podBId);

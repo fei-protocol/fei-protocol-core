@@ -17,7 +17,6 @@ const toBN = ethers.BigNumber.from;
 describe('Tribal Council', function () {
   let contracts: NamedContracts;
   let contractAddresses: NamedAddresses;
-  let deployAddress: SignerWithAddress;
   let e2eCoord: TestEndtoEndCoordinator;
   let doLogging: boolean;
   let podFactory: PodFactory;
@@ -40,14 +39,14 @@ describe('Tribal Council', function () {
   before(async function () {
     // Setup test environment and get contracts
     const version = 1;
-    deployAddress = (await ethers.getSigners())[0];
-    if (!deployAddress) throw new Error(`No deploy address!`);
+    // Set deploy address to Tom's address. This has Orca SHIP
+    const deployAddress = '0x64c4Bffb220818F0f2ee6DAe7A2F17D92b359c5d';
 
     doLogging = Boolean(process.env.LOGGING);
 
     const config = {
       logging: doLogging,
-      deployAddress: deployAddress.address,
+      deployAddress,
       version: version
     };
 

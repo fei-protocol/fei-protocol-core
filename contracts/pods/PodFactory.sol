@@ -68,7 +68,7 @@ contract PodFactory is CoreRef, IPodFactory {
     ///////////////////// GETTERS ///////////////////////
 
     /// @notice Get the number of pods this factory has created
-    function getNumberOfPods() override external view returns (uint256) {
+    function getNumberOfPods() external view override returns (uint256) {
         return numPods;
     }
 
@@ -148,6 +148,8 @@ contract PodFactory is CoreRef, IPodFactory {
         return podController.isTransferLocked(podId);
     }
 
+    //////////////////// STATE-CHANGING API ////////////////////
+
     /// @notice Deploy the genesis pod, one time use method
     function deployGenesisPod(PodConfig calldata _config)
         external
@@ -163,7 +165,6 @@ contract PodFactory is CoreRef, IPodFactory {
         return _createOptimisticPod(_config);
     }
 
-    //////////////////// STATE-CHANGING API ////////////////////
     /// @notice Create an Orca pod with timelock. Callable by the DAO and the Tribal Council
     ///         Returns podId, pod timelock address and the Pod Gnosis Safe address
     ///         This will lock membership transfers by default
@@ -238,11 +239,11 @@ contract PodFactory is CoreRef, IPodFactory {
 
     /// @notice Create an Orca pod - a Gnosis Safe with a membership wrapper
     function _createPod(
-        address[] memory _members,
+        address[] calldata _members,
         uint256 _threshold,
         bytes32 _label,
-        string memory _ensString,
-        string memory _imageUrl,
+        string calldata _ensString,
+        string calldata _imageUrl,
         address _admin,
         uint256 podId
     ) internal returns (address) {
@@ -271,7 +272,7 @@ contract PodFactory is CoreRef, IPodFactory {
         address publicExecutor,
         address podAdmin
     ) internal returns (address) {
-        address[] memory proposers = new address[](2); // cancel timelock
+        address[] memory proposers = new address[](2);
         proposers[0] = safeAddress;
         proposers[1] = podAdmin;
 
@@ -284,8 +285,9 @@ contract PodFactory is CoreRef, IPodFactory {
             proposers,
             executors
         );
-        // TODO: Revoke timelock admin?
-        
+        // Revoke TIMELOCK_ADMIN_ROLE priviledges from deployer factory
+        timelock.revokeRole(timelock.TIMELOCK_ADMIN_ROLE(), address(this));
+
         emit CreateTimelock(address(timelock));
         return address(timelock);
     }

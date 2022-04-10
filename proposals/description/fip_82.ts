@@ -79,19 +79,6 @@ const fip_82: ProposalDescription = {
       values: '0',
       method: 'grantRole(bytes32,address)',
       arguments: [
-        '0x29af6c210963c1cf458c6a5bf082996cf54b23ebba0c0fb8ae110e8e43371c71', // POD_VETO_ADMIN
-        '{tribalCouncilTimelock}' // Tribal council timelock
-      ],
-      description: `
-      Grant POD_VETO_ADMIN to TribalCouncil timelock. TribalCouncil will be able grant or revoke other TribeRoles
-      from having veto permissions over pods
-      `
-    },
-    {
-      target: 'core',
-      values: '0',
-      method: 'grantRole(bytes32,address)',
-      arguments: [
         '0x6ecc8dff15d98038e3ff32bfe76768123628cfdd2c3d11f2ec23c5433a9d4ba3', // POD_ADMIN
         '{tribalCouncilTimelock}' // Tribal council timelock
       ],
