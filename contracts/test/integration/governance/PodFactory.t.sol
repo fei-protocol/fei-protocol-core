@@ -6,14 +6,13 @@ import {ControllerV1} from "@orcaprotocol/contracts/contracts/ControllerV1.sol";
 import {IGnosisSafe} from "../../../pods/interfaces/IGnosisSafe.sol";
 import {PodFactory} from "../../../pods/PodFactory.sol";
 import {PodExecutor} from "../../../pods/PodExecutor.sol";
-import {ITimelock} from "../../../dao/timelock/ITimelock.sol";
 import {IPodFactory} from "../../../pods/interfaces/IPodFactory.sol";
 import {Core} from "../../../core/Core.sol";
 import {TribeRoles} from "../../../core/TribeRoles.sol";
 import {PodAdminGateway} from "../../../pods/PodAdminGateway.sol";
 
 import {DSTest} from "../../utils/DSTest.sol";
-import {mintOrcaTokens, getPodParams, getGenesisPodParams} from "../fixtures/Orca.sol";
+import {mintOrcaTokens, getPodParamsWithTimelock, getGenesisPodParams, getPodParamsWithNoTimelock} from "../fixtures/Orca.sol";
 import {DummyStorage} from "../../utils/Fixtures.sol";
 import {Vm} from "../../utils/Vm.sol";
 import {MainnetAddresses} from "../fixtures/MainnetAddresses.sol";
@@ -36,7 +35,7 @@ contract PodFactoryIntegrationTest is DSTest {
     address feiDAOTimelock = MainnetAddresses.FEI_DAO_TIMELOCK;
 
     function setUp() public {
-        IPodFactory.PodConfig memory podConfig = getPodParams();
+        IPodFactory.PodConfig memory podConfig = getPodParamsWithTimelock();
 
         PodAdminGateway podAdminGateway = new PodAdminGateway(
             core,
@@ -62,13 +61,13 @@ contract PodFactoryIntegrationTest is DSTest {
         vm.stopPrank();
     }
 
-    /// @notice Validate initial factory state and validate that genesis pod, the TribalCouncil
-    ///         is deployed
+    /// @notice Validate initial factory state
     function testInitialState() public {
         assertEq(address(factory.podController()), podController);
         assertEq(factory.latestPodId(), 0);
         assertEq(factory.podExecutor(), address(podExecutor));
         assertEq(address(factory.getMemberToken()), memberToken);
+        assertEq(factory.MIN_TIMELOCK_DELAY(), 1 days);
 
         // Validate has PodAdmin role
         bool hasPodAdminRole = Core(core).hasRole(
@@ -80,7 +79,11 @@ contract PodFactoryIntegrationTest is DSTest {
 
     function testDeployGenesisPod() public {
         IPodFactory.PodConfig memory genesisConfig = getGenesisPodParams();
-        (uint256 genesisPodId, address genesisTimelock, address genesisSafe) = factory.deployGenesisPod(genesisConfig);
+        (
+            uint256 genesisPodId,
+            address genesisTimelock,
+            address genesisSafe
+        ) = factory.deployGenesisPod(genesisConfig);
 
         uint256 numMembers = factory.getNumMembers(genesisPodId);
         assertEq(numMembers, genesisConfig.members.length);
@@ -99,29 +102,33 @@ contract PodFactoryIntegrationTest is DSTest {
 
     function testCanOnlyDeployGenesisOnce() public {
         IPodFactory.PodConfig memory genesisConfig = getGenesisPodParams();
-        (uint256 genesisPodId, address genesisTimelock, address genesisSafe) = factory.deployGenesisPod(genesisConfig);
-        
-        IPodFactory.PodConfig memory config = getPodParams();     
+        (
+            uint256 genesisPodId,
+            address genesisTimelock,
+            address genesisSafe
+        ) = factory.deployGenesisPod(genesisConfig);
+
+        IPodFactory.PodConfig memory config = getPodParamsWithTimelock();
         vm.expectRevert(bytes("Genesis pod already deployed"));
         factory.deployGenesisPod(config);
     }
 
     /// @notice Validate that a non-authorised address fails to create a pod
     function testOnlyAuthedUsersCanCreatePod() public {
-        IPodFactory.PodConfig memory podConfig = getPodParams();
+        IPodFactory.PodConfig memory podConfig = getPodParamsWithTimelock();
 
         vm.expectRevert(bytes("UNAUTHORIZED"));
         address fraud = address(0x10);
         vm.prank(fraud);
-        factory.createChildOptimisticPod(podConfig);
+        factory.createOptimisticPod(podConfig);
     }
 
     /// @notice Validate that a GOVERNOR role can create a pod
     function testGovernorCanCreatePod() public {
-        IPodFactory.PodConfig memory podConfig = getPodParams();
+        IPodFactory.PodConfig memory podConfig = getPodParamsWithTimelock();
 
         vm.prank(feiDAOTimelock);
-        factory.createChildOptimisticPod(podConfig);
+        factory.createOptimisticPod(podConfig);
     }
 
     function testGetNextPodId() public {
@@ -148,18 +155,34 @@ contract PodFactoryIntegrationTest is DSTest {
         vm.prank(dummyTribalCouncil);
         Core(core).grantRole(TribeRoles.POD_DEPLOYER_ROLE, dummyPodDeployer);
 
-        IPodFactory.PodConfig memory podConfig = getPodParams();
+        IPodFactory.PodConfig memory podConfig = getPodParamsWithTimelock();
         vm.prank(dummyPodDeployer);
-        factory.createChildOptimisticPod(podConfig);
+        factory.createOptimisticPod(podConfig);
+    }
+
+    function testUpdatePodAdmin() public {
+        IPodFactory.PodConfig memory podConfig = getPodParamsWithTimelock();
+
+        vm.prank(feiDAOTimelock);
+        (uint256 podId, , ) = factory.createOptimisticPod(podConfig);
+
+        address newAdmin = address(0x10);
+        vm.prank(podAdmin);
+        ControllerV1(podController).updatePodAdmin(podId, newAdmin);
+        assertEq(ControllerV1(podController).podAdmin(podId), newAdmin);
+        assertEq(factory.getPodAdmin(podId), newAdmin);
     }
 
     function testPodDeployment() public {
-        IPodFactory.PodConfig memory podConfig = getPodParams();
+        IPodFactory.PodConfig memory podConfig = getPodParamsWithTimelock();
 
         vm.prank(feiDAOTimelock);
-        (uint256 podId, address timelock, ) = factory.createChildOptimisticPod(
-            podConfig
-        );
+        (uint256 podId, address timelock, address safe) = factory
+            .createOptimisticPod(podConfig);
+
+        ///// Validate Safe component of the Pod
+        address safeAddress = factory.getPodSafe(podId);
+        assertEq(safe, safeAddress);
 
         uint256 numMembers = factory.getNumMembers(podId);
         assertEq(numMembers, podConfig.members.length);
@@ -174,33 +197,12 @@ contract PodFactoryIntegrationTest is DSTest {
 
         uint256 latestPodId = factory.latestPodId();
         assertEq(latestPodId, podId);
-    }
 
-    function testUpdatePodAdmin() public {
-        IPodFactory.PodConfig memory podConfig = getPodParams();
-
-        vm.prank(feiDAOTimelock);
-        (uint256 podId, , ) = factory.createChildOptimisticPod(podConfig);
-
-        address newAdmin = address(0x10);
-        vm.prank(podAdmin);
-        ControllerV1(podController).updatePodAdmin(podId, newAdmin);
-        assertEq(ControllerV1(podController).podAdmin(podId), newAdmin);
-        assertEq(factory.getPodAdmin(podId), newAdmin);
-    }
-
-    /// @notice Creates a child pod with an optimistic timelock attached
-    function testDeployOptimisticGovernancePod() public {
-        IPodFactory.PodConfig memory podConfig = getPodParams();
-
-        vm.prank(feiDAOTimelock);
-        (uint256 podId, address timelock, address safe) = factory
-            .createChildOptimisticPod(podConfig);
-        require(timelock != address(0));
-
-        address safeAddress = factory.getPodSafe(podId);
-        assertEq(safe, safeAddress);
-        ITimelock timelockContract = ITimelock(timelock);
+        ///// Validate timelock component of pod
+        assertEq(timelock, factory.getPodTimelock(podId));
+        TimelockController timelockContract = TimelockController(
+            payable(timelock)
+        );
 
         // Gnosis safe should be the proposer
         bool hasProposerRole = timelockContract.hasRole(PROPOSER_ROLE, safe);
@@ -217,15 +219,49 @@ contract PodFactoryIntegrationTest is DSTest {
             address(podExecutor)
         );
         assertTrue(publicPodExecutorIsExecutor);
+
+        // Min delay of timelock
+        assertEq(timelockContract.getMinDelay(), podConfig.minDelay);
+
+        //// Validate that membership transfers are disabled
+        bool membershipLocked = factory.getIsMembershipTransferLocked(podId);
+        assertEq(membershipLocked, true);
+    }
+
+    /// @notice Validate that a pod can not be created with an insufficent min delay on timelock
+    function testCanNotDeployPodWithInsufficientTimelock() public {
+        IPodFactory.PodConfig memory podConfig = getPodParamsWithTimelock();
+
+        uint256 insufficientDelay = factory.MIN_TIMELOCK_DELAY() - 1;
+        podConfig.minDelay = insufficientDelay;
+
+        vm.prank(feiDAOTimelock);
+        vm.expectRevert(bytes("Min delay too small"));
+        factory.createOptimisticPod(podConfig);
+    }
+
+    /// @notice Validate can create a pod without a timelock
+    function testCanDeployPodWithNoTimelock() public {
+        IPodFactory.PodConfig
+            memory podConfigNoTimelock = getPodParamsWithNoTimelock();
+
+        vm.prank(feiDAOTimelock);
+        (uint256 podId, address timelock, address safe) = factory
+            .createOptimisticPod(podConfigNoTimelock);
+
+        assertEq(timelock, address(0));
+        assertEq(timelock, factory.getPodTimelock(podId));
+        assertEq(safe, factory.getPodSafe(podId));
+        assertEq(podId, factory.getPodId(timelock));
     }
 
     /// @notice Validate that the podId to timelock mapping is correct
     function testTimelockStorageOnDeploy() public {
-        IPodFactory.PodConfig memory podConfig = getPodParams();
+        IPodFactory.PodConfig memory podConfig = getPodParamsWithTimelock();
 
         vm.prank(feiDAOTimelock);
         (uint256 podId, address timelock, address safe) = factory
-            .createChildOptimisticPod(podConfig);
+            .createOptimisticPod(podConfig);
 
         assertEq(timelock, factory.getPodTimelock(podId));
         assertEq(safe, factory.getPodSafe(podId));
@@ -234,19 +270,19 @@ contract PodFactoryIntegrationTest is DSTest {
 
     /// @notice Validate that multiple pods can be deployed with the correct admin set
     function testDeployMultiplePods() public {
-        IPodFactory.PodConfig memory podConfig = getPodParams();
+        IPodFactory.PodConfig memory podConfig = getPodParamsWithTimelock();
 
         podConfig.label = bytes32("A");
 
         vm.prank(feiDAOTimelock);
-        (uint256 podAId, , ) = factory.createChildOptimisticPod(podConfig);
+        (uint256 podAId, , ) = factory.createOptimisticPod(podConfig);
 
         address podAAdmin = ControllerV1(podController).podAdmin(podAId);
         assertEq(podAAdmin, podAdmin);
 
         podConfig.label = bytes32("B");
         vm.prank(feiDAOTimelock);
-        (uint256 podBId, , ) = factory.createChildOptimisticPod(podConfig);
+        (uint256 podBId, , ) = factory.createOptimisticPod(podConfig);
 
         assertEq(podBId, podAId + 1);
         address podBAdmin = ControllerV1(podController).podAdmin(podBId);
@@ -263,10 +299,11 @@ contract PodFactoryIntegrationTest is DSTest {
         assertEq(dummyContract.getVariable(), 5);
 
         // 2. Deploy pod
-        IPodFactory.PodConfig memory podConfig = getPodParams();
+        IPodFactory.PodConfig memory podConfig = getPodParamsWithTimelock();
         vm.prank(feiDAOTimelock);
-        (, address podTimelock, address safe) = factory
-            .createChildOptimisticPod(podConfig);
+        (, address podTimelock, address safe) = factory.createOptimisticPod(
+            podConfig
+        );
 
         TimelockController timelockContract = TimelockController(
             payable(podTimelock)

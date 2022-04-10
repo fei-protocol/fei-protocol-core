@@ -101,7 +101,7 @@ describe('Pod operation and veto', function () {
     // and the pod is calling to register a proposal on the `GovernanceMetadataRegistry.sol`
 
     // 1. Deploy a pod through which a proposal will be executed
-    await podFactory.connect(tribalCouncilTimelockSigner).createChildOptimisticPod(podConfig);
+    await podFactory.connect(tribalCouncilTimelockSigner).createOptimisticPod(podConfig);
     podId = await podFactory.latestPodId();
     const safeAddress = await podFactory.getPodSafe(podId);
     timelockAddress = await podFactory.getPodTimelock(podId);

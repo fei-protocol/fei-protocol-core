@@ -74,21 +74,40 @@ function mintOrcaTokens(
     inviteToken.mint(to, amount);
 }
 
-function getPodParams() pure returns (IPodFactory.PodConfig memory) {
+/// @notice Pod with a timelock
+function getPodParamsWithTimelock()
+    pure
+    returns (IPodFactory.PodConfig memory)
+{
     bytes32 label = bytes32("hellopod");
-    return getBasePodParams(label);
+    uint256 minDelay = 2 days;
+    return getBasePodParams(label, minDelay);
 }
 
+/// @notice Pod without a timelock, minDelay is set to 0
+function getPodParamsWithNoTimelock()
+    pure
+    returns (IPodFactory.PodConfig memory)
+{
+    bytes32 label = bytes32("hellopod");
+    uint256 minDelay = 0;
+    return getBasePodParams(label, minDelay);
+}
+
+/// @notice Genesis pod, the TribalCouncil, with a timelock
 function getGenesisPodParams() pure returns (IPodFactory.PodConfig memory) {
     bytes32 label = bytes32("tribalcouncil");
-    return getBasePodParams(label);
+    uint256 minDelay = 2 days;
+    return getBasePodParams(label, minDelay);
 }
 
-function getBasePodParams(bytes32 label) pure returns (IPodFactory.PodConfig memory) {
+function getBasePodParams(bytes32 label, uint256 minDelay)
+    pure
+    returns (IPodFactory.PodConfig memory)
+{
     uint256 threshold = 1;
     string memory ensString = "hellopod.eth";
     string memory imageUrl = "hellopod.com";
-    uint256 minDelay = 2 days;
 
     address[] memory members = new address[](3);
     members[0] = address(0x201);
@@ -124,7 +143,7 @@ function deployPodWithSystem(
         IPodFactory.PodConfig memory
     )
 {
-    IPodFactory.PodConfig memory podConfig = getPodParams();
+    IPodFactory.PodConfig memory podConfig = getPodParamsWithTimelock();
 
     // 1. Deploy PodAdminGateway
     PodAdminGateway podAdminGateway = new PodAdminGateway(
@@ -152,7 +171,7 @@ function deployPodWithSystem(
     vm.deal(address(factory), 1000 ether);
     vm.prank(podDeployer);
     (uint256 podId, address podTimelock, address safe) = factory
-        .createChildOptimisticPod(podConfig);
+        .createOptimisticPod(podConfig);
 
     return (
         podId,

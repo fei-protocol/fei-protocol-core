@@ -62,7 +62,7 @@ interface IPodFactory {
 
     function getPodAdmin(uint256 podId) external view returns (address);
 
-    function createChildOptimisticPod(PodConfig calldata _config)
+    function createOptimisticPod(PodConfig calldata _config)
         external
         returns (
             uint256,

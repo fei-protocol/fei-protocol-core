@@ -43,6 +43,9 @@ contract PodFactory is CoreRef, IPodFactory {
     /// @notice Track whether the one time use initial pod deploy has been used
     bool public genesisDeployed;
 
+    /// @notice Minimum delay of a pod timelock, if one is to be created with one
+    uint256 public constant MIN_TIMELOCK_DELAY = 1 days;
+
     /// @param _core Fei core address
     /// @param _podController Orca pod controller
     /// @param _memberToken Membership token that manages the Orca pod membership
@@ -151,19 +154,14 @@ contract PodFactory is CoreRef, IPodFactory {
     {
         require(!genesisDeployed, "Genesis pod already deployed");
         genesisDeployed = true;
-        return _createChildOptimisticPod(_config);
+        return _createOptimisticPod(_config);
     }
 
     //////////////////// STATE-CHANGING API ////////////////////
-    // Need to be able to deploy a pod initially
-    // Do not want to use a burner method
-    // Need it to be an automatic deploy - can't deploy it in the DAO script, as need the
-    // podId
-
     /// @notice Create a child Orca pod with timelock. Callable by the DAO and the Tribal Council
     ///         Returns podId, pod timelock address and the Pod Gnosis Safe address
     ///         This will lock membership transfers by default
-    function createChildOptimisticPod(PodConfig calldata _config)
+    function createOptimisticPod(PodConfig calldata _config)
         public
         override
         // TODO: POD_ADMIN rather than POD_DEPLOYER_ROLE
@@ -174,11 +172,9 @@ contract PodFactory is CoreRef, IPodFactory {
             address
         )
     {
-        (
-            uint256 podId,
-            address timelock,
-            address safe
-        ) = _createChildOptimisticPod(_config);
+        (uint256 podId, address timelock, address safe) = _createOptimisticPod(
+            _config
+        );
 
         // Disable membership transfers by default
         podAdminGateway.lockMembershipTransfers(podId);
@@ -189,7 +185,7 @@ contract PodFactory is CoreRef, IPodFactory {
 
     /// @notice Internal method to create a child optimistic pod
     /// @param _config Pod configuraton
-    function _createChildOptimisticPod(PodConfig calldata _config)
+    function _createOptimisticPod(PodConfig calldata _config)
         internal
         returns (
             uint256,
@@ -213,7 +209,10 @@ contract PodFactory is CoreRef, IPodFactory {
         // TODO: Add option to avoid setting a timelock
         if (_config.minDelay != 0) {
             // TODO: Enforce min delay if defined
-            require(_config.minDelay >= 1 days, "Min delay too small");
+            require(
+                _config.minDelay >= MIN_TIMELOCK_DELAY,
+                "Min delay too small"
+            );
             timelock = address(
                 _createTimelock(
                     safeAddress,
@@ -222,13 +221,14 @@ contract PodFactory is CoreRef, IPodFactory {
                     address(podAdminGateway)
                 )
             );
-            // Set mapping from podId to timelock for reference
-            getPodTimelock[podId] = timelock;
-            getPodId[timelock] = podId;
-            latestPodId = podId;
         } else {
             timelock = address(0);
         }
+
+        // Set mapping from podId to timelock for reference
+        getPodTimelock[podId] = timelock;
+        getPodId[timelock] = podId;
+        latestPodId = podId;
         emit CreatePod(podId, safeAddress);
         return (podId, timelock, safeAddress);
     }

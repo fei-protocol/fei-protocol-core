@@ -7,7 +7,7 @@ import {DSTest} from "../../utils/DSTest.sol";
 import {PodFactory} from "../../../pods/PodFactory.sol";
 import {PodAdminGateway} from "../../../pods/PodAdminGateway.sol";
 import {IPodAdminGateway} from "../../../pods/interfaces/IPodAdminGateway.sol";
-import {mintOrcaTokens, getPodParams} from "../fixtures/Orca.sol";
+import {mintOrcaTokens, getPodParamsWithTimelock} from "../fixtures/Orca.sol";
 import {IPodFactory} from "../../../pods/interfaces/IPodFactory.sol";
 import {ITimelock} from "../../../dao/timelock/ITimelock.sol";
 import {TribeRoles} from "../../../core/TribeRoles.sol";
@@ -44,7 +44,7 @@ contract PodAdminGatewayIntegrationTest is DSTest {
             podExecutor,
             address(podAdminGateway)
         );
-        
+
         // Grant the factory the relevant roles to disable membership locks
         vm.startPrank(feiDAOTimelock);
         Core(core).createRole(TribeRoles.POD_ADMIN, TribeRoles.GOVERNOR);
@@ -52,13 +52,13 @@ contract PodAdminGatewayIntegrationTest is DSTest {
         vm.stopPrank();
 
         // 3. Make config for pod, mint Orca tokens to factory
-        IPodFactory.PodConfig memory config = getPodParams();
+        IPodFactory.PodConfig memory config = getPodParamsWithTimelock();
         podConfig = config;
         mintOrcaTokens(address(factory), 2, vm);
 
         // 4. Create pod
         vm.prank(feiDAOTimelock);
-        (podId, timelock, safe) = factory.createChildOptimisticPod(podConfig);
+        (podId, timelock, safe) = factory.createOptimisticPod(podConfig);
     }
 
     /// @notice Validate that podAdminGateway contract pod admin, and initial state is valid

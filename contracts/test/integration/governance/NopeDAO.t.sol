@@ -212,7 +212,7 @@ contract NopeDAOIntegrationTest is DSTest {
             timelockProposalId
         );
         calldatas[0] = data;
-        
+
         string memory description = "Veto proposal";
         bytes32 descriptionHash = keccak256(bytes(description));
 
