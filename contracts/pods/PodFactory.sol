@@ -11,6 +11,7 @@ import {TribeRoles} from "../core/TribeRoles.sol";
 import {CoreRef} from "../refs/CoreRef.sol";
 import {ICore} from "../core/ICore.sol";
 import {PodAdminGateway} from "./PodAdminGateway.sol";
+import {PodExecutor} from "./PodExecutor.sol";
 
 /// @dev This contract is primarily a factory contract which an admin
 /// can use to deploy more optimistic governance pods. It will create an
@@ -26,7 +27,7 @@ contract PodFactory is CoreRef, IPodFactory {
     MemberToken public immutable memberToken;
 
     /// @notice Public contract that will be granted to execute all timelocks created
-    address public immutable podExecutor;
+    PodExecutor public immutable podExecutor;
 
     /// @notice Pod admin gateway, through which admin functionality on pods is accessed
     PodAdminGateway public immutable podAdminGateway;
@@ -58,7 +59,7 @@ contract PodFactory is CoreRef, IPodFactory {
         address _podExecutor,
         address _podAdminGateway
     ) CoreRef(_core) {
-        podExecutor = _podExecutor;
+        podExecutor = PodExecutor(_podExecutor);
         podController = ControllerV1(_podController);
         memberToken = MemberToken(_memberToken);
         podAdminGateway = PodAdminGateway(_podAdminGateway);
@@ -158,14 +159,13 @@ contract PodFactory is CoreRef, IPodFactory {
     }
 
     //////////////////// STATE-CHANGING API ////////////////////
-    /// @notice Create a child Orca pod with timelock. Callable by the DAO and the Tribal Council
+    /// @notice Create an Orca pod with timelock. Callable by the DAO and the Tribal Council
     ///         Returns podId, pod timelock address and the Pod Gnosis Safe address
     ///         This will lock membership transfers by default
     function createOptimisticPod(PodConfig calldata _config)
         public
         override
-        // TODO: POD_ADMIN rather than POD_DEPLOYER_ROLE
-        hasAnyOfTwoRoles(TribeRoles.GOVERNOR, TribeRoles.POD_DEPLOYER_ROLE)
+        hasAnyOfTwoRoles(TribeRoles.GOVERNOR, TribeRoles.POD_ADMIN)
         returns (
             uint256,
             address,
@@ -206,9 +206,7 @@ contract PodFactory is CoreRef, IPodFactory {
         );
 
         address timelock;
-        // TODO: Add option to avoid setting a timelock
         if (_config.minDelay != 0) {
-            // TODO: Enforce min delay if defined
             require(
                 _config.minDelay >= MIN_TIMELOCK_DELAY,
                 "Min delay too small"
@@ -217,7 +215,7 @@ contract PodFactory is CoreRef, IPodFactory {
                 _createTimelock(
                     safeAddress,
                     _config.minDelay,
-                    podExecutor,
+                    address(podExecutor),
                     address(podAdminGateway)
                 )
             );
@@ -234,7 +232,6 @@ contract PodFactory is CoreRef, IPodFactory {
     }
 
     /// @notice Create an Orca pod - a Gnosis Safe with a membership wrapper
-    // TODO: Prefix with _ to signal internal
     function _createPod(
         address[] memory _members,
         uint256 _threshold,
@@ -263,19 +260,14 @@ contract PodFactory is CoreRef, IPodFactory {
     ///        allows any address to execute a ready transaction
     /// @param podAdmin Address which is the admin of the Orca pods
     ///        Will also be able to propose
-    // TODO: Prefix with _
     function _createTimelock(
         address safeAddress,
         uint256 minDelay,
         address publicExecutor,
         address podAdmin
     ) internal returns (address) {
-        // TODO: Validate minDelay
         address[] memory proposers = new address[](2); // cancel timelock
         proposers[0] = safeAddress;
-        // Note: If you migrate the podAdmin, then it will not have the timelock propsoer role. So it
-        // will not be able to cancel the timelock.
-        // TODO: Remove podAdminGateway
         proposers[1] = podAdmin;
 
         address[] memory executors = new address[](2);
@@ -290,6 +282,4 @@ contract PodFactory is CoreRef, IPodFactory {
         emit CreateTimelock(address(timelock));
         return address(timelock);
     }
-
-    // TODO: Way to make Orca pod without timelock
 }

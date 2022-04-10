@@ -18,12 +18,35 @@ import {IPodFactory} from "./interfaces/IPodFactory.sol";
 ///     2. Removing a member from a pod
 ///     3. Transferring a pod member
 ///     4. Toggling a pod membership transfer switch
+///     5. Vetoing a pod proposal
 contract PodAdminGateway is CoreRef, IPodAdminGateway {
     /// @notice Pod factory which creates optimistic pods and acts as a source of information
     MemberToken public immutable memberToken;
 
     /// @notice Pod controller for the pods
     ControllerV1 public immutable podController;
+
+    /// @notice Access control modifier to extend CoreRef ACL to check for 6 roles
+    modifier hasAnyOfSixRoles(
+        bytes32 role1,
+        bytes32 role2,
+        bytes32 role3,
+        bytes32 role4,
+        bytes32 role5,
+        bytes32 role6
+    ) {
+        ICore core = core();
+        require(
+            core.hasRole(role1, msg.sender) ||
+                core.hasRole(role2, msg.sender) ||
+                core.hasRole(role3, msg.sender) ||
+                core.hasRole(role4, msg.sender) ||
+                core.hasRole(role5, msg.sender) ||
+                core.hasRole(role6, msg.sender),
+            "UNAUTHORIZED"
+        );
+        _;
+    }
 
     constructor(
         address _core,
@@ -35,58 +58,27 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
     }
 
     ////////////////////////   GETTERS   ////////////////////////////////
-    // TODO: Whatever global set of roles are, map them one to one to the specific pod roles.
-    // Pod specific roles:
-    // ADMIN: If can add, should be able to remove and lock transfers. Should also be able to veto
-    // GUARDIAN: Can remove and veto
-    //
-
-    /// @notice Calculate the specific pod admin role related to adding pod members
-    function getPodAddMemberRole(uint256 _podId)
+    /// @notice Calculate the specific pod admin role identifier
+    /// @dev This role is able to add pod members, remove pod members, lock and unlock transfers and veto
+    ///      proposals
+    function getSpecificPodAdminRole(uint256 _podId)
         public
         pure
         override
         returns (bytes32)
     {
-        return keccak256(abi.encode(_podId, "ORCA_POD", "POD_ADD_MEMBER_ROLE"));
+        return keccak256(abi.encode(_podId, "ORCA_POD", "ADMIN"));
     }
 
-    /// @notice Calculate the pod admin role related to removing pod members
-    function getPodRemoveMemberRole(uint256 _podId)
+    /// @notice Calculate the specific pod guardian role identifier
+    /// @dev This role is able to remove pod members and veto pod proposals
+    function getSpecificPodGuardianRole(uint256 _podId)
         public
         pure
         override
         returns (bytes32)
     {
-        return
-            keccak256(abi.encode(_podId, "ORCA_POD", "POD_REMOVE_MEMBER_ROLE"));
-    }
-
-    /// @notice Calculate the specific pod veto role, which allows an
-    function getPodVetoRole(uint256 _podId)
-        public
-        pure
-        override
-        returns (bytes32)
-    {
-        return keccak256(abi.encode(_podId, "ORCA_POD", "POD_VETO_ROLE"));
-    }
-
-    /// @notice Calculate the specific pod membership transfer lock role
-    function getSetMembershipTransferLockRole(uint256 _podId)
-        public
-        pure
-        override
-        returns (bytes32)
-    {
-        return
-            keccak256(
-                abi.encode(
-                    _podId,
-                    "ORCA_POD",
-                    "SET_MEMBERSHIP_TRANSFER_LOCK_ROLE"
-                )
-            );
+        return keccak256(abi.encode(_podId, "ORCA_POD", "GUARDIAN"));
     }
 
     /////////////////////////    ADMIN PRIVILEDGES       ////////////////////////////
@@ -99,7 +91,7 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
         hasAnyOfThreeRoles(
             TribeRoles.GOVERNOR,
             TribeRoles.POD_ADMIN,
-            getPodAddMemberRole(_podId)
+            getSpecificPodAdminRole(_podId)
         )
     {
         _addMemberToPod(_podId, _member, memberToken);
@@ -123,7 +115,7 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
         hasAnyOfThreeRoles(
             TribeRoles.GOVERNOR,
             TribeRoles.POD_ADMIN,
-            getPodAddMemberRole(_podId)
+            getSpecificPodAdminRole(_podId)
         )
     {
         uint256 numMembers = _members.length;
@@ -141,11 +133,12 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
     function removePodMember(uint256 _podId, address _member)
         external
         override
-        hasAnyOfFourRoles(
+        hasAnyOfFiveRoles(
             TribeRoles.GOVERNOR,
             TribeRoles.POD_ADMIN,
             TribeRoles.GUARDIAN,
-            getPodRemoveMemberRole(_podId)
+            getSpecificPodGuardianRole(_podId),
+            getSpecificPodAdminRole(_podId)
         )
     {
         _removePodMember(_podId, _member, memberToken);
@@ -166,11 +159,12 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
     function batchRemovePodMember(uint256 _podId, address[] calldata _members)
         external
         override
-        hasAnyOfFourRoles(
+        hasAnyOfFiveRoles(
             TribeRoles.GOVERNOR,
             TribeRoles.POD_ADMIN,
             TribeRoles.GUARDIAN,
-            getPodRemoveMemberRole(_podId)
+            getSpecificPodGuardianRole(_podId),
+            getSpecificPodAdminRole(_podId)
         )
     {
         uint256 numMembers = _members.length;
@@ -185,30 +179,28 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
     }
 
     /// @notice Admin functionality to turn off pod membership transfer
-    /// @dev Permissioned to GOVERNOR, POD_ADMIN, GUARDIAN and the specific role
+    /// @dev Permissioned to GOVERNOR, POD_ADMIN and the specific pod admin role
     function lockMembershipTransfers(uint256 _podId)
         external
         override
-        hasAnyOfFourRoles(
+        hasAnyOfThreeRoles(
             TribeRoles.GOVERNOR,
             TribeRoles.POD_ADMIN,
-            TribeRoles.GUARDIAN,
-            getSetMembershipTransferLockRole(_podId)
+            getSpecificPodAdminRole(_podId)
         )
     {
         _setMembershipTransferLock(_podId, true);
     }
 
     /// @notice Admin functionality to turn on pod membership transfers
-    /// @dev Permissioned to GOVERNOR, POD_ADMIN, GUARDIAN and the specific role
+    /// @dev Permissioned to GOVERNOR, POD_ADMIN and the specific pod admin role
     function unlockMembershipTransfers(uint256 _podId)
         external
         override
-        hasAnyOfFourRoles(
+        hasAnyOfThreeRoles(
             TribeRoles.GOVERNOR,
             TribeRoles.POD_ADMIN,
-            TribeRoles.GUARDIAN,
-            getSetMembershipTransferLockRole(_podId)
+            getSpecificPodAdminRole(_podId)
         )
     {
         _setMembershipTransferLock(_podId, false);
@@ -223,7 +215,8 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
     ///////////////  VETO CONTROLLER /////////////////
 
     /// @notice Allow a proposal to be vetoed in a pod timelock
-    /// @dev Permissioned to GOVERNOR, POD_ADMIN, GUARDIAN and specific POD_VETO_ROLE
+    /// @dev Permissioned to GOVERNOR, POD_VETO_ADMIN, GUARDIAN, POD_ADMIN and the specific
+    ///      pod admin and guardian roles
     function veto(
         uint256 _podId,
         address _podTimelock,
@@ -231,13 +224,13 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
     )
         external
         override
-        hasAnyOfFourRoles(
+        hasAnyOfSixRoles(
             TribeRoles.GOVERNOR,
             TribeRoles.POD_VETO_ADMIN,
             TribeRoles.GUARDIAN,
-            // TODO: Pod specific admin
-            // TODO: Global pod admin
-            getPodVetoRole(_podId)
+            TribeRoles.POD_ADMIN,
+            getSpecificPodGuardianRole(_podId),
+            getSpecificPodAdminRole(_podId)
         )
     {
         emit VetoTimelock(_podId, _podTimelock, _proposalId);

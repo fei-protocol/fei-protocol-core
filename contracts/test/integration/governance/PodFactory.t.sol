@@ -65,7 +65,7 @@ contract PodFactoryIntegrationTest is DSTest {
     function testInitialState() public {
         assertEq(address(factory.podController()), podController);
         assertEq(factory.latestPodId(), 0);
-        assertEq(factory.podExecutor(), address(podExecutor));
+        assertEq(address(factory.podExecutor()), address(podExecutor));
         assertEq(address(factory.getMemberToken()), memberToken);
         assertEq(factory.MIN_TIMELOCK_DELAY(), 1 days);
 
@@ -75,6 +75,9 @@ contract PodFactoryIntegrationTest is DSTest {
             address(factory)
         );
         assertTrue(hasPodAdminRole);
+
+        uint256 nextPodId = factory.getNextPodId();
+        assertGt(nextPodId, 0);
     }
 
     function testDeployGenesisPod() public {
@@ -131,32 +134,27 @@ contract PodFactoryIntegrationTest is DSTest {
         factory.createOptimisticPod(podConfig);
     }
 
-    function testGetNextPodId() public {
-        uint256 nextPodId = factory.getNextPodId();
-        assertGt(nextPodId, 10);
-    }
-
     /// @notice Validate that the PodDeployerRole is able to deploy pods
-    function testPodDeployerRoleCanDeploy() public {
+    function testPodAdminCanDeploy() public {
         address dummyTribalCouncil = address(0x1);
 
         // Create ROLE_ADMIN, POD_DEPLOYER role and grant ROLE_ADMIN to a dummyTribalCouncil address
         vm.startPrank(feiDAOTimelock);
         Core(core).createRole(TribeRoles.ROLE_ADMIN, TribeRoles.GOVERNOR);
         Core(core).createRole(
-            TribeRoles.POD_DEPLOYER_ROLE,
+            TribeRoles.POD_ADMIN,
             TribeRoles.ROLE_ADMIN
         );
         Core(core).grantRole(TribeRoles.ROLE_ADMIN, dummyTribalCouncil);
         vm.stopPrank();
 
-        // Grant POD_DEPLOYER_ROLE to a dummyPodDeployer
-        address dummyPodDeployer = address(0x2);
+        // Grant POD_ADMIN to a dummy address
+        address dummyPodAdmin = address(0x2);
         vm.prank(dummyTribalCouncil);
-        Core(core).grantRole(TribeRoles.POD_DEPLOYER_ROLE, dummyPodDeployer);
+        Core(core).grantRole(TribeRoles.POD_DEPLOYER_ROLE, dummyPodAdmin);
 
         IPodFactory.PodConfig memory podConfig = getPodParamsWithTimelock();
-        vm.prank(dummyPodDeployer);
+        vm.prank(dummyPodAdmin);
         factory.createOptimisticPod(podConfig);
     }
 
