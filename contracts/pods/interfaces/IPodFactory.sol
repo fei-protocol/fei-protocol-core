@@ -21,7 +21,11 @@ interface IPodFactory {
         uint256 minDelay;
     }
 
-    event CreatePod(uint256 indexed podId, address indexed safeAddress);
+    event CreatePod(
+        uint256 indexed podId,
+        address indexed safeAddress,
+        address indexed timelock
+    );
     event CreateTimelock(address indexed timelock);
     event UpdatePodController(
         address indexed oldController,
@@ -37,6 +41,8 @@ interface IPodFactory {
         );
 
     function getMemberToken() external view returns (MemberToken);
+
+    function getNumberOfPods() external view returns (uint256);
 
     function podController() external view returns (ControllerV1);
 

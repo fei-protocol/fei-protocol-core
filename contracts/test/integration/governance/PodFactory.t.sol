@@ -64,7 +64,7 @@ contract PodFactoryIntegrationTest is DSTest {
     /// @notice Validate initial factory state
     function testInitialState() public {
         assertEq(address(factory.podController()), podController);
-        assertEq(factory.latestPodId(), 0);
+        assertEq(factory.getNumberOfPods(), 0);
         assertEq(address(factory.podExecutor()), address(podExecutor));
         assertEq(address(factory.getMemberToken()), memberToken);
         assertEq(factory.MIN_TIMELOCK_DELAY(), 1 days);
@@ -99,8 +99,7 @@ contract PodFactoryIntegrationTest is DSTest {
         assertEq(storedMembers[1], genesisConfig.members[1]);
         assertEq(storedMembers[2], genesisConfig.members[2]);
 
-        uint256 latestPodId = factory.latestPodId();
-        assertEq(latestPodId, genesisPodId);
+        assertEq(factory.getNumberOfPods(), 0);
     }
 
     function testCanOnlyDeployGenesisOnce() public {
@@ -190,8 +189,8 @@ contract PodFactoryIntegrationTest is DSTest {
         assertEq(storedMembers[1], podConfig.members[1]);
         assertEq(storedMembers[2], podConfig.members[2]);
 
-        uint256 latestPodId = factory.latestPodId();
-        assertEq(latestPodId, podId);
+        uint256 numPods = factory.getNumberOfPods();
+        assertEq(numPods, 1);
 
         ///// Validate timelock component of pod
         assertEq(timelock, factory.getPodTimelock(podId));
@@ -271,6 +270,7 @@ contract PodFactoryIntegrationTest is DSTest {
 
         vm.prank(feiDAOTimelock);
         (uint256 podAId, , ) = factory.createOptimisticPod(podConfig);
+        assertEq(factory.getNumberOfPods(), 0);
 
         address podAAdmin = ControllerV1(podController).podAdmin(podAId);
         assertEq(podAAdmin, podAdmin);
@@ -278,6 +278,7 @@ contract PodFactoryIntegrationTest is DSTest {
         podConfig.label = bytes32("B");
         vm.prank(feiDAOTimelock);
         (uint256 podBId, , ) = factory.createOptimisticPod(podConfig);
+        assertEq(factory.getNumberOfPods(), 1);
 
         assertEq(podBId, podAId + 1);
         address podBAdmin = ControllerV1(podController).podAdmin(podBId);

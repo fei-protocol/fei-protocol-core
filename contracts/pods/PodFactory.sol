@@ -38,8 +38,8 @@ contract PodFactory is CoreRef, IPodFactory {
     /// @notice Mapping between timelock and podId
     mapping(address => uint256) public getPodId;
 
-    /// @notice Latest pod created
-    uint256 public latestPodId;
+    /// @notice Number of pods created
+    uint256 private numPods;
 
     /// @notice Track whether the one time use initial pod deploy has been used
     bool public genesisDeployed;
@@ -66,6 +66,11 @@ contract PodFactory is CoreRef, IPodFactory {
     }
 
     ///////////////////// GETTERS ///////////////////////
+
+    /// @notice Get the number of pods this factory has created
+    function getNumberOfPods() override external view returns (uint256) {
+        return numPods;
+    }
 
     /// @notice Get the member token
     function getMemberToken() external view override returns (MemberToken) {
@@ -226,8 +231,8 @@ contract PodFactory is CoreRef, IPodFactory {
         // Set mapping from podId to timelock for reference
         getPodTimelock[podId] = timelock;
         getPodId[timelock] = podId;
-        latestPodId = podId;
-        emit CreatePod(podId, safeAddress);
+        numPods += 1;
+        emit CreatePod(podId, safeAddress, timelock);
         return (podId, timelock, safeAddress);
     }
 
@@ -279,6 +284,8 @@ contract PodFactory is CoreRef, IPodFactory {
             proposers,
             executors
         );
+        // TODO: Revoke timelock admin?
+        
         emit CreateTimelock(address(timelock));
         return address(timelock);
     }

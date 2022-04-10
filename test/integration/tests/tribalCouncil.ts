@@ -122,8 +122,9 @@ describe('Tribal Council', function () {
 
   ///////////    TribalCouncil management of other pods  /////////////
   it('can create a child pod', async () => {
-    await podFactory.connect(tribalCouncilTimelockSigner).createOptimisticPod(podConfig);
-    const podId = await podFactory.latestPodId();
+    const deployTx = await podFactory.connect(tribalCouncilTimelockSigner).createOptimisticPod(podConfig);
+    const { args } = (await deployTx.wait()).events.find((elem) => elem.event === 'CreatePod');
+    const podId = args.podId;
     const numPodMembers = await podFactory.getNumMembers(podId);
     expect(numPodMembers).to.equal(4);
   });
