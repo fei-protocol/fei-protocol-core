@@ -190,7 +190,8 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   );
   await validateTransferredRoleAdmins(contracts.core);
   await validateNewCouncilRoles(contracts.core);
-  await validateContractAdmins(contracts.core);
+  await validateContractAdmins(contracts);
+  await validateTribalCouncilRoles(contracts.core, addresses.tribalCouncilTimelock);
 };
 
 // Validate that the relevant timelocks and Safes have the relevant TribeRoles
@@ -260,7 +261,6 @@ const validateNewCouncilRoles = async (core: Contract) => {
 
 /// Validate that the relevant contract admins have been set to their expected values
 const validateContractAdmins = async (contracts: NamedContracts) => {
-
   await expect(contracts.fuseGuardian.CONTRACT_ADMIN_ROLE()).to.be.equal(ethers.utils.id('FUSE_ADMIN'));
 
   await expect(contracts.optimisticMinter.CONTRACT_ADMIN_ROLE()).to.be.equal(ethers.utils.id('FEI_MINT_ADMIN'));
@@ -279,6 +279,15 @@ const validateContractAdmins = async (contracts: NamedContracts) => {
   await expect(contracts.daiPCVDripController.CONTRACT_ADMIN_ROLE()).to.be.equal(ethers.utils.id('PCV_ADMIN'));
   await expect(contracts.lusdPCVDripController.CONTRACT_ADMIN_ROLE()).to.be.equal(ethers.utils.id('PCV_ADMIN'));
   await expect(contracts.compoundEthPCVDripController.CONTRACT_ADMIN_ROLE()).to.be.equal(ethers.utils.id('PCV_ADMIN'));
-}
+};
+
+const validateTribalCouncilRoles = async (core: Contract, tribalCouncilTimelockAddress: string) => {
+  await expect(core.hasRole(ethers.utils.id('FUSE_ADMIN'), tribalCouncilTimelockAddress)).to.be.true;
+  await expect(core.hasRole(ethers.utils.id('FEI_MINT_ADMIN'), tribalCouncilTimelockAddress)).to.be.true;
+  await expect(core.hasRole(ethers.utils.id('PCV_ADMIN'), tribalCouncilTimelockAddress)).to.be.true;
+  await expect(core.hasRole(ethers.utils.id('PCV_GUARDIAN_ADMIN_ROLE'), tribalCouncilTimelockAddress)).to.be.true;
+  await expect(core.hasRole(ethers.utils.id('ORACLE_ADMIN_ROLE'), tribalCouncilTimelockAddress)).to.be.true;
+  await expect(core.hasRole(ethers.utils.id('PSM_ADMIN_ROLE'), tribalCouncilTimelockAddress)).to.be.true;
+};
 
 export { deploy, setup, teardown, validate };

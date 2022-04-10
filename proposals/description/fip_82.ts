@@ -300,7 +300,7 @@ const fip_82: ProposalDescription = {
     {
       target: 'fuseGuardian',
       values: '0',
-      method: 'setContractAdmin(bytes32)',
+      method: 'setContractAdminRole(bytes32)',
       arguments: [
         '0x7f85477db6c0857f19179a2b3846a7ddbc64caeeb3a02ef34771b82f5ab926e4' // FUSE_ADMIN
       ],
@@ -426,6 +426,66 @@ const fip_82: ProposalDescription = {
       ],
       description: 'Set the contract admin of the Compound ETH PCV Drip Controller to be the PCV_ADMIN'
     },
+    //////////  Grant the Tribal Council timelock the relevant roles //////////
+    {
+      target: 'core',
+      values: '0',
+      method: 'grantRole(bytes32,address)',
+      arguments: [
+        '0x7f85477db6c0857f19179a2b3846a7ddbc64caeeb3a02ef34771b82f5ab926e4', // FUSE_ADMIN
+        '{tribalCouncilTimelock}'
+      ],
+      description: 'Grant TribalCouncil timelock the FUSE_ADMIN role'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'grantRole(bytes32,address)',
+      arguments: [
+        '0x0ff6b7c6babd735fee69a0a83901c004544f96c586fe8cf330aa1f80693916e9', // FEI_MINT_ADMIN
+        '{tribalCouncilTimelock}'
+      ],
+      description: 'Grant TribalCouncil timelock the FEI_MINT_ADMIN role'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'grantRole(bytes32,address)',
+      arguments: [
+        '0x181266465276a82f8dff2d683e001b5f74ffd4d54185db2f2a62bdb11f465a77', // PCV_ADMIN
+        '{tribalCouncilTimelock}'
+      ],
+      description: 'Grant TribalCouncil timelock the PCV_ADMIN role'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'grantRole(bytes32,address)',
+      arguments: [
+        '0xdf6ce05acd28d71e96472375ef55c4a692f167af3ccda9500570f7373c1ba22c', // PCV_GUARDIAN_ADMIN_ROLE
+        '{tribalCouncilTimelock}'
+      ],
+      description: 'Grant TribalCouncil timelock the PCV_GUARDIAN_ADMIN_ROLE role'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'grantRole(bytes32,address)',
+      arguments: [
+        '0xc307c44629779eb8fc0b85f224c3d22f5876a6c84de0ee42d481eb7814f0d3a8', // ORACLE_ADMIN_ROLE
+        '{tribalCouncilTimelock}'
+      ],
+      description: 'Grant TribalCouncil timelock the ORACLE_ADMIN_ROLE'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'grantRole(bytes32,address)',
+      arguments: [
+        '0x1749ca1ca3564d20da6efea465c2a5ae869a9e4b006da7035e688beb14d704e0', // PSM_ADMIN_ROLE
+        '{tribalCouncilTimelock}'
+      ],
+      description: 'Grant TribalCouncil timelock the PSM_ADMIN_ROLE'
     }
   ],
   description: `
