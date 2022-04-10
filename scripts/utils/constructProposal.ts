@@ -19,7 +19,7 @@ export default async function constructProposal(
   const proposalDescription = proposalInfo.description;
 
   const proposalBuilder = proposals.builders.alpha();
-  proposalBuilder.maxActions = 40;
+  proposalBuilder.maxActions = 80;
 
   for (let i = 0; i < proposalInfo.commands.length; i += 1) {
     const command = proposalInfo.commands[i];
