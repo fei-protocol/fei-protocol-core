@@ -253,6 +253,48 @@ const fip_82: ProposalDescription = {
         '0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096' // ROLE_ADMIN
       ],
       description: 'Transfer VOTIUM_ROLE role admin from GOVERNOR to ROLE_ADMIN'
+    },
+    //////// Create new roles for the Tribal Council to manage /////////
+    {
+      target: 'core',
+      values: '0',
+      method: 'createRole(bytes32,bytes32)',
+      arguments: [
+        '0x7f85477db6c0857f19179a2b3846a7ddbc64caeeb3a02ef34771b82f5ab926e4', // FUSE_ADMIN
+        '0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096' // ROLE_ADMIN
+      ],
+      description: 'Create FUSE_ADMIN role, assigning ROLE_ADMIN as the role admin'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'createRole(bytes32,bytes32)',
+      arguments: [
+        '0x0ff6b7c6babd735fee69a0a83901c004544f96c586fe8cf330aa1f80693916e9', // FEI_MINT_ADMIN
+        '0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096' // ROLE_ADMIN
+      ],
+      description: 'Create FEI_MINT_ADMIN role, assigning ROLE_ADMIN as the role admin'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'createRole(bytes32,bytes32)',
+      arguments: [
+        '0x181266465276a82f8dff2d683e001b5f74ffd4d54185db2f2a62bdb11f465a77', // PCV_ADMIN
+        '0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096' // ROLE_ADMIN
+      ],
+      description: 'Create PCV_ADMIN role, assigning ROLE_ADMIN as the role admin'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'createRole(bytes32,bytes32)',
+      arguments: [
+        '0x1749ca1ca3564d20da6efea465c2a5ae869a9e4b006da7035e688beb14d704e0', // PSM_ADMIN_ROLE
+        '0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096' // ROLE_ADMIN
+      ],
+      description: 'Create PSM_ADMIN_ROLE role, assigning ROLE_ADMIN as the role admin'
+    },
     }
   ],
   description: `

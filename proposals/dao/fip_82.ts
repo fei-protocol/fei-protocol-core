@@ -187,8 +187,9 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
     addresses.nopeDAO,
     addresses.podFactory
   );
-
   await validateTransferredRoleAdmins(contracts.core);
+  await validateNewCouncilRoles(contracts.core);
+  await validateContractAdmins(contracts.core);
 };
 
 // Validate that the relevant timelocks and Safes have the relevant TribeRoles
@@ -232,6 +233,7 @@ const validateContractRoles = async (
   expect(podFactoryAdminRole).to.be.true;
 };
 
+/// Validate that all non-major TribeRoles have had their admins transferred to the ROLE_ADMIN
 const validateTransferredRoleAdmins = async (core: Contract) => {
   const ROLE_ADMIN = ethers.utils.id('ROLE_ADMIN');
 
@@ -244,5 +246,20 @@ const validateTransferredRoleAdmins = async (core: Contract) => {
   await expect(core.getRoleAdmin(ethers.utils.id('SWAP_ADMIN_ROLE'))).to.be.equal(ROLE_ADMIN);
   await expect(core.getRoleAdmin(ethers.utils.id('VOTIUM_ADMIN_ROLE'))).to.be.equal(ROLE_ADMIN);
 };
+
+/// Validate that the expected new TribeRoles have been created
+const validateNewCouncilRoles = async (core: Contract) => {
+  const ROLE_ADMIN = ethers.utils.id('ROLE_ADMIN');
+
+  await expect(core.getRoleAdmin(ethers.utils.id('FUSE_ADMIN'))).to.be.equal(ROLE_ADMIN);
+  await expect(core.getRoleAdmin(ethers.utils.id('FEI_MINT_ADMIN'))).to.be.equal(ROLE_ADMIN);
+  await expect(core.getRoleAdmin(ethers.utils.id('PCV_ADMIN'))).to.be.equal(ROLE_ADMIN);
+  await expect(core.getRoleAdmin(ethers.utils.id('PSD_ADMIN'))).to.be.equal(ROLE_ADMIN);
+};
+
+/// Validate that the relevant contract admins have been set to their expected values
+const validateContractAdmins = async (core: Contract) => {
+
+}
 
 export { deploy, setup, teardown, validate };
