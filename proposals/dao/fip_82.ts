@@ -3,6 +3,7 @@ import { expect } from 'chai';
 import {
   DeployUpgradeFunc,
   NamedAddresses,
+  NamedContracts,
   SetupUpgradeFunc,
   TeardownUpgradeFunc,
   ValidateUpgradeFunc
@@ -258,8 +259,26 @@ const validateNewCouncilRoles = async (core: Contract) => {
 };
 
 /// Validate that the relevant contract admins have been set to their expected values
-const validateContractAdmins = async (core: Contract) => {
+const validateContractAdmins = async (contracts: NamedContracts) => {
 
+  await expect(contracts.fuseGuardian.CONTRACT_ADMIN_ROLE()).to.be.equal(ethers.utils.id('FUSE_ADMIN'));
+
+  await expect(contracts.optimisticMinter.CONTRACT_ADMIN_ROLE()).to.be.equal(ethers.utils.id('FEI_MINT_ADMIN'));
+  await expect(contracts.pcvEquityMinter.CONTRACT_ADMIN_ROLE()).to.be.equal(ethers.utils.id('FEI_MINT_ADMIN'));
+
+  await expect(contracts.ethLidoPCVDeposit.CONTRACT_ADMIN_ROLE()).to.be.equal(ethers.utils.id('PCV_ADMIN'));
+  await expect(contracts.indexDelegator.CONTRACT_ADMIN_ROLE()).to.be.equal(ethers.utils.id('PCV_ADMIN'));
+  await expect(contracts.ethTokemakPCVDeposit.CONTRACT_ADMIN_ROLE()).to.be.equal(ethers.utils.id('PCV_ADMIN'));
+  await expect(contracts.uniswapPCVDeposit.CONTRACT_ADMIN_ROLE()).to.be.equal(ethers.utils.id('PCV_ADMIN'));
+
+  await expect(contracts.daiPSMFeiSkimmer.CONTRACT_ADMIN_ROLE()).to.be.equal(ethers.utils.id('PCV_ADMIN'));
+  await expect(contracts.lusdPSMFeiSkimmer.CONTRACT_ADMIN_ROLE()).to.be.equal(ethers.utils.id('PCV_ADMIN'));
+  await expect(contracts.ethPSMFeiSkimmer.CONTRACT_ADMIN_ROLE()).to.be.equal(ethers.utils.id('PCV_ADMIN'));
+
+  await expect(contracts.aaveEthPCVDripController.CONTRACT_ADMIN_ROLE()).to.be.equal(ethers.utils.id('PCV_ADMIN'));
+  await expect(contracts.daiPCVDripController.CONTRACT_ADMIN_ROLE()).to.be.equal(ethers.utils.id('PCV_ADMIN'));
+  await expect(contracts.lusdPCVDripController.CONTRACT_ADMIN_ROLE()).to.be.equal(ethers.utils.id('PCV_ADMIN'));
+  await expect(contracts.compoundEthPCVDripController.CONTRACT_ADMIN_ROLE()).to.be.equal(ethers.utils.id('PCV_ADMIN'));
 }
 
 export { deploy, setup, teardown, validate };

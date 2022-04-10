@@ -295,6 +295,137 @@ const fip_82: ProposalDescription = {
       ],
       description: 'Create PSM_ADMIN_ROLE role, assigning ROLE_ADMIN as the role admin'
     },
+    /////////   Set the relevant contract admins to the newly created roles //////////
+    // FUSE_ADMIN
+    {
+      target: 'fuseGuardian',
+      values: '0',
+      method: 'setContractAdmin(bytes32)',
+      arguments: [
+        '0x7f85477db6c0857f19179a2b3846a7ddbc64caeeb3a02ef34771b82f5ab926e4' // FUSE_ADMIN
+      ],
+      description: 'Set the contract admin of the FuseGuardian to be the FUSE_ADMIN'
+    },
+    // FEI_MINT_ADMIN
+    // TODO: Verify that by FeiTimedMinter we mean OptimisticMinter. Source code suggests yes
+    {
+      target: 'optimisticMinter',
+      values: '0',
+      method: 'setContractAdminRole(bytes32)',
+      arguments: [
+        '0x0ff6b7c6babd735fee69a0a83901c004544f96c586fe8cf330aa1f80693916e9' // FEI_MINT_ADMIN
+      ],
+      description: 'Set the contract admin of the FeiTimedMinter to be the FEI_MINT_ADMIN'
+    },
+    {
+      target: 'pcvEquityMinter',
+      values: '0',
+      method: 'setContractAdminRole(bytes32)',
+      arguments: [
+        '0x0ff6b7c6babd735fee69a0a83901c004544f96c586fe8cf330aa1f80693916e9' // FEI_MINT_ADMIN
+      ],
+      description: 'Set the contract admin of the PCV Equity Minter to be the FEI_MINT_ADMIN'
+    },
+    /// PCV_ADMIN
+    {
+      target: 'ethLidoPCVDeposit',
+      values: '0',
+      method: 'setContractAdminRole(bytes32)',
+      arguments: [
+        '0x181266465276a82f8dff2d683e001b5f74ffd4d54185db2f2a62bdb11f465a77' // PCV_ADMIN
+      ],
+      description: 'Set the contract admin of the EthLidoPCVDeposit to be the PCV_ADMIN'
+    },
+    {
+      target: 'indexDelegator', // this is SnapshotDelegatorPCVDeposit
+      values: '0',
+      method: 'setContractAdminRole(bytes32)',
+      arguments: [
+        '0x181266465276a82f8dff2d683e001b5f74ffd4d54185db2f2a62bdb11f465a77' // PCV_ADMIN
+      ],
+      description: 'Set the contract admin of the indexDelegator to be the PCV_ADMIN'
+    },
+    {
+      target: 'ethTokemakPCVDeposit', // TokemakPCVDepositBase
+      values: '0',
+      method: 'setContractAdminRole(bytes32)',
+      arguments: [
+        '0x181266465276a82f8dff2d683e001b5f74ffd4d54185db2f2a62bdb11f465a77' // PCV_ADMIN
+      ],
+      description: 'Set the contract admin of the ethTokemarkPCVdeposit to be the PCV_ADMIN'
+    },
+    {
+      target: 'uniswapPCVDeposit',
+      values: '0',
+      method: 'setContractAdminRole(bytes32)',
+      arguments: [
+        '0x181266465276a82f8dff2d683e001b5f74ffd4d54185db2f2a62bdb11f465a77' // PCV_ADMIN
+      ],
+      description: 'Set the contract admin of the uniswapPCVDeposit to be the PCV_ADMIN'
+    },
+    {
+      target: 'daiPSMFeiSkimmer',
+      values: '0',
+      method: 'setContractAdminRole(bytes32)',
+      arguments: [
+        '0x181266465276a82f8dff2d683e001b5f74ffd4d54185db2f2a62bdb11f465a77' // PCV_ADMIN
+      ],
+      description: 'Set the contract admin of the DAI PSM Fei Skimmer to be the PCV_ADMIN'
+    },
+    {
+      target: 'lusdPSMFeiSkimmer',
+      values: '0',
+      method: 'setContractAdminRole(bytes32)',
+      arguments: [
+        '0x181266465276a82f8dff2d683e001b5f74ffd4d54185db2f2a62bdb11f465a77' // PCV_ADMIN
+      ],
+      description: 'Set the contract admin of the LUSD PSM Fei Skimmer to be the PCV_ADMIN'
+    },
+    {
+      target: 'ethPSMFeiSkimmer',
+      values: '0',
+      method: 'setContractAdminRole(bytes32)',
+      arguments: [
+        '0x181266465276a82f8dff2d683e001b5f74ffd4d54185db2f2a62bdb11f465a77' // PCV_ADMIN
+      ],
+      description: 'Set the contract admin of the ETH PSM Fei Skimmer to be the PCV_ADMIN'
+    },
+    {
+      target: 'aaveEthPCVDripController',
+      values: '0',
+      method: 'setContractAdminRole(bytes32)',
+      arguments: [
+        '0x181266465276a82f8dff2d683e001b5f74ffd4d54185db2f2a62bdb11f465a77' // PCV_ADMIN
+      ],
+      description: 'Set the contract admin of the Aave Eth PCV Drip Controller to be the PCV_ADMIN'
+    },
+    {
+      target: 'daiPCVDripController',
+      values: '0',
+      method: 'setContractAdminRole(bytes32)',
+      arguments: [
+        '0x181266465276a82f8dff2d683e001b5f74ffd4d54185db2f2a62bdb11f465a77' // PCV_ADMIN
+      ],
+      description: 'Set the contract admin of the DAI PCV Drip Controller to be the PCV_ADMIN'
+    },
+    {
+      target: 'lusdPCVDripController',
+      values: '0',
+      method: 'setContractAdminRole(bytes32)',
+      arguments: [
+        '0x181266465276a82f8dff2d683e001b5f74ffd4d54185db2f2a62bdb11f465a77' // PCV_ADMIN
+      ],
+      description: 'Set the contract admin of the LUSDC PCV Drip Controller to be the PCV_ADMIN'
+    },
+    {
+      target: 'compoundEthPCVDripController',
+      values: '0',
+      method: 'setContractAdminRole(bytes32)',
+      arguments: [
+        '0x181266465276a82f8dff2d683e001b5f74ffd4d54185db2f2a62bdb11f465a77' // PCV_ADMIN
+      ],
+      description: 'Set the contract admin of the Compound ETH PCV Drip Controller to be the PCV_ADMIN'
+    },
     }
   ],
   description: `
