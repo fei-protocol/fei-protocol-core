@@ -9,7 +9,7 @@ import {
 } from '@custom-types/types';
 import { getImpersonatedSigner } from '@test/helpers';
 import { tribeCouncilPodConfig, PodCreationConfig } from '@protocol/optimisticGovernance';
-import { abi as timelockABI } from '../../artifacts/contracts/dao/timelock/TimelockController.sol/TimelockController.json';
+import { abi as timelockABI } from '../../artifacts/@openzeppelin/contracts/governance/TimelockController.sol/TimelockController.json';
 import { abi as gnosisSafeABI } from '../../artifacts/contracts/pods/interfaces/IGnosisSafe.sol/IGnosisSafe.json';
 import { Contract } from 'ethers';
 
@@ -20,6 +20,7 @@ const validateArraysEqual = (arrayA: string[], arrayB: string[]) => {
 // Note: The Orca token is a slow rollout mechanism used by Orca. In order to successfully deploy pods
 // you need to have first been minted Orca tokens. Here, for testing purposes locally, we mint
 // the addresses that will create pods Orca tokens. TODO: Remove once have SHIP tokens on Mainnet
+// TODO: Remove now that have Orca tokens on my deployer address
 const mintOrcaToken = async (address: string) => {
   const inviteTokenAddress = '0x872EdeaD0c56930777A82978d4D7deAE3A2d1539';
   const priviledgedAddress = '0x2149A222feD42fefc3A120B3DdA34482190fC666';
@@ -43,23 +44,28 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   await podExecutor.deployTransaction.wait();
   logging && console.log('PodExecutor deployed to', podExecutor.address);
 
-  // 2. Deploy tribalCouncilPodFactory
+  // 2. Deploy PodAdminGateway contract
+  const podAdminGatewayFactory = await ethers.getContractFactory('PodAdminGateway');
+  const podAdminGateway = await podAdminGatewayFactory.deploy(
+    addresses.core,
+    addresses.orcaMemberToken,
+    addresses.orcaPodController
+  );
+  await podAdminGateway.deployTransaction.wait();
+  logging && console.log(`Deployed PodAdminGateway at ${podAdminGateway.address}`);
+
+  // 3. Deploy tribalCouncilPodFactory
   const podFactoryEthersFactory = await ethers.getContractFactory('PodFactory');
   const podFactory = await podFactoryEthersFactory.deploy(
     addresses.core, // core
-    addresses.podController, // podController
-    addresses.memberToken, // podMembershipToken
-    podExecutor.address // Public pod executor
+    addresses.orcaPodController, // podController
+    addresses.orcaMemberToken, // podMembershipToken
+    podExecutor.address, // Public pod executor
+    podAdminGateway.address // PodAdminGateway
   );
   await podFactory.deployTransaction.wait();
   await mintOrcaToken(podFactory.address);
   logging && console.log('Pod factory deployed to:', podFactory.address);
-
-  // 3. Deploy PodAdminGateway contract
-  const podAdminGatewayFactory = await ethers.getContractFactory('PodAdminGateway');
-  const podAdminGateway = await podAdminGatewayFactory.deploy(addresses.core, podFactory.address);
-  await podAdminGateway.deployTransaction.wait();
-  logging && console.log(`Deployed PodAdminGateway at ${podAdminGateway.address}`);
 
   // 4. Create TribalCouncil and Protocol Tier pods
   const tribalCouncilPod: PodCreationConfig = {
@@ -73,9 +79,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   };
 
   await podFactory.deployGenesisPod(tribalCouncilPod);
-
   const tribalCouncilPodId = await podFactory.latestPodId();
-
   logging && console.log('TribalCouncil pod Id: ', tribalCouncilPodId.toString());
 
   const councilTimelockAddress = await podFactory.getPodTimelock(tribalCouncilPodId);
@@ -84,7 +88,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   logging && console.log('Tribal council timelock deployed to: ', councilTimelockAddress);
   logging && console.log('Tribal council Gnosis safe is: ', councilSafeAddress);
 
-  // 5. Create contract artifacts for timelocks, so address is available to DAO script
+  // 5. Create contract artifacts for timelock, so address is available to DAO script
   const mockSigner = await getImpersonatedSigner(deployAddress);
   const tribalCouncilTimelock = new ethers.Contract(councilTimelockAddress, timelockABI, mockSigner);
   const tribalCouncilSafe = new ethers.Contract(councilSafeAddress, gnosisSafeABI, mockSigner);
@@ -95,7 +99,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   await governanceMetadataRegistry.deployTransaction.wait();
   logging && console.log('GovernanceMetadataRegistry deployed to:', governanceMetadataRegistry.address);
 
-  // 7. Deploy RoleBastion and RoleBastion, to allow TribalCouncil to manage roles
+  // 7. Deploy RoleBastion, to allow TribalCouncil to manage roles
   const roleBastionFactory = await ethers.getContractFactory('RoleBastion');
   const roleBastion = await roleBastionFactory.deploy(addresses.core);
   await roleBastion.deployTransaction.wait();
@@ -196,16 +200,13 @@ const validateTribeRoles = async (
   nopeDAOAddress: string,
   podFactoryAddress: string
 ) => {
-  // feiDAOTimelock added roles: POD_DEPLOYER_ROLE
-  const daoIsPodDeployer = await core.hasRole(ethers.utils.id('POD_DEPLOYER_ROLE'), feiDAOTimelockAddress);
+  // feiDAOTimelock added roles: ROLE_ADMIN
+  const daoIsPodDeployer = await core.hasRole(ethers.utils.id('ROLE_ADMIN'), feiDAOTimelockAddress);
   expect(daoIsPodDeployer).to.be.true;
 
-  // TribalCouncilTimelock roles: ROLE_ADMIN, POD_DEPLOYER_ROLE, POD_ADMIN, POD_VETO_ADMIN
+  // TribalCouncilTimelock roles: ROLE_ADMIN, POD_ADMIN, POD_VETO_ADMIN
   const councilIsRoleAdmin = await core.hasRole(ethers.utils.id('ROLE_ADMIN'), tribalCouncilTimelockAddress);
   expect(councilIsRoleAdmin).to.be.true;
-
-  const councilIsPodDeployer = await core.hasRole(ethers.utils.id('POD_DEPLOYER_ROLE'), tribalCouncilTimelockAddress);
-  expect(councilIsPodDeployer).to.be.true;
 
   const councilIsPodVetoAdmin = await core.hasRole(ethers.utils.id('POD_VETO_ADMIN'), tribalCouncilTimelockAddress);
   expect(councilIsPodVetoAdmin).to.be.true;

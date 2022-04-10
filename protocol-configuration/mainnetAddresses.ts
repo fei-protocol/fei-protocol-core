@@ -1846,12 +1846,12 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x2dC77678Be7F900e81c638b056F4835BB7203C96',
     category: AddressCategory.TBD
   },
-  podController: {
+  orcaPodController: {
     artifactName: 'IControllerV1',
     address: '0x17FDC2Eaf2bd46f3e1052CCbccD9e6AD0296C42c',
     category: AddressCategory.External
   },
-  memberToken: {
+  orcaMemberToken: {
     artifactName: 'IMemberToken',
     address: '0x0762aA185b6ed2dCA77945Ebe92De705e0C37AE3',
     category: AddressCategory.External

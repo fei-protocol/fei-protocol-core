@@ -131,7 +131,7 @@ function deployPodWithSystem(
     address podController,
     address memberToken,
     address podExecutor,
-    address podDeployer, // must be GOVERNOR or have POD_DEPLOYER_ROLE
+    address podDeployer, // must be GOVERNOR or have POD_ADMIN role
     Vm vm
 )
     returns (

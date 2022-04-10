@@ -138,20 +138,17 @@ contract PodFactoryIntegrationTest is DSTest {
     function testPodAdminCanDeploy() public {
         address dummyTribalCouncil = address(0x1);
 
-        // Create ROLE_ADMIN, POD_DEPLOYER role and grant ROLE_ADMIN to a dummyTribalCouncil address
+        // Create ROLE_ADMIN, POD_ADMIN role and grant ROLE_ADMIN to a dummyTribalCouncil address
         vm.startPrank(feiDAOTimelock);
         Core(core).createRole(TribeRoles.ROLE_ADMIN, TribeRoles.GOVERNOR);
-        Core(core).createRole(
-            TribeRoles.POD_ADMIN,
-            TribeRoles.ROLE_ADMIN
-        );
+        Core(core).createRole(TribeRoles.POD_ADMIN, TribeRoles.ROLE_ADMIN);
         Core(core).grantRole(TribeRoles.ROLE_ADMIN, dummyTribalCouncil);
         vm.stopPrank();
 
         // Grant POD_ADMIN to a dummy address
         address dummyPodAdmin = address(0x2);
         vm.prank(dummyTribalCouncil);
-        Core(core).grantRole(TribeRoles.POD_DEPLOYER_ROLE, dummyPodAdmin);
+        Core(core).grantRole(TribeRoles.POD_ADMIN, dummyPodAdmin);
 
         IPodFactory.PodConfig memory podConfig = getPodParamsWithTimelock();
         vm.prank(dummyPodAdmin);

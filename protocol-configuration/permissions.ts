@@ -35,8 +35,7 @@ export const permissions = {
   METAGOVERNANCE_TOKEN_STAKING: ['feiDAOTimelock', 'opsOptimisticTimelock'],
   METAGOVERNANCE_GAUGE_ADMIN: ['feiDAOTimelock', 'optimisticTimelock'],
   ROLE_ADMIN: ['feiDAOTimelock', 'tribalCouncilTimelock'],
-  POD_DEPLOYER_ROLE: ['feiDAOTimelock', 'tribalCouncilTimelock'],
-  POD_METADATA_REGISTER_ROLE: ['tribalCouncilSafe', 'protocolPodSafe'],
+  POD_METADATA_REGISTER_ROLE: ['tribalCouncilSafe'],
   POD_VETO_ADMIN: ['tribalCouncilTimelock', 'nopeDAO'],
-  POD_ADMIN: ['tribalCouncilTimelock']
+  POD_ADMIN: ['tribalCouncilTimelock', 'podFactory']
 };

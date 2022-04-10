@@ -49,9 +49,9 @@ export const tribeCouncilPodConfig: PodConfig = {
   members: tribalCouncilMembers,
   threshold: 5,
   label: '0x54726962616c436f756e63696c00000000000000000000000000000000000000', // TribalCouncil
-  ensString: 'tribalCouncil',
+  ensString: 'tribalcouncil',
   imageUrl: '',
-  minDelay: 345600,
+  minDelay: 345600, // 4 days
   numMembers: tribalCouncilMembers.length,
   placeHolderMembers: placeHolderCouncilMembers
 };
