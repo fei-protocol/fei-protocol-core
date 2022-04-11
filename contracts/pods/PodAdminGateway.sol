@@ -26,28 +26,6 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
     /// @notice Pod controller for the pods
     ControllerV1 public immutable podController;
 
-    /// @notice Access control modifier to extend CoreRef ACL to check for 6 roles
-    modifier hasAnyOfSixRoles(
-        bytes32 role1,
-        bytes32 role2,
-        bytes32 role3,
-        bytes32 role4,
-        bytes32 role5,
-        bytes32 role6
-    ) {
-        ICore core = core();
-        require(
-            core.hasRole(role1, msg.sender) ||
-                core.hasRole(role2, msg.sender) ||
-                core.hasRole(role3, msg.sender) ||
-                core.hasRole(role4, msg.sender) ||
-                core.hasRole(role5, msg.sender) ||
-                core.hasRole(role6, msg.sender),
-            "UNAUTHORIZED"
-        );
-        _;
-    }
-
     constructor(
         address _core,
         address _memberToken,
