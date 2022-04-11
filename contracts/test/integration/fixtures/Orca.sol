@@ -75,36 +75,40 @@ function mintOrcaTokens(
 }
 
 /// @notice Pod with a timelock
-function getPodParamsWithTimelock()
+function getPodParamsWithTimelock(address podAdmin)
     pure
     returns (IPodFactory.PodConfig memory)
 {
     bytes32 label = bytes32("hellopod");
     uint256 minDelay = 2 days;
-    return getBasePodParams(label, minDelay);
+    return getBasePodParams(label, minDelay, podAdmin);
 }
 
 /// @notice Pod without a timelock, minDelay is set to 0
-function getPodParamsWithNoTimelock()
+function getPodParamsWithNoTimelock(address podAdmin)
     pure
     returns (IPodFactory.PodConfig memory)
 {
     bytes32 label = bytes32("hellopod");
     uint256 minDelay = 0;
-    return getBasePodParams(label, minDelay);
+    return getBasePodParams(label, minDelay, podAdmin);
 }
 
 /// @notice Genesis pod, the TribalCouncil, with a timelock
-function getCouncilPodParams() pure returns (IPodFactory.PodConfig memory) {
-    bytes32 label = bytes32("tribalcouncil");
-    uint256 minDelay = 2 days;
-    return getBasePodParams(label, minDelay);
-}
-
-function getBasePodParams(bytes32 label, uint256 minDelay)
+function getCouncilPodParams(address podAdmin)
     pure
     returns (IPodFactory.PodConfig memory)
 {
+    bytes32 label = bytes32("tribalcouncil");
+    uint256 minDelay = 2 days;
+    return getBasePodParams(label, minDelay, podAdmin);
+}
+
+function getBasePodParams(
+    bytes32 label,
+    uint256 minDelay,
+    address podAdmin
+) pure returns (IPodFactory.PodConfig memory) {
     uint256 threshold = 1;
     string memory ensString = "hellopod.eth";
     string memory imageUrl = "hellopod.com";
@@ -120,6 +124,7 @@ function getBasePodParams(bytes32 label, uint256 minDelay)
         label: label,
         ensString: ensString,
         imageUrl: imageUrl,
+        admin: podAdmin,
         minDelay: minDelay
     });
     return config;
@@ -143,24 +148,25 @@ function deployPodWithSystem(
         IPodFactory.PodConfig memory
     )
 {
-    IPodFactory.PodConfig memory podConfig = getPodParamsWithTimelock();
-
-    // 1. Deploy PodAdminGateway
-    PodAdminGateway podAdminGateway = new PodAdminGateway(
-        MainnetAddresses.CORE,
-        memberToken,
-        podController
-    );
-
-    // 2. Deploy PodFactory
+    // 1. Deploy PodFactory
     PodFactory factory = new PodFactory(
         core,
         podController,
         memberToken,
-        podExecutor,
-        address(podAdminGateway)
+        podExecutor
     );
     mintOrcaTokens(address(factory), 2, vm);
+
+    // 2. Deploy PodAdminGateway
+    PodAdminGateway podAdminGateway = new PodAdminGateway(
+        MainnetAddresses.CORE,
+        memberToken,
+        podController,
+        address(factory)
+    );
+    IPodFactory.PodConfig memory podConfig = getPodParamsWithTimelock(
+        address(podAdminGateway)
+    );
 
     // Grant POD_ADMIN role to factory
     vm.startPrank(MainnetAddresses.FEI_DAO_TIMELOCK);

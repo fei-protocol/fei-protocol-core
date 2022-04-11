@@ -26,13 +26,18 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
     /// @notice Pod controller for the pods
     ControllerV1 public immutable podController;
 
+    /// @notice Pod factory
+    IPodFactory public immutable podFactory;
+
     constructor(
         address _core,
         address _memberToken,
-        address _podController
+        address _podController,
+        address _podFactory
     ) CoreRef(_core) {
         memberToken = MemberToken(_memberToken);
         podController = ControllerV1(_podController);
+        podFactory = IPodFactory(_podFactory);
     }
 
     ////////////////////////   GETTERS   ////////////////////////////////
@@ -211,6 +216,10 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
             getSpecificPodAdminRole(_podId)
         )
     {
+        require(
+            _podTimelock == podFactory.getPodTimelock(_podId),
+            "PodId and timelock mismatch"
+        );
         emit VetoTimelock(_podId, _podTimelock, _proposalId);
         TimelockController(payable(_podTimelock)).cancel(_proposalId);
     }

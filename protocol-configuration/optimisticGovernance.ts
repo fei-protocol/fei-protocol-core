@@ -17,6 +17,7 @@ export type PodCreationConfig = {
   label: string;
   ensString: string;
   imageUrl: string;
+  admin: string;
   minDelay: number;
 };
 

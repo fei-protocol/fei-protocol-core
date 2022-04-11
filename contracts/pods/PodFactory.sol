@@ -29,9 +29,6 @@ contract PodFactory is CoreRef, IPodFactory {
     /// @notice Public contract that will be granted to execute all timelocks created
     PodExecutor public immutable podExecutor;
 
-    /// @notice Pod admin gateway, through which admin functionality on pods is accessed
-    PodAdminGateway public immutable podAdminGateway;
-
     /// @notice Mapping between podId and it's timelock
     mapping(uint256 => address) public override getPodTimelock;
 
@@ -51,18 +48,15 @@ contract PodFactory is CoreRef, IPodFactory {
     /// @param _podController Orca pod controller
     /// @param _memberToken Membership token that manages the Orca pod membership
     /// @param _podExecutor Public contract that will be granted to execute all timelocks created
-    /// @param _podAdminGateway Pod admin gateway, through which admin functionality on pods is accessed
     constructor(
         address _core,
         address _podController,
         address _memberToken,
-        address _podExecutor,
-        address _podAdminGateway
+        address _podExecutor
     ) CoreRef(_core) {
         podExecutor = PodExecutor(_podExecutor);
         podController = ControllerV1(_podController);
         memberToken = MemberToken(_memberToken);
-        podAdminGateway = PodAdminGateway(_podAdminGateway);
     }
 
     ///////////////////// GETTERS ///////////////////////
@@ -193,7 +187,7 @@ contract PodFactory is CoreRef, IPodFactory {
         );
 
         // Disable membership transfers by default
-        podAdminGateway.lockMembershipTransfers(podId);
+        PodAdminGateway(_config.admin).lockMembershipTransfers(podId);
         return (podId, timelock, safe);
     }
 
@@ -217,7 +211,7 @@ contract PodFactory is CoreRef, IPodFactory {
             _config.label,
             _config.ensString,
             _config.imageUrl,
-            address(podAdminGateway),
+            _config.admin,
             podId
         );
 
@@ -233,15 +227,14 @@ contract PodFactory is CoreRef, IPodFactory {
                     safeAddress,
                     _config.minDelay,
                     address(podExecutor),
-                    address(podAdminGateway)
+                    _config.admin
                 )
             );
-
+            // Set mapping from podId to timelock for reference
             getPodTimelock[podId] = timelock;
             getPodId[timelock] = podId;
         }
 
-        // Set mapping from podId to timelock for reference
         podSafeAddresses.push(safeAddress);
         emit CreatePod(podId, safeAddress, timelock);
         return (podId, timelock, safeAddress);

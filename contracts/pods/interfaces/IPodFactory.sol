@@ -18,6 +18,7 @@ interface IPodFactory {
         bytes32 label;
         string ensString;
         string imageUrl;
+        address admin;
         uint256 minDelay;
     }
 
