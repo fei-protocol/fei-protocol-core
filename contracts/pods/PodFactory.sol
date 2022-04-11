@@ -29,9 +29,6 @@ contract PodFactory is CoreRef, IPodFactory {
     /// @notice Public contract that will be granted to execute all timelocks created
     PodExecutor public immutable podExecutor;
 
-    /// @notice Pod admin gateway, through which admin functionality on pods is accessed
-    PodAdminGateway public immutable podAdminGateway;
-
     /// @notice Mapping between podId and it's timelock
     mapping(uint256 => address) public override getPodTimelock;
 
@@ -39,7 +36,7 @@ contract PodFactory is CoreRef, IPodFactory {
     mapping(address => uint256) public getPodId;
 
     /// @notice Number of pods created
-    uint256 private numPods;
+    address[] private podSafeAddresses;
 
     /// @notice Track whether the one time use initial pod deploy has been used
     bool public genesisDeployed;
@@ -51,25 +48,32 @@ contract PodFactory is CoreRef, IPodFactory {
     /// @param _podController Orca pod controller
     /// @param _memberToken Membership token that manages the Orca pod membership
     /// @param _podExecutor Public contract that will be granted to execute all timelocks created
-    /// @param _podAdminGateway Pod admin gateway, through which admin functionality on pods is accessed
     constructor(
         address _core,
         address _podController,
         address _memberToken,
-        address _podExecutor,
-        address _podAdminGateway
+        address _podExecutor
     ) CoreRef(_core) {
         podExecutor = PodExecutor(_podExecutor);
         podController = ControllerV1(_podController);
         memberToken = MemberToken(_memberToken);
-        podAdminGateway = PodAdminGateway(_podAdminGateway);
     }
 
     ///////////////////// GETTERS ///////////////////////
 
     /// @notice Get the number of pods this factory has created
     function getNumberOfPods() external view override returns (uint256) {
-        return numPods;
+        return podSafeAddresses.length;
+    }
+
+    /// @notice Get the safe addresses of all pods created by this factory
+    function getPodSafeAddresses()
+        external
+        view
+        override
+        returns (address[] memory)
+    {
+        return podSafeAddresses;
     }
 
     /// @notice Get the member token
@@ -151,7 +155,7 @@ contract PodFactory is CoreRef, IPodFactory {
     //////////////////// STATE-CHANGING API ////////////////////
 
     /// @notice Deploy the genesis pod, one time use method
-    function deployGenesisPod(PodConfig calldata _config)
+    function deployCouncilPod(PodConfig calldata _config)
         external
         override
         returns (
@@ -183,7 +187,7 @@ contract PodFactory is CoreRef, IPodFactory {
         );
 
         // Disable membership transfers by default
-        podAdminGateway.lockMembershipTransfers(podId);
+        PodAdminGateway(_config.admin).lockMembershipTransfers(podId);
         return (podId, timelock, safe);
     }
 
@@ -207,10 +211,11 @@ contract PodFactory is CoreRef, IPodFactory {
             _config.label,
             _config.ensString,
             _config.imageUrl,
-            address(podAdminGateway),
+            _config.admin,
             podId
         );
 
+        // Timelock will by default be address(0) if no `minDelay` is provided
         address timelock;
         if (_config.minDelay != 0) {
             require(
@@ -222,17 +227,15 @@ contract PodFactory is CoreRef, IPodFactory {
                     safeAddress,
                     _config.minDelay,
                     address(podExecutor),
-                    address(podAdminGateway)
+                    _config.admin
                 )
             );
-        } else {
-            timelock = address(0);
+            // Set mapping from podId to timelock for reference
+            getPodTimelock[podId] = timelock;
+            getPodId[timelock] = podId;
         }
 
-        // Set mapping from podId to timelock for reference
-        getPodTimelock[podId] = timelock;
-        getPodId[timelock] = podId;
-        numPods += 1;
+        podSafeAddresses.push(safeAddress);
         emit CreatePod(podId, safeAddress, timelock);
         return (podId, timelock, safeAddress);
     }

@@ -26,35 +26,18 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
     /// @notice Pod controller for the pods
     ControllerV1 public immutable podController;
 
-    /// @notice Access control modifier to extend CoreRef ACL to check for 6 roles
-    modifier hasAnyOfSixRoles(
-        bytes32 role1,
-        bytes32 role2,
-        bytes32 role3,
-        bytes32 role4,
-        bytes32 role5,
-        bytes32 role6
-    ) {
-        ICore core = core();
-        require(
-            core.hasRole(role1, msg.sender) ||
-                core.hasRole(role2, msg.sender) ||
-                core.hasRole(role3, msg.sender) ||
-                core.hasRole(role4, msg.sender) ||
-                core.hasRole(role5, msg.sender) ||
-                core.hasRole(role6, msg.sender),
-            "UNAUTHORIZED"
-        );
-        _;
-    }
+    /// @notice Pod factory
+    IPodFactory public immutable podFactory;
 
     constructor(
         address _core,
         address _memberToken,
-        address _podController
+        address _podController,
+        address _podFactory
     ) CoreRef(_core) {
         memberToken = MemberToken(_memberToken);
         podController = ControllerV1(_podController);
+        podFactory = IPodFactory(_podFactory);
     }
 
     ////////////////////////   GETTERS   ////////////////////////////////
@@ -233,6 +216,10 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
             getSpecificPodAdminRole(_podId)
         )
     {
+        require(
+            _podTimelock == podFactory.getPodTimelock(_podId),
+            "PodId and timelock mismatch"
+        );
         emit VetoTimelock(_podId, _podTimelock, _proposalId);
         TimelockController(payable(_podTimelock)).cancel(_proposalId);
     }

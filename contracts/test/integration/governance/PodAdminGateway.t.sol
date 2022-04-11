@@ -33,16 +33,15 @@ contract PodAdminGatewayIntegrationTest is DSTest {
     address feiDAOTimelock = MainnetAddresses.FEI_DAO_TIMELOCK;
 
     function setUp() public {
-        // 1.0 Deploy pod admin gateway, to expose pod admin functionality
-        podAdminGateway = new PodAdminGateway(core, memberToken, podController);
+        // 1. Deploy pod factory
+        factory = new PodFactory(core, podController, memberToken, podExecutor);
 
-        // 2.0 Deploy pod factory
-        factory = new PodFactory(
+        // 2. Deploy pod admin gateway, to expose pod admin functionality
+        podAdminGateway = new PodAdminGateway(
             core,
-            podController,
             memberToken,
-            podExecutor,
-            address(podAdminGateway)
+            podController,
+            address(factory)
         );
 
         // Grant the factory the relevant roles to disable membership locks
@@ -52,7 +51,9 @@ contract PodAdminGatewayIntegrationTest is DSTest {
         vm.stopPrank();
 
         // 3. Make config for pod, mint Orca tokens to factory
-        IPodFactory.PodConfig memory config = getPodParamsWithTimelock();
+        IPodFactory.PodConfig memory config = getPodParamsWithTimelock(
+            address(podAdminGateway)
+        );
         podConfig = config;
         mintOrcaTokens(address(factory), 2, vm);
 
@@ -301,5 +302,13 @@ contract PodAdminGatewayIntegrationTest is DSTest {
             bytes("TimelockController: operation cannot be cancelled")
         );
         podAdminGateway.veto(podId, timelock, bytes32("5"));
+    }
+
+    /// @notice Validate that can not veto for a mismatched podId and timelock
+    function testCanNotVetoForMismatchPodIdTimelock() public {
+        address fakeTimelock = address(0x3);
+        vm.prank(feiDAOTimelock);
+        vm.expectRevert(bytes("PodId and timelock mismatch"));
+        podAdminGateway.veto(podId, fakeTimelock, bytes32("5"));
     }
 }

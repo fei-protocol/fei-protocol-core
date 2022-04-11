@@ -19,10 +19,8 @@ const validateArraysEqual = (arrayA: string[], arrayB: string[]) => {
   arrayA.every((a) => expect(arrayB.map((b) => b.toLowerCase()).includes(a.toLowerCase())));
 };
 
-// Note: The Orca token is a slow rollout mechanism used by Orca. In order to successfully deploy pods
-// you need to have first been minted Orca tokens. Here, for testing purposes locally, we mint
-// the addresses that will create pods Orca tokens. TODO: Remove once have SHIP tokens on Mainnet
-// TODO: Remove now that have Orca tokens on my deployer address
+// Transfers Orca tokens from deployer address to the factory, so that it can deploy pods
+// Requirement of holding Orca tokens to deploy is a slow rollout mechanism used by Orca
 const transferOrcaTokens = async (
   orcaERC20Address: string,
   deployAddressWithOrca: string,
@@ -44,26 +42,26 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   await podExecutor.deployTransaction.wait();
   logging && console.log('PodExecutor deployed to', podExecutor.address);
 
-  // 2. Deploy PodAdminGateway contract
-  const podAdminGatewayFactory = await ethers.getContractFactory('PodAdminGateway');
-  const podAdminGateway = await podAdminGatewayFactory.deploy(
-    addresses.core,
-    addresses.orcaMemberToken,
-    addresses.orcaPodController
-  );
-  await podAdminGateway.deployTransaction.wait();
-  logging && console.log(`Deployed PodAdminGateway at ${podAdminGateway.address}`);
-
-  // 3. Deploy tribalCouncilPodFactory
+  // 2. Deploy tribalCouncilPodFactory
   const podFactoryEthersFactory = await ethers.getContractFactory('PodFactory');
   const podFactory = await podFactoryEthersFactory.deploy(
     addresses.core, // core
     addresses.orcaPodController, // podController
     addresses.orcaMemberToken, // podMembershipToken
-    podExecutor.address, // Public pod executor
-    podAdminGateway.address // PodAdminGateway
+    podExecutor.address // Public pod executor
   );
   await podFactory.deployTransaction.wait();
+
+  // 3. Deploy PodAdminGateway contract
+  const podAdminGatewayFactory = await ethers.getContractFactory('PodAdminGateway');
+  const podAdminGateway = await podAdminGatewayFactory.deploy(
+    addresses.core,
+    addresses.orcaMemberToken,
+    addresses.orcaPodController,
+    podFactory.address
+  );
+  await podAdminGateway.deployTransaction.wait();
+  logging && console.log(`Deployed PodAdminGateway at ${podAdminGateway.address}`);
   await transferOrcaTokens(addresses.orcaShipToken, deployAddress, podFactory.address, 2);
   logging && console.log('Pod factory deployed to:', podFactory.address);
 
@@ -74,10 +72,11 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     label: tribeCouncilPodConfig.label,
     ensString: tribeCouncilPodConfig.ensString,
     imageUrl: tribeCouncilPodConfig.imageUrl,
-    minDelay: tribeCouncilPodConfig.minDelay
+    minDelay: tribeCouncilPodConfig.minDelay,
+    admin: podAdminGateway.address
   };
 
-  const genesisTx = await podFactory.deployGenesisPod(tribalCouncilPod);
+  const genesisTx = await podFactory.deployCouncilPod(tribalCouncilPod);
   const { args } = (await genesisTx.wait()).events.find((elem) => elem.event === 'CreatePod');
   const tribalCouncilPodId = args.podId;
   logging && console.log('TribalCouncil pod Id: ', tribalCouncilPodId.toString());
