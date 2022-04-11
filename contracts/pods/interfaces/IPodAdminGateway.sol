@@ -42,9 +42,5 @@ interface IPodAdminGateway {
 
     function unlockMembershipTransfers(uint256 _podId) external;
 
-    function veto(
-        uint256 _podId,
-        address _podTimelock,
-        bytes32 proposalId
-    ) external;
+    function veto(uint256 _podId, bytes32 proposalId) external;
 }

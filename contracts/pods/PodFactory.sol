@@ -39,7 +39,7 @@ contract PodFactory is CoreRef, IPodFactory {
     address[] private podSafeAddresses;
 
     /// @notice Track whether the one time use initial pod deploy has been used
-    bool public genesisDeployed;
+    bool public tribalCouncilDeployed;
 
     /// @notice Minimum delay of a pod timelock, if one is to be created with one
     uint256 public constant MIN_TIMELOCK_DELAY = 1 days;
@@ -164,8 +164,8 @@ contract PodFactory is CoreRef, IPodFactory {
             address
         )
     {
-        require(!genesisDeployed, "Genesis pod already deployed");
-        genesisDeployed = true;
+        require(!tribalCouncilDeployed, "Genesis pod already deployed");
+        tribalCouncilDeployed = true;
         return _createOptimisticPod(_config);
     }
 

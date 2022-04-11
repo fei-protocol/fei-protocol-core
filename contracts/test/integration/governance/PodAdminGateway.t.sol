@@ -280,7 +280,7 @@ contract PodAdminGatewayIntegrationTest is DSTest {
         vm.expectRevert(
             bytes("TimelockController: operation cannot be cancelled")
         );
-        podAdminGateway.veto(podId, timelock, bytes32("5"));
+        podAdminGateway.veto(podId, bytes32("5"));
     }
 
     /// @notice Validate that the specific pod amdin can veto
@@ -301,14 +301,6 @@ contract PodAdminGatewayIntegrationTest is DSTest {
         vm.expectRevert(
             bytes("TimelockController: operation cannot be cancelled")
         );
-        podAdminGateway.veto(podId, timelock, bytes32("5"));
-    }
-
-    /// @notice Validate that can not veto for a mismatched podId and timelock
-    function testCanNotVetoForMismatchPodIdTimelock() public {
-        address fakeTimelock = address(0x3);
-        vm.prank(feiDAOTimelock);
-        vm.expectRevert(bytes("PodId and timelock mismatch"));
-        podAdminGateway.veto(podId, fakeTimelock, bytes32("5"));
+        podAdminGateway.veto(podId, bytes32("5"));
     }
 }

@@ -200,11 +200,7 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
     /// @notice Allow a proposal to be vetoed in a pod timelock
     /// @dev Permissioned to GOVERNOR, POD_VETO_ADMIN, GUARDIAN, POD_ADMIN and the specific
     ///      pod admin and guardian roles
-    function veto(
-        uint256 _podId,
-        address _podTimelock,
-        bytes32 _proposalId
-    )
+    function veto(uint256 _podId, bytes32 _proposalId)
         external
         override
         hasAnyOfSixRoles(
@@ -216,10 +212,7 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
             getSpecificPodAdminRole(_podId)
         )
     {
-        require(
-            _podTimelock == podFactory.getPodTimelock(_podId),
-            "PodId and timelock mismatch"
-        );
+        address _podTimelock = podFactory.getPodTimelock(_podId);
         emit VetoTimelock(_podId, _podTimelock, _proposalId);
         TimelockController(payable(_podTimelock)).cancel(_proposalId);
     }
