@@ -183,9 +183,7 @@ describe('Pod operation and veto', function () {
     // User proposes on NopeDAO
     const nopeDAO = contracts.nopeDAO;
     const description = 'Veto proposal';
-    const calldatas = [
-      contracts.podAdminGateway.interface.encodeFunctionData('veto', [podId, podTimelock.address, timelockProposalId])
-    ];
+    const calldatas = [contracts.podAdminGateway.interface.encodeFunctionData('veto', [podId, timelockProposalId])];
     const targets = [contractAddresses.podAdminGateway];
     const values = [0];
 
