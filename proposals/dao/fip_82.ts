@@ -3,7 +3,6 @@ import { expect } from 'chai';
 import {
   DeployUpgradeFunc,
   NamedAddresses,
-  NamedContracts,
   SetupUpgradeFunc,
   TeardownUpgradeFunc,
   ValidateUpgradeFunc
@@ -187,10 +186,6 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
     addresses.nopeDAO,
     addresses.podFactory
   );
-  await validateTransferredRoleAdmins(contracts.core);
-  await validateNewCouncilRoles(contracts.core);
-  await validateContractAdmins(contracts);
-  await validateTribalCouncilRoles(contracts.core, addresses.tribalCouncilTimelock);
 };
 
 // Validate that the relevant timelocks and Safes have the relevant TribeRoles
@@ -232,61 +227,6 @@ const validateContractRoles = async (
   // PodFactory role: POD_ADMIN
   const podFactoryAdminRole = await core.hasRole(ethers.utils.id('POD_ADMIN'), podFactoryAddress);
   expect(podFactoryAdminRole).to.be.true;
-};
-
-/// Validate that all non-major TribeRoles have had their admins transferred to the ROLE_ADMIN
-const validateTransferredRoleAdmins = async (core: Contract) => {
-  const ROLE_ADMIN = ethers.utils.id('ROLE_ADMIN');
-
-  await expect(core.getRoleAdmin(ethers.utils.id('ORACLE_ADMIN_ROLE'))).to.be.equal(ROLE_ADMIN);
-  await expect(core.getRoleAdmin(ethers.utils.id('TRIBAL_CHIEF_ADMIN_ROLE'))).to.be.equal(ROLE_ADMIN);
-  await expect(core.getRoleAdmin(ethers.utils.id('PCV_GUARDIAN_ADMIN_ROLE'))).to.be.equal(ROLE_ADMIN);
-  await expect(core.getRoleAdmin(ethers.utils.id('METAGOVERNANCE_VOTE_ADMIN'))).to.be.equal(ROLE_ADMIN);
-  await expect(core.getRoleAdmin(ethers.utils.id('METAGOVERNANCE_TOKEN_STAKING'))).to.be.equal(ROLE_ADMIN);
-  await expect(core.getRoleAdmin(ethers.utils.id('METAGOVERNANCE_GAUGE_ADMIN'))).to.be.equal(ROLE_ADMIN);
-  await expect(core.getRoleAdmin(ethers.utils.id('SWAP_ADMIN_ROLE'))).to.be.equal(ROLE_ADMIN);
-  await expect(core.getRoleAdmin(ethers.utils.id('VOTIUM_ADMIN_ROLE'))).to.be.equal(ROLE_ADMIN);
-};
-
-/// Validate that the expected new TribeRoles have been created
-const validateNewCouncilRoles = async (core: Contract) => {
-  const ROLE_ADMIN = ethers.utils.id('ROLE_ADMIN');
-
-  await expect(core.getRoleAdmin(ethers.utils.id('FUSE_ADMIN'))).to.be.equal(ROLE_ADMIN);
-  await expect(core.getRoleAdmin(ethers.utils.id('FEI_MINT_ADMIN'))).to.be.equal(ROLE_ADMIN);
-  await expect(core.getRoleAdmin(ethers.utils.id('PCV_ADMIN'))).to.be.equal(ROLE_ADMIN);
-  await expect(core.getRoleAdmin(ethers.utils.id('PSD_ADMIN'))).to.be.equal(ROLE_ADMIN);
-};
-
-/// Validate that the relevant contract admins have been set to their expected values
-const validateContractAdmins = async (contracts: NamedContracts) => {
-  await expect(contracts.fuseGuardian.CONTRACT_ADMIN_ROLE()).to.be.equal(ethers.utils.id('FUSE_ADMIN'));
-
-  await expect(contracts.optimisticMinter.CONTRACT_ADMIN_ROLE()).to.be.equal(ethers.utils.id('FEI_MINT_ADMIN'));
-  await expect(contracts.pcvEquityMinter.CONTRACT_ADMIN_ROLE()).to.be.equal(ethers.utils.id('FEI_MINT_ADMIN'));
-
-  await expect(contracts.ethLidoPCVDeposit.CONTRACT_ADMIN_ROLE()).to.be.equal(ethers.utils.id('PCV_ADMIN'));
-  await expect(contracts.indexDelegator.CONTRACT_ADMIN_ROLE()).to.be.equal(ethers.utils.id('PCV_ADMIN'));
-  await expect(contracts.ethTokemakPCVDeposit.CONTRACT_ADMIN_ROLE()).to.be.equal(ethers.utils.id('PCV_ADMIN'));
-  await expect(contracts.uniswapPCVDeposit.CONTRACT_ADMIN_ROLE()).to.be.equal(ethers.utils.id('PCV_ADMIN'));
-
-  await expect(contracts.daiPSMFeiSkimmer.CONTRACT_ADMIN_ROLE()).to.be.equal(ethers.utils.id('PCV_ADMIN'));
-  await expect(contracts.lusdPSMFeiSkimmer.CONTRACT_ADMIN_ROLE()).to.be.equal(ethers.utils.id('PCV_ADMIN'));
-  await expect(contracts.ethPSMFeiSkimmer.CONTRACT_ADMIN_ROLE()).to.be.equal(ethers.utils.id('PCV_ADMIN'));
-
-  await expect(contracts.aaveEthPCVDripController.CONTRACT_ADMIN_ROLE()).to.be.equal(ethers.utils.id('PCV_ADMIN'));
-  await expect(contracts.daiPCVDripController.CONTRACT_ADMIN_ROLE()).to.be.equal(ethers.utils.id('PCV_ADMIN'));
-  await expect(contracts.lusdPCVDripController.CONTRACT_ADMIN_ROLE()).to.be.equal(ethers.utils.id('PCV_ADMIN'));
-  await expect(contracts.compoundEthPCVDripController.CONTRACT_ADMIN_ROLE()).to.be.equal(ethers.utils.id('PCV_ADMIN'));
-};
-
-const validateTribalCouncilRoles = async (core: Contract, tribalCouncilTimelockAddress: string) => {
-  await expect(core.hasRole(ethers.utils.id('FUSE_ADMIN'), tribalCouncilTimelockAddress)).to.be.true;
-  await expect(core.hasRole(ethers.utils.id('FEI_MINT_ADMIN'), tribalCouncilTimelockAddress)).to.be.true;
-  await expect(core.hasRole(ethers.utils.id('PCV_ADMIN'), tribalCouncilTimelockAddress)).to.be.true;
-  await expect(core.hasRole(ethers.utils.id('PCV_GUARDIAN_ADMIN_ROLE'), tribalCouncilTimelockAddress)).to.be.true;
-  await expect(core.hasRole(ethers.utils.id('ORACLE_ADMIN_ROLE'), tribalCouncilTimelockAddress)).to.be.true;
-  await expect(core.hasRole(ethers.utils.id('PSM_ADMIN_ROLE'), tribalCouncilTimelockAddress)).to.be.true;
 };
 
 export { deploy, setup, teardown, validate };

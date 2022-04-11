@@ -62,7 +62,7 @@ library TribeRoles {
     /// @notice admin of the Fuse protocol
     bytes32 internal constant FUSE_ADMIN = keccak256("FUSE_ADMIN");
     /// @notice admin of minting Fei for specific scoped contracts
-    bytes32 internal constant FEI_MINT_ADMIN = keccak256("FUSE_MINT_ADMIN");
+    bytes32 internal constant FEI_MINT_ADMIN = keccak256("FEI_MINT_ADMIN");
 
     /// @notice admin of minting Fei for specific scoped contracts
     bytes32 internal constant PCV_ADMIN = keccak256("PCV_ADMIN");
