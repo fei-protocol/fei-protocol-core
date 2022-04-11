@@ -39,7 +39,7 @@ contract PodFactory is CoreRef, IPodFactory {
     mapping(address => uint256) public getPodId;
 
     /// @notice Number of pods created
-    uint256 private numPods;
+    address[] private podSafeAddresses;
 
     /// @notice Track whether the one time use initial pod deploy has been used
     bool public genesisDeployed;
@@ -69,7 +69,17 @@ contract PodFactory is CoreRef, IPodFactory {
 
     /// @notice Get the number of pods this factory has created
     function getNumberOfPods() external view override returns (uint256) {
-        return numPods;
+        return podSafeAddresses.length;
+    }
+
+    /// @notice Get the safe addresses of all pods created by this factory
+    function getPodSafeAddresses()
+        external
+        view
+        override
+        returns (address[] memory)
+    {
+        return podSafeAddresses;
     }
 
     /// @notice Get the member token
@@ -151,7 +161,7 @@ contract PodFactory is CoreRef, IPodFactory {
     //////////////////// STATE-CHANGING API ////////////////////
 
     /// @notice Deploy the genesis pod, one time use method
-    function deployGenesisPod(PodConfig calldata _config)
+    function deployCouncilPod(PodConfig calldata _config)
         external
         override
         returns (
@@ -211,6 +221,7 @@ contract PodFactory is CoreRef, IPodFactory {
             podId
         );
 
+        // Timelock will by default be address(0) if no `minDelay` is provided
         address timelock;
         if (_config.minDelay != 0) {
             require(
@@ -225,14 +236,13 @@ contract PodFactory is CoreRef, IPodFactory {
                     address(podAdminGateway)
                 )
             );
-        } else {
-            timelock = address(0);
+
+            getPodTimelock[podId] = timelock;
+            getPodId[timelock] = podId;
         }
 
         // Set mapping from podId to timelock for reference
-        getPodTimelock[podId] = timelock;
-        getPodId[timelock] = podId;
-        numPods += 1;
+        podSafeAddresses.push(safeAddress);
         emit CreatePod(podId, safeAddress, timelock);
         return (podId, timelock, safeAddress);
     }

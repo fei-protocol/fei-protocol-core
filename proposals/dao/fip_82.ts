@@ -76,7 +76,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     minDelay: tribeCouncilPodConfig.minDelay
   };
 
-  const genesisTx = await podFactory.deployGenesisPod(tribalCouncilPod);
+  const genesisTx = await podFactory.deployCouncilPod(tribalCouncilPod);
   const { args } = (await genesisTx.wait()).events.find((elem) => elem.event === 'CreatePod');
   const tribalCouncilPodId = args.podId;
   logging && console.log('TribalCouncil pod Id: ', tribalCouncilPodId.toString());

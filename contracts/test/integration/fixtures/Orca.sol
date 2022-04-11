@@ -95,7 +95,7 @@ function getPodParamsWithNoTimelock()
 }
 
 /// @notice Genesis pod, the TribalCouncil, with a timelock
-function getGenesisPodParams() pure returns (IPodFactory.PodConfig memory) {
+function getCouncilPodParams() pure returns (IPodFactory.PodConfig memory) {
     bytes32 label = bytes32("tribalcouncil");
     uint256 minDelay = 2 days;
     return getBasePodParams(label, minDelay);

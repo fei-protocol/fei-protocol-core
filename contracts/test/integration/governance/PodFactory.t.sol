@@ -12,7 +12,7 @@ import {TribeRoles} from "../../../core/TribeRoles.sol";
 import {PodAdminGateway} from "../../../pods/PodAdminGateway.sol";
 
 import {DSTest} from "../../utils/DSTest.sol";
-import {mintOrcaTokens, getPodParamsWithTimelock, getGenesisPodParams, getPodParamsWithNoTimelock} from "../fixtures/Orca.sol";
+import {mintOrcaTokens, getPodParamsWithTimelock, getCouncilPodParams, getPodParamsWithNoTimelock} from "../fixtures/Orca.sol";
 import {DummyStorage} from "../../utils/Fixtures.sol";
 import {Vm} from "../../utils/Vm.sol";
 import {MainnetAddresses} from "../fixtures/MainnetAddresses.sol";
@@ -69,6 +69,9 @@ contract PodFactoryIntegrationTest is DSTest {
         assertEq(address(factory.getMemberToken()), memberToken);
         assertEq(factory.MIN_TIMELOCK_DELAY(), 1 days);
 
+        address[] memory podSafeAddresses = factory.getPodSafeAddresses();
+        assertEq(podSafeAddresses.length, 0);
+
         // Validate has PodAdmin role
         bool hasPodAdminRole = Core(core).hasRole(
             TribeRoles.POD_ADMIN,
@@ -81,38 +84,41 @@ contract PodFactoryIntegrationTest is DSTest {
     }
 
     function testDeployGenesisPod() public {
-        IPodFactory.PodConfig memory genesisConfig = getGenesisPodParams();
+        IPodFactory.PodConfig memory councilConfig = getCouncilPodParams();
         (
-            uint256 genesisPodId,
-            address genesisTimelock,
-            address genesisSafe
-        ) = factory.deployGenesisPod(genesisConfig);
+            uint256 councilPodId,
+            address councilTimelock,
+            address councilSafe
+        ) = factory.deployCouncilPod(councilConfig);
 
-        uint256 numMembers = factory.getNumMembers(genesisPodId);
-        assertEq(numMembers, genesisConfig.members.length);
+        uint256 numMembers = factory.getNumMembers(councilPodId);
+        assertEq(numMembers, councilConfig.members.length);
 
-        uint256 storedThreshold = factory.getPodThreshold(genesisPodId);
-        assertEq(storedThreshold, genesisConfig.threshold);
+        uint256 storedThreshold = factory.getPodThreshold(councilPodId);
+        assertEq(storedThreshold, councilConfig.threshold);
 
-        address[] memory storedMembers = factory.getPodMembers(genesisPodId);
-        assertEq(storedMembers[0], genesisConfig.members[0]);
-        assertEq(storedMembers[1], genesisConfig.members[1]);
-        assertEq(storedMembers[2], genesisConfig.members[2]);
+        address[] memory storedMembers = factory.getPodMembers(councilPodId);
+        assertEq(storedMembers[0], councilConfig.members[0]);
+        assertEq(storedMembers[1], councilConfig.members[1]);
+        assertEq(storedMembers[2], councilConfig.members[2]);
 
         assertEq(factory.getNumberOfPods(), 1);
+        address[] memory podSafeAddresses = factory.getPodSafeAddresses();
+        assertEq(podSafeAddresses.length, 1);
+        assertEq(podSafeAddresses[0], councilSafe);
     }
 
     function testCanOnlyDeployGenesisOnce() public {
-        IPodFactory.PodConfig memory genesisConfig = getGenesisPodParams();
+        IPodFactory.PodConfig memory councilConfig = getCouncilPodParams();
         (
-            uint256 genesisPodId,
-            address genesisTimelock,
+            uint256 councilPodId,
+            address councilTimelock,
             address genesisSafe
-        ) = factory.deployGenesisPod(genesisConfig);
+        ) = factory.deployCouncilPod(councilConfig);
 
         IPodFactory.PodConfig memory config = getPodParamsWithTimelock();
         vm.expectRevert(bytes("Genesis pod already deployed"));
-        factory.deployGenesisPod(config);
+        factory.deployCouncilPod(config);
     }
 
     /// @notice Validate that a non-authorised address fails to create a pod
@@ -189,8 +195,10 @@ contract PodFactoryIntegrationTest is DSTest {
         assertEq(storedMembers[1], podConfig.members[1]);
         assertEq(storedMembers[2], podConfig.members[2]);
 
-        uint256 numPods = factory.getNumberOfPods();
-        assertEq(numPods, 1);
+        assertEq(factory.getNumberOfPods(), 1);
+        address[] memory podSafeAddresses = factory.getPodSafeAddresses();
+        assertEq(podSafeAddresses.length, 1);
+        assertEq(podSafeAddresses[0], safe);
 
         ///// Validate timelock component of pod
         assertEq(timelock, factory.getPodTimelock(podId));
@@ -277,16 +285,24 @@ contract PodFactoryIntegrationTest is DSTest {
         podConfig.label = bytes32("A");
 
         vm.prank(feiDAOTimelock);
-        (uint256 podAId, , ) = factory.createOptimisticPod(podConfig);
+        (uint256 podAId, address podASafeAddress, ) = factory
+            .createOptimisticPod(podConfig);
         assertEq(factory.getNumberOfPods(), 1);
+        address[] memory firstPodAddresses = factory.getPodSafeAddresses();
+        assertEq(firstPodAddresses[0], podASafeAddress);
 
         address podAAdmin = ControllerV1(podController).podAdmin(podAId);
         assertEq(podAAdmin, podAdmin);
 
         podConfig.label = bytes32("B");
         vm.prank(feiDAOTimelock);
-        (uint256 podBId, , ) = factory.createOptimisticPod(podConfig);
+        (uint256 podBId, address podBSafeAddress, ) = factory
+            .createOptimisticPod(podConfig);
         assertEq(factory.getNumberOfPods(), 2);
+
+        address[] memory secondPodAddresses = factory.getPodSafeAddresses();
+        assertEq(secondPodAddresses[0], podASafeAddress);
+        assertEq(secondPodAddresses[1], podBSafeAddress);
 
         assertEq(podBId, podAId + 1);
         address podBAdmin = ControllerV1(podController).podAdmin(podBId);

@@ -32,7 +32,7 @@ interface IPodFactory {
         address indexed newController
     );
 
-    function deployGenesisPod(PodConfig calldata _config)
+    function deployCouncilPod(PodConfig calldata _config)
         external
         returns (
             uint256,
@@ -41,6 +41,8 @@ interface IPodFactory {
         );
 
     function getMemberToken() external view returns (MemberToken);
+
+    function getPodSafeAddresses() external view returns (address[] memory);
 
     function getNumberOfPods() external view returns (uint256);
 
