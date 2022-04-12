@@ -52,6 +52,7 @@ library TribeRoles {
     /// @notice admin of PCVGuardian
     bytes32 internal constant PCV_GUARDIAN_ADMIN =
         keccak256("PCV_GUARDIAN_ADMIN_ROLE");
+    
     /// @notice admin of the peg stability modules
     bytes32 internal constant PSM_ADMIN_ROLE =
         keccak256("PSM_ADMIN_ROLE");
@@ -61,14 +62,12 @@ library TribeRoles {
 
     /// @notice admin of the Fuse protocol
     bytes32 internal constant FUSE_ADMIN = keccak256("FUSE_ADMIN");
+
     /// @notice admin of minting Fei for specific scoped contracts
     bytes32 internal constant FEI_MINT_ADMIN = keccak256("FEI_MINT_ADMIN");
 
     /// @notice admin of minting Fei for specific scoped contracts
-    bytes32 internal constant PCV_ADMIN = keccak256("PCV_ADMIN");
-
-    /// @notice capable of vetoing DAO votes or optimistic timelocks
-    bytes32 internal constant VETO_ADMIN = keccak256("VETO_ADMIN");
+    bytes32 internal constant PCV_MINOR_PARAM_ROLE = keccak256("PCV_MINOR_PARAM_ROLE");
 
     /// @notice capable of setting FEI Minters within global rate limits and caps
     bytes32 internal constant MINTER_ADMIN = keccak256("MINTER_ADMIN");

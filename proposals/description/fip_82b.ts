@@ -9,6 +9,46 @@ const fip_82b: ProposalDescription = {
       values: '0',
       method: 'createRole(bytes32,bytes32)',
       arguments: [
+        '0xf0b50f04623eeaacfa1f202e062a3001c925a35c6b75d6903e67b43f44bbf152', // PARAMETER_ADMIN
+        '0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096' // ROLE_ADMIN
+      ],
+      description: 'Transfer PARAMETER role admin from 0x0 to ROLE_ADMIN'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'createRole(bytes32,bytes32)',
+      arguments: [
+        '0xc7be67d109cc181c862ac2eaed91ab54817910d73264a8ad5d87592516929a15', // MINOR_ROLE_ADMIN
+        '0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096' // ROLE_ADMIN
+      ],
+      description: 'Transfer MINOR_ROLE_ADMIN role admin from 0x0 to ROLE_ADMIN'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'createRole(bytes32,bytes32)',
+      arguments: [
+        '0x498a9dae57f391d8efcc7bb3e7440ad6a25b1261044ef1b555c5484cb9f67659', // MINTER_ADMIN
+        '0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096' // ROLE_ADMIN
+      ],
+      description: 'Transfer MINTER_ADMIN role admin from 0x0 to ROLE_ADMIN'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'createRole(bytes32,bytes32)',
+      arguments: [
+        '0x6cad5c16d973906992d8e1412f4aefeca4ae44220c203bbcd6e8e66e7c717be0', // OPTIMISTIC_ADMIN
+        '0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096' // ROLE_ADMIN
+      ],
+      description: 'Transfer OPTIMISTIC_ADMIN role admin from 0x0 to ROLE_ADMIN'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'createRole(bytes32,bytes32)',
+      arguments: [
         '0xc307c44629779eb8fc0b85f224c3d22f5876a6c84de0ee42d481eb7814f0d3a8', // ORACLE_ADMIN
         '0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096' // ROLE_ADMIN
       ],
@@ -110,10 +150,10 @@ const fip_82b: ProposalDescription = {
       values: '0',
       method: 'createRole(bytes32,bytes32)',
       arguments: [
-        '0x181266465276a82f8dff2d683e001b5f74ffd4d54185db2f2a62bdb11f465a77', // PCV_ADMIN
+        '0x46797b318ce8c2d83979760ef100a5c0fdb980de4b574d6142ce4d0afce307ed', // PCV_MINOR_PARAM_ROLE
         '0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096' // ROLE_ADMIN
       ],
-      description: 'Create PCV_ADMIN role, assigning ROLE_ADMIN as the role admin'
+      description: 'Create PCV_MINOR_PARAM_ROLE role, assigning ROLE_ADMIN as the role admin'
     },
     {
       target: 'core',
@@ -155,107 +195,107 @@ const fip_82b: ProposalDescription = {
         '0x4a4f013dcba6b46103e81e286782135c0dda175e82564e878ae500734753e55e' // FEI_MINT_ADMIN
       ],
       description: 'Set the contract admin of the PCV Equity Minter to be the FEI_MINT_ADMIN'
-    }
-    /// PCV_ADMIN
+    },
+    /// PCV_MINOR_PARAM_ROLE
     {
       target: 'ethLidoPCVDeposit',
       values: '0',
       method: 'setContractAdminRole(bytes32)',
       arguments: [
-        '0x181266465276a82f8dff2d683e001b5f74ffd4d54185db2f2a62bdb11f465a77' // PCV_ADMIN
+        '0x46797b318ce8c2d83979760ef100a5c0fdb980de4b574d6142ce4d0afce307ed' // PCV_MINOR_PARAM_ROLE
       ],
-      description: 'Set the contract admin of the EthLidoPCVDeposit to be the PCV_ADMIN'
+      description: 'Set the contract admin of the EthLidoPCVDeposit to be the PCV_MINOR_PARAM_ROLE'
     },
     {
       target: 'indexDelegator', // this is SnapshotDelegatorPCVDeposit
       values: '0',
       method: 'setContractAdminRole(bytes32)',
       arguments: [
-        '0x181266465276a82f8dff2d683e001b5f74ffd4d54185db2f2a62bdb11f465a77' // PCV_ADMIN
+        '0x46797b318ce8c2d83979760ef100a5c0fdb980de4b574d6142ce4d0afce307ed' // PCV_MINOR_PARAM_ROLE
       ],
-      description: 'Set the contract admin of the indexDelegator to be the PCV_ADMIN'
-    }
+      description: 'Set the contract admin of the indexDelegator to be the PCV_MINOR_PARAM_ROLE'
+    },
     {
       target: 'ethTokemakPCVDeposit', // TokemakPCVDepositBase
       values: '0',
       method: 'setContractAdminRole(bytes32)',
       arguments: [
-        '0x181266465276a82f8dff2d683e001b5f74ffd4d54185db2f2a62bdb11f465a77' // PCV_ADMIN
+        '0x46797b318ce8c2d83979760ef100a5c0fdb980de4b574d6142ce4d0afce307ed' // PCV_MINOR_PARAM_ROLE
       ],
-      description: 'Set the contract admin of the ethTokemarkPCVdeposit to be the PCV_ADMIN'
+      description: 'Set the contract admin of the ethTokemarkPCVdeposit to be the PCV_MINOR_PARAM_ROLE'
     },
     {
       target: 'uniswapPCVDeposit',
       values: '0',
       method: 'setContractAdminRole(bytes32)',
       arguments: [
-        '0x181266465276a82f8dff2d683e001b5f74ffd4d54185db2f2a62bdb11f465a77' // PCV_ADMIN
+        '0x46797b318ce8c2d83979760ef100a5c0fdb980de4b574d6142ce4d0afce307ed' // PCV_MINOR_PARAM_ROLE
       ],
-      description: 'Set the contract admin of the uniswapPCVDeposit to be the PCV_ADMIN'
+      description: 'Set the contract admin of the uniswapPCVDeposit to be the PCV_MINOR_PARAM_ROLE'
     },
     {
       target: 'daiPSMFeiSkimmer',
       values: '0',
       method: 'setContractAdminRole(bytes32)',
       arguments: [
-        '0x181266465276a82f8dff2d683e001b5f74ffd4d54185db2f2a62bdb11f465a77' // PCV_ADMIN
+        '0x46797b318ce8c2d83979760ef100a5c0fdb980de4b574d6142ce4d0afce307ed' // PCV_MINOR_PARAM_ROLE
       ],
-      description: 'Set the contract admin of the DAI PSM Fei Skimmer to be the PCV_ADMIN'
+      description: 'Set the contract admin of the DAI PSM Fei Skimmer to be the PCV_MINOR_PARAM_ROLE'
     },
     {
       target: 'lusdPSMFeiSkimmer',
       values: '0',
       method: 'setContractAdminRole(bytes32)',
       arguments: [
-        '0x181266465276a82f8dff2d683e001b5f74ffd4d54185db2f2a62bdb11f465a77' // PCV_ADMIN
+        '0x46797b318ce8c2d83979760ef100a5c0fdb980de4b574d6142ce4d0afce307ed' // PCV_MINOR_PARAM_ROLE
       ],
-      description: 'Set the contract admin of the LUSD PSM Fei Skimmer to be the PCV_ADMIN'
+      description: 'Set the contract admin of the LUSD PSM Fei Skimmer to be the PCV_MINOR_PARAM_ROLE'
     },
     {
       target: 'ethPSMFeiSkimmer',
       values: '0',
       method: 'setContractAdminRole(bytes32)',
       arguments: [
-        '0x181266465276a82f8dff2d683e001b5f74ffd4d54185db2f2a62bdb11f465a77' // PCV_ADMIN
+        '0x46797b318ce8c2d83979760ef100a5c0fdb980de4b574d6142ce4d0afce307ed' // PCV_MINOR_PARAM_ROLE
       ],
-      description: 'Set the contract admin of the ETH PSM Fei Skimmer to be the PCV_ADMIN'
+      description: 'Set the contract admin of the ETH PSM Fei Skimmer to be the PCV_MINOR_PARAM_ROLE'
     },
     {
       target: 'aaveEthPCVDripController',
       values: '0',
       method: 'setContractAdminRole(bytes32)',
       arguments: [
-        '0x181266465276a82f8dff2d683e001b5f74ffd4d54185db2f2a62bdb11f465a77' // PCV_ADMIN
+        '0x46797b318ce8c2d83979760ef100a5c0fdb980de4b574d6142ce4d0afce307ed' // PCV_MINOR_PARAM_ROLE
       ],
-      description: 'Set the contract admin of the Aave Eth PCV Drip Controller to be the PCV_ADMIN'
+      description: 'Set the contract admin of the Aave Eth PCV Drip Controller to be the PCV_MINOR_PARAM_ROLE'
     },
     {
       target: 'daiPCVDripController',
       values: '0',
       method: 'setContractAdminRole(bytes32)',
       arguments: [
-        '0x181266465276a82f8dff2d683e001b5f74ffd4d54185db2f2a62bdb11f465a77' // PCV_ADMIN
+        '0x46797b318ce8c2d83979760ef100a5c0fdb980de4b574d6142ce4d0afce307ed' // PCV_MINOR_PARAM_ROLE
       ],
-      description: 'Set the contract admin of the DAI PCV Drip Controller to be the PCV_ADMIN'
+      description: 'Set the contract admin of the DAI PCV Drip Controller to be the PCV_MINOR_PARAM_ROLE'
     },
     {
       target: 'lusdPCVDripController',
       values: '0',
       method: 'setContractAdminRole(bytes32)',
       arguments: [
-        '0x181266465276a82f8dff2d683e001b5f74ffd4d54185db2f2a62bdb11f465a77' // PCV_ADMIN
+        '0x46797b318ce8c2d83979760ef100a5c0fdb980de4b574d6142ce4d0afce307ed' // PCV_MINOR_PARAM_ROLE
       ],
-      description: 'Set the contract admin of the LUSDC PCV Drip Controller to be the PCV_ADMIN'
+      description: 'Set the contract admin of the LUSDC PCV Drip Controller to be the PCV_MINOR_PARAM_ROLE'
     },
     {
       target: 'compoundEthPCVDripController',
       values: '0',
       method: 'setContractAdminRole(bytes32)',
       arguments: [
-        '0x181266465276a82f8dff2d683e001b5f74ffd4d54185db2f2a62bdb11f465a77' // PCV_ADMIN
+        '0x46797b318ce8c2d83979760ef100a5c0fdb980de4b574d6142ce4d0afce307ed' // PCV_MINOR_PARAM_ROLE
       ],
-      description: 'Set the contract admin of the Compound ETH PCV Drip Controller to be the PCV_ADMIN'
-    }
+      description: 'Set the contract admin of the Compound ETH PCV Drip Controller to be the PCV_MINOR_PARAM_ROLE'
+    },
     //////////  Grant the Tribal Council timelock the relevant roles //////////
     {
       target: 'core',
@@ -282,10 +322,10 @@ const fip_82b: ProposalDescription = {
       values: '0',
       method: 'grantRole(bytes32,address)',
       arguments: [
-        '0x181266465276a82f8dff2d683e001b5f74ffd4d54185db2f2a62bdb11f465a77', // PCV_ADMIN
+        '0x46797b318ce8c2d83979760ef100a5c0fdb980de4b574d6142ce4d0afce307ed', // PCV_MINOR_PARAM_ROLE
         '{tribalCouncilTimelock}'
       ],
-      description: 'Grant TribalCouncil timelock the PCV_ADMIN role'
+      description: 'Grant TribalCouncil timelock the PCV_MINOR_PARAM_ROLE role'
     },
     {
       target: 'core',
