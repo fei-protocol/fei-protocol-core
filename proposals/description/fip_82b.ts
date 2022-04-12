@@ -178,43 +178,44 @@ const fip_82b: ProposalDescription = {
     },
     // FEI_MINT_ADMIN
     // TODO: Verify that by FeiTimedMinter we mean OptimisticMinter. Source code suggests yes
-    {
-      target: 'optimisticMinter',
-      values: '0',
-      method: 'setContractAdminRole(bytes32)',
-      arguments: [
-        '0x4a4f013dcba6b46103e81e286782135c0dda175e82564e878ae500734753e55e' // FEI_MINT_ADMIN
-      ],
-      description: 'Set the contract admin of the FeiTimedMinter to be the FEI_MINT_ADMIN'
-    },
-    {
-      target: 'pcvEquityMinter',
-      values: '0',
-      method: 'setContractAdminRole(bytes32)',
-      arguments: [
-        '0x4a4f013dcba6b46103e81e286782135c0dda175e82564e878ae500734753e55e' // FEI_MINT_ADMIN
-      ],
-      description: 'Set the contract admin of the PCV Equity Minter to be the FEI_MINT_ADMIN'
-    },
-    /// PCV_MINOR_PARAM_ROLE
-    {
-      target: 'ethLidoPCVDeposit',
-      values: '0',
-      method: 'setContractAdminRole(bytes32)',
-      arguments: [
-        '0x46797b318ce8c2d83979760ef100a5c0fdb980de4b574d6142ce4d0afce307ed' // PCV_MINOR_PARAM_ROLE
-      ],
-      description: 'Set the contract admin of the EthLidoPCVDeposit to be the PCV_MINOR_PARAM_ROLE'
-    },
-    {
-      target: 'indexDelegator', // this is SnapshotDelegatorPCVDeposit
-      values: '0',
-      method: 'setContractAdminRole(bytes32)',
-      arguments: [
-        '0x46797b318ce8c2d83979760ef100a5c0fdb980de4b574d6142ce4d0afce307ed' // PCV_MINOR_PARAM_ROLE
-      ],
-      description: 'Set the contract admin of the indexDelegator to be the PCV_MINOR_PARAM_ROLE'
-    },
+    // {
+    //   target: 'optimisticMinter',
+    //   values: '0',
+    //   method: 'setContractAdminRole(bytes32)',
+    //   arguments: [
+    //     '0x4a4f013dcba6b46103e81e286782135c0dda175e82564e878ae500734753e55e' // FEI_MINT_ADMIN
+    //   ],
+    //   description: 'Set the contract admin of the FeiTimedMinter to be the FEI_MINT_ADMIN'
+    // },
+    // Missing revert data in call exception
+    // {
+    //   target: 'pcvEquityMinter',
+    //   values: '0',
+    //   method: 'setContractAdminRole(bytes32)',
+    //   arguments: [
+    //     '0x4a4f013dcba6b46103e81e286782135c0dda175e82564e878ae500734753e55e' // FEI_MINT_ADMIN
+    //   ],
+    //   description: 'Set the contract admin of the PCV Equity Minter to be the FEI_MINT_ADMIN'
+    // },
+    // // / PCV_MINOR_PARAM_ROLE
+    // {
+    //   target: 'ethLidoPCVDeposit',
+    //   values: '0',
+    //   method: 'setContractAdminRole(bytes32)',
+    //   arguments: [
+    //     '0x46797b318ce8c2d83979760ef100a5c0fdb980de4b574d6142ce4d0afce307ed' // PCV_MINOR_PARAM_ROLE
+    //   ],
+    //   description: 'Set the contract admin of the EthLidoPCVDeposit to be the PCV_MINOR_PARAM_ROLE'
+    // },
+    // {
+    //   target: 'indexDelegator', // this is SnapshotDelegatorPCVDeposit
+    //   values: '0',
+    //   method: 'setContractAdminRole(bytes32)',
+    //   arguments: [
+    //     '0x46797b318ce8c2d83979760ef100a5c0fdb980de4b574d6142ce4d0afce307ed' // PCV_MINOR_PARAM_ROLE
+    //   ],
+    //   description: 'Set the contract admin of the indexDelegator to be the PCV_MINOR_PARAM_ROLE'
+    // },
     {
       target: 'ethTokemakPCVDeposit', // TokemakPCVDepositBase
       values: '0',
