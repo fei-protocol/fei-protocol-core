@@ -3,7 +3,7 @@ import { ProposalDescription } from '@custom-types/types';
 const fip_82b: ProposalDescription = {
   title: 'FIP-82b: Authorise the TribalCouncil with necessary roles',
   commands: [
-    ///////// Transfer all non-major role admins to the ROLE_ADMIN, to allow TribalCouncil to manage ////////
+    /////// Transfer all non-major role admins to the ROLE_ADMIN, to allow TribalCouncil to manage ////////
     {
       target: 'core',
       values: '0',
@@ -165,7 +165,7 @@ const fip_82b: ProposalDescription = {
       ],
       description: 'Create PSM_ADMIN_ROLE role, assigning ROLE_ADMIN as the role admin'
     },
-    /////////   Set the relevant contract admins to the newly created roles //////////
+    ///////   Set the relevant contract admins to the newly created roles //////////
     // FUSE_ADMIN
     {
       target: 'fuseGuardian',
@@ -177,33 +177,33 @@ const fip_82b: ProposalDescription = {
       description: 'Set the contract admin of the FuseGuardian to be the FUSE_ADMIN'
     },
     // FEI_MINT_ADMIN
-    // {
-    //   target: 'optimisticMinter',
-    //   values: '0',
-    //   method: 'setContractAdminRole(bytes32)',
-    //   arguments: [
-    //     '0x4a4f013dcba6b46103e81e286782135c0dda175e82564e878ae500734753e55e' // FEI_MINT_ADMIN
-    //   ],
-    //   description: 'Set the contract admin of the FeiTimedMinter to be the FEI_MINT_ADMIN'
-    // },
-    // {
-    //   target: 'pcvEquityMinter',
-    //   values: '0',
-    //   method: 'setContractAdminRole(bytes32)',
-    //   arguments: [
-    //     '0x4a4f013dcba6b46103e81e286782135c0dda175e82564e878ae500734753e55e' // FEI_MINT_ADMIN
-    //   ],
-    //   description: 'Set the contract admin of the PCV Equity Minter to be the FEI_MINT_ADMIN'
-    // },
-    // {
-    //   target: 'indexDelegator', // this is SnapshotDelegatorPCVDeposit
-    //   values: '0',
-    //   method: 'setContractAdminRole(bytes32)',
-    //   arguments: [
-    //     '0x46797b318ce8c2d83979760ef100a5c0fdb980de4b574d6142ce4d0afce307ed' // PCV_MINOR_PARAM_ROLE
-    //   ],
-    //   description: 'Set the contract admin of the indexDelegator to be the PCV_MINOR_PARAM_ROLE'
-    // },
+    {
+      target: 'optimisticMinter',
+      values: '0',
+      method: 'setContractAdminRole(bytes32)',
+      arguments: [
+        '0x4a4f013dcba6b46103e81e286782135c0dda175e82564e878ae500734753e55e' // FEI_MINT_ADMIN
+      ],
+      description: 'Set the contract admin of the FeiTimedMinter to be the FEI_MINT_ADMIN'
+    },
+    {
+      target: 'pcvEquityMinter',
+      values: '0',
+      method: 'setContractAdminRole(bytes32)',
+      arguments: [
+        '0x4a4f013dcba6b46103e81e286782135c0dda175e82564e878ae500734753e55e' // FEI_MINT_ADMIN
+      ],
+      description: 'Set the contract admin of the PCV Equity Minter to be the FEI_MINT_ADMIN'
+    },
+    {
+      target: 'indexDelegator', // this is SnapshotDelegatorPCVDeposit
+      values: '0',
+      method: 'setContractAdminRole(bytes32)',
+      arguments: [
+        '0x46797b318ce8c2d83979760ef100a5c0fdb980de4b574d6142ce4d0afce307ed' // PCV_MINOR_PARAM_ROLE
+      ],
+      description: 'Set the contract admin of the indexDelegator to be the PCV_MINOR_PARAM_ROLE'
+    },
     {
       target: 'ethTokemakPCVDeposit', // TokemakPCVDepositBase
       values: '0',
