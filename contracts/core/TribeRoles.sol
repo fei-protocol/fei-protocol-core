@@ -48,6 +48,8 @@ library TribeRoles {
     /// @notice manages TribalChief incentives and related functionality.
     bytes32 internal constant TRIBAL_CHIEF_ADMIN =
         keccak256("TRIBAL_CHIEF_ADMIN_ROLE");
+
+    /// @notice admin of the Tokemak PCV deposits
     bytes32 internal constant TOKEMAK_DEPOSIT_ADMIN_ROLE =
         keccak256("TOKEMAK_DEPOSIT_ADMIN_ROLE");
 
