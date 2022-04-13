@@ -29,6 +29,7 @@ export const permissions = {
   BALANCER_MANAGER_ADMIN_ROLE: [],
   PSM_ADMIN_ROLE: [],
   TRIBAL_CHIEF_ADMIN_ROLE: ['optimisticTimelock', 'tribalChiefSyncV2'],
+  FUSE_ADMIN: ['optimisticTimelock', 'tribalChiefSyncV2'],
   VOTIUM_ADMIN_ROLE: ['opsOptimisticTimelock', 'protocolPodTimelock'],
   PCV_GUARDIAN_ADMIN_ROLE: ['optimisticTimelock'],
   METAGOVERNANCE_VOTE_ADMIN: ['feiDAOTimelock', 'opsOptimisticTimelock'],
@@ -36,6 +37,9 @@ export const permissions = {
   METAGOVERNANCE_GAUGE_ADMIN: ['feiDAOTimelock', 'optimisticTimelock'],
   ROLE_ADMIN: ['feiDAOTimelock', 'tribalCouncilTimelock'],
   POD_METADATA_REGISTER_ROLE: ['tribalCouncilSafe'],
+  FEI_MINT_ADMIN: [],
   POD_VETO_ADMIN: ['nopeDAO'],
+  POD_ADMIN: ['tribalCouncilTimelock', 'podFactory'],
+  PCV_MINOR_PARAM_ROLE: ['core', 'feiDAOTimelock', 'roleBastion', 'optimisticTimelock'],
   TOKEMAK_DEPOSIT_ADMIN_ROLE: ['optimisticTimelock']
 };

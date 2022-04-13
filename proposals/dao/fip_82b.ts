@@ -53,6 +53,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   await validateNewCouncilRoles(contracts.core);
   await validateContractAdmins(contracts);
   await validateTribalCouncilRoles(contracts.core, addresses.tribalCouncilTimelock);
+  await validateCallingContractsHaveNewAdmin(contracts.core, addresses);
 };
 
 /// Validate that all non-major TribeRoles have had their admins transferred to the ROLE_ADMIN
@@ -117,6 +118,20 @@ const validateContractAdmins = async (contracts: NamedContracts) => {
   expect(await contracts.compoundEthPCVDripController.CONTRACT_ADMIN_ROLE()).to.be.equal(
     ethers.utils.id('PCV_MINOR_PARAM_ROLE')
   );
+};
+
+const validateCallingContractsHaveNewAdmin = async (core: Contract, addresses: NamedAddresses) => {
+  // TRIBAL_CHIEF_ADMIN_ROLE : FUSE_ADMIN
+  expect(await core.hasRole(ethers.utils.id('FUSE_ADMIN'), addresses.optimisticTimelock)).to.be.true;
+  expect(await core.hasRole(ethers.utils.id('FUSE_ADMIN'), addresses.tribalChiefSyncV2)).to.be.true;
+
+  // TOKEMAK_DEPOSIT_ADMIN_ROLE : PCV_MINOR_PARAM_ROLE
+  expect(await core.hasRole(ethers.utils.id('TOKEMAK_DEPOSIT_ADMIN_ROLE'), addresses.optimisticTimelock)).to.be.true;
+
+  // GOVERNOR : PCV_MINOR_PARAM_ROLE
+  expect(await core.hasRole(ethers.utils.id('PCV_MINOR_PARAM_ROLE'), addresses.feiDAOTimelock)).to.be.true;
+  expect(await core.hasRole(ethers.utils.id('PCV_MINOR_PARAM_ROLE'), addresses.core)).to.be.true;
+  expect(await core.hasRole(ethers.utils.id('PCV_MINOR_PARAM_ROLE'), addresses.roleBastion)).to.be.true;
 };
 
 const validateTribalCouncilRoles = async (core: Contract, tribalCouncilTimelockAddress: string) => {

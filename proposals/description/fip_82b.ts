@@ -357,6 +357,67 @@ const fip_82b: ProposalDescription = {
         '{tribalCouncilTimelock}'
       ],
       description: 'Grant TribalCouncil timelock the PSM_ADMIN_ROLE'
+    },
+    ////////  Grant contract admin calling contracts the new roles /////////
+    {
+      target: 'core',
+      values: '0',
+      method: 'grantRole(bytes32,address)',
+      arguments: [
+        '0x46797b318ce8c2d83979760ef100a5c0fdb980de4b574d6142ce4d0afce307ed', // PCV_MINOR_PARAM_ROLE
+        '{core}'
+      ],
+      description: 'Grant core the PCV_MINOR_PARAM_ROLE role'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'grantRole(bytes32,address)',
+      arguments: [
+        '0x46797b318ce8c2d83979760ef100a5c0fdb980de4b574d6142ce4d0afce307ed', // PCV_MINOR_PARAM_ROLE
+        '{feiDAOTimelock}'
+      ],
+      description: 'Grant feiDAOtimelock the PCV_MINOR_PARAM_ROLE role'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'grantRole(bytes32,address)',
+      arguments: [
+        '0x46797b318ce8c2d83979760ef100a5c0fdb980de4b574d6142ce4d0afce307ed', // PCV_MINOR_PARAM_ROLE
+        '{roleBastion}'
+      ],
+      description: 'Grant roleBastion the PCV_MINOR_PARAM_ROLE role'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'grantRole(bytes32,address)',
+      arguments: [
+        '0x7f85477db6c0857f19179a2b3846a7ddbc64caeeb3a02ef34771b82f5ab926e4', // FUSE_ADMIN
+        '{optimisticTimelock}'
+      ],
+      description: 'Grant optimistic timelock the FUSE_ADMIN role'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'grantRole(bytes32,address)',
+      arguments: [
+        '0x7f85477db6c0857f19179a2b3846a7ddbc64caeeb3a02ef34771b82f5ab926e4', // FUSE_ADMIN
+        '{tribalChiefSyncV2}'
+      ],
+      description: 'Grant tribalChiefSyncV2 the FUSE_ADMIN role'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'grantRole(bytes32,address)',
+      arguments: [
+        '0x6c9ecf07a5886fd74a8d32f4d3c317a7d5e5b5c7a073a3ab06c217e9ce5288e3', // TOKEMAK_DEPOSIT_ADMIN_ROLE
+        '{optimisticTimelock}'
+      ],
+      description: 'Grant optimisticTimelock the TOKEMAK_DEPOSIT_ADMIN_ROLE role'
     }
   ],
   description: `
