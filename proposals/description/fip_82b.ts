@@ -177,7 +177,6 @@ const fip_82b: ProposalDescription = {
       description: 'Set the contract admin of the FuseGuardian to be the FUSE_ADMIN'
     },
     // FEI_MINT_ADMIN
-    // TODO: Verify that by FeiTimedMinter we mean OptimisticMinter. Source code suggests yes
     // {
     //   target: 'optimisticMinter',
     //   values: '0',
@@ -187,7 +186,6 @@ const fip_82b: ProposalDescription = {
     //   ],
     //   description: 'Set the contract admin of the FeiTimedMinter to be the FEI_MINT_ADMIN'
     // },
-    // Missing revert data in call exception
     // {
     //   target: 'pcvEquityMinter',
     //   values: '0',
@@ -196,16 +194,6 @@ const fip_82b: ProposalDescription = {
     //     '0x4a4f013dcba6b46103e81e286782135c0dda175e82564e878ae500734753e55e' // FEI_MINT_ADMIN
     //   ],
     //   description: 'Set the contract admin of the PCV Equity Minter to be the FEI_MINT_ADMIN'
-    // },
-    // // / PCV_MINOR_PARAM_ROLE
-    // {
-    //   target: 'ethLidoPCVDeposit',
-    //   values: '0',
-    //   method: 'setContractAdminRole(bytes32)',
-    //   arguments: [
-    //     '0x46797b318ce8c2d83979760ef100a5c0fdb980de4b574d6142ce4d0afce307ed' // PCV_MINOR_PARAM_ROLE
-    //   ],
-    //   description: 'Set the contract admin of the EthLidoPCVDeposit to be the PCV_MINOR_PARAM_ROLE'
     // },
     // {
     //   target: 'indexDelegator', // this is SnapshotDelegatorPCVDeposit
@@ -394,6 +382,26 @@ const fip_82b: ProposalDescription = {
       values: '0',
       method: 'grantRole(bytes32,address)',
       arguments: [
+        '0x46797b318ce8c2d83979760ef100a5c0fdb980de4b574d6142ce4d0afce307ed', // PCV_MINOR_PARAM_ROLE
+        '{opsOptimisticTimelock}'
+      ],
+      description: 'Grant opsOptimisticTimelock the PCV_MINOR_PARAM_ROLE role'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'grantRole(bytes32,address)',
+      arguments: [
+        '0x46797b318ce8c2d83979760ef100a5c0fdb980de4b574d6142ce4d0afce307ed', // PCV_MINOR_PARAM_ROLE
+        '{optimisticTimelock}'
+      ],
+      description: 'Grant optimisticTimelock the PCV_MINOR_PARAM_ROLE role'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'grantRole(bytes32,address)',
+      arguments: [
         '0x7f85477db6c0857f19179a2b3846a7ddbc64caeeb3a02ef34771b82f5ab926e4', // FUSE_ADMIN
         '{optimisticTimelock}'
       ],
@@ -408,6 +416,36 @@ const fip_82b: ProposalDescription = {
         '{tribalChiefSyncV2}'
       ],
       description: 'Grant tribalChiefSyncV2 the FUSE_ADMIN role'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'grantRole(bytes32,address)',
+      arguments: [
+        '0x4a4f013dcba6b46103e81e286782135c0dda175e82564e878ae500734753e55e', // FEI_MINT_ADMIN
+        '{core}'
+      ],
+      description: 'Grant core the FEI_MINT_ADMIN role'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'grantRole(bytes32,address)',
+      arguments: [
+        '0x4a4f013dcba6b46103e81e286782135c0dda175e82564e878ae500734753e55e', // FEI_MINT_ADMIN
+        '{feiDAOTimelock}'
+      ],
+      description: 'Grant feiDAOTimelock the FEI_MINT_ADMIN role'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'grantRole(bytes32,address)',
+      arguments: [
+        '0x4a4f013dcba6b46103e81e286782135c0dda175e82564e878ae500734753e55e', // FEI_MINT_ADMIN
+        '{roleBastion}'
+      ],
+      description: 'Grant roleBastion the FEI_MINT_ADMIN role'
     },
     {
       target: 'core',

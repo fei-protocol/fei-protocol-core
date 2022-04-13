@@ -92,10 +92,7 @@ const validateContractAdmins = async (contracts: NamedContracts) => {
   expect(await contracts.fuseGuardian.CONTRACT_ADMIN_ROLE()).to.be.equal(ethers.utils.id('FUSE_ADMIN'));
 
   // expect(await contracts.optimisticMinter.CONTRACT_ADMIN_ROLE()).to.be.equal(ethers.utils.id('FEI_MINT_ADMIN'));
-  // // Missing revert data in call exception
   // expect(await contracts.pcvEquityMinter.CONTRACT_ADMIN_ROLE()).to.be.equal(ethers.utils.id('FEI_MINT_ADMIN'));
-
-  // expect(await contracts.ethLidoPCVDeposit.CONTRACT_ADMIN_ROLE()).to.be.equal(ethers.utils.id('PCV_MINOR_PARAM_ROLE'));
   // expect(await contracts.indexDelegator.CONTRACT_ADMIN_ROLE()).to.be.equal(ethers.utils.id('PCV_MINOR_PARAM_ROLE'));
   expect(await contracts.ethTokemakPCVDeposit.CONTRACT_ADMIN_ROLE()).to.be.equal(
     ethers.utils.id('PCV_MINOR_PARAM_ROLE')
@@ -125,6 +122,11 @@ const validateCallingContractsHaveNewAdmin = async (core: Contract, addresses: N
   expect(await core.hasRole(ethers.utils.id('FUSE_ADMIN'), addresses.optimisticTimelock)).to.be.true;
   expect(await core.hasRole(ethers.utils.id('FUSE_ADMIN'), addresses.tribalChiefSyncV2)).to.be.true;
 
+  //
+  expect(await core.hasRole(ethers.utils.id('FEI_MINT_ADMIN'), addresses.core)).to.be.true;
+  expect(await core.hasRole(ethers.utils.id('FEI_MINT_ADMIN'), addresses.feiDAOTimelock)).to.be.true;
+  expect(await core.hasRole(ethers.utils.id('FEI_MINT_ADMIN'), addresses.roleBastion)).to.be.true;
+
   // TOKEMAK_DEPOSIT_ADMIN_ROLE : PCV_MINOR_PARAM_ROLE
   expect(await core.hasRole(ethers.utils.id('TOKEMAK_DEPOSIT_ADMIN_ROLE'), addresses.optimisticTimelock)).to.be.true;
 
@@ -132,6 +134,8 @@ const validateCallingContractsHaveNewAdmin = async (core: Contract, addresses: N
   expect(await core.hasRole(ethers.utils.id('PCV_MINOR_PARAM_ROLE'), addresses.feiDAOTimelock)).to.be.true;
   expect(await core.hasRole(ethers.utils.id('PCV_MINOR_PARAM_ROLE'), addresses.core)).to.be.true;
   expect(await core.hasRole(ethers.utils.id('PCV_MINOR_PARAM_ROLE'), addresses.roleBastion)).to.be.true;
+  expect(await core.hasRole(ethers.utils.id('PCV_MINOR_PARAM_ROLE'), addresses.optimisticTimelock)).to.be.true;
+  expect(await core.hasRole(ethers.utils.id('PCV_MINOR_PARAM_ROLE'), addresses.opsOptimisticTimelock)).to.be.true;
 };
 
 const validateTribalCouncilRoles = async (core: Contract, tribalCouncilTimelockAddress: string) => {
