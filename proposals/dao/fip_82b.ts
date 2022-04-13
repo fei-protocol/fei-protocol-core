@@ -66,6 +66,8 @@ const validateTransferredRoleAdmins = async (core: Contract) => {
   expect(await core.getRoleAdmin(ethers.utils.id('MINTER_ADMIN'))).to.be.equal(ROLE_ADMIN);
   expect(await core.getRoleAdmin(ethers.utils.id('OPTIMISTIC_ADMIN'))).to.be.equal(ROLE_ADMIN);
 
+  expect(await core.getRoleAdmin(ethers.utils.id('MINOR_PARAM_ROLE'))).to.be.equal(ROLE_ADMIN);
+
   // Non-major roles that previously had GOVERNOR as their admin
   expect(await core.getRoleAdmin(ethers.utils.id('ORACLE_ADMIN_ROLE'))).to.be.equal(ROLE_ADMIN);
   expect(await core.getRoleAdmin(ethers.utils.id('TRIBAL_CHIEF_ADMIN_ROLE'))).to.be.equal(ROLE_ADMIN);
@@ -122,13 +124,10 @@ const validateCallingContractsHaveNewAdmin = async (core: Contract, addresses: N
   expect(await core.hasRole(ethers.utils.id('FUSE_ADMIN'), addresses.optimisticTimelock)).to.be.true;
   expect(await core.hasRole(ethers.utils.id('FUSE_ADMIN'), addresses.tribalChiefSyncV2)).to.be.true;
 
-  //
+  // GOVERNOR : FEI_MINT_ADMIN
   expect(await core.hasRole(ethers.utils.id('FEI_MINT_ADMIN'), addresses.core)).to.be.true;
   expect(await core.hasRole(ethers.utils.id('FEI_MINT_ADMIN'), addresses.feiDAOTimelock)).to.be.true;
   expect(await core.hasRole(ethers.utils.id('FEI_MINT_ADMIN'), addresses.roleBastion)).to.be.true;
-
-  // TOKEMAK_DEPOSIT_ADMIN_ROLE : PCV_MINOR_PARAM_ROLE
-  expect(await core.hasRole(ethers.utils.id('TOKEMAK_DEPOSIT_ADMIN_ROLE'), addresses.optimisticTimelock)).to.be.true;
 
   // GOVERNOR : PCV_MINOR_PARAM_ROLE
   expect(await core.hasRole(ethers.utils.id('PCV_MINOR_PARAM_ROLE'), addresses.feiDAOTimelock)).to.be.true;

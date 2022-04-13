@@ -12,7 +12,7 @@ const fip_82b: ProposalDescription = {
         '0xf0b50f04623eeaacfa1f202e062a3001c925a35c6b75d6903e67b43f44bbf152', // PARAMETER_ADMIN
         '0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096' // ROLE_ADMIN
       ],
-      description: 'Transfer PARAMETER role admin from 0x0 to ROLE_ADMIN'
+      description: 'Transfer PARAMETER_ADMIN role admin to ROLE_ADMIN'
     },
     {
       target: 'core',
@@ -22,7 +22,7 @@ const fip_82b: ProposalDescription = {
         '0xc7be67d109cc181c862ac2eaed91ab54817910d73264a8ad5d87592516929a15', // MINOR_ROLE_ADMIN
         '0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096' // ROLE_ADMIN
       ],
-      description: 'Transfer MINOR_ROLE_ADMIN role admin from 0x0 to ROLE_ADMIN'
+      description: 'Transfer MINOR_ROLE_ADMIN role admin to ROLE_ADMIN'
     },
     {
       target: 'core',
@@ -32,7 +32,7 @@ const fip_82b: ProposalDescription = {
         '0x498a9dae57f391d8efcc7bb3e7440ad6a25b1261044ef1b555c5484cb9f67659', // MINTER_ADMIN
         '0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096' // ROLE_ADMIN
       ],
-      description: 'Transfer MINTER_ADMIN role admin from 0x0 to ROLE_ADMIN'
+      description: 'Transfer MINTER_ADMIN role admin to ROLE_ADMIN'
     },
     {
       target: 'core',
@@ -42,7 +42,7 @@ const fip_82b: ProposalDescription = {
         '0x6cad5c16d973906992d8e1412f4aefeca4ae44220c203bbcd6e8e66e7c717be0', // OPTIMISTIC_ADMIN
         '0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096' // ROLE_ADMIN
       ],
-      description: 'Transfer OPTIMISTIC_ADMIN role admin from 0x0 to ROLE_ADMIN'
+      description: 'Transfer OPTIMISTIC_ADMIN role admin to ROLE_ADMIN'
     },
     {
       target: 'core',
@@ -164,6 +164,16 @@ const fip_82b: ProposalDescription = {
         '0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096' // ROLE_ADMIN
       ],
       description: 'Create PSM_ADMIN_ROLE role, assigning ROLE_ADMIN as the role admin'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'createRole(bytes32,bytes32)',
+      arguments: [
+        '0x64bdfa4de883e5fe4519e80a554fbf0d63c0f6271ac8b89b18edcc9ef151ad60', // MINOR_PARAM_ROLE
+        '0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096' // ROLE_ADMIN
+      ],
+      description: 'Create MINOR_PARAM_ROLE role, assigning ROLE_ADMIN as the role admin'
     },
     ///////   Set the relevant contract admins to the newly created roles //////////
     // FUSE_ADMIN
