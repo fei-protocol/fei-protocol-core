@@ -50,7 +50,7 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
         override
         returns (bytes32)
     {
-        return keccak256(abi.encode(_podId, "ORCA_POD", "ADMIN"));
+        return keccak256(abi.encode(_podId, "_ORCA_POD", "_ADMIN"));
     }
 
     /// @notice Calculate the specific pod guardian role identifier
@@ -61,7 +61,7 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
         override
         returns (bytes32)
     {
-        return keccak256(abi.encode(_podId, "ORCA_POD", "GUARDIAN"));
+        return keccak256(abi.encode(_podId, "_ORCA_POD", "_GUARDIAN"));
     }
 
     /////////////////////////    ADMIN PRIVILEDGES       ////////////////////////////

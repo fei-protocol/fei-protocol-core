@@ -190,7 +190,7 @@ contract PodAdminGatewayIntegrationTest is DSTest {
     /// @notice Validate that specific pod guardian role is computed is expected
     function testGetSpecificPodGuardianRole() public {
         bytes32 specificGuardianRole = keccak256(
-            abi.encode(podId, "ORCA_POD", "GUARDIAN")
+            abi.encode(podId, "_ORCA_POD", "_GUARDIAN")
         );
         assertEq(
             specificGuardianRole,
@@ -204,7 +204,7 @@ contract PodAdminGatewayIntegrationTest is DSTest {
 
         // Create role in core
         bytes32 specificAdminRole = keccak256(
-            abi.encode(podId, "ORCA_POD", "ADMIN")
+            abi.encode(podId, "_ORCA_POD", "_ADMIN")
         );
 
         vm.startPrank(feiDAOTimelock);
