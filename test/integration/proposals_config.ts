@@ -9,7 +9,16 @@ const proposals: ProposalsConfigMap = {
     totalValue: 0, // amount of ETH to send to DAO execution
     proposal: fip_82,
     proposalId: '',
-    affectedContractSignoff: [''],
+    affectedContractSignoff: [
+      'podAdminFactory',
+      'roleBastion',
+      'podFactory',
+      'podExecutor',
+      'nopeDAO',
+      'governanceMetadataRegistry',
+      'core',
+      'tribe'
+    ],
     deprecatedContractSignoff: [''],
     category: ProposalCategory.DAO
   },
@@ -18,8 +27,29 @@ const proposals: ProposalsConfigMap = {
     totalValue: 0, // amount of ETH to send to DAO execution
     proposal: fip_82b,
     proposalId: '',
-    affectedContractSignoff: [''],
-    deprecatedContractSignoff: [''],
+    affectedContractSignoff: [
+      'core',
+      'fuseGuardian',
+      'optimisticMinter',
+      'pcvEquityMinter',
+      'indexDelegator',
+      'ethTokemakPCVDeposit',
+      'uniswapPCVDeposit',
+      'daiPSMFeiSkimmer',
+      'lusdPSMFeiSkimmer',
+      'ethPSMFeiSkimmer',
+      'aaveEthPCVDripController',
+      'daiPCVDripController',
+      'lusdPCVDripController',
+      'compoundEthPCVDripController',
+      'tribalCouncilTimelock',
+      'feiDAOTimelock',
+      'roleBastion',
+      'opsOptimisticTimelock',
+      'optimisticTimelock',
+      'tribalChiefSyncV2'
+    ],
+    deprecatedContractSignoff: ['daiPSMFeiSkimmer', 'compoundEthPCVDripController'],
     category: ProposalCategory.DAO
   }
 };
