@@ -9,7 +9,7 @@ import {TribeRoles} from "../../../core/TribeRoles.sol";
 import {Core} from "../../../core/Core.sol";
 import {MainnetAddresses} from "../fixtures/MainnetAddresses.sol";
 
-contract RoleBastionTest is DSTest {
+contract RoleBastionIntegrationTest is DSTest {
     address tribalCouncil = address(0x1);
     RoleBastion roleBastion;
 

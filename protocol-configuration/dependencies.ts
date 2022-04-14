@@ -125,7 +125,12 @@ const dependencies: DependencyMap = {
       'balancerDepositFeiWeth',
       'delayedPCVMoverWethUniToBal',
       'angleDelegatorPCVDeposit',
-      'uniswapLensAgEurUniswapGauge'
+      'uniswapLensAgEurUniswapGauge',
+      'governanceMetadataRegistry',
+      'nopeDAO',
+      'podAdminGateway',
+      'podFactory',
+      'roleBastion'
     ]
   },
   fei: {
@@ -220,7 +225,8 @@ const dependencies: DependencyMap = {
       'rariPool8d3',
       'rariInfraTribeTimelock',
       'pegExchanger',
-      'laTribuTribeTimelock'
+      'laTribuTribeTimelock',
+      'nopeDAO'
     ]
   },
   tribeMinter: {
@@ -984,6 +990,24 @@ const dependencies: DependencyMap = {
   },
   timelock: {
     contractDependencies: ['feiDAOTimelock']
+  },
+  roleBastion: {
+    contractDependencies: ['core']
+  },
+  podFactory: {
+    contractDependencies: ['core', 'podExecutor', 'podAdminGateway']
+  },
+  podAdminGateway: {
+    contractDependencies: ['core', 'podFactory']
+  },
+  podExecutor: {
+    contractDependencies: ['podFactory']
+  },
+  nopeDAO: {
+    contractDependencies: ['core', 'tribe']
+  },
+  governanceMetadataRegistry: {
+    contractDependencies: ['core']
   }
 };
 
