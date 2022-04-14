@@ -179,7 +179,7 @@ contract PodAdminGatewayIntegrationTest is DSTest {
     /// @notice Validate that specific pod admin role is computed is expected
     function testGetSpecificPodAdminRole() public {
         bytes32 specificAdminRole = keccak256(
-            abi.encode(podId, "ORCA_POD", "ADMIN")
+            abi.encode(podId, "_ORCA_POD", "_ADMIN")
         );
         assertEq(
             specificAdminRole,
@@ -229,7 +229,7 @@ contract PodAdminGatewayIntegrationTest is DSTest {
 
         // Create role in core
         bytes32 specificPodAdmin = keccak256(
-            abi.encode(podId, "ORCA_POD", "ADMIN")
+            abi.encode(podId, "_ORCA_POD", "_ADMIN")
         );
 
         vm.startPrank(feiDAOTimelock);
@@ -254,7 +254,7 @@ contract PodAdminGatewayIntegrationTest is DSTest {
 
         // Create role in core
         bytes32 specificPodGuardian = keccak256(
-            abi.encode(podId, "ORCA_POD", "GUARDIAN")
+            abi.encode(podId, "_ORCA_POD", "_GUARDIAN")
         );
 
         vm.startPrank(feiDAOTimelock);
@@ -289,7 +289,7 @@ contract PodAdminGatewayIntegrationTest is DSTest {
 
         // Create role in core
         bytes32 specificPodAdmin = keccak256(
-            abi.encode(podId, "ORCA_POD", "ADMIN")
+            abi.encode(podId, "_ORCA_POD", "_ADMIN")
         );
 
         vm.startPrank(feiDAOTimelock);
