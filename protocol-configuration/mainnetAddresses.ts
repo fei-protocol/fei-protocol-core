@@ -326,6 +326,26 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x90291319F1D4eA3ad4dB0Dd8fe9E12BAF749E845',
     category: AddressCategory.External
   },
+  balancerBoostedFuseFeiLinearPool: {
+    artifactName: 'ILinearPool',
+    address: '0xc8C79fCD0e859e7eC81118e91cE8E4379A481ee6',
+    category: AddressCategory.External
+  },
+  balancerBoostedFuseDaiLinearPool: {
+    artifactName: 'ILinearPool',
+    address: '0x8f4063446F5011bC1C9F79A819EFE87776F23704',
+    category: AddressCategory.External
+  },
+  balancerBoostedFuseLusdLinearPool: {
+    artifactName: 'ILinearPool',
+    address: '0xb0F75E97A114A4EB4a425eDc48990e6760726709',
+    category: AddressCategory.External
+  },
+  balancerBoostedFuseUsdStablePool: {
+    artifactName: 'IStablePool',
+    address: '0xD997f35c9b1281B82C8928039D14CdDaB5e13c20',
+    category: AddressCategory.External
+  },
   delayedPCVMoverWethUniToBal: {
     artifactName: 'DelayedPCVMover',
     address: '0x52B1D5BE5005002afD76193ADd3a827c18e2db99',
@@ -334,6 +354,16 @@ const MainnetAddresses: MainnetAddresses = {
   weightedBalancerPoolManagerBase: {
     artifactName: 'WeightedBalancerPoolManagerBase',
     address: '0x75b984d8Ad22007923B03b5D40daA1917EF35313',
+    category: AddressCategory.Governance
+  },
+  stableBalancerPoolManager: {
+    artifactName: 'StableBalancerPoolManager',
+    address: '0x097105c0Fc6506420ded8091A358F728e065112a',
+    category: AddressCategory.Governance
+  },
+  linearBalancerPoolManager: {
+    artifactName: 'LinearBalancerPoolManager',
+    address: '0xb6bd18874e2BB58390241c6b028d045d64207B0e',
     category: AddressCategory.Governance
   },
   balancerDepositFeiWeth: {
@@ -956,6 +986,21 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0xfbD8Aaf46Ab3C2732FA930e5B343cd67cEA5054C',
     category: AddressCategory.FeiRari
   },
+  erc4626VaultFuse8Fei: {
+    artifactName: 'IERC4626',
+    address: '0xf486608dbc7dd0eb80e4b9fa0fdb03e40f414030',
+    category: AddressCategory.External
+  },
+  erc4626VaultFuse8Dai: {
+    artifactName: 'IERC4626',
+    address: '0xba63738c2e476b1a0cfb6b41a7b85d304d032454',
+    category: AddressCategory.External
+  },
+  erc4626VaultFuse8Lusd: {
+    artifactName: 'IERC4626',
+    address: '0x83e556baea9b5fa5f131bc89a4c7282ca240b156',
+    category: AddressCategory.External
+  },
   fuseAdmin: {
     artifactName: 'FuseAdmin',
     address: '0x761dD1Ae03D95BdABeC3C228532Dcdab4F2c7adD',
@@ -1094,6 +1139,16 @@ const MainnetAddresses: MainnetAddresses = {
   balancerWeightedPoolFactory: {
     artifactName: 'IWeightedPool2TokensFactory',
     address: '0xA5bf2ddF098bb0Ef6d120C98217dD6B141c74EE0',
+    category: AddressCategory.External
+  },
+  balancerERC4626LinearPoolFactory: {
+    artifactName: 'IERC4626LinearPoolFactory',
+    address: '0xE061bF85648e9FA7b59394668CfEef980aEc4c66',
+    category: AddressCategory.External
+  },
+  balancerStablePhantomPoolFactory: {
+    artifactName: 'IStablePhantomPoolFactory',
+    address: '0xb08E16cFc07C684dAA2f93C70323BAdb2A6CBFd2',
     category: AddressCategory.External
   },
   balancerLBPoolFactory: {
