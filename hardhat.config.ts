@@ -7,6 +7,8 @@ import 'hardhat-gas-reporter';
 import 'hardhat-contract-sizer';
 import 'solidity-coverage';
 import 'tsconfig-paths/register';
+import 'solidity-docgen';
+import { relative } from 'path';
 
 import * as dotenv from 'dotenv';
 
@@ -44,6 +46,14 @@ if (useJSONTestReporter) {
 export default {
   gasReporter: {
     enabled: !!process.env.REPORT_GAS
+  },
+  docgen: {
+    templates: './templates',
+    pages: (_item, file) => {
+      return file.absolutePath.startsWith('contracts')
+        ? relative('contracts', file.absolutePath).replace('.sol', '.md')
+        : undefined;
+    }
   },
 
   networks: {
