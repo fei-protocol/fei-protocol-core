@@ -12,7 +12,7 @@ export const permissions = {
     'balancerDepositFeiWeth'
   ],
   BURNER_ROLE: [],
-  GOVERN_ROLE: ['core', 'feiDAOTimelock', 'rariTimelock'],
+  GOVERN_ROLE: ['core', 'feiDAOTimelock'],
   PCV_CONTROLLER_ROLE: [
     'feiDAOTimelock',
     'ratioPCVControllerV2',
