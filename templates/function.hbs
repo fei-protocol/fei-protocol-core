@@ -1,0 +1,39 @@
+{{!-- Sourced from HiFi Finance: https://github.com/hifi-finance/hifi/tree/main/templates --}}
+{{h}} {{name}}
+
+```solidity
+function {{name}}({{#if params}}
+    {{#each params}}
+    {{type}} {{name}}{{#if @last}}{{else}},{{/if}}
+    {{/each}}
+{{/if}}) {{visibility}}{{#if returns}} returns ({{printParams returns}}){{/if}}
+```
+
+{{#if natspec.notice}}
+{{{natspec.notice}}}
+{{/if}}
+
+{{#if natspec.dev}}
+{{{natspec.dev}}}
+{{/if}}
+
+{{#if params}}
+#### Parameters
+
+| Name | Type | Description |
+| :--- | :--- | :---------- |
+{{#each params}}
+| `{{name}}` | {{type}} | {{{natspec}}} |
+{{/each}}
+{{/if}}
+
+{{#if natspec.returns}}
+#### Return Values
+
+| Name | Type | Description |
+| :--- | :--- | :---------- |
+{{#each returns}}
+| `{{#if name}}{{name}}{{else}}[{{@index}}]{{/if}}` | {{type}} | {{{natspec}}} |
+{{/each}}
+{{/if}}
+
