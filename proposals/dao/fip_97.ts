@@ -26,11 +26,10 @@ const fipNumber = '97'; // Change me!
 // Do any deployments
 // This should exclusively include new contract deployments
 const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: NamedAddresses, logging: boolean) => {
-  // 1. Deploy compoound PCV deposit
+  // 1. Deploy compound PCV deposit
   const erc20CompoundPCVDepositFactory = await ethers.getContractFactory('ERC20CompoundPCVDeposit');
   const turboFusePCVDeposit = await erc20CompoundPCVDepositFactory.deploy(addresses.core, addresses.rariTurboFusePool);
   await turboFusePCVDeposit.deployTransaction.wait();
-
   logging && console.log('Turbo PCV Deposit deployed to:  ', turboFusePCVDeposit.address);
 
   return {

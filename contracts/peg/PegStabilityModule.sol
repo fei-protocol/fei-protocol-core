@@ -390,7 +390,7 @@ contract PegStabilityModule is
     }
 
     /// @notice returns address of token this contracts balance is reported in
-    function balanceReportedIn() external view override returns (address) {
+    function balanceReportedIn() public view override returns (address) {
         return address(underlyingToken);
     }
 

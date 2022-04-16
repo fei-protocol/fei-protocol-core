@@ -45,7 +45,7 @@ abstract contract PCVDeposit is IPCVDeposit, CoreRef {
     }
 
     function balance() public view virtual override returns (uint256);
-    
+
     function balanceReportedIn() public view virtual override returns (address);
 
     function resistantBalanceAndFei()
@@ -56,6 +56,9 @@ abstract contract PCVDeposit is IPCVDeposit, CoreRef {
         returns (uint256, uint256)
     {
         uint256 tokenBalance = balance();
-        return (tokenBalance, balanceReportedIn() == address(fei()) ? tokenBalance : 0);
+        return (
+            tokenBalance,
+            balanceReportedIn() == address(fei()) ? tokenBalance : 0
+        );
     }
 }
