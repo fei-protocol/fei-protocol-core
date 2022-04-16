@@ -1,4 +1,4 @@
-import hre, { ethers, artifacts } from 'hardhat';
+import { ethers } from 'hardhat';
 import { expect } from 'chai';
 import {
   DeployUpgradeFunc,
@@ -15,8 +15,9 @@ OA Proposal 97
 Description:
 
 Steps:
-1. Seed Turbo Fuse pool with 10 million Fei
-
+1. Deploy Turbo Fuse pool PCV deposit
+2. Transfer $10 million Fei to the PCV Deposit
+3. Deposit the Fei into the pool
 */
 
 const fipNumber = '97'; // Change me!
@@ -29,7 +30,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   const turboFusePCVDeposit = await erc20CompoundPCVDepositFactory.deploy(addresses.core, addresses.rariTurboFusePool);
   await turboFusePCVDeposit.deployTransaction.wait();
 
-  console.log('Turbo PCV Deposit deployed to:  ', turboFusePCVDeposit.address);
+  logging && console.log('Turbo PCV Deposit deployed to:  ', turboFusePCVDeposit.address);
 
   return {
     turboFusePCVDeposit
@@ -54,7 +55,9 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
   // Validate 10M Fei was seeded
   const seedAmount = ethers.constants.WeiPerEther.mul(9_999_999); // 9.9 M
-  expect(await contracts.turboFusePCVDeposit.balance()).to.be.at.least(seedAmount);
+  const pcvBalance = await contracts.turboFusePCVDeposit.balance();
+  console.log({ pcvBalance });
+  expect(pcvBalance).to.be.at.least(seedAmount);
 };
 
 export { deploy, setup, teardown, validate };
