@@ -26,7 +26,7 @@ const fip_97: ProposalDescription = {
     }
   ],
   description: `
-  OA action to seed Turbo fuse pool with 10M Fei. Transfer $10M Fei from the OA multisig to the Turbo Fuse PCV deposit
+  OA action to seed Turbo fuse pool with $10M Fei. Transfer $10M Fei from the OA multisig to the Turbo Fuse PCV deposit
   and then deposit. Update the collaterization oracle to include the new deposit.
   `
 };

@@ -61,7 +61,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   // Validate 10M Fei was seeded
   const seedAmount = ethers.constants.WeiPerEther.mul(10_000_000); // 10 M
   const pcvBalance = await contracts.turboFusePCVDeposit.balance();
-  expect(pcvBalance).to.be.at.least(seedAmount);
+  expect(pcvBalance).to.equal(seedAmount);
 };
 
 export { deploy, setup, teardown, validate };
