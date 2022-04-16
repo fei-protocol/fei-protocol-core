@@ -1,16 +1,16 @@
 import { ProposalCategory, ProposalsConfigMap } from '@custom-types/types';
 
-import fip_94 from '@proposals/description/fip_94';
+import fip_97 from '@proposals/description/fip_97';
 
 const proposals: ProposalsConfigMap = {
-  fip_94: {
-    deploy: false,
+  fip_97: {
+    deploy: true,
     proposalId: null,
-    affectedContractSignoff: ['rariTimelock'],
+    affectedContractSignoff: ['turboFusePCVDeposit'],
     deprecatedContractSignoff: [],
-    category: ProposalCategory.DAO,
+    category: ProposalCategory.OA,
     totalValue: 0,
-    proposal: fip_94
+    proposal: fip_97
   }
 };
 
