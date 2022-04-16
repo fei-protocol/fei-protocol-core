@@ -1855,6 +1855,11 @@ const MainnetAddresses: MainnetAddresses = {
     artifactName: 'RariGovernanceTokenUniswapDistributor',
     address: '0x1fa69a416bcf8572577d3949b742fbb0a9cd98c7',
     category: AddressCategory.Governance
+  },
+  rariTurboFusePool: {
+    artifactName: 'unknown',
+    address: '0x1d9EEE473CC1B3b6D316740F5677Ef36E8f0329e',
+    category: AddressCategory.External
   }
 };
 
