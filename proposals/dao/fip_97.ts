@@ -7,6 +7,7 @@ import {
   TeardownUpgradeFunc,
   ValidateUpgradeFunc
 } from '@custom-types/types';
+import { getImpersonatedSigner } from '@test/helpers';
 
 /*
 
@@ -41,7 +42,12 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 // This could include setting up Hardhat to impersonate accounts,
 // ensuring contracts have a specific state, etc.
 const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  console.log(`No actions to complete in setup for fip${fipNumber}`);
+  // feiDAOTimelock is TURBO_ADMIN_ROLE
+  const governorSigner = await getImpersonatedSigner(addresses.feiDAOTimelock);
+
+  const turboAdminABI = ['function _setWhitelistStatuses(address[] calldata suppliers, bool[] calldata statuses)'];
+  const turboAdmin = new ethers.Contract(addresses.turboAdmin, turboAdminABI, governorSigner);
+  await turboAdmin._setWhitelistStatuses([contracts.turboFusePCVDeposit.address], [true]);
 };
 
 // Tears down any changes made in setup() that need to be
@@ -54,9 +60,8 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
   // Validate 10M Fei was seeded
-  const seedAmount = ethers.constants.WeiPerEther.mul(9_999_999); // 9.9 M
+  const seedAmount = ethers.constants.WeiPerEther.mul(10_000_000); // 10 M
   const pcvBalance = await contracts.turboFusePCVDeposit.balance();
-  console.log({ pcvBalance });
   expect(pcvBalance).to.be.at.least(seedAmount);
 };
 

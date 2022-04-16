@@ -1859,7 +1859,12 @@ const MainnetAddresses: MainnetAddresses = {
   rariTurboFusePool: {
     artifactName: 'unknown',
     address: '0x081E7C60bCB8A2e7E43076a2988068c0a6e69e27',
-    category: AddressCategory.External
+    category: AddressCategory.Turbo
+  },
+  turboAdmin: {
+    artifactName: 'unknown',
+    address: '0x18413D61b335D2F46235E9E1256Fd5ec8AD03757',
+    category: AddressCategory.Turbo
   }
 };
 

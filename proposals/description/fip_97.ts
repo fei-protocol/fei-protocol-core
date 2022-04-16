@@ -3,8 +3,6 @@ import { ProposalDescription } from '@custom-types/types';
 const fip_97: ProposalDescription = {
   title: 'FIP-97: Seed Turbo fuse pool with 10M Fei',
   commands: [
-    // 1. Transfer FEI from OA multisig to the PCV Deposit
-    // 2. Call deposit to put it into Compound
     {
       target: 'fei',
       values: '0',

@@ -124,6 +124,7 @@ export enum AddressCategory {
   Keeper = 'Keeper',
   Rewards = 'Rewards',
   FeiRari = 'FeiRari',
+  Turbo = 'Turbo',
   External = 'External',
   Deprecated = 'Deprecated',
   TBD = 'TBD'
