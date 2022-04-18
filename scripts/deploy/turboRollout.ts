@@ -1,64 +1,68 @@
 import { DeployUpgradeFunc } from '@custom-types/types';
+import { getImpersonatedSigner } from '@test/helpers';
 import { ethers } from 'hardhat';
+import * as ERC4626Json from './abis/ERC4626.sol/ERC4626.json';
+import * as TurboBoosterJson from './abis/TurboBooster.sol/TurboBooster.json';
+import * as TurboAdminJson from './abis/TurboAdmin.sol/TurboAdmin.json';
 
 // Fuse pool 8 config
 const POOL_8_FEI_C_TOKEN = '0xd8553552f8868C1Ef160eEdf031cF0BCf9686945';
 const POOL_8_NAME = 'Pool8Shares';
 const POOL_8_SYMBOL = 'P8S';
-const POOL_8_SUPPLY_CAP = ethers.utils.parseEther('1000000'); // 1M
+const POOL_8_SUPPLY_CAP = ethers.utils.parseEther('2000000'); // 2M
+
+const POOL_8_FEI_STRATEGY_ADDRESS = '0xefab0beb0a557e452b398035ea964948c750b2fd';
 
 // Fuse pool 18 config
 const POOL_18_FEI_C_TOKEN = '0x17b1A2E012cC4C31f83B90FF11d3942857664efc';
 const POOL_18_NAME = 'Pool8Shares';
-const POOL_18_SYMBOL = 'P8S';
-const POOL_18_SUPPLY_CAP = ethers.utils.parseEther('1000000'); // 1M
+const POOL_18_SYMBOL = 'P18S';
+const POOL_18_SUPPLY_CAP = ethers.utils.parseEther('2000000'); // 2M
+
+const POOL_18_FEI_STRATEGY_ADDRESS = '0xaca81583840b1bf2ddf6cde824ada250c1936b4d';
 
 // gOHM config
 const GOHM = '0x0ab87046fBb341D058F17CBC4c1133F25a20a52f';
-const GOHM_COLLATERAL_SUPPLY_CAP = ethers.utils.parseEther('1000000'); // TODO
-const GOHM_COLLATERAL_MANTISSA = ethers.utils.parseEther('2'); // TODO
-const GOHM_COLLATERAL_BOOST_CAP = ethers.utils.parseEther('1000000'); // TODO
+const GOHM_COLLATERAL_SUPPLY_CAP = ethers.utils.parseEther('500000'); // 500k
+const GOHM_COLLATERAL_MANTISSA = ethers.utils.parseEther('0.8'); // 0.8e18
+const GOHM_COLLATERAL_BOOST_CAP = ethers.utils.parseEther('1000000'); // 1M
 
 // Bal config
 const BAL = '0xba100000625a3754423978a60c9317c58a424e3D';
-const BAL_COLLATERAL_SUPPLY_CAP = ethers.utils.parseEther('1000000'); // TODO
-const BAL_COLLATERAL_MANTISSA = ethers.utils.parseEther('2'); // TODO
-const BAL_COLLATERAL_BOOST_CAP = ethers.utils.parseEther('1000000'); // TODO
+const BAL_COLLATERAL_SUPPLY_CAP = ethers.utils.parseEther('500000'); // 500k
+const BAL_COLLATERAL_MANTISSA = ethers.utils.parseEther('0.8'); // 0.8e18
+const BAL_COLLATERAL_BOOST_CAP = ethers.utils.parseEther('1000000'); // 1M
 
 // Turbo admin config
 const TURBO_ADMIN_ADDRESS = '0x64c4Bffb220818F0f2ee6DAe7A2F17D92b359c5d';
 
+const IS_MAINNET_DEPLOY = process.env.IS_MAINNET_DEPLOY;
+
 // To test: Fork mainnet onto local hardhat node. Validate all passes
 export const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses, logging = false) => {
-  const deploySigner = (await ethers.getSigners())[0];
+  let deploySigner = (await ethers.getSigners())[0];
   console.log('Signer address: ', deploySigner.address);
-  console.log('Deploy address: ', deployAddress);
 
-  if (deployAddress != TURBO_ADMIN_ADDRESS || deploySigner.address != TURBO_ADMIN_ADDRESS) {
+  if (IS_MAINNET_DEPLOY && (deployAddress != TURBO_ADMIN_ADDRESS || deploySigner.address != TURBO_ADMIN_ADDRESS)) {
     throw new Error('Incorrect deploy address');
   }
 
-  // 1. Deploy Fei fuse strategies
-  console.log('Deploying Fuse strategies...');
-  const fuseERC4626Factory = await ethers.getContractFactory('FuseERC4626');
-  const pool8Strategy = await fuseERC4626Factory.deploy(POOL_8_FEI_C_TOKEN, POOL_8_NAME, POOL_8_SYMBOL);
-  await pool8Strategy.deployTransaction.wait();
-  console.log('Pool 8 strategy deployed to: ', pool8Strategy.address);
+  if (!IS_MAINNET_DEPLOY) {
+    deploySigner = await getImpersonatedSigner(TURBO_ADMIN_ADDRESS);
+  }
 
-  const pool18Strategy = await fuseERC4626Factory.deploy(POOL_18_FEI_C_TOKEN, POOL_18_NAME, POOL_18_SYMBOL);
-  await pool18Strategy.deployTransaction.wait();
-  console.log('Pool 18 strategy deployed to: ', pool18Strategy.address);
+  if (POOL_18_FEI_STRATEGY_ADDRESS.length === 0 || POOL_8_FEI_STRATEGY_ADDRESS.length === 0) {
+    throw new Error('FEI strategy not set');
+  }
+
+  // 1. Instantitate ERC4626 strategy types
+  const pool8Strategy = new ethers.Contract(POOL_8_FEI_STRATEGY_ADDRESS, ERC4626Json.abi, deploySigner);
+  const pool18Strategy = new ethers.Contract(POOL_18_FEI_C_TOKEN, ERC4626Json.abi, deploySigner);
   await validateStrategyDeploys();
 
   // 2. Set boost caps
   console.log('Setting boost caps...');
-  const turboBoosterABI = [
-    'function setBoostCapForVault(ERC4626 vault, uint256 newBoostCap)',
-    'function setBoostCapForCollateral(ERC20 collateral, uint256 newBoostCap)'
-  ];
-  const turboBoosterContract = new ethers.Contract(addresses.turboBooster, turboBoosterABI, deploySigner);
-
-  // Set pool supply caps
+  const turboBoosterContract = new ethers.Contract(addresses.turboBooster, TurboBoosterJson.abi, deploySigner);
   await turboBoosterContract.setBoostCapForVault(pool8Strategy.address, POOL_8_SUPPLY_CAP);
   console.log('Set pool 8 supply cap');
   await turboBoosterContract.setBoostCapForVault(pool18Strategy.address, POOL_18_SUPPLY_CAP);
@@ -66,14 +70,10 @@ export const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses
   await validateBoostSupplyCaps();
 
   // 3. Add BAL and gOHM collaterals
-  const turboAdminABI = [
-    'function addCollateral(address underlying, string calldata name, string calldata symbol, uint256 collateralFactorMantissa, uint256 supplyCap)'
-  ];
-  const turboAdminContract = new ethers.Contract(addresses.turboAdmin, turboAdminABI, deploySigner);
-
-  // Add BAL and gOHM collaterals
+  const turboAdminContract = new ethers.Contract(addresses.turboAdmin, TurboAdminJson.abi, deploySigner);
   await turboAdminContract.addCollateral(BAL, 'Balancer', 'BAL', BAL_COLLATERAL_MANTISSA, BAL_COLLATERAL_SUPPLY_CAP);
   console.log('Added BAL collateral');
+
   await turboAdminContract.addCollateral(
     GOHM,
     'Governance OHM',
@@ -82,17 +82,19 @@ export const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses
     GOHM_COLLATERAL_SUPPLY_CAP
   );
   console.log('Added gOHM collateral');
+
   await validateAddedCollateral();
 
   // 4. Set boost caps for new collateral types
   console.log('Setting boost supply caps');
-  await turboAdminContract.setBoostCapForCollateral(BAL, BAL_COLLATERAL_BOOST_CAP);
+  await turboBoosterContract.setBoostCapForCollateral(BAL, BAL_COLLATERAL_BOOST_CAP);
   console.log('Set BAL supply cap');
-  await turboAdminContract.setBoostCapForCollateral(GOHM, GOHM_COLLATERAL_BOOST_CAP);
-  console.log('Set gOHM supply cap');
-  await validateCollateralBoostCaps();
 
-  return { pool8Strategy, pool18Strategy };
+  await turboBoosterContract.setBoostCapForCollateral(GOHM, GOHM_COLLATERAL_BOOST_CAP);
+  console.log('Set gOHM supply cap');
+
+  await validateCollateralBoostCaps();
+  return {};
 };
 
 async function validateStrategyDeploys() {
