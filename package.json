@@ -51,6 +51,7 @@
   "dependencies": {
     "@balancer-labs/v2-pool-weighted": "^2.0.1",
     "@chainlink/contracts": "^0.1.7",
+    "@fei-protocol/fuse-flywheel": "^0.0.0",
     "@nomiclabs/hardhat-waffle": "^2.0.3",
     "@openzeppelin/contracts": "^4.4.2",
     "@openzeppelin/test-environment": "^0.1.7",
