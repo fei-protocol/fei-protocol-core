@@ -1,28 +1,27 @@
 import { DeployUpgradeFunc } from '@custom-types/types';
-import { Console } from 'console';
 import { ethers } from 'hardhat';
 
 // Fuse pool 8 config
-const POOL_8_C_TOKEN = '';
+const POOL_8_FEI_C_TOKEN = '0xd8553552f8868C1Ef160eEdf031cF0BCf9686945';
 const POOL_8_NAME = 'Pool8Shares';
 const POOL_8_SYMBOL = 'P8S';
 const POOL_8_SUPPLY_CAP = ethers.utils.parseEther('1000000'); // 1M
 
 // Fuse pool 18 config
-const POOL_18_C_TOKEN = '';
+const POOL_18_FEI_C_TOKEN = '0x17b1A2E012cC4C31f83B90FF11d3942857664efc';
 const POOL_18_NAME = 'Pool8Shares';
 const POOL_18_SYMBOL = 'P8S';
 const POOL_18_SUPPLY_CAP = ethers.utils.parseEther('1000000'); // 1M
 
 // gOHM config
 const GOHM = '0x0ab87046fBb341D058F17CBC4c1133F25a20a52f';
-const GOHM_COLLATERAL_SUPPLY_CAP = ethers.utils.parseEther('1000000'); // 1M
+const GOHM_COLLATERAL_SUPPLY_CAP = ethers.utils.parseEther('1000000'); // TODO
 const GOHM_COLLATERAL_MANTISSA = ethers.utils.parseEther('2'); // TODO
 const GOHM_COLLATERAL_BOOST_CAP = ethers.utils.parseEther('1000000'); // TODO
 
 // Bal config
 const BAL = '0xba100000625a3754423978a60c9317c58a424e3D';
-const BAL_COLLATERAL_SUPPLY_CAP = ethers.utils.parseEther('1000000'); // 1M
+const BAL_COLLATERAL_SUPPLY_CAP = ethers.utils.parseEther('1000000'); // TODO
 const BAL_COLLATERAL_MANTISSA = ethers.utils.parseEther('2'); // TODO
 const BAL_COLLATERAL_BOOST_CAP = ethers.utils.parseEther('1000000'); // TODO
 
@@ -42,11 +41,11 @@ export const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses
   // 1. Deploy Fei fuse strategies
   console.log('Deploying Fuse strategies...');
   const fuseERC4626Factory = await ethers.getContractFactory('FuseERC4626');
-  const pool8Strategy = await fuseERC4626Factory.deploy(POOL_8_C_TOKEN, POOL_8_NAME, POOL_8_SYMBOL);
+  const pool8Strategy = await fuseERC4626Factory.deploy(POOL_8_FEI_C_TOKEN, POOL_8_NAME, POOL_8_SYMBOL);
   await pool8Strategy.deployTransaction.wait();
   console.log('Pool 8 strategy deployed to: ', pool8Strategy.address);
 
-  const pool18Strategy = await fuseERC4626Factory.deploy(POOL_18_C_TOKEN, POOL_18_NAME, POOL_18_SYMBOL);
+  const pool18Strategy = await fuseERC4626Factory.deploy(POOL_18_FEI_C_TOKEN, POOL_18_NAME, POOL_18_SYMBOL);
   await pool18Strategy.deployTransaction.wait();
   console.log('Pool 18 strategy deployed to: ', pool18Strategy.address);
   await validateStrategyDeploys();
@@ -84,3 +83,30 @@ export const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses
   );
   console.log('Added gOHM collateral');
   await validateAddedCollateral();
+
+  // 4. Set boost caps for new collateral types
+  console.log('Setting boost supply caps');
+  await turboAdminContract.setBoostCapForCollateral(BAL, BAL_COLLATERAL_BOOST_CAP);
+  console.log('Set BAL supply cap');
+  await turboAdminContract.setBoostCapForCollateral(GOHM, GOHM_COLLATERAL_BOOST_CAP);
+  console.log('Set gOHM supply cap');
+  await validateCollateralBoostCaps();
+
+  return { pool8Strategy, pool18Strategy };
+};
+
+async function validateStrategyDeploys() {
+  console.log('Validating strategy deploys...');
+}
+
+async function validateBoostSupplyCaps() {
+  console.log('Validating boost supply caps...');
+}
+
+async function validateAddedCollateral() {
+  console.log('Validating added collateral...');
+}
+
+async function validateCollateralBoostCaps() {
+  console.log('Validating collateral boost caps...');
+}
