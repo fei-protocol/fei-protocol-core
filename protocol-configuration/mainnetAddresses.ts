@@ -1880,6 +1880,11 @@ const MainnetAddresses: MainnetAddresses = {
     artifactName: 'PCVDepositWrapper',
     address: '0xB80B3dc4F8B30589477b2bA0e4EF2b8224bDf0a5',
     category: AddressCategory.PCV
+  },
+  fuseERC4626Pool8Fei: {
+    artifactName: 'unknown',
+    address: '0xf486608dbc7dd0eb80e4b9fa0fdb03e40f414030',
+    category: AddressCategory.Fuse
   }
 };
 
