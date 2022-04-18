@@ -51,3 +51,36 @@ export const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses
   console.log('Pool 18 strategy deployed to: ', pool18Strategy.address);
   await validateStrategyDeploys();
 
+  // 2. Set boost caps
+  console.log('Setting boost caps...');
+  const turboBoosterABI = [
+    'function setBoostCapForVault(ERC4626 vault, uint256 newBoostCap)',
+    'function setBoostCapForCollateral(ERC20 collateral, uint256 newBoostCap)'
+  ];
+  const turboBoosterContract = new ethers.Contract(addresses.turboBooster, turboBoosterABI, deploySigner);
+
+  // Set pool supply caps
+  await turboBoosterContract.setBoostCapForVault(pool8Strategy.address, POOL_8_SUPPLY_CAP);
+  console.log('Set pool 8 supply cap');
+  await turboBoosterContract.setBoostCapForVault(pool18Strategy.address, POOL_18_SUPPLY_CAP);
+  console.log('Set pool 18 supply cap');
+  await validateBoostSupplyCaps();
+
+  // 3. Add BAL and gOHM collaterals
+  const turboAdminABI = [
+    'function addCollateral(address underlying, string calldata name, string calldata symbol, uint256 collateralFactorMantissa, uint256 supplyCap)'
+  ];
+  const turboAdminContract = new ethers.Contract(addresses.turboAdmin, turboAdminABI, deploySigner);
+
+  // Add BAL and gOHM collaterals
+  await turboAdminContract.addCollateral(BAL, 'Balancer', 'BAL', BAL_COLLATERAL_MANTISSA, BAL_COLLATERAL_SUPPLY_CAP);
+  console.log('Added BAL collateral');
+  await turboAdminContract.addCollateral(
+    GOHM,
+    'Governance OHM',
+    'gOHM',
+    GOHM_COLLATERAL_MANTISSA,
+    GOHM_COLLATERAL_SUPPLY_CAP
+  );
+  console.log('Added gOHM collateral');
+  await validateAddedCollateral();
