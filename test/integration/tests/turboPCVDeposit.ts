@@ -8,11 +8,8 @@ import { TestEndtoEndCoordinator } from '../setup';
 import { expectApprox, getImpersonatedSigner, resetFork } from '@test/helpers';
 import { abi as PCVDepositAbi } from '../../../artifacts/contracts/pcv/compound/ERC20CompoundPCVDeposit.sol/ERC20CompoundPCVDeposit.json';
 import { forceEth } from '../setup/utils';
-const { Contract } = ethers;
 
-const toBN = ethers.BigNumber.from;
-
-describe.only('Turbo PCV deposit', function () {
+describe('Turbo PCV deposit', function () {
   let contracts: NamedContracts;
   let contractAddresses: NamedAddresses;
   let deployAddress: string;
@@ -50,7 +47,7 @@ describe.only('Turbo PCV deposit', function () {
     doLogging && console.log(`Environment loaded.`);
 
     const signer = (await ethers.getSigners())[0];
-    turboFusePCVDeposit = new ethers.Contract(contractAddresses.turboFusePCVDepositAddress, PCVDepositAbi, signer);
+    turboFusePCVDeposit = new ethers.Contract(contractAddresses.turboFusePCVDeposit, PCVDepositAbi, signer);
 
     const laasMultisigSigner = await getImpersonatedSigner(laasMultisigAddress);
 
