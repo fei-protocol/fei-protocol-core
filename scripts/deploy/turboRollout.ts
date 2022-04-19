@@ -30,6 +30,7 @@ export const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses
   }
 
   if (!IS_MAINNET_DEPLOY) {
+    console.log('Deploying to testrpc...');
     deploySigner = await getImpersonatedSigner(TURBO_ADMIN_ADDRESS);
   }
 
@@ -73,6 +74,7 @@ export const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses
   await turboBoosterContract.setBoostCapForCollateral(balConfig.address, balCollateralBoostCap);
   await turboBoosterContract.setBoostCapForCollateral(gOhmConfig.address, gohmCollateralBoostCap);
   await validateCollateralBoostCaps(turboBoosterContract);
+  console.log('Finished')
   return {};
 };
 
