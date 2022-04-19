@@ -33,7 +33,7 @@ export const balConfig = {
   dollarPrice: 15, // Approximate
   dollarCollateralCap: 5_000_000, // $5M
   dollarBoostCap: 1_000_000, // $1M
-  collateralMantissa: ethers.utils.parseEther('0.8') // 0.8e18, collateral factor
+  collateralMantissa: ethers.utils.parseEther('0.75') // 0.8e18, collateral factor
 };
 
 export const balCollateralSupplyCap = ethers.constants.WeiPerEther.mul(
