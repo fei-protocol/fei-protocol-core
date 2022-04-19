@@ -7,9 +7,9 @@ const fip_85: ProposalDescription = {
       target: 'rariGovernanceProxyAdmin',
       values: '0',
       method: 'upgrade(address,address)',
-      arguments: ['{rariGovernanceTokenSushiSwapDistributor}', '0x4650a83520be4f1e4cee726fdd169d37cea80525'],
+      arguments: ['{rariGovernanceTokenSushiSwapDistributor}', '0x7A2bbAe82bd08196d64Ff01c53788d942CF5F7b2'],
       description:
-        'Upgrade the RariGovernanceTokenUniswapDistributor to the new implementation (cuts off rewards at block 14476500)'
+        'Upgrade the RariGovernanceTokenUniswapDistributor to the new implementation (cuts off rewards at block 14671500)'
     },
     {
       target: 'rariGovernanceTokenSushiSwapDistributor',
@@ -22,9 +22,9 @@ const fip_85: ProposalDescription = {
       target: 'rariGovernanceTokenSushiSwapDistributor',
       values: '0',
       method: 'upgrade(address,uint256)',
-      arguments: ['{rariTimelock}', '404594685886433151695132'],
+      arguments: ['{rariTimelock}', '392129637797505814544062'],
       description:
-        'Forward the remaining RGT rewards to the timelock: 568717819057309757517546 - (568717819057309757517546 * 80 / 100 * (365 + 30) / (365 * 3))'
+        'Forward the remaining RGT rewards to the timelock: 568717819057309757517546 - (568717819057309757517546 * 80 / 100 * (365 + 60) / (365 * 3))'
     },
     {
       target: 'rariGovernanceTokenSushiSwapDistributor',
