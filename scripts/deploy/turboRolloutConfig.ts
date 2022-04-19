@@ -9,7 +9,7 @@ export const pool8Config = {
 export const pool18Config = {
   supplyCap: ethers.utils.parseEther('2000000'), // 2M, units of Fei
   // TODO: Complete with real once deployed
-  feiERC4626StrategyAddress: ''
+  feiERC4626StrategyAddress: '0xb734cc08a38f0b81e7d3ddd38dfbd66a66f1a6ba'
 };
 
 export const gOhmConfig = {
