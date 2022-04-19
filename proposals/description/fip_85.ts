@@ -29,9 +29,9 @@ const fip_85: ProposalDescription = {
       target: 'rariGovernanceTokenSushiSwapDistributor',
       values: '0',
       method: 'upgrade(address,uint256)',
-      arguments: ['{rariTimelock}', '392129637797505814544062'],
+      arguments: ['{rariTimelock}', '278386073986043863040552'],
       description:
-        'Forward the remaining RGT rewards to the timelock: 568717819057309757517546 - (568717819057309757517546 * 80 / 100 * (365 + 60) / (365 * 3))'
+        'Forward the remaining RGT rewards to the timelock: (568717819057309757517546 * 80 / 100) - (568717819057309757517546 * 80 / 100 * (365 + 60) / (365 * 3))'
     },
     {
       target: 'rariGovernanceTokenSushiSwapDistributor',
