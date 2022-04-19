@@ -1,17 +1,17 @@
 import { ProposalCategory, ProposalsConfigMap } from '@custom-types/types';
 
-import fip_97 from '@proposals/description/fip_97';
+import fip_x from '@proposals/description/fip_x';
 
 const proposals: ProposalsConfigMap = {
-  fip_97: {
-    deploy: true,
-    proposalId: null,
-    affectedContractSignoff: ['turboFusePCVDeposit'],
-    deprecatedContractSignoff: [],
-    category: ProposalCategory.OA,
-    totalValue: 0,
-    proposal: fip_97
-  }
+  // fip_x: {
+  //   deploy: true,
+  //   proposalId: null,
+  //   affectedContractSignoff: [''],
+  //   deprecatedContractSignoff: [],
+  //   category: ProposalCategory.OA,
+  //   totalValue: 0,
+  //   proposal: fip_x
+  // }
 };
 
 export default proposals;
