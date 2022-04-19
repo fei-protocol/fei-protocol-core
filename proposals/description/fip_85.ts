@@ -14,6 +14,13 @@ const fip_85: ProposalDescription = {
     {
       target: 'rariGovernanceTokenSushiSwapDistributor',
       values: '0',
+      method: 'setDistributionEndBlock()',
+      arguments: [],
+      description: 'Set the new distribution end block'
+    },
+    {
+      target: 'rariGovernanceTokenSushiSwapDistributor',
+      values: '0',
       method: 'setDisabled(bool)',
       arguments: [true],
       description: 'Disable the RariGovernanceTokenUniswapDistributor'
