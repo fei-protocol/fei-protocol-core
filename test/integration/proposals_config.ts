@@ -11,6 +11,19 @@ const proposals: ProposalsConfigMap = {
     category: ProposalCategory.OA,
     totalValue: 0,
     proposal: fip_97
+  },
+  fip_85: {
+    deploy: false,
+    proposalId: null,
+    affectedContractSignoff: [
+      'rariGovernanceProxyAdmin',
+      'rariGovernanceTokenSushiSwapDistributor',
+      'rariTimelock'
+    ],
+    deprecatedContractSignoff: [],
+    category: ProposalCategory.DAO,
+    totalValue: 0,
+    proposal: fip_85
   }
 };
 
