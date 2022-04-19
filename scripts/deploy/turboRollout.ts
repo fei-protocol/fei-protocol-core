@@ -43,36 +43,44 @@ export const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses
   const pool18Strategy = new ethers.Contract(pool18Config.feiERC4626StrategyAddress, ERC4626Json.abi, deploySigner);
 
   // 2. Set boost caps
-  console.log('Setting boost caps...');
+  // console.log('Setting boost caps...');
   const turboBoosterContract = new ethers.Contract(addresses.turboBooster, TurboBoosterJson.abi, deploySigner);
   await turboBoosterContract.setBoostCapForVault(pool8Strategy.address, pool8Config.supplyCap);
   await turboBoosterContract.setBoostCapForVault(pool18Strategy.address, pool18Config.supplyCap);
-  await validateBoostSupplyCaps(turboBoosterContract, pool8Strategy.address, pool18Strategy.address);
+  // await validateBoostSupplyCaps(turboBoosterContract, pool8Strategy.address, pool18Strategy.address);
 
   // 3. Add BAL and gOHM collaterals
   const turboAdminContract = new ethers.Contract(addresses.turboAdmin, TurboAdminJson.abi, deploySigner);
-  await turboAdminContract.addCollateral(
+  const balResponseTx = await turboAdminContract.addCollateral(
     balConfig.address,
     'Balancer',
     'BAL',
     balConfig.collateralMantissa,
     balCollateralSupplyCap
   );
+  await balResponseTx.wait();
   console.log('Added BAL collateral');
 
-  await turboAdminContract.addCollateral(
+  const gOHMResponseTx = await turboAdminContract.addCollateral(
     gOhmConfig.address,
     'Governance OHM',
     'gOHM',
     gOhmConfig.collateralMantisa,
     gohmCollateralSupplyCap
   );
+  await gOHMResponseTx.wait();
   console.log('Added gOHM collateral');
 
   // 4. Set boost caps for new collateral types
   console.log('Setting boost supply caps');
-  await turboBoosterContract.setBoostCapForCollateral(balConfig.address, balCollateralBoostCap);
-  await turboBoosterContract.setBoostCapForCollateral(gOhmConfig.address, gohmCollateralBoostCap);
+  const balBoostCapTx = await turboBoosterContract.setBoostCapForCollateral(balConfig.address, balCollateralBoostCap);
+  await balBoostCapTx.wait();
+
+  const gOHMBoostCapTx = await turboBoosterContract.setBoostCapForCollateral(
+    gOhmConfig.address,
+    gohmCollateralBoostCap
+  );
+  await gOHMBoostCapTx.wait();
   await validateCollateralBoostCaps(turboBoosterContract);
   console.log('Finished')
   return {};
