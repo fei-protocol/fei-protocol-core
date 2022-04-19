@@ -1,8 +1,8 @@
 import { ProposalCategory, ProposalsConfigMap } from '@custom-types/types';
 
 // import fip_xx_proposal from '@proposals/description/fip_xx';
+import fip_97 from '@proposals/description/fip_97';
 import fip_92 from '@proposals/description/fip_92';
-import fip_94 from '@proposals/description/fip_94';
 
 const proposals: ProposalsConfigMap = {
   /*
@@ -16,6 +16,15 @@ const proposals: ProposalsConfigMap = {
       category: ProposalCategory.DAO
     }
     */
+  fip_97: {
+    deploy: true,
+    proposalId: null,
+    affectedContractSignoff: ['turboFusePCVDeposit'],
+    deprecatedContractSignoff: [],
+    category: ProposalCategory.OA,
+    totalValue: 0,
+    proposal: fip_97
+  },
   fip_92: {
     deploy: false, // deploy flag for whether to run deploy action during e2e tests or use mainnet state
     totalValue: 0, // amount of ETH to send to DAO execution
@@ -34,15 +43,6 @@ const proposals: ProposalsConfigMap = {
     ],
     deprecatedContractSignoff: [],
     category: ProposalCategory.DAO
-  },
-  fip_94: {
-    deploy: false,
-    proposalId: null,
-    affectedContractSignoff: ['core', 'rariTimelock'],
-    deprecatedContractSignoff: [],
-    category: ProposalCategory.DAO,
-    totalValue: 0,
-    proposal: fip_94
   }
 };
 
