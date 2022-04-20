@@ -1890,6 +1890,11 @@ const MainnetAddresses: MainnetAddresses = {
     artifactName: 'unknown',
     address: '0xf486608dbc7dd0eb80e4b9fa0fdb03e40f414030',
     category: AddressCategory.Fuse
+  },
+  fuseERC4626Pool18Fei: {
+    artifactName: 'unknown',
+    address: '0x0a00F781508a2E3FF5C6Aa80DF97dAebd0fFC259',
+    category: AddressCategory.Fuse
   }
 };
 
