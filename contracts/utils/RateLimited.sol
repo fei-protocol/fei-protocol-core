@@ -124,6 +124,8 @@ abstract contract RateLimited is CoreRef {
             return;
         }
 
+        lastBufferUsedTime = block.timestamp;
+
         /// ensure that bufferStored cannot be gt buffer cap
         _bufferStored = Math.min(newBuffer + amount, _bufferCap);
     }

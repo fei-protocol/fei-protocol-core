@@ -76,7 +76,6 @@ abstract contract MultiRateLimited is RateLimited, IMultiRateLimited {
     /// @param newRateLimitPerSecond new maximum rate limit per second for add minter role
     function updateMaxRateLimitPerSecond(uint256 newRateLimitPerSecond)
         external
-        virtual
         override
         onlyGovernor
     {
@@ -98,7 +97,6 @@ abstract contract MultiRateLimited is RateLimited, IMultiRateLimited {
     /// @param newBufferCap new buffer cap for ADD_MINTER_ROLE added addresses
     function updateMaxBufferCap(uint256 newBufferCap)
         external
-        virtual
         override
         onlyGovernor
     {
@@ -121,7 +119,7 @@ abstract contract MultiRateLimited is RateLimited, IMultiRateLimited {
         address rateLimitedAddress,
         uint112 _rateLimitPerSecond,
         uint112 _bufferCap
-    ) external virtual override onlyGovernor {
+    ) external override onlyGovernor {
         _addAddress(rateLimitedAddress, _rateLimitPerSecond, _bufferCap);
     }
 
@@ -135,7 +133,6 @@ abstract contract MultiRateLimited is RateLimited, IMultiRateLimited {
         uint112 _bufferCap
     )
         external
-        virtual
         override
         addressIsRegistered(rateLimitedAddress)
         hasAnyOfTwoRoles(TribeRoles.ADD_MINTER_ROLE, TribeRoles.GOVERNOR)
@@ -154,6 +151,10 @@ abstract contract MultiRateLimited is RateLimited, IMultiRateLimited {
             _bufferCap <= bufferCap,
             "MultiRateLimited: buffercap too high"
         );
+        require(
+            _rateLimitPerSecond <= MAX_RATE_LIMIT_PER_SECOND,
+            "MultiRateLimited: rateLimitPerSecond too high"
+        );
 
         _updateAddress(rateLimitedAddress, _rateLimitPerSecond, _bufferCap);
     }
@@ -161,9 +162,8 @@ abstract contract MultiRateLimited is RateLimited, IMultiRateLimited {
     /// @notice add an authorized rateLimitedAddress contract
     /// @param rateLimitedAddress the new address to add as a rateLimitedAddress
     /// gives the newly added contract the maximum allowable rate limit per second and buffer cap
-    function addAddressWithCaps(address rateLimitedAddress)
+    function addAddressAsMinter(address rateLimitedAddress)
         external
-        virtual
         override
         onlyTribeRole(TribeRoles.ADD_MINTER_ROLE)
     {
@@ -174,11 +174,29 @@ abstract contract MultiRateLimited is RateLimited, IMultiRateLimited {
         );
     }
 
+    /// @notice add an authorized rateLimitedAddress contract
+    /// @param rateLimitedAddress the new address to add as a rateLimitedAddress
+    /// gives the newly added contract the maximum allowable rate limit per second and buffer cap
+    function addAddressAsMinter(
+        address rateLimitedAddress,
+        uint112 _rateLimitPerSecond,
+        uint112 _bufferCap
+    ) external onlyTribeRole(TribeRoles.ADD_MINTER_ROLE) {
+        require(
+            _rateLimitPerSecond <= individualMaxRateLimitPerSecond,
+            "MultiRateLimited: rlps exceeds role amt"
+        );
+        require(
+            _bufferCap <= individualMaxBufferCap,
+            "MultiRateLimited: buffercap exceeds role amt"
+        );
+        _addAddress(rateLimitedAddress, _rateLimitPerSecond, _bufferCap);
+    }
+
     /// @notice remove an authorized rateLimitedAddress contract
     /// @param rateLimitedAddress the address to remove from the whitelist of addresses
     function removeAddress(address rateLimitedAddress)
         external
-        virtual
         override
         addressIsRegistered(rateLimitedAddress)
         onlyGuardianOrGovernor
@@ -263,21 +281,14 @@ abstract contract MultiRateLimited is RateLimited, IMultiRateLimited {
             rateLimitedAddress
         ];
 
-        require(
-            rateLimitData.lastBufferUsedTime != 0,
-            "MultiRateLimited: rate limit address does not exist"
-        );
-        require(
-            _rateLimitPerSecond <= MAX_RATE_LIMIT_PER_SECOND,
-            "MultiRateLimited: rateLimitPerSecond too high"
-        );
-
         uint112 oldRateLimitPerSecond = rateLimitData.rateLimitPerSecond;
+        uint112 currentBufferStored = individualBuffer(rateLimitedAddress);
+        uint32 newBlockTimestamp = block.timestamp.toUint32();
 
-        rateLimitData.lastBufferUsedTime = block.timestamp.toUint32();
+        rateLimitData.bufferStored = currentBufferStored;
+        rateLimitData.lastBufferUsedTime = newBlockTimestamp;
         rateLimitData.bufferCap = _bufferCap;
         rateLimitData.rateLimitPerSecond = _rateLimitPerSecond;
-        rateLimitData.bufferStored = _bufferCap;
 
         emit IndividualRateLimitPerSecondUpdate(
             rateLimitedAddress,
@@ -329,7 +340,7 @@ abstract contract MultiRateLimited is RateLimited, IMultiRateLimited {
     function _depleteIndividualBuffer(
         address rateLimitedAddress,
         uint256 amount
-    ) internal returns (uint256) {
+    ) internal {
         _depleteBuffer(amount);
 
         uint256 newBuffer = individualBuffer(rateLimitedAddress);
@@ -337,20 +348,21 @@ abstract contract MultiRateLimited is RateLimited, IMultiRateLimited {
         require(newBuffer != 0, "MultiRateLimited: no rate limit buffer");
         require(amount <= newBuffer, "MultiRateLimited: rate limit hit");
 
-        rateLimitPerAddress[rateLimitedAddress].bufferStored = uint112(
-            newBuffer - amount
-        );
+        uint32 lastBufferUsedTime = block.timestamp.toUint32();
 
-        rateLimitPerAddress[rateLimitedAddress].lastBufferUsedTime = block
-            .timestamp
-            .toUint32();
+        uint112 newBufferStored = uint112(newBuffer - amount);
+        uint112 currentBufferCap = rateLimitPerAddress[rateLimitedAddress]
+            .bufferCap;
+
+        rateLimitPerAddress[rateLimitedAddress]
+            .lastBufferUsedTime = lastBufferUsedTime;
+        rateLimitPerAddress[rateLimitedAddress].bufferCap = currentBufferCap;
+        rateLimitPerAddress[rateLimitedAddress].bufferStored = newBufferStored;
 
         emit IndividualBufferUsed(
             rateLimitedAddress,
             amount,
             newBuffer - amount
         );
-
-        return amount;
     }
 }

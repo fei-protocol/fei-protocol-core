@@ -54,7 +54,7 @@ interface IMultiRateLimited {
     function updateMaxBufferCap(uint256 newBufferCap) external;
 
     /// @notice add an authorized contract, its per second replenishment and buffer set to the non governor caps
-    function addAddressWithCaps(address) external;
+    function addAddressAsMinter(address) external;
 
     /// @notice add an authorized contract, its per second replenishment and buffer
     function addAddress(
