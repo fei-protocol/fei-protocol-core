@@ -63,9 +63,9 @@ contract PSMTogglerGuard is IGuard {
         values[0] = 0;
 
         if (ethPSM.paused()) {
-            datas[0] = abi.encodePacked(ethPSM.pause.selector);
-        } else {
             datas[0] = abi.encodePacked(ethPSM.unpause.selector);
+        } else {
+            datas[0] = abi.encodePacked(ethPSM.pause.selector);
         }
     }
 }
