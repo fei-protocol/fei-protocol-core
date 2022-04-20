@@ -1871,6 +1871,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0xf6c7f4a90b10c9eaaf2a6676ce81fe8673453e72',
     category: AddressCategory.Turbo
   },
+  turboMaster: {
+    artifactName: 'unknown',
+    address: '0xf2e513d3b4171bb115cb9ffc45555217fbbbd00c',
+    category: AddressCategory.Turbo
+  },
   convexPoolPCVDepositWrapper: {
     artifactName: 'PCVDepositWrapper',
     address: '0x1370CA8655C255948d6c6110066d78680601B7c2',
