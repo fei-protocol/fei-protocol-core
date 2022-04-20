@@ -4,10 +4,12 @@ pragma solidity ^0.8.10;
 import "../../metagov/utils/LiquidityGaugeManager.sol";
 import "../IPCVDepositBalances.sol";
 
-/// @title GaugeLens
+/// @title AngleGaugeLens
 /// @author Fei Protocol
-/// @notice a contract to read tokens held in a gauge
-contract GaugeLens is IPCVDepositBalances {
+/// @notice a contract to read tokens held in a gauge.
+/// Angle has a small modification in their Curve fork : they name a
+/// variable staking_token() instead of lp_token() as in the original Curve code.
+contract AngleGaugeLens is IPCVDepositBalances {
     /// @notice FEI token address
     address private constant FEI = 0x956F47F50A910163D8BF957Cf5846D573E7f87CA;
 

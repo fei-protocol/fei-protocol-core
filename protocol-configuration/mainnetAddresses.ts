@@ -346,6 +346,56 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0xcd1Ac0014E2ebd972f40f24dF1694e6F528B2fD4',
     category: AddressCategory.PCV
   },
+  veBal: {
+    artifactName: 'IVeToken',
+    address: '0xC128a9954e6c874eA3d62ce62B468bA073093F25',
+    category: AddressCategory.External
+  },
+  bpt80Bal20Weth: {
+    artifactName: 'IERC20',
+    address: '0x5c6Ee304399DBdB9C8Ef030aB642B10820DB8F56',
+    category: AddressCategory.External
+  },
+  bpt30Fei70Weth: {
+    artifactName: 'IERC20',
+    address: '0x90291319F1D4eA3ad4dB0Dd8fe9E12BAF749E845',
+    category: AddressCategory.External
+  },
+  balancerGaugeController: {
+    artifactName: 'ILiquidityGaugeController',
+    address: '0xC128468b7Ce63eA702C1f104D55A2566b13D3ABD',
+    category: AddressCategory.External
+  },
+  balancerGaugeBpt30Fei70Weth: {
+    artifactName: 'ILiquidityGauge',
+    address: '0x4f9463405F5bC7b4C1304222c1dF76EFbD81a407',
+    category: AddressCategory.External
+  },
+  veBalDelegatorPCVDeposit: {
+    artifactName: 'VeBalDelegatorPCVDeposit',
+    address: '0xc4EAc760C2C631eE0b064E39888b89158ff808B2',
+    category: AddressCategory.Governance
+  },
+  gaugeLensBpt30Fei70WethGauge: {
+    artifactName: 'CurveGaugeLens',
+    address: '0xa8E388a1f19f2b33Be8bf2cCeC43641C10b4D1e5',
+    category: AddressCategory.External // not really External, but not PCV
+  },
+  balancerLensBpt30Fei70Weth: {
+    artifactName: 'BalancerPool2Lens',
+    address: '0xb31F75550e97A2C4c7AC8d4355032B8AE8b9584D',
+    category: AddressCategory.PCV
+  },
+  balancerLensVeBalBal: {
+    artifactName: 'BalancerPool2Lens',
+    address: '0x8cbA3149b95084A61bBAb9e01110b0fB92C9a289',
+    category: AddressCategory.PCV
+  },
+  balancerLensVeBalWeth: {
+    artifactName: 'BalancerPool2Lens',
+    address: '0xD8Eb546726d449fC1dEd06DFeCa800A2fa8bB930',
+    category: AddressCategory.PCV
+  },
   d3poolConvexPCVDeposit: {
     artifactName: 'ConvexPCVDeposit',
     address: '0x5ae217dE26f6Ff5F481C6e10ec48b2cf2fc857C8',
@@ -1027,7 +1077,7 @@ const MainnetAddresses: MainnetAddresses = {
     category: AddressCategory.Governance
   },
   gaugeLensAgEurUniswapGauge: {
-    artifactName: 'GaugeLens',
+    artifactName: 'AngleGaugeLens',
     address: '0x10f59bd0a100bcAD86CaB39751797D952eE1f76f',
     category: AddressCategory.Oracle
   },
@@ -1059,6 +1109,11 @@ const MainnetAddresses: MainnetAddresses = {
   veAngle: {
     artifactName: 'IVeToken',
     address: '0x0C462Dbb9EC8cD1630f1728B2CFD2769d09f0dd5',
+    category: AddressCategory.External
+  },
+  comp: {
+    artifactName: 'Tribe', // using Tribe instead of IERC20 to have delegate()
+    address: '0xc00e94Cb662C3520282E6f5717214004A7f26888',
     category: AddressCategory.External
   },
   aRai: {
