@@ -55,9 +55,9 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
       type: 'function'
     }
   ]);
-  expect(await distributor.distributionEndBlock()).to.be.equal('14476500');
-  expect(await distributor.getRgtDistributed(14476500)).to.be.equal('164123133170876605822414');
-  expect(await distributor.getRgtDistributed(19026500)).to.be.equal('164123133170876605822414');
+  expect(await distributor.distributionEndBlock()).to.be.equal('14671500'); // 14671500 = last block of revised distribution period (365 + 60 days)
+  expect(await distributor.getRgtDistributed(14671500)).to.be.equal('176588181259803942973484');
+  expect(await distributor.getRgtDistributed(19026500)).to.be.equal('176588181259803942973484');
 };
 
 export { deploy, setup, teardown, validate };
