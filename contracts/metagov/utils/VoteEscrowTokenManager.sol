@@ -21,6 +21,10 @@ interface IVeToken {
     function locked__end(address) external view returns (uint256);
 
     function checkpoint() external;
+
+    function commit_smart_wallet_checker(address) external;
+
+    function apply_smart_wallet_checker() external;
 }
 
 /// @title Vote-escrowed Token Manager
