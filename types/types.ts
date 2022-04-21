@@ -127,6 +127,7 @@ export enum AddressCategory {
   Turbo = 'Turbo',
   External = 'External',
   Deprecated = 'Deprecated',
+  Fuse = 'Fuse',
   TBD = 'TBD'
 }
 
