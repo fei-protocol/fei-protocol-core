@@ -1921,6 +1921,16 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x18413D61b335D2F46235E9E1256Fd5ec8AD03757',
     category: AddressCategory.Turbo
   },
+  turboBooster: {
+    artifactName: 'unknown',
+    address: '0xf6c7f4a90b10c9eaaf2a6676ce81fe8673453e72',
+    category: AddressCategory.Turbo
+  },
+  turboMaster: {
+    artifactName: 'unknown',
+    address: '0xf2e513d3b4171bb115cb9ffc45555217fbbbd00c',
+    category: AddressCategory.Turbo
+  },
   convexPoolPCVDepositWrapper: {
     artifactName: 'PCVDepositWrapper',
     address: '0x1370CA8655C255948d6c6110066d78680601B7c2',
@@ -1930,6 +1940,16 @@ const MainnetAddresses: MainnetAddresses = {
     artifactName: 'PCVDepositWrapper',
     address: '0xB80B3dc4F8B30589477b2bA0e4EF2b8224bDf0a5',
     category: AddressCategory.PCV
+  },
+  fuseERC4626Pool8Fei: {
+    artifactName: 'unknown',
+    address: '0xf486608dbc7dd0eb80e4b9fa0fdb03e40f414030',
+    category: AddressCategory.Fuse
+  },
+  fuseERC4626Pool18Fei: {
+    artifactName: 'unknown',
+    address: '0x0a00F781508a2E3FF5C6Aa80DF97dAebd0fFC259',
+    category: AddressCategory.Fuse
   }
 };
 
