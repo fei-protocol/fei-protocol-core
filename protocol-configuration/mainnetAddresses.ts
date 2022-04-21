@@ -72,7 +72,7 @@ const MainnetAddresses: MainnetAddresses = {
     category: AddressCategory.Core
   },
   voltCore: {
-    artifactName: AddressCategory.Core,
+    artifactName: 'Core',
     address: '0xEC7AD284f7Ad256b64c6E69b84Eb0F48f42e8196',
     category: AddressCategory.Core
   },
