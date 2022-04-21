@@ -35,15 +35,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 // Do any setup necessary for running the test.
 // This could include setting up Hardhat to impersonate accounts,
 // ensuring contracts have a specific state, etc.
-const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  const { voltFusePCVDeposit, volt, voltCore, voltFeiSwapContract, feiDAOTimelock } = contracts;
-  const deployer = await getImpersonatedSigner('0x25dCffa22EEDbF0A69F6277e24C459108c186ecB');
-  expect(await voltFeiSwapContract.beneficiary()).to.be.equal(feiDAOTimelock.address);
-  expect(await voltFeiSwapContract.recipient()).to.be.equal(voltFusePCVDeposit.address);
-  await voltCore.connect(deployer).grantMinter(deployer.address);
-  await volt.connect(deployer).mint(voltFusePCVDeposit.address, seedAmount);
-  console.log('finished setup');
-};
+const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {};
 
 // Tears down any changes made in setup() that need to be
 // cleaned up before doing any validation checks.
@@ -59,8 +51,8 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const feiAmount = ethers.constants.WeiPerEther.mul(10_170_000); // 10 M
   // Validate 10M volt was received by fei Dao timelock
   // Validate 10M fei was received by volt fuse pcv deposit
-  // expect(await volt.balanceOf(feiDAOTimelock.address)).to.be.equal(seedAmount);
-  // expect(await fei.balanceOf(voltFusePCVDeposit.address)).to.be.equal(feiAmount);
+  expect(await volt.balanceOf(feiDAOTimelock.address)).to.be.equal(seedAmount);
+  expect(await fei.balanceOf(voltFusePCVDeposit.address)).to.be.equal(feiAmount);
 };
 
 export { deploy, setup, teardown, validate };
