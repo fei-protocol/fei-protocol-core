@@ -2,7 +2,6 @@ import { ProposalCategory, ProposalsConfigMap } from '@custom-types/types';
 
 // import fip_xx_proposal from '@proposals/description/fip_xx';
 import fip_98 from '@proposals/description/fip_98';
-import fip_97 from '@proposals/description/fip_97';
 import fip_92 from '@proposals/description/fip_92';
 
 const proposals: ProposalsConfigMap = {
@@ -25,15 +24,6 @@ const proposals: ProposalsConfigMap = {
     category: ProposalCategory.DAO,
     totalValue: 0,
     proposal: fip_98
-  },
-  fip_97: {
-    deploy: true,
-    proposalId: null,
-    affectedContractSignoff: ['turboFusePCVDeposit'],
-    deprecatedContractSignoff: [],
-    category: ProposalCategory.OA,
-    totalValue: 0,
-    proposal: fip_97
   },
   fip_92: {
     deploy: false, // deploy flag for whether to run deploy action during e2e tests or use mainnet state

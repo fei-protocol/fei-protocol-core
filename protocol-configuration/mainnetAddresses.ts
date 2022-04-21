@@ -1961,6 +1961,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0xB80B3dc4F8B30589477b2bA0e4EF2b8224bDf0a5',
     category: AddressCategory.PCV
   },
+  turboFusePCVDeposit: {
+    artifactName: 'ERC20CompoundPCVDeposit',
+    address: '0x2c47Fef515d2C70F2427706999E158533F7cF090',
+    category: AddressCategory.Turbo
+  },
   fuseERC4626Pool8Fei: {
     artifactName: 'unknown',
     address: '0xf486608dbc7dd0eb80e4b9fa0fdb03e40f414030',
