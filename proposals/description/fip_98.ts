@@ -6,7 +6,7 @@ const fip_97: ProposalDescription = {
     {
       target: 'fei',
       values: '0',
-      method: 'mint',
+      method: 'mint(address,uint256)',
       arguments: ['{feiDAOTimelock}', '10170000000000000000000000'], // 10.17M
       description: 'Mint $10.17M FEI'
     },
