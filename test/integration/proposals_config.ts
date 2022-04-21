@@ -1,6 +1,7 @@
 import { ProposalCategory, ProposalsConfigMap } from '@custom-types/types';
 
 // import fip_xx_proposal from '@proposals/description/fip_xx';
+import fip_98 from '@proposals/description/fip_98';
 import fip_97 from '@proposals/description/fip_97';
 import fip_92 from '@proposals/description/fip_92';
 
@@ -16,6 +17,15 @@ const proposals: ProposalsConfigMap = {
       category: ProposalCategory.DAO
     }
     */
+  fip_98: {
+    deploy: false,
+    proposalId: null,
+    affectedContractSignoff: ['fei', 'voltFeiSwapContract'],
+    deprecatedContractSignoff: [],
+    category: ProposalCategory.DAO,
+    totalValue: 0,
+    proposal: fip_98
+  },
   fip_97: {
     deploy: true,
     proposalId: null,

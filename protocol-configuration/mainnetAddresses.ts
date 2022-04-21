@@ -66,6 +66,16 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x10ffa0CD36Bc16b355d21A08DF4a552c4A9FEC10',
     category: AddressCategory.Core
   },
+  volt: {
+    artifactName: 'Fei',
+    address: '0x559eBC30b0E58a45Cc9fF573f77EF1e5eb1b3E18',
+    category: AddressCategory.Core
+  },
+  voltCore: {
+    artifactName: AddressCategory.Core,
+    address: '0xEC7AD284f7Ad256b64c6E69b84Eb0F48f42e8196',
+    category: AddressCategory.Core
+  },
   feiDAO: {
     artifactName: 'FeiDAO',
     address: '0x0BEF27FEB58e857046d630B2c03dFb7bae567494',
@@ -1575,6 +1585,16 @@ const MainnetAddresses: MainnetAddresses = {
     artifactName: 'IERC20',
     address: '0xD3D13a578a53685B4ac36A1Bab31912D2B2A2F36',
     category: AddressCategory.External
+  },
+  voltFeiSwapContract: {
+    artifactName: 'OtcEscrow',
+    address: '0xeF152E462B59940616E667E801762dA9F2AF97b9',
+    category: AddressCategory.External
+  },
+  voltFusePCVDeposit: {
+    artifactName: 'ERC20CompoundPCVDeposit',
+    address: '0xFeBDf448C8484834bb399d930d7E1bdC773E23bA',
+    category: AddressCategory.PCV
   },
   votiumBribe: {
     artifactName: 'IVotiumBribe',
