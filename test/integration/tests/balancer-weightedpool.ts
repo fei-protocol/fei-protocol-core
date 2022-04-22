@@ -58,7 +58,6 @@ describe('balancer-weightedpool', function () {
       expect(await contracts.balancerDepositBalWeth.balanceReportedIn()).to.be.equal(contracts.bal.address);
       expect(await contracts.balancerDepositBalWeth.maximumSlippageBasisPoints()).to.be.equal('100');
       expect(await contracts.balancerDepositBalWeth.vault()).to.be.equal(contracts.balancerVault.address);
-      expect(await contracts.balancerDepositBalWeth.rewards()).to.be.equal(contracts.balancerRewards.address);
     });
 
     it('should properly report balance', async function () {
@@ -108,7 +107,6 @@ describe('balancer-weightedpool', function () {
       balancerDepositTribeWeth = await balancerDepositWeightedPoolFactory.deploy(
         contracts.core.address,
         contracts.balancerVault.address,
-        contracts.balancerRewards.address,
         await balancerWethTribePool.getPoolId(), // poolId
         '100', // max 1% slippage
         contracts.tribe.address, // accounting in TRIBE
@@ -131,7 +129,6 @@ describe('balancer-weightedpool', function () {
       expect(await balancerDepositTribeWeth.balanceReportedIn()).to.be.equal(contracts.tribe.address);
       expect(await balancerDepositTribeWeth.maximumSlippageBasisPoints()).to.be.equal('100');
       expect(await balancerDepositTribeWeth.vault()).to.be.equal(contracts.balancerVault.address);
-      expect(await balancerDepositTribeWeth.rewards()).to.be.equal(contracts.balancerRewards.address);
     });
 
     it('should be empty initially', async function () {
@@ -261,7 +258,6 @@ describe('balancer-weightedpool', function () {
       balancerDepositFeiUsdc = await balancerDepositWeightedPoolFactory.deploy(
         contracts.core.address,
         contracts.balancerVault.address,
-        contracts.balancerRewards.address,
         await balancerFeiUsdcPool.getPoolId(), // poolId
         '100', // max 1% slippage
         contracts.usdc.address, // accounting in USDC
@@ -346,7 +342,6 @@ describe('balancer-weightedpool', function () {
       balancerDepositFeiWeth = await balancerDepositWeightedPoolFactory.deploy(
         contracts.core.address,
         contracts.balancerVault.address,
-        contracts.balancerRewards.address,
         await balancerFeiWethPool.getPoolId(), // poolId
         '100', // max 1% slippage
         contracts.weth.address, // accounting in WETH

@@ -46,14 +46,12 @@ contract BalancerPCVDepositWeightedPool is BalancerPCVDepositBase {
     /// @param _core Fei Core for reference
     /// @param _poolId Balancer poolId to deposit in
     /// @param _vault Balancer vault
-    /// @param _rewards Balancer rewards (the MerkleOrchard)
     /// @param _maximumSlippageBasisPoints Maximum slippage basis points when depositing
     /// @param _token Address of the ERC20 to manage / do accounting with
     /// @param _tokenOracles oracle for price feeds of the tokens in pool
     constructor(
         address _core,
         address _vault,
-        address _rewards,
         bytes32 _poolId,
         uint256 _maximumSlippageBasisPoints,
         address _token,
@@ -62,7 +60,6 @@ contract BalancerPCVDepositWeightedPool is BalancerPCVDepositBase {
         BalancerPCVDepositBase(
             _core,
             _vault,
-            _rewards,
             _poolId,
             _maximumSlippageBasisPoints
         )

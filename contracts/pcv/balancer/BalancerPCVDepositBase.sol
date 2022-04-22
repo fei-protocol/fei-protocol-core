@@ -2,7 +2,6 @@
 pragma solidity ^0.8.0;
 
 import "./IVault.sol";
-import "./IMerkleOrchard.sol";
 import "./IWeightedPool.sol";
 import "../PCVDeposit.sol";
 import "../../Constants.sol";
@@ -14,14 +13,6 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 abstract contract BalancerPCVDepositBase is PCVDeposit {
     // ----------- Events ---------------
     event UpdateMaximumSlippage(uint256 maximumSlippageBasisPoints);
-
-    /// @notice event generated when rewards are claimed
-    event ClaimRewards(
-        address indexed _caller,
-        address indexed _token,
-        address indexed _to,
-        uint256 _amount
-    );
 
     // @notice event generated when pool position is exited (LP tokens redeemed
     // for tokens in proportion to the pool's weights.
@@ -44,24 +35,18 @@ abstract contract BalancerPCVDepositBase is PCVDeposit {
     /// @notice the balancer vault
     IVault public immutable vault;
 
-    /// @notice the balancer rewards contract to claim incentives
-    IMerkleOrchard public immutable rewards;
-
     /// @notice Balancer PCV Deposit constructor
     /// @param _core Fei Core for reference
     /// @param _vault Balancer vault
-    /// @param _rewards Balancer rewards (the MerkleOrchard)
     /// @param _poolId Balancer poolId to deposit in
     /// @param _maximumSlippageBasisPoints Maximum slippage basis points when depositing
     constructor(
         address _core,
         address _vault,
-        address _rewards,
         bytes32 _poolId,
         uint256 _maximumSlippageBasisPoints
     ) CoreRef(_core) {
         vault = IVault(_vault);
-        rewards = IMerkleOrchard(_rewards);
         maximumSlippageBasisPoints = _maximumSlippageBasisPoints;
         poolId = _poolId;
 
