@@ -48,9 +48,9 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
   const { feiDAOTimelock, fei, volt, voltFusePCVDeposit } = contracts;
 
-  const feiAmount = ethers.constants.WeiPerEther.mul(10_170_000); // 10 M
+  const feiAmount = ethers.constants.WeiPerEther.mul(10_170_000); // 10.17 M
   // Validate 10M volt was received by fei Dao timelock
-  // Validate 10M fei was received by volt fuse pcv deposit
+  // Validate 10.17M fei was received by volt fuse pcv deposit
   expect(await volt.balanceOf(feiDAOTimelock.address)).to.be.equal(seedAmount);
   expect(await fei.balanceOf(voltFusePCVDeposit.address)).to.be.equal(feiAmount);
 };
