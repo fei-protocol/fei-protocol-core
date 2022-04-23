@@ -166,7 +166,8 @@ const dependencies: DependencyMap = {
       'ethPSMFeiSkimmer',
       'rariInfraFeiTimelock',
       'reptbRedeemer',
-      'laTribuFeiTimelock'
+      'laTribuFeiTimelock',
+      'voltFeiSwapContract'
     ]
   },
   ethPSMFeiSkimmer: {
@@ -245,7 +246,8 @@ const dependencies: DependencyMap = {
       'tribeMinter',
       'timelock',
       'pcvGuardian',
-      'pegExchanger'
+      'pegExchanger',
+      'voltFeiSwapContract'
     ]
   },
   guardian: {
@@ -1002,6 +1004,9 @@ const dependencies: DependencyMap = {
   },
   balancerLensVeBalWeth: {
     contractDependencies: ['veBalDelegatorPCVDeposit', 'balUsdCompositeOracle', 'chainlinkEthUsdOracleWrapper']
+  },
+  voltFeiSwapContract: {
+    contractDependencies: ['fei', 'feiDAOTimelock']
   }
 };
 
