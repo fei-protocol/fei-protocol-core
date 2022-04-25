@@ -26,7 +26,7 @@ contract PodFactory is CoreRef, IPodFactory {
     /// @notice Public contract that will be granted to execute all timelocks created
     PodExecutor public immutable podExecutor;
 
-    /// @notice Constant podController used to create pods
+    /// @notice Default podController used to create pods
     ControllerV1 public override defaultPodController;
 
     /// @notice Mapping between podId and it's timelock
@@ -46,6 +46,7 @@ contract PodFactory is CoreRef, IPodFactory {
 
     /// @param _core Fei core address
     /// @param _memberToken Membership token that manages the Orca pod membership
+    /// @param _defaultPodController Default pod controller that will be used to create pods initially
     /// @param _podExecutor Public contract that will be granted to execute all timelocks created
     constructor(
         address _core,
