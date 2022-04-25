@@ -12,7 +12,7 @@ export const permissions = {
     'balancerDepositFeiWeth'
   ],
   BURNER_ROLE: [],
-  GOVERN_ROLE: ['core', 'feiDAOTimelock', 'rariTimelock', 'roleBastion'],
+  GOVERN_ROLE: ['core', 'feiDAOTimelock', 'roleBastion'],
   PCV_CONTROLLER_ROLE: [
     'feiDAOTimelock',
     'ratioPCVControllerV2',
@@ -35,8 +35,7 @@ export const permissions = {
   METAGOVERNANCE_TOKEN_STAKING: ['feiDAOTimelock', 'opsOptimisticTimelock'],
   METAGOVERNANCE_GAUGE_ADMIN: ['feiDAOTimelock', 'optimisticTimelock'],
   ROLE_ADMIN: ['feiDAOTimelock', 'tribalCouncilTimelock'],
-  POD_DEPLOYER_ROLE: ['feiDAOTimelock', 'tribalCouncilTimelock'],
-  POD_METADATA_REGISTER_ROLE: ['tribalCouncilSafe', 'protocolPodSafe'],
-  POD_VETO_ADMIN: ['tribalCouncilTimelock', 'nopeDAO'],
-  POD_ADMIN: ['tribalCouncilTimelock']
+  POD_METADATA_REGISTER_ROLE: ['tribalCouncilSafe'],
+  POD_VETO_ADMIN: ['nopeDAO'],
+  POD_ADMIN: ['tribalCouncilTimelock', 'podFactory']
 };

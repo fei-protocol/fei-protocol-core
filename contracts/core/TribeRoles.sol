@@ -86,11 +86,6 @@ library TribeRoles {
     /*///////////////////////////////////////////////////////////////
                                  Minor Roles
     //////////////////////////////////////////////////////////////*/
-
-    /// @notice capable of deploying optimistic governance pods
-    bytes32 internal constant POD_DEPLOYER_ROLE =
-        keccak256("POD_DEPLOYER_ROLE");
-
     bytes32 internal constant POD_METADATA_REGISTER_ROLE =
         keccak256("POD_METADATA_REGISTER_ROLE");
 

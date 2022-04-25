@@ -12,36 +12,21 @@ interface IPodAdminGateway {
     event PodMembershipTransferLock(uint256 indexed podId, bool lock);
 
     // Veto functionality
-    event VetoTimelock(uint256 indexed podId, address indexed timelock);
+    event VetoTimelock(
+        uint256 indexed podId,
+        address indexed timelock,
+        bytes32 proposalId
+    );
 
-    function getPodAddMemberRole(uint256 _podId)
+    function getSpecificPodAdminRole(uint256 _podId)
         external
         pure
         returns (bytes32);
 
-    function getPodRemoveMemberRole(uint256 _podId)
+    function getSpecificPodGuardianRole(uint256 _podId)
         external
         pure
         returns (bytes32);
-
-    function getPodVetoRole(uint256 _podId) external pure returns (bytes32);
-
-    function getPodTransferAdminRole(uint256 _podId)
-        external
-        pure
-        returns (bytes32);
-
-    function getSetMembershipTransferLockRole(uint256 _podId)
-        external
-        pure
-        returns (bytes32);
-
-    function transferPodAdmin(uint256 _podId, address newPodAdmin) external;
-
-    function batchTransferPodAdmins(
-        uint256[] calldata _podIds,
-        address[] calldata newPodAdmins
-    ) external;
 
     function addPodMember(uint256 _podId, address _member) external;
 

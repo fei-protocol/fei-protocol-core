@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
+import {TimelockController} from "@openzeppelin/contracts/governance/TimelockController.sol";
 import {ERC20VotesComp} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20VotesComp.sol";
 import {DSTest} from "../../utils/DSTest.sol";
 import {IPodFactory} from "../../../pods/interfaces/IPodFactory.sol";
@@ -11,9 +12,9 @@ import {Core} from "../../../core/Core.sol";
 import {PodFactory} from "../../../pods/PodFactory.sol";
 import {MainnetAddresses} from "../fixtures/MainnetAddresses.sol";
 import {deployPodWithSystem} from "../fixtures/Orca.sol";
-import {OptimisticTimelock} from "../../../dao/timelock/OptimisticTimelock.sol";
 import {PodAdminGateway} from "../../../pods/PodAdminGateway.sol";
 import {DummyStorage} from "../../utils/Fixtures.sol";
+import {IPodFactory} from "../../../pods/interfaces/IPodFactory.sol";
 
 contract NopeDAOIntegrationTest is DSTest {
     uint256 excessQuorumTribe = (11e6) * (10**18);
@@ -26,6 +27,7 @@ contract NopeDAOIntegrationTest is DSTest {
     address private podExecutor = address(0x2);
     address private podAdmin;
     address private factory;
+    IPodFactory.PodConfig podConfig;
 
     NopeDAO nopeDAO;
     Core core = Core(MainnetAddresses.CORE);
@@ -51,13 +53,20 @@ contract NopeDAOIntegrationTest is DSTest {
         vm.stopPrank();
 
         // Create pod, using a podFactory
-        (podId, podTimelock, safe, factory, podAdmin) = deployPodWithSystem(
+        (
+            podId,
+            podTimelock,
+            safe,
+            factory,
+            podAdmin,
+            podConfig
+        ) = deployPodWithSystem(
             MainnetAddresses.CORE,
             MainnetAddresses.POD_CONTROLLER,
             MainnetAddresses.MEMBER_TOKEN,
             podExecutor,
-            vm,
-            MainnetAddresses.FEI_DAO_TIMELOCK
+            MainnetAddresses.FEI_DAO_TIMELOCK,
+            vm
         );
     }
 
@@ -156,7 +165,7 @@ contract NopeDAOIntegrationTest is DSTest {
         DummyStorage dummyContract = new DummyStorage();
         assertEq(dummyContract.getVariable(), 5);
 
-        OptimisticTimelock timelockContract = OptimisticTimelock(
+        TimelockController timelockContract = TimelockController(
             payable(podTimelock)
         );
 
@@ -167,7 +176,6 @@ contract NopeDAOIntegrationTest is DSTest {
             newDummyContractVar
         );
 
-        uint256 timelockDelay = 500;
         vm.prank(safe);
         timelockContract.schedule(
             address(dummyContract),
@@ -175,20 +183,10 @@ contract NopeDAOIntegrationTest is DSTest {
             timelockExecutionTxData,
             bytes32(0),
             bytes32("1"),
-            timelockDelay
+            podConfig.minDelay
         );
 
         // 3. Validate that transaction is in timelock
-        bytes32 txHash = timelockContract.hashOperation(
-            address(dummyContract),
-            0,
-            timelockExecutionTxData,
-            bytes32(0),
-            bytes32("1")
-        );
-        assertTrue(timelockContract.isOperationPending(txHash));
-
-        // 4. Prepare NopeDAO transaction to veto the Safe proposal
         bytes32 timelockProposalId = timelockContract.hashOperation(
             address(dummyContract),
             0,
@@ -196,7 +194,9 @@ contract NopeDAOIntegrationTest is DSTest {
             bytes32(0),
             bytes32("1")
         );
+        assertTrue(timelockContract.isOperationPending(timelockProposalId));
 
+        // 4. Prepare NopeDAO transaction to veto the Safe proposal
         // Need veto to come from nopeDAO to the podAdminGateway
         address[] memory targets = new address[](1);
         targets[0] = podAdmin;
@@ -205,8 +205,8 @@ contract NopeDAOIntegrationTest is DSTest {
         values[0] = uint256(0);
 
         bytes[] memory calldatas = new bytes[](1);
-        bytes memory data = abi.encodePacked(
-            bytes4(keccak256(bytes("veto(uint256,bytes32)"))),
+        bytes memory data = abi.encodeWithSignature(
+            "veto(uint256,bytes32)",
             podId,
             timelockProposalId
         );

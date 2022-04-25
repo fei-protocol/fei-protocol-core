@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
+import {TimelockController} from "@openzeppelin/contracts/governance/TimelockController.sol";
 import {MemberToken} from "@orcaprotocol/contracts/contracts/MemberToken.sol";
 import {ControllerV1} from "@orcaprotocol/contracts/contracts/ControllerV1.sol";
-import {OptimisticTimelock} from "../../../dao/timelock/OptimisticTimelock.sol";
 import {IGnosisSafe} from "../../../pods/interfaces/IGnosisSafe.sol";
 
-import {createPod, setupOptimisticTimelock, mintOrcaTokens} from "../fixtures/Orca.sol";
+import {createPod, setupTimelock, mintOrcaTokens} from "../fixtures/Orca.sol";
 import {MainnetAddresses} from "../fixtures/MainnetAddresses.sol";
 import {Vm} from "../../utils/Vm.sol";
 import {DSTest} from "../../utils/DSTest.sol";
@@ -63,9 +63,9 @@ contract OptimisticPodIntegrationTest is DSTest {
     }
 
     /// @notice Verify that the pod is set as the proposer and can propose on the timelock
-    function testLinkOptimisticTimelock() public {
+    function testLinkTimelockController() public {
         address safeAddress = controller.podIdToSafe(podId);
-        OptimisticTimelock timelock = setupOptimisticTimelock(
+        TimelockController timelock = setupTimelock(
             safeAddress,
             safeAddress,
             MainnetAddresses.CORE

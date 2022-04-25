@@ -7,7 +7,7 @@ import {DSTest} from "../../utils/DSTest.sol";
 import {PodFactory} from "../../../pods/PodFactory.sol";
 import {PodAdminGateway} from "../../../pods/PodAdminGateway.sol";
 import {IPodAdminGateway} from "../../../pods/interfaces/IPodAdminGateway.sol";
-import {mintOrcaTokens, getPodParams} from "../fixtures/Orca.sol";
+import {mintOrcaTokens, getPodParamsWithTimelock} from "../fixtures/Orca.sol";
 import {IPodFactory} from "../../../pods/interfaces/IPodFactory.sol";
 import {ITimelock} from "../../../dao/timelock/ITimelock.sol";
 import {TribeRoles} from "../../../core/TribeRoles.sol";
@@ -33,8 +33,16 @@ contract PodAdminGatewayIntegrationTest is DSTest {
     address feiDAOTimelock = MainnetAddresses.FEI_DAO_TIMELOCK;
 
     function setUp() public {
-        // 1.0 Deploy pod factory
+        // 1. Deploy pod factory
         factory = new PodFactory(core, podController, memberToken, podExecutor);
+
+        // 2. Deploy pod admin gateway, to expose pod admin functionality
+        podAdminGateway = new PodAdminGateway(
+            core,
+            memberToken,
+            podController,
+            address(factory)
+        );
 
         // Grant the factory the relevant roles to disable membership locks
         vm.startPrank(feiDAOTimelock);
@@ -42,19 +50,16 @@ contract PodAdminGatewayIntegrationTest is DSTest {
         Core(core).grantRole(TribeRoles.POD_ADMIN, address(factory));
         vm.stopPrank();
 
-        // 2.0 Deploy multi-pod admin contract, to expose pod admin functionality
-        podAdminGateway = new PodAdminGateway(core, address(factory));
-
-        // 3.0 Make config for pod, mint Orca tokens to factory
-        (IPodFactory.PodConfig memory config, ) = getPodParams(
+        // 3. Make config for pod, mint Orca tokens to factory
+        IPodFactory.PodConfig memory config = getPodParamsWithTimelock(
             address(podAdminGateway)
         );
         podConfig = config;
         mintOrcaTokens(address(factory), 2, vm);
 
-        // 4.0 Create pod
+        // 4. Create pod
         vm.prank(feiDAOTimelock);
-        (podId, timelock, safe) = factory.createChildOptimisticPod(podConfig);
+        (podId, timelock, safe) = factory.createOptimisticPod(podConfig);
     }
 
     /// @notice Validate that podAdminGateway contract pod admin, and initial state is valid
@@ -171,67 +176,40 @@ contract PodAdminGatewayIntegrationTest is DSTest {
         podAdminGateway.removePodMember(podId, podConfig.members[0]);
     }
 
-    /// @notice Validate that PodAddMemberRole is computed is expected
-    function testGetPodAddMemberRole() public {
-        bytes32 specificAddRole = keccak256(
-            abi.encode(podId, "ORCA_POD", "POD_ADD_MEMBER_ROLE")
-        );
-        assertEq(specificAddRole, podAdminGateway.getPodAddMemberRole(podId));
-    }
-
-    /// @notice Validate that PoddVetoRole is computed is expected
-    function testGetVetoRole() public {
-        bytes32 specificVetoRole = keccak256(
-            abi.encode(podId, "ORCA_POD", "POD_VETO_ROLE")
-        );
-        assertEq(specificVetoRole, podAdminGateway.getPodVetoRole(podId));
-    }
-
-    /// @notice Validate that specific admin transfer role is computed correctly
-    function testGetTransferAdminRole() public {
-        bytes32 specificTransferAdminRole = keccak256(
-            abi.encode(podId, "ORCA_POD", "POD_TRANSFER_ADMIN_ROLE")
+    /// @notice Validate that specific pod admin role is computed is expected
+    function testGetSpecificPodAdminRole() public {
+        bytes32 specificAdminRole = keccak256(
+            abi.encode(podId, "_ORCA_POD", "_ADMIN")
         );
         assertEq(
-            specificTransferAdminRole,
-            podAdminGateway.getPodTransferAdminRole(podId)
+            specificAdminRole,
+            podAdminGateway.getSpecificPodAdminRole(podId)
         );
     }
 
-    /// @notice Validate that specific set membership transfer lock role is set
-    function testGetSetMembershipLockRole() public {
-        bytes32 specificMembershipLockRole = keccak256(
-            abi.encode(podId, "ORCA_POD", "SET_MEMBERSHIP_TRANSFER_LOCK_ROLE")
+    /// @notice Validate that specific pod guardian role is computed is expected
+    function testGetSpecificPodGuardianRole() public {
+        bytes32 specificGuardianRole = keccak256(
+            abi.encode(podId, "_ORCA_POD", "_GUARDIAN")
         );
         assertEq(
-            specificMembershipLockRole,
-            podAdminGateway.getSetMembershipTransferLockRole(podId)
+            specificGuardianRole,
+            podAdminGateway.getSpecificPodGuardianRole(podId)
         );
     }
 
-    /// @notice Validate that PodRemoveMemberRole is computed is expected
-    function testRemovePodMemberRole() public {
-        bytes32 specificRemoveRole = keccak256(
-            abi.encode(podId, "ORCA_POD", "POD_REMOVE_MEMBER_ROLE")
-        );
-        assertEq(
-            specificRemoveRole,
-            podAdminGateway.getPodRemoveMemberRole(podId)
-        );
-    }
-
-    /// @notice Validate that the specific add member pod admin can add
-    function testSpecificAddMemberRole() public {
+    /// @notice Validate that the specific pod admin can add a member to a pod
+    function testSpecificPodAdminCanAdd() public {
         address userWithSpecificRole = address(0x11);
 
         // Create role in core
-        bytes32 specificPodAddRole = keccak256(
-            abi.encode(podId, "ORCA_POD", "POD_ADD_MEMBER_ROLE")
+        bytes32 specificAdminRole = keccak256(
+            abi.encode(podId, "_ORCA_POD", "_ADMIN")
         );
 
         vm.startPrank(feiDAOTimelock);
-        ICore(core).createRole(specificPodAddRole, TribeRoles.GOVERNOR);
-        ICore(core).grantRole(specificPodAddRole, userWithSpecificRole);
+        ICore(core).createRole(specificAdminRole, TribeRoles.GOVERNOR);
+        ICore(core).grantRole(specificAdminRole, userWithSpecificRole);
         vm.stopPrank();
 
         address newMember = address(0x12);
@@ -245,18 +223,43 @@ contract PodAdminGatewayIntegrationTest is DSTest {
         assertEq(podMembers[0], newMember);
     }
 
-    /// @notice Validate that the specific add member pod admin can remove members
-    function testSpecificRemoveMemberRole() public {
+    /// @notice Validate that the specific pod admin can remove members
+    function testSpecificPodAdminCanRemove() public {
         address userWithSpecificRole = address(0x11);
 
         // Create role in core
-        bytes32 specificPodRemoveRole = keccak256(
-            abi.encode(podId, "ORCA_POD", "POD_REMOVE_MEMBER_ROLE")
+        bytes32 specificPodAdmin = keccak256(
+            abi.encode(podId, "_ORCA_POD", "_ADMIN")
         );
 
         vm.startPrank(feiDAOTimelock);
-        ICore(core).createRole(specificPodRemoveRole, TribeRoles.GOVERNOR);
-        ICore(core).grantRole(specificPodRemoveRole, userWithSpecificRole);
+        ICore(core).createRole(specificPodAdmin, TribeRoles.GOVERNOR);
+        ICore(core).grantRole(specificPodAdmin, userWithSpecificRole);
+        vm.stopPrank();
+
+        vm.prank(userWithSpecificRole);
+        podAdminGateway.removePodMember(podId, podConfig.members[0]);
+
+        uint256 numPodMembers = factory.getNumMembers(podId);
+        assertEq(numPodMembers, podConfig.members.length - 1);
+
+        address[] memory podMembers = factory.getPodMembers(podId);
+        assertEq(podMembers[0], podConfig.members[1]);
+        assertEq(podMembers[1], podConfig.members[2]);
+    }
+
+    /// @notice Validate that the specific pod guardian can remove members
+    function testSpecificPodGuardianCanRemove() public {
+        address userWithSpecificRole = address(0x11);
+
+        // Create role in core
+        bytes32 specificPodGuardian = keccak256(
+            abi.encode(podId, "_ORCA_POD", "_GUARDIAN")
+        );
+
+        vm.startPrank(feiDAOTimelock);
+        ICore(core).createRole(specificPodGuardian, TribeRoles.GOVERNOR);
+        ICore(core).grantRole(specificPodGuardian, userWithSpecificRole);
         vm.stopPrank();
 
         vm.prank(userWithSpecificRole);
@@ -272,6 +275,7 @@ contract PodAdminGatewayIntegrationTest is DSTest {
 
     /// @notice Validate that the veto role functions
     function testVetoPermission() public {
+        // Following revert indicates that the access control check has been passed
         vm.prank(feiDAOTimelock);
         vm.expectRevert(
             bytes("TimelockController: operation cannot be cancelled")
@@ -279,18 +283,18 @@ contract PodAdminGatewayIntegrationTest is DSTest {
         podAdminGateway.veto(podId, bytes32("5"));
     }
 
-    /// @notice Validate that the veto role functions
-    function testVetoPermissionWithSpecificRole() public {
+    /// @notice Validate that the specific pod amdin can veto
+    function testSpecificPodAdminCanVeto() public {
         address userWithSpecificRole = address(0x11);
 
         // Create role in core
-        bytes32 specificPodRemoveRole = keccak256(
-            abi.encode(podId, "ORCA_POD", "POD_VETO_ROLE")
+        bytes32 specificPodAdmin = keccak256(
+            abi.encode(podId, "_ORCA_POD", "_ADMIN")
         );
 
         vm.startPrank(feiDAOTimelock);
-        ICore(core).createRole(specificPodRemoveRole, TribeRoles.GOVERNOR);
-        ICore(core).grantRole(specificPodRemoveRole, userWithSpecificRole);
+        ICore(core).createRole(specificPodAdmin, TribeRoles.GOVERNOR);
+        ICore(core).grantRole(specificPodAdmin, userWithSpecificRole);
         vm.stopPrank();
 
         vm.prank(userWithSpecificRole);
@@ -298,21 +302,5 @@ contract PodAdminGatewayIntegrationTest is DSTest {
             bytes("TimelockController: operation cannot be cancelled")
         );
         podAdminGateway.veto(podId, bytes32("5"));
-    }
-
-    /// @notice Validate that the pod admin contract can be transferred to another admin
-    function testTransferPodAdmin() public {
-        address newAdmin = address(0x11);
-
-        vm.prank(feiDAOTimelock);
-        podAdminGateway.transferPodAdmin(podId, newAdmin);
-
-        // Validate admin set on pod contract was updated everywhere as expected
-        address orcaControllerReportedAdmin = ControllerV1(podController)
-            .podAdmin(podId);
-        assertEq(orcaControllerReportedAdmin, newAdmin);
-
-        address podFactoryReportedAdmin = factory.getPodAdmin(podId);
-        assertEq(podFactoryReportedAdmin, newAdmin);
     }
 }

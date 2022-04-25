@@ -26,7 +26,6 @@ contract OptimisticTimelock is TimelockController, CoreRef {
 
         In addition it allows for much more granular and flexible access for multisig operators
     */
-    // Guardian can become admin on every Optimistic timelock and effetively become 
     function becomeAdmin() public onlyGuardianOrGovernor {
         this.grantRole(TIMELOCK_ADMIN_ROLE, msg.sender);
     }
