@@ -27,7 +27,7 @@ contract PodFactory is CoreRef, IPodFactory {
     PodExecutor public immutable podExecutor;
 
     /// @notice Constant podController used to create pods
-    ControllerV1 public immutable defaultPodController;
+    ControllerV1 public override defaultPodController;
 
     /// @notice Mapping between podId and it's timelock
     mapping(uint256 => address) public override getPodTimelock;
@@ -87,10 +87,7 @@ contract PodFactory is CoreRef, IPodFactory {
         override
         returns (ControllerV1)
     {
-        ControllerV1 podController = ControllerV1(
-            memberToken.memberController(podId)
-        );
-        return podController;
+        return ControllerV1(memberToken.memberController(podId));
     }
 
     /// @notice Get the address of the Gnosis safe that represents a pod
@@ -213,6 +210,19 @@ contract PodFactory is CoreRef, IPodFactory {
         // Disable membership transfers by default
         PodAdminGateway(_config.admin).lockMembershipTransfers(podId);
         return (podId, timelock, safe);
+    }
+
+    /// @notice Update the default pod controller
+    function updateDefaultPodController(address _newDefaultController)
+        external
+        override
+        hasAnyOfTwoRoles(TribeRoles.GOVERNOR, TribeRoles.POD_ADMIN)
+    {
+        emit UpdateDefaultPodController(
+            address(defaultPodController),
+            _newDefaultController
+        );
+        defaultPodController = ControllerV1(_newDefaultController);
     }
 
     ////////////////////////     INTERNAL          ////////////////////////////

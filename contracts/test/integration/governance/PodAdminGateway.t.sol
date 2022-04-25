@@ -29,7 +29,7 @@ contract PodAdminGatewayIntegrationTest is DSTest {
 
     address core = MainnetAddresses.CORE;
     address memberToken = MainnetAddresses.MEMBER_TOKEN;
-    address podController = MainnetAddresses.POD_CONTROLLER;
+    address podController = MainnetAddresses.ORCA_POD_CONTROLLER_V1_2;
     address feiDAOTimelock = MainnetAddresses.FEI_DAO_TIMELOCK;
 
     function setUp() public {

@@ -22,7 +22,8 @@ contract OptimisticPodIntegrationTest is DSTest {
 
     MemberToken memberToken = MemberToken(MainnetAddresses.MEMBER_TOKEN);
 
-    ControllerV1 controller = ControllerV1(MainnetAddresses.POD_CONTROLLER);
+    ControllerV1 controller =
+        ControllerV1(MainnetAddresses.ORCA_POD_CONTROLLER_V1_2);
 
     address proposer = address(0x1);
     address executor = address(0x2);
