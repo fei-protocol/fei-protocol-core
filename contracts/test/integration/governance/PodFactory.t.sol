@@ -41,8 +41,8 @@ contract PodFactoryIntegrationTest is DSTest {
         // 1. Deploy pod factory
         factory = new PodFactory(
             core,
-            podController,
             memberToken,
+            podController,
             address(podExecutor)
         );
 
@@ -50,7 +50,6 @@ contract PodFactoryIntegrationTest is DSTest {
         PodAdminGateway podAdminGateway = new PodAdminGateway(
             core,
             memberToken,
-            podController,
             address(factory)
         );
         podAdmin = address(podAdminGateway);
@@ -66,7 +65,6 @@ contract PodFactoryIntegrationTest is DSTest {
 
     /// @notice Validate initial factory state
     function testInitialState() public {
-        assertEq(address(factory.podController()), podController);
         assertEq(factory.getNumberOfPods(), 0);
         assertEq(address(factory.podExecutor()), address(podExecutor));
         assertEq(address(factory.getMemberToken()), memberToken);
@@ -111,6 +109,11 @@ contract PodFactoryIntegrationTest is DSTest {
         address[] memory podSafeAddresses = factory.getPodSafeAddresses();
         assertEq(podSafeAddresses.length, 1);
         assertEq(podSafeAddresses[0], councilSafe);
+
+        assertEq(
+            address(factory.getPodController(councilPodId)),
+            podController
+        );
     }
 
     function testCanOnlyDeployGenesisOnce() public {

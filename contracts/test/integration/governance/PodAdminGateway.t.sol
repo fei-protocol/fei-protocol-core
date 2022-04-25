@@ -34,13 +34,12 @@ contract PodAdminGatewayIntegrationTest is DSTest {
 
     function setUp() public {
         // 1. Deploy pod factory
-        factory = new PodFactory(core, podController, memberToken, podExecutor);
+        factory = new PodFactory(core, memberToken, podController, podExecutor);
 
         // 2. Deploy pod admin gateway, to expose pod admin functionality
         podAdminGateway = new PodAdminGateway(
             core,
             memberToken,
-            podController,
             address(factory)
         );
 

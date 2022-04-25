@@ -47,7 +47,10 @@ interface IPodFactory {
 
     function getNumberOfPods() external view returns (uint256);
 
-    function podController() external view returns (ControllerV1);
+    function getPodController(uint256 podId)
+        external
+        view
+        returns (ControllerV1);
 
     function getPodSafe(uint256 podId) external view returns (address);
 
