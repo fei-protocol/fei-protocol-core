@@ -10,14 +10,13 @@ import proposals from '@test/integration/proposals_config';
 import { forceEth } from '@test/integration/setup/utils';
 import { TestEndtoEndCoordinator } from '../setup';
 import { BigNumber } from 'ethers';
-import { tribalCouncilMembers } from '@protocol/optimisticGovernance';
+import { tribalCouncilMembers, MIN_TIMELOCK_DELAY } from '@protocol/optimisticGovernance';
 
 const toBN = ethers.BigNumber.from;
 
 describe('Tribal Council', function () {
   let contracts: NamedContracts;
   let contractAddresses: NamedAddresses;
-  let deployAddress: SignerWithAddress;
   let e2eCoord: TestEndtoEndCoordinator;
   let doLogging: boolean;
   let podFactory: PodFactory;
@@ -40,14 +39,14 @@ describe('Tribal Council', function () {
   before(async function () {
     // Setup test environment and get contracts
     const version = 1;
-    deployAddress = (await ethers.getSigners())[0];
-    if (!deployAddress) throw new Error(`No deploy address!`);
+    // Set deploy address to Tom's address. This has Orca SHIP
+    const deployAddress = '0x64c4Bffb220818F0f2ee6DAe7A2F17D92b359c5d';
 
     doLogging = Boolean(process.env.LOGGING);
 
     const config = {
       logging: doLogging,
-      deployAddress: deployAddress.address,
+      deployAddress,
       version: version
     };
 
@@ -81,7 +80,7 @@ describe('Tribal Council', function () {
       label: '0x54726962616c436f726e63696c00000000000000000000000000000000000000', // TribalCouncil
       ensString: 'testPod.eth',
       imageUrl: 'testPod.com',
-      minDelay: 2,
+      minDelay: MIN_TIMELOCK_DELAY,
       numMembers: 4,
       admin: podAdminGateway.address
     };
@@ -122,8 +121,9 @@ describe('Tribal Council', function () {
 
   ///////////    TribalCouncil management of other pods  /////////////
   it('can create a child pod', async () => {
-    await podFactory.connect(tribalCouncilTimelockSigner).createChildOptimisticPod(podConfig);
-    const podId = await podFactory.latestPodId();
+    const deployTx = await podFactory.connect(tribalCouncilTimelockSigner).createOptimisticPod(podConfig);
+    const { args } = (await deployTx.wait()).events.find((elem) => elem.event === 'CreatePod');
+    const podId = args.podId;
     const numPodMembers = await podFactory.getNumMembers(podId);
     expect(numPodMembers).to.equal(4);
   });
@@ -131,7 +131,7 @@ describe('Tribal Council', function () {
   it('can create a new role via the Role Bastion', async () => {
     await roleBastion.connect(tribalCouncilTimelockSigner).createRole(dummyRole);
 
-    // Validate that the role was created ROLE_ADMIN role
+    // Validate that the role was created with the admin set to ROLE_ADMIN
     const roleAdmin = await core.getRoleAdmin(dummyRole);
     expect(roleAdmin).to.equal(ethers.utils.id('ROLE_ADMIN'));
   });

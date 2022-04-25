@@ -45,13 +45,15 @@ export const placeHolderCouncilMembers = [
   '0x000000000000000000000000000000000000000c'
 ];
 
+export const MIN_TIMELOCK_DELAY = 86400; // 1 day
+
 export const tribeCouncilPodConfig: PodConfig = {
   members: tribalCouncilMembers,
   threshold: 5,
   label: '0x54726962616c436f756e63696c00000000000000000000000000000000000000', // TribalCouncil
-  ensString: 'tribalCouncil',
+  ensString: 'tribalcouncil',
   imageUrl: '',
-  minDelay: 345600,
+  minDelay: 86400 * 4, // 4 days
   numMembers: tribalCouncilMembers.length,
   placeHolderMembers: placeHolderCouncilMembers
 };

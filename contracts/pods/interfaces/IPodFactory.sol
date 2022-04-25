@@ -10,7 +10,6 @@ interface IPodFactory {
     /// @param label Metadata, Human readable label for the pod
     /// @param ensString Metadata, ENS name of the pod
     /// @param imageUrl Metadata, URL to a image to represent the pod in frontends
-    /// @param admin The admin of the pod - able to add and remove pod members. Expected to be set to a Gateway contract
     /// @param minDelay Delay on the timelock
     struct PodConfig {
         address[] members;
@@ -22,12 +21,30 @@ interface IPodFactory {
         uint256 minDelay;
     }
 
-    event CreatePod(uint256 indexed podId, address indexed safeAddress);
-    event CreateOptimisticTimelock(address indexed timelock);
+    event CreatePod(
+        uint256 indexed podId,
+        address indexed safeAddress,
+        address indexed timelock
+    );
+    event CreateTimelock(address indexed timelock);
     event UpdatePodController(
         address indexed oldController,
         address indexed newController
     );
+
+    function deployCouncilPod(PodConfig calldata _config)
+        external
+        returns (
+            uint256,
+            address,
+            address
+        );
+
+    function getMemberToken() external view returns (MemberToken);
+
+    function getPodSafeAddresses() external view returns (address[] memory);
+
+    function getNumberOfPods() external view returns (uint256);
 
     function podController() external view returns (ControllerV1);
 
@@ -53,13 +70,11 @@ interface IPodFactory {
 
     function getPodAdmin(uint256 podId) external view returns (address);
 
-    function createChildOptimisticPod(PodConfig calldata _config)
+    function createOptimisticPod(PodConfig calldata _config)
         external
         returns (
             uint256,
             address,
             address
         );
-
-    function updatePodController(address newPodController) external;
 }
