@@ -20,7 +20,10 @@ Steps:
 2. Approve OTC escrow contract to spend 10.17m FEI
 3. Call swap on the escrow contract to send the 10.17m FEI
   to the VOLT PCV Deposit so that the funds do not get invested into fuse
-
+4. Add OPT as the oracle for Volt in the CR Oracle
+5. Add Volt ERC20PCVDepositWrapper to the CR Oracle so that the Volt value
+  will be reflected in the Tribe PCV
+6. Add turboFusePCVDeposit as a safe address in the PCV Guardian
 */
 
 const fipNumber = '98';

@@ -46,7 +46,7 @@ const fip_98: ProposalDescription = {
       description: 'Add turboFusePCVDeposit to the pcv guardian'
     }
   ],
-  description: `Swap 10.17m Fei for 10m VOLT as described in fip 88 https://tribe.fei.money/t/fip-88-volt-joins-the-tribe/4007`
+  description: `Swap 10.17m Fei for 10m VOLT as described in fip 88 https://tribe.fei.money/t/fip-88-volt-joins-the-tribe/4007, set Oracle Pass Through as the oracle for the Volt price, add voltPCVDepositWrapper to the CR Oracle, and add turboFusePCVDeposit to the PCVGuardian`
 };
 
 export default fip_98;
