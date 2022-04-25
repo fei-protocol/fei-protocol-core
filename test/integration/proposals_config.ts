@@ -19,7 +19,17 @@ const proposals: ProposalsConfigMap = {
   fip_98: {
     deploy: false,
     proposalId: null,
-    affectedContractSignoff: ['fei', 'voltFeiSwapContract', 'feiDAOTimelock'],
+    affectedContractSignoff: [
+      'fei',
+      'voltFeiSwapContract',
+      'feiDAOTimelock',
+      'collateralizationOracle',
+      'voltDepositWrapper',
+      'voltOracle',
+      'volt',
+      'turboFusePCVDeposit',
+      'pcvGuardian'
+    ],
     deprecatedContractSignoff: [],
     category: ProposalCategory.DAO,
     totalValue: 0,

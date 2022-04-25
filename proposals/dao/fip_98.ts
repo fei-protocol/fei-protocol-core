@@ -25,6 +25,7 @@ Steps:
 
 const fipNumber = '98';
 const seedAmount = ethers.constants.WeiPerEther.mul(10_000_000); // 10 M
+const feiAmount = ethers.constants.WeiPerEther.mul(10_170_000); // 10.17 M
 
 // Do any deployments
 // This should exclusively include new contract deployments
@@ -46,13 +47,31 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // Run any validations required on the fip using mocha or console logging
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  const { feiDAOTimelock, fei, volt, voltFusePCVDeposit } = contracts;
+  const {
+    feiDAOTimelock,
+    fei,
+    volt,
+    voltFusePCVDeposit,
+    collateralizationOracle,
+    voltDepositWrapper,
+    pcvGuardian,
+    turboFusePCVDeposit
+  } = contracts;
 
-  const feiAmount = ethers.constants.WeiPerEther.mul(10_170_000); // 10.17 M
   // Validate 10M volt was received by fei Dao timelock
   // Validate 10.17M fei was received by volt fuse pcv deposit
   expect(await volt.balanceOf(feiDAOTimelock.address)).to.be.equal(seedAmount);
   expect(await fei.balanceOf(voltFusePCVDeposit.address)).to.be.equal(feiAmount);
+
+  expect(await collateralizationOracle.isTokenInPcv(volt.address)).to.be.true;
+  expect(await collateralizationOracle.depositToToken(voltDepositWrapper.address)).to.be.equal(volt.address);
+
+  expect(await voltDepositWrapper.tokenDeposit()).to.be.equal(feiDAOTimelock.address);
+  expect(await voltDepositWrapper.token()).to.be.equal(volt.address);
+  expect(await voltDepositWrapper.isProtocolFeiDeposit()).to.be.false;
+  expect(await voltDepositWrapper.balance()).to.be.equal(seedAmount);
+
+  expect(await pcvGuardian.isSafeAddress(turboFusePCVDeposit.address)).to.be.true;
 };
 
 export { deploy, setup, teardown, validate };

@@ -23,6 +23,27 @@ const fip_98: ProposalDescription = {
       method: 'swap()',
       arguments: [],
       description: 'Swap fei for Volt'
+    },
+    {
+      target: 'collateralizationOracle',
+      values: '0',
+      method: 'setOracle(address,address)',
+      arguments: ['{volt}', '{voltOracle}'],
+      description: 'Set oracle for Volt'
+    },
+    {
+      target: 'collateralizationOracle',
+      values: '0',
+      method: 'addDeposits(address[])',
+      arguments: [['{voltDepositWrapper}']],
+      description: 'Add Volt to the collaterlization oracle'
+    },
+    {
+      target: 'pcvGuardian',
+      values: '0',
+      method: 'setSafeAddress(address)',
+      arguments: ['{turboFusePCVDeposit}'],
+      description: 'Add turboFusePCVDeposit to the pcv guardian'
     }
   ],
   description: `Swap 10.17m Fei for 10m VOLT as described in fip 88 https://tribe.fei.money/t/fip-88-volt-joins-the-tribe/4007`

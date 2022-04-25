@@ -616,6 +616,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x485d23ce5725ecdE46ca9033012984D90b514FFd',
     category: AddressCategory.PCV
   },
+  voltDepositWrapper: {
+    artifactName: 'ERC20PCVDepositWrapper',
+    address: '0x564eFCe5c6873219a7FbE450187c23254E3d62a4',
+    category: AddressCategory.PCV
+  },
   collateralizationOracle: {
     artifactName: 'CollateralizationOracle',
     address: '0xFF6f59333cfD8f4Ebc14aD0a0E181a83e655d257',
@@ -1974,6 +1979,11 @@ const MainnetAddresses: MainnetAddresses = {
   voltFusePCVDeposit: {
     artifactName: 'ERC20CompoundPCVDeposit',
     address: '0xFeBDf448C8484834bb399d930d7E1bdC773E23bA',
+    category: AddressCategory.Volt
+  },
+  voltOracle: {
+    artifactName: 'unknown',
+    address: '0x84dc71500D504163A87756dB6368CC8bB654592f',
     category: AddressCategory.Volt
   }
 };
