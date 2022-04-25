@@ -8,7 +8,7 @@ import {RoleBastion} from "../../../pods/RoleBastion.sol";
 import {TribeRoles} from "../../../core/TribeRoles.sol";
 import {Core} from "../../../core/Core.sol";
 
-contract RoleBastionTest is DSTest {
+contract RoleBastionIntegrationTest is DSTest {
     address tribalCouncil = address(0x1);
     address guardian = address(0x2);
 

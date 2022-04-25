@@ -9,7 +9,7 @@ import {
 } from '@custom-types/types';
 import { getImpersonatedSigner } from '@test/helpers';
 import { tribeCouncilPodConfig, PodCreationConfig } from '@protocol/optimisticGovernance';
-import { abi as ERC20ABI } from '../../artifacts/@openzeppelin/contracts/token/ERC20/ERC20.sol/ERC20.json';
+import { abi as inviteTokenABI } from '../../artifacts/@orcaprotocol/contracts/contracts/InviteToken.sol/InviteToken.json';
 import { abi as timelockABI } from '../../artifacts/@openzeppelin/contracts/governance/TimelockController.sol/TimelockController.json';
 import { abi as gnosisSafeABI } from '../../artifacts/contracts/pods/interfaces/IGnosisSafe.sol/IGnosisSafe.json';
 import { Contract } from 'ethers';
@@ -22,13 +22,21 @@ const validateArraysEqual = (arrayA: string[], arrayB: string[]) => {
 // Requirement of holding Orca tokens to deploy is a slow rollout mechanism used by Orca
 const transferOrcaTokens = async (
   orcaERC20Address: string,
-  deployAddressWithOrca: string,
+  deployAddress: string,
   receiver: string,
   amount: number
 ) => {
   // Mint Orca Ship tokens to deploy address, to allow to deploy contracts
-  const deployAddressSigner = await getImpersonatedSigner(deployAddressWithOrca);
-  const inviteToken = new ethers.Contract(orcaERC20Address, ERC20ABI, deployAddressSigner);
+  const deployAddressSigner = await getImpersonatedSigner(deployAddress);
+  const inviteToken = new ethers.Contract(orcaERC20Address, inviteTokenABI, deployAddressSigner);
+  const deployerBalance = await inviteToken.balanceOf(deployAddress);
+
+  if (deployerBalance.lt(amount)) {
+    // In test environment, mint tokens to deployer
+    const priviledgedOrcaMinter = '0x2149A222feD42fefc3A120B3DdA34482190fC666';
+    const priviledgedSigner = await getImpersonatedSigner(priviledgedOrcaMinter);
+    await inviteToken.connect(priviledgedSigner).mint(deployAddress, amount);
+  }
   await inviteToken.transfer(receiver, amount);
 };
 

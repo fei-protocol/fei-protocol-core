@@ -20,7 +20,16 @@ const proposals: ProposalsConfigMap = {
     totalValue: 0, // amount of ETH to send to DAO execution
     proposal: fip_82, // full proposal file, imported from '@proposals/description/fip_xx.ts'
     proposalId: '',
-    affectedContractSignoff: [''],
+    affectedContractSignoff: [
+      'podAdminFactory',
+      'roleBastion',
+      'podFactory',
+      'podExecutor',
+      'nopeDAO',
+      'governanceMetadataRegistry',
+      'core',
+      'tribe'
+    ],
     deprecatedContractSignoff: [''],
     category: ProposalCategory.DAO
   },
