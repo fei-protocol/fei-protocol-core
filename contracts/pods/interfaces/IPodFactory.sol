@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 import {ControllerV1} from "@orcaprotocol/contracts/contracts/ControllerV1.sol";
+import {MemberToken} from "@orcaprotocol/contracts/contracts/MemberToken.sol";
 
 interface IPodFactory {
     /// @notice Configuration used when creating a pod

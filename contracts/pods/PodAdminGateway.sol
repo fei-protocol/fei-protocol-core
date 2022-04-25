@@ -23,13 +23,10 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
     /// @notice Orca membership token for the pods. Handles permissioning pod members
     MemberToken private immutable memberToken;
 
-    /// @notice Pod factory which creates optimistic pods and acts as a source of information
-    MemberToken public immutable memberToken;
-
     /// @notice Pod controller for the pods
     ControllerV1 public immutable podController;
 
-    /// @notice Pod factory
+    /// @notice Pod factory which creates optimistic pods and acts as a source of information
     IPodFactory public immutable podFactory;
 
     constructor(
@@ -80,7 +77,7 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
             getSpecificPodAdminRole(_podId)
         )
     {
-        _addMemberToPod(_podId, _member, memberToken);
+        _addMemberToPod(_podId, _member);
     }
 
     /// @notice Internal method to add a member to a pod
@@ -123,7 +120,7 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
             getSpecificPodAdminRole(_podId)
         )
     {
-        _removePodMember(_podId, _member, memberToken);
+        _removePodMember(_podId, _member);
     }
 
     /// @notice Internal method to remove a member from a pod
