@@ -12,10 +12,6 @@ import "@openzeppelin/contracts/utils/math/Math.sol";
 contract BAMMDeposit is PCVDeposit {
     using SafeERC20 for IERC20;
 
-    /// @notice LUSD, the reported token for BAMM
-    address public constant override balanceReportedIn =
-        address(0x5f98805A4E8be255a32880FDeC7F6728C6568bA0);
-
     /// @notice B. Protocol BAMM address
     IBAMM public constant BAMM =
         IBAMM(0x0d3AbAA7E088C2c82f54B2f47613DA438ea8C598);
@@ -31,7 +27,7 @@ contract BAMMDeposit is PCVDeposit {
 
     /// @notice deposit into B Protocol BAMM
     function deposit() external override whenNotPaused {
-        IERC20 lusd = IERC20(balanceReportedIn);
+        IERC20 lusd = IERC20(balanceReportedIn());
         uint256 amount = lusd.balanceOf(address(this));
 
         lusd.safeApprove(address(BAMM), amount);
@@ -53,8 +49,13 @@ contract BAMMDeposit is PCVDeposit {
         // Withdraw the LUSD from BAMM (also withdraws LQTY and dust ETH)
         BAMM.withdraw(shares);
 
-        IERC20(balanceReportedIn).safeTransfer(to, amount);
+        IERC20(balanceReportedIn()).safeTransfer(to, amount);
         emit Withdrawal(msg.sender, to, amount);
+    }
+
+    /// @notice LUSD, the reported token for BAMM
+    function balanceReportedIn() public pure override returns (address) {
+        return address(0x5f98805A4E8be255a32880FDeC7F6728C6568bA0);
     }
 
     /// @notice report LUSD balance of BAMM

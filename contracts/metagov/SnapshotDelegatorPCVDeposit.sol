@@ -80,7 +80,9 @@ contract SnapshotDelegatorPCVDeposit is PCVDeposit {
         external
         onlyTribeRole(TribeRoles.METAGOVERNANCE_VOTE_ADMIN)
     {
+        DELEGATE_REGISTRY.clearDelegate(spaceId);
         spaceId = _spaceId;
+        _delegate(delegate);
     }
 
     /// @notice sets the snapshot delegate
