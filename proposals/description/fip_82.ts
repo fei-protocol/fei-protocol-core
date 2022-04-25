@@ -164,6 +164,13 @@ const fip_82: ProposalDescription = {
         ]
       ],
       description: 'Remove placeholder members from Tribal Council'
+    },
+    {
+      target: 'podAdminGateway',
+      values: '0',
+      method: 'lockMembershipTransfers(uint256 _podId)',
+      arguments: ['24'],
+      description: 'Lock TribalCouncil membership transfers'
     }
   ],
   description: `
