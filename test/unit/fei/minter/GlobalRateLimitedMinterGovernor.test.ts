@@ -165,7 +165,7 @@ describe('GlobalRateLimitedMinterBuffer', function () {
     describe('Mint Fails', function () {
       it('non whitelisted address fails mints on mintMaxAllowableFei', async function () {
         await expectRevert(
-          globalRateLimitedMinter.connect(impersonatedSigners[userAddress]).mintMaxAllowableVolt(userAddress),
+          globalRateLimitedMinter.connect(impersonatedSigners[userAddress]).mintMaxAllowableFei(userAddress),
           'MultiRateLimited: no rate limit buffer'
         );
         expect(await fei.balanceOf(userAddress)).to.be.equal(0);
@@ -173,7 +173,7 @@ describe('GlobalRateLimitedMinterBuffer', function () {
 
       it('non whitelisted address fails mints on mintFei', async function () {
         await expectRevert(
-          globalRateLimitedMinter.connect(impersonatedSigners[userAddress]).mintVolt(userAddress, 1),
+          globalRateLimitedMinter.connect(impersonatedSigners[userAddress]).mintFei(userAddress, 1),
           'MultiRateLimited: no rate limit buffer'
         );
         expect(await fei.balanceOf(userAddress)).to.be.equal(0);
@@ -204,7 +204,7 @@ describe('GlobalRateLimitedMinterBuffer', function () {
         expect(bufferStored).to.be.equal(0);
 
         await expectRevert(
-          globalRateLimitedMinter.connect(impersonatedSigners[userAddress]).mintVolt(userAddress, 100),
+          globalRateLimitedMinter.connect(impersonatedSigners[userAddress]).mintFei(userAddress, 100),
           'MultiRateLimited: no rate limit buffer'
         );
       });

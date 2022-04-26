@@ -28,20 +28,20 @@ contract NonCustodialPSM is
     using SafeCast for *;
     using SafeERC20 for IERC20;
 
-    /// @notice the fee in basis points for selling an asset into VOLT
+    /// @notice the fee in basis points for selling an asset into Fei
     uint256 public override mintFeeBasisPoints;
 
-    /// @notice the fee in basis points for buying the asset for VOLT
+    /// @notice the fee in basis points for buying the asset for Fei
     uint256 public override redeemFeeBasisPoints;
 
     /// @notice the PCV deposit target to deposit and withdraw from
     IPCVDeposit public override pcvDeposit;
 
-    /// @notice the token this PSM will exchange for VOLT
+    /// @notice the token this PSM will exchange for Fei
     /// Must be a stable token pegged to $1
     IERC20 public immutable override underlyingToken;
 
-    /// @notice Rate Limited Minter contract that will be called when VOLT needs to be minted
+    /// @notice Rate Limited Minter contract that will be called when Fei needs to be minted
     GlobalRateLimitedMinter public override rateLimitedMinter;
 
     /// @notice the max mint and redeem fee in basis points
@@ -182,7 +182,7 @@ contract NonCustodialPSM is
         _setPCVDeposit(newTarget);
     }
 
-    /// @notice set the target to call for VOLT minting
+    /// @notice set the target to call for Fei minting
     /// @param newMinter new Global Rate Limited Minter for this PSM
     function setGlobalRateLimitedMinter(GlobalRateLimitedMinter newMinter)
         external
@@ -209,16 +209,16 @@ contract NonCustodialPSM is
 
     // ----------- Public State Changing API -----------
 
-    /// @notice function to redeem VOLT for an underlying asset
-    /// We do not burn VOLT; this allows the contract's balance of VOLT to be used before the buffer is used
+    /// @notice function to redeem Fei for an underlying asset
+    /// We do not burn Fei; this allows the contract's balance of Fei to be used before the buffer is used
     /// In practice, this helps prevent artificial cycling of mint-burn cycles and prevents DOS attacks.
-    /// This function will deplete the buffer based on the amount of VOLT that is being redeemed.
+    /// This function will deplete the buffer based on the amount of Fei that is being redeemed.
     /// @param to the destination address for proceeds
-    /// @param amountVoltIn the amount of VOLT to sell
+    /// @param amountFeiIn the amount of Fei to sell
     /// @param minAmountOut the minimum amount out otherwise the TX will fail
     function redeem(
         address to,
-        uint256 amountVoltIn,
+        uint256 amountFeiIn,
         uint256 minAmountOut
     )
         external
@@ -229,33 +229,33 @@ contract NonCustodialPSM is
         whileRedemptionsNotPaused
         returns (uint256 amountOut)
     {
-        _depleteBuffer(amountVoltIn); /// deplete buffer first to save gas on buffer exhaustion sad path
+        _depleteBuffer(amountFeiIn); /// deplete buffer first to save gas on buffer exhaustion sad path
 
         updateOracle();
 
-        amountOut = _getRedeemAmountOut(amountVoltIn);
+        amountOut = _getRedeemAmountOut(amountFeiIn);
         require(
             amountOut >= minAmountOut,
             "PegStabilityModule: Redeem not enough out"
         );
 
-        IERC20(fei()).safeTransferFrom(msg.sender, address(this), amountVoltIn);
+        IERC20(fei()).safeTransferFrom(msg.sender, address(this), amountFeiIn);
 
         pcvDeposit.withdraw(to, amountOut);
 
-        emit Redeem(to, amountVoltIn, amountOut);
+        emit Redeem(to, amountFeiIn, amountOut);
     }
 
-    /// @notice function to buy VOLT for an underlying asset that is pegged to $1
-    /// We first transfer any contract-owned VOLT, then mint the remaining if necessary
-    /// This function will replenish the buffer based on the amount of VOLT that is being sent out.
+    /// @notice function to buy Fei for an underlying asset that is pegged to $1
+    /// We first transfer any contract-owned Fei, then mint the remaining if necessary
+    /// This function will replenish the buffer based on the amount of Fei that is being sent out.
     /// @param to the destination address for proceeds
     /// @param amountIn the amount of external asset to sell to the PSM
-    /// @param minVoltAmountOut the minimum amount of VOLT out otherwise the TX will fail
+    /// @param minFeiAmountOut the minimum amount of Fei out otherwise the TX will fail
     function mint(
         address to,
         uint256 amountIn,
-        uint256 minVoltAmountOut
+        uint256 minFeiAmountOut
     )
         external
         virtual
@@ -263,13 +263,13 @@ contract NonCustodialPSM is
         nonReentrant
         whenNotPaused
         whileMintingNotPaused
-        returns (uint256 amountVoltOut)
+        returns (uint256 amountFeiOut)
     {
         updateOracle();
 
-        amountVoltOut = _getMintAmountOut(amountIn);
+        amountFeiOut = _getMintAmountOut(amountIn);
         require(
-            amountVoltOut >= minVoltAmountOut,
+            amountFeiOut >= minFeiAmountOut,
             "PegStabilityModule: Mint not enough out"
         );
 
@@ -282,57 +282,57 @@ contract NonCustodialPSM is
 
         uint256 amountFeiToTransfer = Math.min(
             fei().balanceOf(address(this)),
-            amountVoltOut
+            amountFeiOut
         );
-        uint256 amountFeiToMint = amountVoltOut - amountFeiToTransfer;
+        uint256 amountFeiToMint = amountFeiOut - amountFeiToTransfer;
 
         if (amountFeiToTransfer != 0) {
             IERC20(fei()).safeTransfer(to, amountFeiToTransfer);
         }
 
         if (amountFeiToMint != 0) {
-            rateLimitedMinter.mintVolt(to, amountFeiToMint);
+            rateLimitedMinter.mintFei(to, amountFeiToMint);
         }
 
-        _replenishBuffer(amountVoltOut);
+        _replenishBuffer(amountFeiOut);
 
-        emit Mint(to, amountIn, amountVoltOut);
+        emit Mint(to, amountIn, amountFeiOut);
     }
 
     // ----------- Public View-Only API ----------
 
-    /// @notice calculate the amount of VOLT out for a given `amountIn` of underlying
+    /// @notice calculate the amount of Fei out for a given `amountIn` of underlying
     /// First get oracle price of token
     /// Then figure out how many dollars that amount in is worth by multiplying price * amount.
     /// ensure decimals are normalized if on underlying they are not 18
     /// @param amountIn the amount of external asset to sell to the PSM
-    /// @return amountVoltOut the amount of VOLT received for the amountIn of external asset
+    /// @return amountFeiOut the amount of Fei received for the amountIn of external asset
     function getMintAmountOut(uint256 amountIn)
         public
         view
         override
-        returns (uint256 amountVoltOut)
+        returns (uint256 amountFeiOut)
     {
-        amountVoltOut = _getMintAmountOut(amountIn);
+        amountFeiOut = _getMintAmountOut(amountIn);
     }
 
-    /// @notice calculate the amount of underlying out for a given `amountVoltIn` of VOLT
+    /// @notice calculate the amount of underlying out for a given `amountFeiIn` of Fei
     /// First get oracle price of token
     /// Then figure out how many dollars that amount in is worth by multiplying price * amount.
     /// ensure decimals are normalized if on underlying they are not 18
-    /// @param amountVoltIn the amount of VOLT to redeem
-    /// @return amountTokenOut the amount of the external asset received in exchange for the amount of VOLT redeemed
-    function getRedeemAmountOut(uint256 amountVoltIn)
+    /// @param amountFeiIn the amount of Fei to redeem
+    /// @return amountTokenOut the amount of the external asset received in exchange for the amount of Fei redeemed
+    function getRedeemAmountOut(uint256 amountFeiIn)
         public
         view
         override
         returns (uint256 amountTokenOut)
     {
-        amountTokenOut = _getRedeemAmountOut(amountVoltIn);
+        amountTokenOut = _getRedeemAmountOut(amountFeiIn);
     }
 
-    /// @notice getter to return the maximum amount of VOLT that could be purchased at once
-    /// @return the maximum amount of VOLT available for purchase at once through this PSM
+    /// @notice getter to return the maximum amount of Fei that could be purchased at once
+    /// @return the maximum amount of Fei available for purchase at once through this PSM
     function getMaxMintAmountOut() external view override returns (uint256) {
         return
             fei().balanceOf(address(this)) +
@@ -344,19 +344,19 @@ contract NonCustodialPSM is
     /// @notice helper function to get mint amount out based on current market prices
     /// @dev will revert if price is outside of bounds and price bound PSM is being used
     /// @param amountIn the amount of stable asset in
-    /// @return amountVoltOut the amount of VOLT received for the amountIn of stable assets
+    /// @return amountFeiOut the amount of Fei received for the amountIn of stable assets
     function _getMintAmountOut(uint256 amountIn)
         internal
         view
         virtual
-        returns (uint256 amountVoltOut)
+        returns (uint256 amountFeiOut)
     {
         Decimal.D256 memory price = readOracle();
         _validatePriceRange(price);
 
         Decimal.D256 memory adjustedAmountIn = price.mul(amountIn);
 
-        amountVoltOut = adjustedAmountIn
+        amountFeiOut = adjustedAmountIn
             .mul(Constants.BASIS_POINTS_GRANULARITY - mintFeeBasisPoints)
             .div(Constants.BASIS_POINTS_GRANULARITY)
             .asUint256();
@@ -364,9 +364,9 @@ contract NonCustodialPSM is
 
     /// @notice helper function to get redeem amount out based on current market prices
     /// @dev will revert if price is outside of bounds and price bound PSM is being used
-    /// @param amountVoltIn the amount of VOLT to redeem
-    /// @return amountTokenOut the amount of the external asset received in exchange for the amount of VOLT redeemed
-    function _getRedeemAmountOut(uint256 amountVoltIn)
+    /// @param amountFeiIn the amount of Fei to redeem
+    /// @return amountTokenOut the amount of the external asset received in exchange for the amount of Fei redeemed
+    function _getRedeemAmountOut(uint256 amountFeiIn)
         internal
         view
         virtual
@@ -375,21 +375,21 @@ contract NonCustodialPSM is
         Decimal.D256 memory price = readOracle();
         _validatePriceRange(price);
 
-        /// get amount of VOLT being provided being redeemed after fees
+        /// get amount of Fei being provided being redeemed after fees
         Decimal.D256 memory adjustedAmountIn = Decimal.from(
-            (amountVoltIn *
+            (amountFeiIn *
                 (Constants.BASIS_POINTS_GRANULARITY - redeemFeeBasisPoints)) /
                 Constants.BASIS_POINTS_GRANULARITY
         );
 
-        /// now turn the VOLT into the underlying token amounts
-        /// amount VOLT in / VOLT you receive for $1 = how much stable token to pay out
+        /// now turn the Fei into the underlying token amounts
+        /// amount Fei in / Fei you receive for $1 = how much stable token to pay out
         amountTokenOut = adjustedAmountIn.div(price).asUint256();
     }
 
     // ----------- Helper methods to change state -----------
 
-    /// @notice set the global rate limited minter this PSM calls to mint VOLT
+    /// @notice set the global rate limited minter this PSM calls to mint Fei
     /// @param newMinter the new minter contract that this PSM will reference
     function _setGlobalRateLimitedMinter(GlobalRateLimitedMinter newMinter)
         internal

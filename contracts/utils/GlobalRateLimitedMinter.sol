@@ -6,12 +6,12 @@ import {IGlobalRateLimitedMinter} from "./IGlobalRateLimitedMinter.sol";
 import {CoreRef} from "./../refs/CoreRef.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 
-/// @notice global contract to handle rate limited minting of VOLT on a global level
-/// allows whitelisted minters to call in and specify the address to mint VOLT to within
+/// @notice global contract to handle rate limited minting of Fei on a global level
+/// allows whitelisted minters to call in and specify the address to mint Fei to within
 /// that contract's limits
 contract GlobalRateLimitedMinter is MultiRateLimited, IGlobalRateLimitedMinter {
     /// @param coreAddress address of the core contract
-    /// @param _globalMaxRateLimitPerSecond maximum amount of VOLT that can replenish per second ever, this amount cannot be changed by governance
+    /// @param _globalMaxRateLimitPerSecond maximum amount of Fei that can replenish per second ever, this amount cannot be changed by governance
     /// @param _perAddressRateLimitMaximum maximum rate limit per second per address
     /// @param _maxRateLimitPerSecondPerAddress maximum rate limit per second per address in multi rate limited
     /// @param _maxBufferCap maximum buffer cap in multi rate limited contract
@@ -34,11 +34,11 @@ contract GlobalRateLimitedMinter is MultiRateLimited, IGlobalRateLimitedMinter {
         )
     {}
 
-    /// @notice mint VOLT to the target address and deplete the buffer
+    /// @notice mint Fei to the target address and deplete the buffer
     /// pausable and depletes the msg.sender's buffer
-    /// @param to the recipient address of the minted VOLT
-    /// @param amount the amount of VOLT to mint
-    function mintVolt(address to, uint256 amount)
+    /// @param to the recipient address of the minted Fei
+    /// @param amount the amount of Fei to mint
+    function mintFei(address to, uint256 amount)
         external
         virtual
         override
@@ -48,11 +48,11 @@ contract GlobalRateLimitedMinter is MultiRateLimited, IGlobalRateLimitedMinter {
         _mintFei(to, amount);
     }
 
-    /// @notice mint VOLT to the target address and deplete the whole rate limited
+    /// @notice mint Fei to the target address and deplete the whole rate limited
     ///  minter's buffer, pausable and completely depletes the msg.sender's buffer
-    /// @param to the recipient address of the minted VOLT
-    /// mints all VOLT that msg.sender has in the buffer
-    function mintMaxAllowableVolt(address to)
+    /// @param to the recipient address of the minted Fei
+    /// mints all Fei that msg.sender has in the buffer
+    function mintMaxAllowableFei(address to)
         external
         virtual
         override
