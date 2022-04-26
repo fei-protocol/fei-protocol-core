@@ -18,19 +18,11 @@ interface ICurveStableSwap3 is ICurvePool {
     function get_balances() external view returns (uint256[3] memory);
 
     // 3Pool
-    function calc_token_amount(uint256[3] memory amounts, bool deposit)
-        external
-        view
-        returns (uint256);
+    function calc_token_amount(uint256[3] memory amounts, bool deposit) external view returns (uint256);
 
-    function add_liquidity(uint256[3] memory amounts, uint256 min_mint_amount)
-        external;
+    function add_liquidity(uint256[3] memory amounts, uint256 min_mint_amount) external;
 
-    function remove_liquidity(uint256 _amount, uint256[3] memory min_amounts)
-        external;
+    function remove_liquidity(uint256 _amount, uint256[3] memory min_amounts) external;
 
-    function remove_liquidity_imbalance(
-        uint256[3] memory amounts,
-        uint256 max_burn_amount
-    ) external;
+    function remove_liquidity_imbalance(uint256[3] memory amounts, uint256 max_burn_amount) external;
 }

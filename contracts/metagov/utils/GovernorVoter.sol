@@ -22,9 +22,7 @@ interface IMetagovGovernor {
         string memory description
     ) external returns (uint256 proposalId);
 
-    function castVote(uint256 proposalId, uint8 support)
-        external
-        returns (uint256 weight);
+    function castVote(uint256 proposalId, uint8 support) external returns (uint256 weight);
 
     function state(uint256 proposalId) external view returns (uint256);
 }
@@ -34,12 +32,7 @@ interface IMetagovGovernor {
 abstract contract GovernorVoter is CoreRef {
     // Events
     event Proposed(IMetagovGovernor indexed governor, uint256 proposalId);
-    event Voted(
-        IMetagovGovernor indexed governor,
-        uint256 proposalId,
-        uint256 weight,
-        uint8 support
-    );
+    event Voted(IMetagovGovernor indexed governor, uint256 proposalId, uint256 weight, uint8 support);
 
     /// @notice propose a new proposal on the target OZ governor.
     function proposeOZ(
@@ -48,17 +41,8 @@ abstract contract GovernorVoter is CoreRef {
         uint256[] memory values,
         bytes[] memory calldatas,
         string memory description
-    )
-        external
-        onlyTribeRole(TribeRoles.METAGOVERNANCE_VOTE_ADMIN)
-        returns (uint256)
-    {
-        uint256 proposalId = governor.propose(
-            targets,
-            values,
-            calldatas,
-            description
-        );
+    ) external onlyTribeRole(TribeRoles.METAGOVERNANCE_VOTE_ADMIN) returns (uint256) {
+        uint256 proposalId = governor.propose(targets, values, calldatas, description);
         emit Proposed(governor, proposalId);
         return proposalId;
     }
@@ -71,18 +55,8 @@ abstract contract GovernorVoter is CoreRef {
         string[] memory signatures,
         bytes[] memory calldatas,
         string memory description
-    )
-        external
-        onlyTribeRole(TribeRoles.METAGOVERNANCE_VOTE_ADMIN)
-        returns (uint256)
-    {
-        uint256 proposalId = governor.propose(
-            targets,
-            values,
-            signatures,
-            calldatas,
-            description
-        );
+    ) external onlyTribeRole(TribeRoles.METAGOVERNANCE_VOTE_ADMIN) returns (uint256) {
+        uint256 proposalId = governor.propose(targets, values, signatures, calldatas, description);
         emit Proposed(governor, proposalId);
         return proposalId;
     }
@@ -92,11 +66,7 @@ abstract contract GovernorVoter is CoreRef {
         IMetagovGovernor governor,
         uint256 proposalId,
         uint8 support
-    )
-        external
-        onlyTribeRole(TribeRoles.METAGOVERNANCE_VOTE_ADMIN)
-        returns (uint256)
-    {
+    ) external onlyTribeRole(TribeRoles.METAGOVERNANCE_VOTE_ADMIN) returns (uint256) {
         uint256 weight = governor.castVote(proposalId, support);
         emit Voted(governor, proposalId, weight, support);
         return weight;

@@ -26,13 +26,9 @@ interface ILiquidityGauge {
 }
 
 interface ILiquidityGaugeController {
-    function vote_for_gauge_weights(address gauge_addr, uint256 user_weight)
-        external;
+    function vote_for_gauge_weights(address gauge_addr, uint256 user_weight) external;
 
-    function last_user_vote(address user, address gauge)
-        external
-        view
-        returns (uint256);
+    function last_user_vote(address user, address gauge) external view returns (uint256);
 
     function vote_user_power(address user) external view returns (uint256);
 
@@ -43,19 +39,12 @@ interface ILiquidityGaugeController {
 /// @author Fei Protocol
 abstract contract LiquidityGaugeManager is CoreRef {
     // Events
-    event GaugeControllerChanged(
-        address indexed oldController,
-        address indexed newController
-    );
+    event GaugeControllerChanged(address indexed oldController, address indexed newController);
     event GaugeSetForToken(address indexed token, address indexed gauge);
     event GaugeVote(address indexed gauge, uint256 amount);
     event GaugeStake(address indexed gauge, uint256 amount);
     event GaugeUnstake(address indexed gauge, uint256 amount);
-    event GaugeRewardsClaimed(
-        address indexed gauge,
-        address indexed token,
-        uint256 amount
-    );
+    event GaugeRewardsClaimed(address indexed gauge, address indexed token, uint256 amount);
 
     /// @notice address of the gauge controller used for voting
     address public gaugeController;
@@ -69,14 +58,8 @@ abstract contract LiquidityGaugeManager is CoreRef {
 
     /// @notice Set the gauge controller used for gauge weight voting
     /// @param _gaugeController the gauge controller address
-    function setGaugeController(address _gaugeController)
-        public
-        onlyTribeRole(TribeRoles.METAGOVERNANCE_GAUGE_ADMIN)
-    {
-        require(
-            gaugeController != _gaugeController,
-            "LiquidityGaugeManager: same controller"
-        );
+    function setGaugeController(address _gaugeController) public onlyTribeRole(TribeRoles.METAGOVERNANCE_GAUGE_ADMIN) {
+        require(gaugeController != _gaugeController, "LiquidityGaugeManager: same controller");
 
         address oldController = gaugeController;
         gaugeController = _gaugeController;
@@ -85,12 +68,7 @@ abstract contract LiquidityGaugeManager is CoreRef {
     }
 
     /// @notice returns the token address to be staked in the given gauge
-    function _tokenStakedInGauge(address gaugeAddress)
-        internal
-        view
-        virtual
-        returns (address)
-    {
+    function _tokenStakedInGauge(address gaugeAddress) internal view virtual returns (address) {
         return ILiquidityGauge(gaugeAddress).lp_token();
     }
 
@@ -101,14 +79,9 @@ abstract contract LiquidityGaugeManager is CoreRef {
         public
         onlyTribeRole(TribeRoles.METAGOVERNANCE_GAUGE_ADMIN)
     {
+        require(_tokenStakedInGauge(gaugeAddress) == token, "LiquidityGaugeManager: wrong gauge for token");
         require(
-            _tokenStakedInGauge(gaugeAddress) == token,
-            "LiquidityGaugeManager: wrong gauge for token"
-        );
-        require(
-            ILiquidityGaugeController(gaugeController).gauge_types(
-                gaugeAddress
-            ) >= 0,
+            ILiquidityGaugeController(gaugeController).gauge_types(gaugeAddress) >= 0,
             "LiquidityGaugeManager: wrong gauge address"
         );
         tokenToGauge[token] = gaugeAddress;
@@ -125,14 +98,8 @@ abstract contract LiquidityGaugeManager is CoreRef {
         onlyTribeRole(TribeRoles.METAGOVERNANCE_VOTE_ADMIN)
     {
         address gaugeAddress = tokenToGauge[token];
-        require(
-            gaugeAddress != address(0),
-            "LiquidityGaugeManager: token has no gauge configured"
-        );
-        ILiquidityGaugeController(gaugeController).vote_for_gauge_weights(
-            gaugeAddress,
-            gaugeWeight
-        );
+        require(gaugeAddress != address(0), "LiquidityGaugeManager: token has no gauge configured");
+        ILiquidityGaugeController(gaugeController).vote_for_gauge_weights(gaugeAddress, gaugeWeight);
 
         emit GaugeVote(gaugeAddress, gaugeWeight);
     }
@@ -146,10 +113,7 @@ abstract contract LiquidityGaugeManager is CoreRef {
         onlyTribeRole(TribeRoles.METAGOVERNANCE_GAUGE_ADMIN)
     {
         address gaugeAddress = tokenToGauge[token];
-        require(
-            gaugeAddress != address(0),
-            "LiquidityGaugeManager: token has no gauge configured"
-        );
+        require(gaugeAddress != address(0), "LiquidityGaugeManager: token has no gauge configured");
         IERC20(token).approve(gaugeAddress, amount);
         ILiquidityGauge(gaugeAddress).deposit(amount);
 
@@ -158,16 +122,9 @@ abstract contract LiquidityGaugeManager is CoreRef {
 
     /// @notice Stake all tokens held in a gauge
     /// @param token the address of the token to stake in the gauge
-    function stakeAllInGauge(address token)
-        public
-        whenNotPaused
-        onlyTribeRole(TribeRoles.METAGOVERNANCE_GAUGE_ADMIN)
-    {
+    function stakeAllInGauge(address token) public whenNotPaused onlyTribeRole(TribeRoles.METAGOVERNANCE_GAUGE_ADMIN) {
         address gaugeAddress = tokenToGauge[token];
-        require(
-            gaugeAddress != address(0),
-            "LiquidityGaugeManager: token has no gauge configured"
-        );
+        require(gaugeAddress != address(0), "LiquidityGaugeManager: token has no gauge configured");
         uint256 amount = IERC20(token).balanceOf(address(this));
         IERC20(token).approve(gaugeAddress, amount);
         ILiquidityGauge(gaugeAddress).deposit(amount);
@@ -184,10 +141,7 @@ abstract contract LiquidityGaugeManager is CoreRef {
         onlyTribeRole(TribeRoles.METAGOVERNANCE_GAUGE_ADMIN)
     {
         address gaugeAddress = tokenToGauge[token];
-        require(
-            gaugeAddress != address(0),
-            "LiquidityGaugeManager: token has no gauge configured"
-        );
+        require(gaugeAddress != address(0), "LiquidityGaugeManager: token has no gauge configured");
         ILiquidityGauge(gaugeAddress).withdraw(amount, false);
 
         emit GaugeUnstake(gaugeAddress, amount);
@@ -197,10 +151,7 @@ abstract contract LiquidityGaugeManager is CoreRef {
     /// tokens.
     function claimGaugeRewards(address token) public whenNotPaused {
         address gaugeAddress = tokenToGauge[token];
-        require(
-            gaugeAddress != address(0),
-            "LiquidityGaugeManager: token has no gauge configured"
-        );
+        require(gaugeAddress != address(0), "LiquidityGaugeManager: token has no gauge configured");
 
         uint256 nTokens = ILiquidityGauge(gaugeAddress).reward_count();
         address[] memory tokens = new address[](nTokens);
@@ -214,9 +165,7 @@ abstract contract LiquidityGaugeManager is CoreRef {
         ILiquidityGauge(gaugeAddress).claim_rewards();
 
         for (uint256 i = 0; i < nTokens; i++) {
-            amounts[i] =
-                IERC20(tokens[i]).balanceOf(address(this)) -
-                amounts[i];
+            amounts[i] = IERC20(tokens[i]).balanceOf(address(this)) - amounts[i];
 
             emit GaugeRewardsClaimed(gaugeAddress, tokens[i], amounts[i]);
         }

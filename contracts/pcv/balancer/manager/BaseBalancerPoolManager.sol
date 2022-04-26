@@ -12,19 +12,11 @@ abstract contract BaseBalancerPoolManager is IBaseBalancerPoolManager, CoreRef {
         _setContractAdminRole(keccak256("BALANCER_MANAGER_ADMIN_ROLE"));
     }
 
-    function setSwapFee(IBasePool pool, uint256 swapFee)
-        public
-        override
-        onlyGovernorOrAdmin
-    {
+    function setSwapFee(IBasePool pool, uint256 swapFee) public override onlyGovernorOrAdmin {
         pool.setSwapFeePercentage(swapFee);
     }
 
-    function setPaused(IBasePool pool, bool paused)
-        public
-        override
-        onlyGovernorOrAdmin
-    {
+    function setPaused(IBasePool pool, bool paused) public override onlyGovernorOrAdmin {
         pool.setPaused(paused);
     }
 

@@ -35,13 +35,7 @@ contract FixedPricePSM is PriceBoundPSM {
 
     /// @notice helper function to get mint amount out based on current market prices
     /// @dev will revert if price is outside of bounds and bounded PSM is being used
-    function _getMintAmountOut(uint256 amountIn)
-        internal
-        view
-        virtual
-        override
-        returns (uint256 amountFeiOut)
-    {
+    function _getMintAmountOut(uint256 amountIn) internal view virtual override returns (uint256 amountFeiOut) {
         Decimal.D256 memory price = readOracle();
         _validatePriceRange(price);
 
@@ -55,13 +49,7 @@ contract FixedPricePSM is PriceBoundPSM {
 
     /// @notice helper function to get redeem amount out based on current market prices
     /// @dev will revert if price is outside of bounds and bounded PSM is being used
-    function _getRedeemAmountOut(uint256 amountFeiIn)
-        internal
-        view
-        virtual
-        override
-        returns (uint256 amountTokenOut)
-    {
+    function _getRedeemAmountOut(uint256 amountFeiIn) internal view virtual override returns (uint256 amountTokenOut) {
         Decimal.D256 memory price = readOracle();
         _validatePriceRange(price);
 

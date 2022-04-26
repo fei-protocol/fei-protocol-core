@@ -90,18 +90,12 @@ contract BalancerPool2Lens is IPCVDepositBalances {
         return (balances[index] * bptsOwned) / totalSupply;
     }
 
-    function resistantBalanceAndFei()
-        public
-        view
-        override
-        returns (uint256, uint256)
-    {
+    function resistantBalanceAndFei() public view override returns (uint256, uint256) {
         uint256[] memory prices = new uint256[](2);
         uint256 j = index == 0 ? 1 : 0;
 
         // Check oracles and fill in prices
-        (Decimal.D256 memory reportedPrice, bool reportedValid) = reportedOracle
-            .read();
+        (Decimal.D256 memory reportedPrice, bool reportedValid) = reportedOracle.read();
         prices[index] = reportedPrice.value;
 
         (Decimal.D256 memory otherPrice, bool otherValid) = otherOracle.read();
@@ -124,12 +118,7 @@ contract BalancerPool2Lens is IPCVDepositBalances {
             return (reserves, reserves);
         }
         if (feiInPair) {
-            uint256 otherReserves = _getIdealReserves(
-                balances,
-                prices,
-                weights,
-                j
-            );
+            uint256 otherReserves = _getIdealReserves(balances, prices, weights, j);
             return (reserves, otherReserves);
         }
         return (reserves, 0);
@@ -161,18 +150,9 @@ contract BalancerPool2Lens is IPCVDepositBalances {
 
         uint256 one = Constants.ETH_GRANULARITY;
 
-        uint256 reservesScaled = one.mulPow(
-            balances[i],
-            weights[i],
-            Constants.ETH_DECIMALS
-        );
-        uint256 multiplier = (weights[i] * prices[j] * balances[j]) /
-            (prices[i] * weights[j]);
+        uint256 reservesScaled = one.mulPow(balances[i], weights[i], Constants.ETH_DECIMALS);
+        uint256 multiplier = (weights[i] * prices[j] * balances[j]) / (prices[i] * weights[j]);
 
-        reserves = reservesScaled.mulPow(
-            multiplier,
-            weights[j],
-            Constants.ETH_DECIMALS
-        );
+        reserves = reservesScaled.mulPow(multiplier, weights[j], Constants.ETH_DECIMALS);
     }
 }
