@@ -47,6 +47,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   const podExecutorFactory = await ethers.getContractFactory('PodExecutor');
   const podExecutor = await podExecutorFactory.deploy(addresses.core);
   await podExecutor.deployTransaction.wait();
+
   logging && console.log('PodExecutor deployed to', podExecutor.address);
 
   // 2. Deploy tribalCouncilPodFactory
