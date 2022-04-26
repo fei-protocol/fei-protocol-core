@@ -12,25 +12,25 @@ contract RateLimitedV2 is IRateLimitedV2, CoreRef {
     using SafeCast for *;
 
     /// @notice maximum rate limit per second; changeable by governance
-    uint256 public currentMaxRateLimit;
+    uint112 public currentMaxRateLimit;
 
     /// @notice the rate per second for this contract
-    uint256 public rateLimit;
+    uint112 public rateLimit;
+
+    /// @notice the cap of the buffer that can be used at once
+    uint112 public bufferCap;
+
+    /// @notice the buffer at the timestamp of lastBufferUsedTime
+    uint112 private bufferStored;
 
     /// @notice the last time the buffer was used by the contract
     uint32 public bufferLastUpdate;
 
-    /// @notice the cap of the buffer that can be used at once
-    uint256 public bufferCap;
-
-    /// @notice the buffer at the timestamp of lastBufferUsedTime
-    uint256 private bufferStored;
-
     constructor(
         address core,
-        uint256 maximumRateLimit,
-        uint256 initialRateLimit,
-        uint256 theBufferCap
+        uint112 maximumRateLimit,
+        uint112 initialRateLimit,
+        uint112 theBufferCap
     ) CoreRef(core) {
         bufferLastUpdate = block.timestamp.toUint32();
 
@@ -109,36 +109,39 @@ contract RateLimitedV2 is IRateLimitedV2, CoreRef {
     /** 
         @notice the method that enforces the rate limit. Decreases buffer by "amount". 
     */
-    function _depleteBuffer(uint256 amount) internal {
-        uint256 currentBuffer = getBuffer();
+    function _depleteBuffer(uint112 amount) internal {
+        uint112 currentBuffer = getBuffer();
 
         if (amount > currentBuffer) revert RateLimitExceeded();
 
         // Update buffer stored & buffer last updated amounts
+        uint32 thisBufferLastUpdate = block.timestamp.toUint32();
         bufferStored = currentBuffer - amount;
-        bufferLastUpdate = block.timestamp.toUint32();
+        bufferLastUpdate = thisBufferLastUpdate;
 
         emit BufferUsed(amount, bufferStored);
     }
 
     /// @notice function to replenish buffer
     /// @param amount to increase buffer by if under buffer cap
-    function _replenishBuffer(uint256 amount) internal {
+    function _replenishBuffer(uint112 amount) internal {
         uint256 currentBuffer = getBuffer();
         uint256 currentBufferCap = bufferCap;
 
         bufferLastUpdate = block.timestamp.toUint32();
-        bufferStored = Math.min(currentBuffer + amount, currentBufferCap);
+        bufferStored = uint112(
+            Math.min(currentBuffer + amount, currentBufferCap)
+        );
 
         emit BufferReplenished(amount, bufferStored);
     }
 
-    function _setRateLimit(uint256 newRateLimit) internal {
+    function _setRateLimit(uint112 newRateLimit) internal {
         emit RateLimitPerSecondUpdate(rateLimit, newRateLimit);
         rateLimit = newRateLimit;
     }
 
-    function _setBufferCap(uint256 newBufferCap) internal {
+    function _setBufferCap(uint112 newBufferCap) internal {
         emit BufferCapUpdate(bufferCap, newBufferCap);
 
         bufferCap = newBufferCap;

@@ -227,13 +227,13 @@ contract MultiRateLimited is RateLimitedV2, IMultiRateLimited {
         );
 
         // We update the buffer cap *first* otherwise we may set the buffer too high
+        uint32 thisBufferLastUpdate = block.timestamp.toUint32();
         rateLimitData[rateLimitedAddress].bufferCap = newBufferCap;
         rateLimitData[rateLimitedAddress].bufferStored = getBuffer(
             rateLimitedAddress
         );
-        rateLimitData[rateLimitedAddress].bufferLastUpdate = block
-            .timestamp
-            .toUint32();
+        rateLimitData[rateLimitedAddress]
+            .bufferLastUpdate = thisBufferLastUpdate;
         rateLimitData[rateLimitedAddress].rateLimit = newRateLimit;
     }
 
@@ -245,13 +245,12 @@ contract MultiRateLimited is RateLimitedV2, IMultiRateLimited {
         uint112 rateLimit,
         uint112 bufferCap
     ) internal {
+        uint32 thisbufferLastUpdate = block.timestamp.toUint32();
         rateLimitData[rateLimitedAddress].rateLimit = rateLimit;
         rateLimitData[rateLimitedAddress].bufferCap = bufferCap;
         rateLimitData[rateLimitedAddress].bufferStored = 0;
-        rateLimitData[rateLimitedAddress].bufferLastUpdate = block
-            .timestamp
-            .toUint32();
-
+        rateLimitData[rateLimitedAddress]
+            .bufferLastUpdate = thisbufferLastUpdate;
         emit IndividualRateLimitPerSecondUpdate(
             rateLimitedAddress,
             0,
@@ -273,15 +272,14 @@ contract MultiRateLimited is RateLimitedV2, IMultiRateLimited {
 
         if (amountToDeplete > currentBuffer) revert MultiRateLimitExceeded();
 
-        rateLimitData[rateLimitedAddress].bufferLastUpdate = block
-            .timestamp
-            .toUint32();
+        uint32 thisBufferLastUpdate = block.timestamp.toUint32();
+        uint112 newBufferStored = uint112(currentBuffer - amountToDeplete);
+        rateLimitData[rateLimitedAddress]
+            .bufferLastUpdate = thisBufferLastUpdate;
         rateLimitData[rateLimitedAddress].bufferCap = rateLimitData[
             rateLimitedAddress
         ].bufferCap;
-        rateLimitData[rateLimitedAddress].bufferStored = uint112(
-            currentBuffer - amountToDeplete
-        );
+        rateLimitData[rateLimitedAddress].bufferStored = newBufferStored;
 
         emit IndividualBufferUsed(
             rateLimitedAddress,
