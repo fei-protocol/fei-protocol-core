@@ -113,7 +113,9 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // Run any validations required on the fip using mocha or console logging
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  console.log(`No actions to complete in validate for fip${fipNumber}`);
+  // Ensure that the global rate limited minter has the MINTER role
+  // Ensure that the non-custodial price-bound psm has the PCV_CONTROLLER role
+  // Ensure that the rai aave pcv deposit has >= 20m RAI
 };
 
 export { deploy, setup, teardown, validate };
