@@ -1,142 +1,147 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.4;
 
-import "../refs/CoreRef.sol";
-import "@openzeppelin/contracts/utils/math/Math.sol";
+import {CoreRef} from "../refs/CoreRef.sol";
+import {IRateLimited} from "./IRateLimited.sol";
+import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
+import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
 
 /// @title abstract contract for putting a rate limit on how fast a contract can perform an action e.g. Minting
 /// @author Fei Protocol
-abstract contract RateLimited is CoreRef {
-    /// @notice maximum rate limit per second governance can set for this contract
-    uint256 public immutable MAX_RATE_LIMIT_PER_SECOND;
+abstract contract RateLimited is IRateLimited, CoreRef {
+    using SafeCast for *;
+
+    /// @notice maximum rate limit per second; changeable by governance
+    uint256 public currentMaxRateLimit;
 
     /// @notice the rate per second for this contract
-    uint256 public rateLimitPerSecond;
+    uint256 public rateLimit;
 
     /// @notice the last time the buffer was used by the contract
-    uint256 public lastBufferUsedTime;
+    uint32 public bufferLastUpdate;
 
     /// @notice the cap of the buffer that can be used at once
     uint256 public bufferCap;
 
-    /// @notice a flag for whether to allow partial actions to complete if the buffer is less than amount
-    bool public doPartialAction;
-
     /// @notice the buffer at the timestamp of lastBufferUsedTime
-    uint256 private _bufferStored;
-
-    event BufferUsed(uint256 amountUsed, uint256 bufferRemaining);
-    event BufferCapUpdate(uint256 oldBufferCap, uint256 newBufferCap);
-    event RateLimitPerSecondUpdate(
-        uint256 oldRateLimitPerSecond,
-        uint256 newRateLimitPerSecond
-    );
+    uint256 private bufferStored;
 
     constructor(
-        uint256 _maxRateLimitPerSecond,
-        uint256 _rateLimitPerSecond,
-        uint256 _bufferCap,
-        bool _doPartialAction
+        uint256 maximumRateLimit,
+        uint256 initialRateLimit,
+        uint256 theBufferCap
     ) {
-        lastBufferUsedTime = block.timestamp;
+        bufferLastUpdate = block.timestamp.toUint32();
 
-        _setBufferCap(_bufferCap);
-        _bufferStored = _bufferCap;
+        _setBufferCap(theBufferCap);
+        bufferStored = theBufferCap;
 
-        require(
-            _rateLimitPerSecond <= _maxRateLimitPerSecond,
-            "RateLimited: rateLimitPerSecond too high"
-        );
-        _setRateLimitPerSecond(_rateLimitPerSecond);
+        if (initialRateLimit > maximumRateLimit) revert InvalidRateLimit();
 
-        MAX_RATE_LIMIT_PER_SECOND = _maxRateLimitPerSecond;
-        doPartialAction = _doPartialAction;
+        _setRateLimit(initialRateLimit);
+
+        currentMaxRateLimit = maximumRateLimit;
     }
 
-    /// @notice set the rate limit per second
-    function setRateLimitPerSecond(uint256 newRateLimitPerSecond)
+    // ----------- Public View-Only Methods ----------
+
+    /// @notice the amount of action used before hitting limit
+    /// @dev replenishes at rateLimitPerSecond per second up to bufferCap
+    function getBuffer() public view override returns (uint112) {
+        return
+            uint112(
+                Math.min(
+                    (bufferStored +
+                        (rateLimit * (block.timestamp - bufferLastUpdate))),
+                    bufferCap
+                )
+            );
+    }
+
+    // ----------- Only Governor State-Changing Methods -----------
+
+    /// @notice sets the maximum rate limit
+    /// @dev if the new maximum is lower than the current rate limit,
+    /// the current rate limit will be lowered to the new maximum.
+    function setMaxRateLimit(uint256 newMaxRateLimit)
         external
         virtual
+        override
+        onlyGovernor
+    {
+        currentMaxRateLimit = newMaxRateLimit;
+
+        if (newMaxRateLimit < rateLimit) {
+            setRateLimit(newMaxRateLimit);
+        }
+    }
+
+    // ----------- Only Governor or Admin State-Changing Methods ----------
+
+    /// @notice set the rate limit
+    function setRateLimit(uint256 newRateLimit)
+        public
+        virtual
+        override
         onlyGovernorOrAdmin
     {
-        require(
-            newRateLimitPerSecond <= MAX_RATE_LIMIT_PER_SECOND,
-            "RateLimited: rateLimitPerSecond too high"
-        );
-        _updateBufferStored();
+        if (newRateLimit > currentMaxRateLimit) revert InvalidRateLimit();
 
-        _setRateLimitPerSecond(newRateLimitPerSecond);
+        bufferStored = getBuffer();
+        bufferLastUpdate = block.timestamp.toUint32();
+
+        _setRateLimit(newRateLimit);
     }
 
     /// @notice set the buffer cap
     function setBufferCap(uint256 newBufferCap)
         external
         virtual
+        override
         onlyGovernorOrAdmin
     {
         _setBufferCap(newBufferCap);
     }
 
-    /// @notice the amount of action used before hitting limit
-    /// @dev replenishes at rateLimitPerSecond per second up to bufferCap
-    function buffer() public view returns (uint256) {
-        uint256 elapsed = block.timestamp - lastBufferUsedTime;
-        return
-            Math.min(_bufferStored + (rateLimitPerSecond * elapsed), bufferCap);
-    }
+    // ----------- Internal Methods ----------
 
     /** 
         @notice the method that enforces the rate limit. Decreases buffer by "amount". 
-        If buffer is <= amount either
-        1. Does a partial mint by the amount remaining in the buffer or
-        2. Reverts
-        Depending on whether doPartialAction is true or false
     */
-    function _depleteBuffer(uint256 amount) internal returns (uint256) {
-        uint256 newBuffer = buffer();
+    function _depleteBuffer(uint256 amount) internal {
+        uint256 currentBuffer = getBuffer();
 
-        uint256 usedAmount = amount;
-        if (doPartialAction && usedAmount > newBuffer) {
-            usedAmount = newBuffer;
-        }
+        if (amount > currentBuffer) revert RateLimitExceeded();
 
-        require(newBuffer != 0, "RateLimited: no rate limit buffer");
-        require(usedAmount <= newBuffer, "RateLimited: rate limit hit");
+        // Update buffer stored & buffer last updated amounts
+        bufferStored = currentBuffer - amount;
+        bufferLastUpdate = block.timestamp.toUint32();
 
-        _bufferStored = newBuffer - usedAmount;
-
-        lastBufferUsedTime = block.timestamp;
-
-        emit BufferUsed(usedAmount, _bufferStored);
-
-        return usedAmount;
+        emit BufferUsed(amount, bufferStored);
     }
 
-    function _setRateLimitPerSecond(uint256 newRateLimitPerSecond) internal {
-        uint256 oldRateLimitPerSecond = rateLimitPerSecond;
-        rateLimitPerSecond = newRateLimitPerSecond;
+    /// @notice function to replenish buffer
+    /// @param amount to increase buffer by if under buffer cap
+    function _replenishBuffer(uint256 amount) internal {
+        uint256 currentBuffer = getBuffer();
+        uint256 currentBufferCap = bufferCap;
 
-        emit RateLimitPerSecondUpdate(
-            oldRateLimitPerSecond,
-            newRateLimitPerSecond
-        );
+        bufferLastUpdate = block.timestamp.toUint32();
+        bufferStored = Math.min(currentBuffer + amount, currentBufferCap);
+
+        emit BufferReplenished(amount, bufferStored);
+    }
+
+    function _setRateLimit(uint256 newRateLimit) internal {
+        emit RateLimitPerSecondUpdate(rateLimit, newRateLimit);
+        rateLimit = newRateLimit;
     }
 
     function _setBufferCap(uint256 newBufferCap) internal {
-        _updateBufferStored();
+        emit BufferCapUpdate(bufferCap, newBufferCap);
 
-        uint256 oldBufferCap = bufferCap;
         bufferCap = newBufferCap;
-
-        emit BufferCapUpdate(oldBufferCap, newBufferCap);
-    }
-
-    function _resetBuffer() internal {
-        _bufferStored = bufferCap;
-    }
-
-    function _updateBufferStored() internal {
-        _bufferStored = buffer();
-        lastBufferUsedTime = block.timestamp;
+        bufferStored = getBuffer();
+        bufferLastUpdate = block.timestamp.toUint32();
     }
 }
