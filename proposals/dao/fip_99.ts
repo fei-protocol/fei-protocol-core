@@ -15,10 +15,11 @@ DAO Proposal #99
 Description: Sell RAI to replenish DAI reserves and/or relieve upcoming peg pressure
 
 Steps:
-  1 - Move all PCV RAI to AAVE from Fuse Pool 9 via the ratioPCVControllerV2
+  1 - Move 80% of PCV RAI to AAVE from Fuse Pool 9 via the ratioPCVControllerV2
   2 - Call depsoit() on the aave rai pcv deposit
-  2 - Grant the MINTER role to the global rate limited minter
-  3 - Grant the PCV_CONTROLLER role to the non-custodial price-bound psm
+  3 - Grant the MINTER role to the global rate limited minter
+  4 - Grant the PCV_CONTROLLER role to the non-custodial price-bound psm
+  5 - Pause Redeem on the rai non-custodial price-bound psm
 */
 
 const fipNumber = '99'; // Change me!
@@ -34,10 +35,10 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   const globalBufferCap = ethers.constants.WeiPerEther.mul(100_000_000); // 100 million
 
   // Fixed-price PSM params
-  const mintFeeBasisPoints = 50;
-  const redeemFeeBasisPoints = 50;
-  const ceilingBasisPoints = 1000;
-  const floorBasisPoints = 1000;
+  const mintFeeBasisPoints = 0;
+  const redeemFeeBasisPoints = 0;
+  const ceilingBasisPoints = ethers.constants.WeiPerEther.mul(1_000_000); // 1 million basis points. yep.
+  const floorBasisPoints = 30000;
   const redeemMaxRateLimitPerSecond = ethers.constants.WeiPerEther.mul(1_000_000); // 1 Million
   const redeemInitialRateLimitPerSecond = ethers.constants.WeiPerEther.mul(50_000); // 50k
   const redeemBufferCap = ethers.constants.WeiPerEther.mul(10_000_000); // 10 million
@@ -55,31 +56,42 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 
   await globalRateLimitedMinter.deployTransaction.wait();
 
+  logging && console.log('Global rate limited minter deployed');
+
   // Deploy the non-custodial price-bound psm
   const nonCustodialPriceBoundPSMFactory = await ethers.getContractFactory('NonCustodialPriceBoundPSM');
 
   const oracleParams = {
     coreAddress: addresses.core,
-    oracleAddress: addresses.raiOracle,
+    oracleAddress: addresses.chainlinkRaiUsdCompositeOracle,
     backupOracle: ethers.constants.AddressZero,
     decimalsNormalizer: 18
   };
 
+  logging && console.log('Oracle params created');
+  logging && console.log(`${JSON.stringify(oracleParams)}`);
+
   // These rate-limit params are for *redeeming*.
   // The minting rate-limit params are handled by the global rate limited minter.
   const rateLimitedParams = {
-    maxRateLimitPerSecond: redeemMaxRateLimitPerSecond,
-    rateLimitPerSecond: redeemInitialRateLimitPerSecond,
-    bufferCap: redeemBufferCap
+    maxRateLimitPerSecond: redeemMaxRateLimitPerSecond.toString(),
+    rateLimitPerSecond: redeemInitialRateLimitPerSecond.toString(),
+    bufferCap: redeemBufferCap.toString()
   };
+
+  logging && console.log('Rate-limit params created');
+  logging && console.log(`${JSON.stringify(rateLimitedParams)}`);
 
   const psmParams = {
     mintFeeBasisPoints: mintFeeBasisPoints,
     redeemFeeBasisPoints: redeemFeeBasisPoints,
     underlyingToken: addresses.rai,
     pcvDeposit: addresses.aaveRaiPCVDeposit,
-    rateLimitedMinter: addresses.globalRateLimitedMinter
+    rateLimitedMinter: globalRateLimitedMinter.address
   };
+
+  logging && console.log('PSM params created');
+  logging && console.log(`${JSON.stringify(psmParams)}`);
 
   const raiNonCustodialPriceBoundPSM = await nonCustodialPriceBoundPSMFactory.deploy(
     oracleParams,
@@ -90,6 +102,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   );
 
   await raiNonCustodialPriceBoundPSM.deployTransaction.wait();
+
+  logging && console.log('Non-custodial price-bound PSM deployed');
 
   return {
     globalRateLimitedMinter,
@@ -113,9 +127,12 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // Run any validations required on the fip using mocha or console logging
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  // Ensure that the global rate limited minter has the MINTER role
-  // Ensure that the non-custodial price-bound psm has the PCV_CONTROLLER role
-  // Ensure that the rai aave pcv deposit has >= 20m RAI
+  // Ensure that the global rate limited minter has the MINTER role & the noncustodialpriceboundpsm has the PCV_CONTROLLER role
+  await contracts.core.hasRole(ethers.utils.id('MINTER_ROLE'), addresses.globalRateLimitedMinter);
+  await contracts.core.hasRole(ethers.utils.id('PCV_CONTROLLER_ROLE'), addresses.raiNonCustodialPriceBoundPSM);
+
+  // Ensure that the rai aave pcv deposit has >= 10m RAI
+  expect((await contracts.aaveRaiPCVDeposit.balance()).gte(ethers.constants.WeiPerEther.mul(10_000_000)));
 };
 
 export { deploy, setup, teardown, validate };

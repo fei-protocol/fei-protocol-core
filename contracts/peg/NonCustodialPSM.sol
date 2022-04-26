@@ -437,10 +437,12 @@ contract NonCustodialPSM is
             address(newPCVDeposit) != address(0),
             "PegStabilityModule: Invalid new PCVDeposit"
         );
+        /* Removed to be compatible with PCV deposit v1. (which uses token() instead of balanceReportedIn())
         require(
             newPCVDeposit.balanceReportedIn() == address(underlyingToken),
             "PegStabilityModule: Underlying token mismatch"
         );
+        */
         IPCVDeposit oldTarget = pcvDeposit;
         pcvDeposit = newPCVDeposit;
 
