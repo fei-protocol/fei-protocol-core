@@ -5,16 +5,9 @@ pragma solidity ^0.8.4;
 /// @author Fei Protocol
 interface IReserveStabilizer {
     // ----------- Events -----------
-    event FeiExchange(
-        address indexed to,
-        uint256 feiAmountIn,
-        uint256 amountOut
-    );
+    event FeiExchange(address indexed to, uint256 feiAmountIn, uint256 amountOut);
 
-    event UsdPerFeiRateUpdate(
-        uint256 oldUsdPerFeiBasisPoints,
-        uint256 newUsdPerFeiBasisPoints
-    );
+    event UsdPerFeiRateUpdate(uint256 oldUsdPerFeiBasisPoints, uint256 newUsdPerFeiBasisPoints);
 
     // ----------- State changing api -----------
 

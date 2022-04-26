@@ -14,11 +14,7 @@ contract MockStEthToken is MockERC20 {
         shares[address(msg.sender)] = totalShares;
     }
 
-    function submit(address _referral)
-        external
-        payable
-        returns (uint256 amount_)
-    {
+    function submit(address _referral) external payable returns (uint256 amount_) {
         amount_ = msg.value;
 
         uint256 _shares = getSharesByPooledEth(amount_);
@@ -36,28 +32,15 @@ contract MockStEthToken is MockERC20 {
         _mintShares(_shares, _dst);
     }
 
-    function balanceOf(address _account)
-        public
-        view
-        override
-        returns (uint256 amount_)
-    {
+    function balanceOf(address _account) public view override returns (uint256 amount_) {
         return getPooledEthByShares(shares[_account]);
     }
 
-    function getSharesByPooledEth(uint256 _ethAmount)
-        public
-        view
-        returns (uint256 shares_)
-    {
+    function getSharesByPooledEth(uint256 _ethAmount) public view returns (uint256 shares_) {
         shares_ = (_ethAmount * totalShares) / pooledEth;
     }
 
-    function transfer(address dst, uint256 amount)
-        public
-        override
-        returns (bool)
-    {
+    function transfer(address dst, uint256 amount) public override returns (bool) {
         _transfer(msg.sender, dst, amount);
         return true;
     }
@@ -79,20 +62,13 @@ contract MockStEthToken is MockERC20 {
         uint256 _sharesToTransfer = getSharesByPooledEth(_amount);
 
         uint256 _currentSenderShares = shares[_sender];
-        require(
-            _sharesToTransfer <= _currentSenderShares,
-            "TRANSFER_AMOUNT_EXCEEDS_BALANCE"
-        );
+        require(_sharesToTransfer <= _currentSenderShares, "TRANSFER_AMOUNT_EXCEEDS_BALANCE");
 
         shares[_sender] = _currentSenderShares - _sharesToTransfer;
         shares[_recipient] = shares[_recipient] + _sharesToTransfer;
     }
 
-    function getPooledEthByShares(uint256 _sharesAmount)
-        public
-        view
-        returns (uint256 eth_)
-    {
+    function getPooledEthByShares(uint256 _sharesAmount) public view returns (uint256 eth_) {
         eth_ = (_sharesAmount * pooledEth) / totalShares;
     }
 

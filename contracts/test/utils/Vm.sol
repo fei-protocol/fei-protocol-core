@@ -66,9 +66,7 @@ interface Vm {
     function record() external;
 
     // Gets all accessed reads and write slot from a recording session, for a given address
-    function accesses(address)
-        external
-        returns (bytes32[] memory reads, bytes32[] memory writes);
+    function accesses(address) external returns (bytes32[] memory reads, bytes32[] memory writes);
 
     // Prepare an expected log with (bool checkTopic1, bool checkTopic2, bool checkTopic3, bool checkData).
     // Call this function, then emit an event, then call a function. Internally after the call, we check if

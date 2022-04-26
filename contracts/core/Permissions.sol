@@ -9,8 +9,7 @@ import "./IPermissions.sol";
 contract Permissions is IPermissions, AccessControlEnumerable {
     bytes32 public constant override BURNER_ROLE = keccak256("BURNER_ROLE");
     bytes32 public constant override MINTER_ROLE = keccak256("MINTER_ROLE");
-    bytes32 public constant override PCV_CONTROLLER_ROLE =
-        keccak256("PCV_CONTROLLER_ROLE");
+    bytes32 public constant override PCV_CONTROLLER_ROLE = keccak256("PCV_CONTROLLER_ROLE");
     bytes32 public constant override GOVERN_ROLE = keccak256("GOVERN_ROLE");
     bytes32 public constant override GUARDIAN_ROLE = keccak256("GUARDIAN_ROLE");
 
@@ -26,18 +25,12 @@ contract Permissions is IPermissions, AccessControlEnumerable {
     }
 
     modifier onlyGovernor() {
-        require(
-            isGovernor(msg.sender),
-            "Permissions: Caller is not a governor"
-        );
+        require(isGovernor(msg.sender), "Permissions: Caller is not a governor");
         _;
     }
 
     modifier onlyGuardian() {
-        require(
-            isGuardian(msg.sender),
-            "Permissions: Caller is not a guardian"
-        );
+        require(isGuardian(msg.sender), "Permissions: Caller is not a guardian");
         _;
     }
 
@@ -45,11 +38,7 @@ contract Permissions is IPermissions, AccessControlEnumerable {
     /// @param role the new role id
     /// @param adminRole the admin role id for `role`
     /// @dev can also be used to update admin of existing role
-    function createRole(bytes32 role, bytes32 adminRole)
-        external
-        override
-        onlyGovernor
-    {
+    function createRole(bytes32 role, bytes32 adminRole) external override onlyGovernor {
         _setRoleAdmin(role, adminRole);
     }
 
@@ -67,11 +56,7 @@ contract Permissions is IPermissions, AccessControlEnumerable {
 
     /// @notice grants controller role to address
     /// @param pcvController new controller
-    function grantPCVController(address pcvController)
-        external
-        override
-        onlyGovernor
-    {
+    function grantPCVController(address pcvController) external override onlyGovernor {
         grantRole(PCV_CONTROLLER_ROLE, pcvController);
     }
 
@@ -101,11 +86,7 @@ contract Permissions is IPermissions, AccessControlEnumerable {
 
     /// @notice revokes pcvController role from address
     /// @param pcvController ex pcvController
-    function revokePCVController(address pcvController)
-        external
-        override
-        onlyGovernor
-    {
+    function revokePCVController(address pcvController) external override onlyGovernor {
         revokeRole(PCV_CONTROLLER_ROLE, pcvController);
     }
 
@@ -124,15 +105,8 @@ contract Permissions is IPermissions, AccessControlEnumerable {
     /// @notice revokes a role from address
     /// @param role the role to revoke
     /// @param account the address to revoke the role from
-    function revokeOverride(bytes32 role, address account)
-        external
-        override
-        onlyGuardian
-    {
-        require(
-            role != GOVERN_ROLE,
-            "Permissions: Guardian cannot revoke governor"
-        );
+    function revokeOverride(bytes32 role, address account) external override onlyGuardian {
+        require(role != GOVERN_ROLE, "Permissions: Guardian cannot revoke governor");
 
         // External call because this contract is appointed as a governor and has access to revoke
         this.revokeRole(role, account);
@@ -155,12 +129,7 @@ contract Permissions is IPermissions, AccessControlEnumerable {
     /// @notice checks if address is a controller
     /// @param _address address to check
     /// @return true _address is a controller
-    function isPCVController(address _address)
-        external
-        view
-        override
-        returns (bool)
-    {
+    function isPCVController(address _address) external view override returns (bool) {
         return hasRole(PCV_CONTROLLER_ROLE, _address);
     }
 
@@ -168,13 +137,7 @@ contract Permissions is IPermissions, AccessControlEnumerable {
     /// @param _address address to check
     /// @return true _address is a governor
     // only virtual for testing mock override
-    function isGovernor(address _address)
-        public
-        view
-        virtual
-        override
-        returns (bool)
-    {
+    function isGovernor(address _address) public view virtual override returns (bool) {
         return hasRole(GOVERN_ROLE, _address);
     }
 

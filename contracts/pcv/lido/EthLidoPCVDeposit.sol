@@ -18,25 +18,15 @@ interface ILido {
 
     function sharesOf(address _account) external view returns (uint256);
 
-    function getSharesByPooledEth(uint256 _ethAmount)
-        external
-        view
-        returns (uint256);
+    function getSharesByPooledEth(uint256 _ethAmount) external view returns (uint256);
 
-    function getPooledEthByShares(uint256 _sharesAmount)
-        external
-        view
-        returns (uint256);
+    function getPooledEthByShares(uint256 _sharesAmount) external view returns (uint256);
 
     function getFee() external view returns (uint256);
 
-    function increaseAllowance(address _spender, uint256 _addedValue)
-        external
-        returns (bool);
+    function increaseAllowance(address _spender, uint256 _addedValue) external returns (bool);
 
-    function decreaseAllowance(address _spender, uint256 _subtractedValue)
-        external
-        returns (bool);
+    function decreaseAllowance(address _spender, uint256 _subtractedValue) external returns (bool);
 
     function submit(address referral) external payable returns (uint256);
 }
@@ -122,9 +112,7 @@ contract EthLidoPCVDeposit is PCVDeposit {
             IERC20(steth).approve(stableswap, amountIn);
 
             // Perform swap
-            actualAmountOut = IStableSwapSTETH(stableswap).exchange{
-                value: amountIn
-            }(
+            actualAmountOut = IStableSwapSTETH(stableswap).exchange{value: amountIn}(
                 _tokenOne == steth ? int128(1) : int128(0),
                 _tokenOne == steth ? int128(0) : int128(1),
                 amountIn,
@@ -148,13 +136,8 @@ contract EthLidoPCVDeposit is PCVDeposit {
             Constants.BASIS_POINTS_GRANULARITY - maximumSlippageBasisPoints,
             Constants.BASIS_POINTS_GRANULARITY
         );
-        uint256 minimumAcceptedAmountOut = maxSlippage
-            .mul(amountIn)
-            .asUint256();
-        require(
-            amountReceived >= minimumAcceptedAmountOut,
-            "EthLidoPCVDeposit: not enough stETH received."
-        );
+        uint256 minimumAcceptedAmountOut = maxSlippage.mul(amountIn).asUint256();
+        require(amountReceived >= minimumAcceptedAmountOut, "EthLidoPCVDeposit: not enough stETH received.");
 
         emit Deposit(msg.sender, actualAmountOut);
     }
@@ -166,12 +149,7 @@ contract EthLidoPCVDeposit is PCVDeposit {
     /// of ETH out of the trade is less than the tolerated slippage.
     /// @param to the destination of the withdrawn ETH
     /// @param amountIn the number of stETH to withdraw.
-    function withdraw(address to, uint256 amountIn)
-        external
-        override
-        onlyPCVController
-        whenNotPaused
-    {
+    function withdraw(address to, uint256 amountIn) external override onlyPCVController whenNotPaused {
         require(balance() >= amountIn, "EthLidoPCVDeposit: not enough stETH.");
 
         // Compute the minimum accepted amount of ETH out of the trade, based
@@ -180,9 +158,7 @@ contract EthLidoPCVDeposit is PCVDeposit {
             Constants.BASIS_POINTS_GRANULARITY - maximumSlippageBasisPoints,
             Constants.BASIS_POINTS_GRANULARITY
         );
-        uint256 minimumAcceptedAmountOut = maxSlippage
-            .mul(amountIn)
-            .asUint256();
+        uint256 minimumAcceptedAmountOut = maxSlippage.mul(amountIn).asUint256();
 
         // Swap stETH for ETH on the Curve pool
         uint256 balanceBefore = address(this).balance;
@@ -198,18 +174,12 @@ contract EthLidoPCVDeposit is PCVDeposit {
         // Check that we received enough stETH as an output of the trade
         // This is enforced in this contract, after knowing the output of the trade,
         // instead of the StableSwap pool's min_dy check.
-        require(
-            actualAmountOut >= minimumAcceptedAmountOut,
-            "EthLidoPCVDeposit: slippage too high."
-        );
+        require(actualAmountOut >= minimumAcceptedAmountOut, "EthLidoPCVDeposit: slippage too high.");
 
         // Check the received amount
         uint256 balanceAfter = address(this).balance;
         uint256 amountReceived = balanceAfter - balanceBefore;
-        require(
-            amountReceived >= minimumAcceptedAmountOut,
-            "EthLidoPCVDeposit: not enough ETH received."
-        );
+        require(amountReceived >= minimumAcceptedAmountOut, "EthLidoPCVDeposit: not enough ETH received.");
 
         // Transfer ETH to destination.
         Address.sendValue(payable(to), actualAmountOut);
@@ -227,10 +197,7 @@ contract EthLidoPCVDeposit is PCVDeposit {
     // =======================================================================
     /// @notice Sets the maximum slippage vs 1:1 price accepted during withdraw.
     /// @param _maximumSlippageBasisPoints the maximum slippage expressed in basis points (1/10_000)
-    function setMaximumSlippage(uint256 _maximumSlippageBasisPoints)
-        external
-        onlyGovernorOrAdmin
-    {
+    function setMaximumSlippage(uint256 _maximumSlippageBasisPoints) external onlyGovernorOrAdmin {
         require(
             _maximumSlippageBasisPoints <= Constants.BASIS_POINTS_GRANULARITY,
             "EthLidoPCVDeposit: Exceeds bp granularity."

@@ -55,13 +55,7 @@ contract ReserveStabilizer is OracleRef, IReserveStabilizer, PCVDeposit {
 
     /// @notice exchange FEI for tokens from the reserves
     /// @param feiAmount of FEI to sell
-    function exchangeFei(uint256 feiAmount)
-        public
-        virtual
-        override
-        whenNotPaused
-        returns (uint256 amountOut)
-    {
+    function exchangeFei(uint256 feiAmount) public virtual override whenNotPaused returns (uint256 amountOut) {
         updateOracle();
 
         fei().transferFrom(msg.sender, address(this), feiAmount);
@@ -75,26 +69,15 @@ contract ReserveStabilizer is OracleRef, IReserveStabilizer, PCVDeposit {
 
     /// @notice returns the amount out of tokens from the reserves for a given amount of FEI
     /// @param amountFeiIn the amount of FEI in
-    function getAmountOut(uint256 amountFeiIn)
-        public
-        view
-        override
-        returns (uint256)
-    {
-        uint256 adjustedAmountIn = (amountFeiIn * usdPerFeiBasisPoints) /
-            Constants.BASIS_POINTS_GRANULARITY;
+    function getAmountOut(uint256 amountFeiIn) public view override returns (uint256) {
+        uint256 adjustedAmountIn = (amountFeiIn * usdPerFeiBasisPoints) / Constants.BASIS_POINTS_GRANULARITY;
         return readOracle().mul(adjustedAmountIn).asUint256();
     }
 
     /// @notice withdraw tokens from the reserves
     /// @param to address to send tokens
     /// @param amountOut amount of tokens to send
-    function withdraw(address to, uint256 amountOut)
-        external
-        virtual
-        override
-        onlyPCVController
-    {
+    function withdraw(address to, uint256 amountOut) external virtual override onlyPCVController {
         _transfer(to, amountOut);
         emit Withdrawal(msg.sender, to, amountOut);
     }
@@ -115,21 +98,14 @@ contract ReserveStabilizer is OracleRef, IReserveStabilizer, PCVDeposit {
 
     /// @notice sets the USD per FEI exchange rate rate
     /// @param newUsdPerFeiBasisPoints the USD per FEI exchange rate denominated in basis points (1/10000)
-    function setUsdPerFeiRate(uint256 newUsdPerFeiBasisPoints)
-        external
-        override
-        onlyGovernorOrAdmin
-    {
+    function setUsdPerFeiRate(uint256 newUsdPerFeiBasisPoints) external override onlyGovernorOrAdmin {
         require(
             newUsdPerFeiBasisPoints <= Constants.BASIS_POINTS_GRANULARITY,
             "ReserveStabilizer: Exceeds bp granularity"
         );
         uint256 oldUsdPerFeiBasisPoints = usdPerFeiBasisPoints;
         usdPerFeiBasisPoints = newUsdPerFeiBasisPoints;
-        emit UsdPerFeiRateUpdate(
-            oldUsdPerFeiBasisPoints,
-            newUsdPerFeiBasisPoints
-        );
+        emit UsdPerFeiRateUpdate(oldUsdPerFeiBasisPoints, newUsdPerFeiBasisPoints);
     }
 
     function _transfer(address to, uint256 amount) internal virtual {
