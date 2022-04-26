@@ -6,26 +6,26 @@ import {IGlobalRateLimitedMinter} from "./IGlobalRateLimitedMinter.sol";
 import {CoreRef} from "./../refs/CoreRef.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 
-/// @notice global contract to handle rate limited minting of VOLT on a global level
-/// allows whitelisted minters to call in and specify the address to mint VOLT to within
+/// @notice global contract to handle rate limited minting of Fei on a global level
+/// allows whitelisted minters to call in and specify the address to mint Fei to within
 /// that contract's limits
 contract GlobalRateLimitedMinter is MultiRateLimited, IGlobalRateLimitedMinter {
-    /// @param coreAddress address of the core contract
-    /// @param _globalMaxRateLimitPerSecond maximum amount of VOLT that can replenish per second ever, this amount cannot be changed by governance
+    /// @param core address of the core contract
+    /// @param _globalMaxRateLimitPerSecond maximum amount of Fei that can replenish per second ever, this amount cannot be changed by governance
     /// @param _perAddressRateLimitMaximum maximum rate limit per second per address
     /// @param _maxRateLimitPerSecondPerAddress maximum rate limit per second per address in multi rate limited
     /// @param _maxBufferCap maximum buffer cap in multi rate limited contract
     /// @param _globalBufferCap maximum global buffer cap
     constructor(
-        address coreAddress,
-        uint256 _globalMaxRateLimitPerSecond,
-        uint256 _perAddressRateLimitMaximum,
-        uint256 _maxRateLimitPerSecondPerAddress,
-        uint256 _maxBufferCap,
-        uint256 _globalBufferCap
+        address core,
+        uint112 _globalMaxRateLimitPerSecond,
+        uint112 _perAddressRateLimitMaximum,
+        uint112 _maxRateLimitPerSecondPerAddress,
+        uint112 _maxBufferCap,
+        uint112 _globalBufferCap
     )
-        CoreRef(coreAddress)
         MultiRateLimited(
+            core,
             _globalMaxRateLimitPerSecond,
             _perAddressRateLimitMaximum,
             _maxRateLimitPerSecondPerAddress,
@@ -34,11 +34,11 @@ contract GlobalRateLimitedMinter is MultiRateLimited, IGlobalRateLimitedMinter {
         )
     {}
 
-    /// @notice mint VOLT to the target address and deplete the buffer
+    /// @notice mint Fei to the target address and deplete the buffer
     /// pausable and depletes the msg.sender's buffer
-    /// @param to the recipient address of the minted VOLT
-    /// @param amount the amount of VOLT to mint
-    function mintVolt(address to, uint256 amount)
+    /// @param to the recipient address of the minted Fei
+    /// @param amount the amount of Fei to mint
+    function mintFei(address to, uint256 amount)
         external
         virtual
         override
@@ -48,17 +48,13 @@ contract GlobalRateLimitedMinter is MultiRateLimited, IGlobalRateLimitedMinter {
         _mintFei(to, amount);
     }
 
-    /// @notice mint VOLT to the target address and deplete the whole rate limited
-    ///  minter's buffer, pausable and completely depletes the msg.sender's buffer
-    /// @param to the recipient address of the minted VOLT
-    /// mints all VOLT that msg.sender has in the buffer
-    function mintMaxAllowableVolt(address to)
-        external
-        virtual
-        override
-        whenNotPaused
-    {
-        uint256 amount = Math.min(individualBuffer(msg.sender), buffer());
+    /// @notice mints the maximum possible Fei to the target address
+    /// @param to the recipient address of the minted Fei
+    /// mints all Fei that msg.sender has in the buffer
+    function mintMaxFei(address to) external virtual override whenNotPaused {
+        // getBuffer is an overloaded function; no params = global buffer; address param = individual buffer
+        // thus we take the min of global buffer & individual buffer
+        uint256 amount = Math.min(getBuffer(msg.sender), getBuffer());
 
         _depleteIndividualBuffer(msg.sender, amount);
         _mintFei(to, amount);
