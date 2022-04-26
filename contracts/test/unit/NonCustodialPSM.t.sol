@@ -161,55 +161,6 @@ contract NonCustodialPSMTest is DSTest {
         assertEq(psm.getMintAmountOut(amountfeiIn), amountfeiIn);
     }
 
-    /// @notice PSM is set up correctly and view functions are working
-    function testGetRedeemAmountOutAfterTime() public {
-        uint256 amountfeiIn = 100_000;
-        uint256 expectedAmountStableOut = 101_000;
-
-        /// advance the full time period to get the full 1% price increase
-        vm.warp(28 days + block.timestamp);
-
-        assertEq(psm.getRedeemAmountOut(amountfeiIn), expectedAmountStableOut);
-    }
-
-    /// @notice PSM is set up correctly and view functions are working
-    function testGetMintAmountOutAfterTime() public {
-        /// assert that for 101 stables you get 100 fei after fei price increases 1%
-        uint256 amountStableIn = 101_000;
-        uint256 expectedAmountfeiOut = 99999; /// subtract 1 for precision loss from doInvert
-
-        /// advance the full time period to get the full 1% price increase
-        vm.warp(28 days + block.timestamp);
-
-        assertEq(psm.getMintAmountOut(amountStableIn), expectedAmountfeiOut);
-    }
-
-    /// @notice pcv deposit receives underlying token on mint
-    function testSwapUnderlyingForfeiAfterPriceIncrease() public {
-        uint256 amountStableIn = 101_000;
-        uint256 amountfeiOut = 99999; /// subtract 1 for precision loss from doInvert
-
-        vm.warp(28 days + block.timestamp);
-
-        underlyingToken.approve(address(psm), amountStableIn);
-        psm.mint(address(this), amountStableIn, amountfeiOut);
-
-        uint256 endingUserfeiBalance = fei.balanceOf(address(this));
-        uint256 endingPSMUnderlyingBalance = underlyingToken.balanceOf(
-            address(psm)
-        );
-        uint256 endingPCVDepositUnderlyingBalance = underlyingToken.balanceOf(
-            address(pcvDeposit)
-        );
-
-        assertEq(
-            endingPCVDepositUnderlyingBalance,
-            mintAmount + amountStableIn
-        );
-        assertEq(endingPSMUnderlyingBalance, 0);
-        assertEq(endingUserfeiBalance, mintAmount + amountfeiOut);
-    }
-
     /// @notice pcv deposit receives underlying token on mint
     function testSwapUnderlyingForfei() public {
         underlyingToken.approve(address(psm), mintAmount);
@@ -248,36 +199,6 @@ contract NonCustodialPSMTest is DSTest {
         assertEq(endingUserfeiBalance, 0);
         assertEq(endingUserUnderlyingBalance, mintAmount * 2);
         assertEq(endingPCVDepositUnderlyingBalance, 0);
-    }
-
-    /// @notice pcv deposit gets depleted on redeem
-    function testSwapfeiForUnderlyingAfterPriceIncrease() public {
-        uint256 amountfeiIn = 100_000;
-        uint256 amountStableOut = 101_000;
-
-        vm.warp(28 days + block.timestamp);
-
-        fei.approve(address(psm), amountfeiIn);
-        psm.redeem(address(this), amountfeiIn, amountStableOut);
-
-        uint256 endingUserfeiBalance = fei.balanceOf(address(this));
-        uint256 endingUserUnderlyingBalance = underlyingToken.balanceOf(
-            address(this)
-        );
-        uint256 endingPSMUnderlyingBalance = underlyingToken.balanceOf(
-            address(psm)
-        );
-        uint256 endingPCVDepositUnderlyingBalance = underlyingToken.balanceOf(
-            address(pcvDeposit)
-        );
-
-        assertEq(endingPSMUnderlyingBalance, 0);
-        assertEq(endingUserfeiBalance, mintAmount - amountfeiIn);
-        assertEq(endingUserUnderlyingBalance, mintAmount + amountStableOut);
-        assertEq(
-            endingPCVDepositUnderlyingBalance,
-            mintAmount - amountStableOut
-        );
     }
 
     /// @notice pcv deposit gets depleted on redeem
@@ -390,14 +311,14 @@ contract NonCustodialPSMTest is DSTest {
 
     /// @notice redeem fails without approval
     function testSwapfeiForUnderlyingFailsWithoutApproval() public {
-        vm.expectRevert(bytes("ERC20: transfer amount exceeds allowance"));
+        vm.expectRevert(bytes("ERC20: insufficient allowance"));
 
         psm.redeem(address(this), mintAmount, mintAmount);
     }
 
     /// @notice mint fails without approval
     function testSwapUnderlyingForfeiFailsWithoutApproval() public {
-        vm.expectRevert(bytes("ERC20: transfer amount exceeds allowance"));
+        vm.expectRevert(bytes("ERC20: insufficient allowance"));
 
         psm.mint(address(this), mintAmount, mintAmount);
     }
