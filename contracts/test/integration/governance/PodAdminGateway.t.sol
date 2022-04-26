@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
+import {TimelockController} from "@openzeppelin/contracts/governance/TimelockController.sol";
 import {ControllerV1} from "@orcaprotocol/contracts/contracts/ControllerV1.sol";
 import {Vm} from "../../utils/Vm.sol";
 import {DSTest} from "../../utils/DSTest.sol";
@@ -9,7 +10,6 @@ import {PodAdminGateway} from "../../../pods/PodAdminGateway.sol";
 import {IPodAdminGateway} from "../../../pods/interfaces/IPodAdminGateway.sol";
 import {mintOrcaTokens, getPodParamsWithTimelock} from "../fixtures/Orca.sol";
 import {IPodFactory} from "../../../pods/interfaces/IPodFactory.sol";
-import {ITimelock} from "../../../dao/timelock/ITimelock.sol";
 import {TribeRoles} from "../../../core/TribeRoles.sol";
 import {ICore} from "../../../core/ICore.sol";
 import {MainnetAddresses} from "../fixtures/MainnetAddresses.sol";
@@ -67,18 +67,18 @@ contract PodAdminGatewayIntegrationTest is DSTest {
         address podAdmin = factory.getPodAdmin(podId);
         assertEq(podAdmin, address(podAdminGateway));
 
-        // Validate VetoController has proposer role, this will allow it to veto
-        ITimelock timelockContract = ITimelock(timelock);
-        bool hasProposerRole = timelockContract.hasRole(
-            keccak256("PROPOSER_ROLE"),
-            address(address(podAdminGateway))
+        // Validate PodAdminGateway has CANCELLER role, this will allow it to veto
+        TimelockController timelockContract = TimelockController(
+            payable(timelock)
         );
-        assertTrue(hasProposerRole);
+        assertTrue(
+            timelockContract.hasRole(
+                timelockContract.CANCELLER_ROLE(),
+                address(podAdminGateway)
+            )
+        );
 
-        bool memberTransfersLocked = factory.getIsMembershipTransferLocked(
-            podId
-        );
-        assertTrue(memberTransfersLocked);
+        assertTrue(factory.getIsMembershipTransferLocked(podId));
     }
 
     /// @notice Validate that a podAdmin can be added for a particular pod by the GOVERNOR
