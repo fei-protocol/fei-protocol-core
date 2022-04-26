@@ -392,6 +392,7 @@ contract NonCustodialPSMTest is DSTest {
         psm.setPCVDeposit(IPCVDeposit(address(0)));
     }
 
+    /* Disabled - we deploy to a pcv deposit v1
     /// @notice set PCV deposit fails when caller is governor and new address is 0
     function testSetPCVDepositFailureUnderlyingTokenMismatch() public {
         vm.startPrank(addresses.governorAddress);
@@ -409,6 +410,7 @@ contract NonCustodialPSMTest is DSTest {
 
         vm.stopPrank();
     }
+    */
 
     /// @notice set PCV Deposit succeeds when caller is governor and underlying tokens match
     function testSetPCVDepositSuccess() public {
