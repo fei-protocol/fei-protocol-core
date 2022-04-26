@@ -107,7 +107,7 @@ contract NopeDAO is
     function getVotes(address account, uint256 blockNumber)
         public
         view
-        override(IGovernor, GovernorVotesComp)
+        override(Governor)
         returns (uint256)
     {
         return super.getVotes(account, blockNumber);
