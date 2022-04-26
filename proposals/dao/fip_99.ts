@@ -16,8 +16,9 @@ Description: Sell RAI to replenish DAI reserves and/or relieve upcoming peg pres
 
 Steps:
   1 - Move all PCV RAI to AAVE from Fuse Pool 9 via the ratioPCVControllerV2
+  2 - Call depsoit() on the aave rai pcv deposit
   2 - Grant the MINTER role to the global rate limited minter
-  3 - Grant the PCV_CONTROLLER role to the non-custodial price-bound psmW
+  3 - Grant the PCV_CONTROLLER role to the non-custodial price-bound psm
 */
 
 const fipNumber = '99'; // Change me!
@@ -25,16 +26,21 @@ const fipNumber = '99'; // Change me!
 // Do any deployments
 // This should exclusively include new contract deployments
 const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: NamedAddresses, logging: boolean) => {
+  // Global rate-limited minter params
   const globalMaxRateLimitPerSecond = ethers.constants.WeiPerEther.mul(1_000_000); // 1 Million
   const perAddressRateLimitMaximum = ethers.constants.WeiPerEther.mul(100_000); // 100k
   const maxRateLimitPerSecondPerAddress = ethers.constants.WeiPerEther.mul(100_000); // 100k
   const maxBufferCap = ethers.constants.WeiPerEther.mul(50_000_000); // 50 million
   const globalBufferCap = ethers.constants.WeiPerEther.mul(100_000_000); // 100 million
-  const globalInitialRateLimit = ethers.constants.WeiPerEther.mul(50_000); // 50k
+
+  // Fixed-price PSM params
   const mintFeeBasisPoints = 50;
   const redeemFeeBasisPoints = 50;
   const ceilingBasisPoints = 1000;
   const floorBasisPoints = 1000;
+  const redeemMaxRateLimitPerSecond = ethers.constants.WeiPerEther.mul(1_000_000); // 1 Million
+  const redeemInitialRateLimitPerSecond = ethers.constants.WeiPerEther.mul(50_000); // 50k
+  const redeemBufferCap = ethers.constants.WeiPerEther.mul(10_000_000); // 10 million
 
   // Deploy the global rate limited minter
   const globalRateLimitedMinterFactory = await ethers.getContractFactory('GlobalRateLimitedMinter');
@@ -59,10 +65,12 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     decimalsNormalizer: 18
   };
 
+  // These rate-limit params are for *redeeming*.
+  // The minting rate-limit params are handled by the global rate limited minter.
   const rateLimitedParams = {
-    maxRateLimitPerSecond: maxRateLimitPerSecondPerAddress,
-    rateLimitPerSecond: globalInitialRateLimit,
-    bufferCap: globalBufferCap
+    maxRateLimitPerSecond: redeemMaxRateLimitPerSecond,
+    rateLimitPerSecond: redeemInitialRateLimitPerSecond,
+    bufferCap: redeemBufferCap
   };
 
   const psmParams = {
@@ -73,7 +81,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     rateLimitedMinter: addresses.globalRateLimitedMinter
   };
 
-  const nonCustodialPriceBoundPSM = await nonCustodialPriceBoundPSMFactory.deploy(
+  const raiNonCustodialPriceBoundPSM = await nonCustodialPriceBoundPSMFactory.deploy(
     oracleParams,
     rateLimitedParams,
     psmParams,
@@ -81,11 +89,11 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     floorBasisPoints
   );
 
-  await nonCustodialPriceBoundPSM.deployTransaction.wait();
+  await raiNonCustodialPriceBoundPSM.deployTransaction.wait();
 
   return {
     globalRateLimitedMinter,
-    nonCustodialPriceBoundPSM
+    raiNonCustodialPriceBoundPSM
   };
 };
 

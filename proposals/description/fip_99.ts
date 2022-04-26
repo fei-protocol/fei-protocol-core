@@ -28,7 +28,7 @@ const fip_x: ProposalDescription = {
       target: 'core',
       values: '0',
       method: 'grantPCVController(address)',
-      arguments: ['{nonCustodialPriceBoundPSM}'],
+      arguments: ['{raiNonCustodialPriceBoundPSM}'],
       description: 'Grant the PCV_CONTROLLER_ROLE to the non-custodial price-bound psm'
     }
   ],

@@ -9,7 +9,8 @@ export const permissions = {
     'daiFixedPricePSM',
     'ethPSM',
     'lusdPSM',
-    'balancerDepositFeiWeth'
+    'balancerDepositFeiWeth',
+    'globalRateLimitedMinter'
   ],
   BURNER_ROLE: [],
   GOVERN_ROLE: ['core', 'feiDAOTimelock'],
@@ -21,7 +22,8 @@ export const permissions = {
     'daiPCVDripController',
     'lusdPCVDripController',
     'ethPSMFeiSkimmer',
-    'lusdPSMFeiSkimmer'
+    'lusdPSMFeiSkimmer',
+    'raiNonCustodialPriceBoundPSM'
   ],
   GUARDIAN_ROLE: ['multisig', 'pcvGuardian', 'pcvSentinel'],
   ORACLE_ADMIN_ROLE: ['collateralizationOracleGuardian', 'optimisticTimelock', 'opsOptimisticTimelock'],
