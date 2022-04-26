@@ -104,6 +104,7 @@ contract NonCustodialPSM is
     {
         underlyingToken = psmParams.underlyingToken;
 
+        // todo change
         _setGlobalRateLimitedMinter(psmParams.rateLimitedMinter);
         _setMintFee(psmParams.mintFeeBasisPoints);
         _setRedeemFee(psmParams.redeemFeeBasisPoints);
@@ -291,6 +292,7 @@ contract NonCustodialPSM is
         }
 
         if (amountFeiToMint != 0) {
+            // todo change to mint instead of mintFei
             rateLimitedMinter.mintFei(to, amountFeiToMint);
         }
 
@@ -333,6 +335,7 @@ contract NonCustodialPSM is
 
     /// @notice getter to return the maximum amount of Fei that could be purchased at once
     /// @return the maximum amount of Fei available for purchase at once through this PSM
+    // todo take out
     function getMaxMintAmountOut() external view override returns (uint256) {
         return
             fei().balanceOf(address(this)) +

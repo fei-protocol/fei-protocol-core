@@ -21,22 +21,22 @@ const fip_99: ProposalDescription = {
       target: 'core',
       values: '0',
       method: 'grantMinter(address)',
-      arguments: ['{globalRateLimitedMinter}'],
-      description: 'Grant the MINTER_ROLE to the global rate limited minter'
+      arguments: ['{raiPriceBoundPSM}'],
+      description: 'Grant the MINTER_ROLE to the raiPriceBoundPSM'
     },
     {
       target: 'core',
       values: '0',
       method: 'grantPCVController(address)',
-      arguments: ['{raiNonCustodialPriceBoundPSM}'],
-      description: 'Grant the PCV_CONTROLLER_ROLE to the non-custodial price-bound psm'
+      arguments: ['{raiPCVDripController}'],
+      description: 'Grant the PCV_CONTROLLER_ROLE to the rai pcv drip controller'
     },
     {
-      target: 'raiNonCustodialPriceBoundPSM',
+      target: 'raiPriceBoundPSM',
       values: '0',
       method: 'pauseRedeem()',
       arguments: [],
-      description: 'Pause redeem on the non-custodial price-bound psm'
+      description: 'Pause redeem on the rai price-bound psm'
     }
   ],
   description: 'Sell RAI to replenish DAI reserves and/or relieve upcoming peg pressure'
