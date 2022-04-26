@@ -8,6 +8,8 @@ library MainnetAddresses {
     address public constant TRIBE = 0xc7283b66Eb1EB5FB86327f08e1B5816b0720212B;
     address public constant MEMBER_TOKEN =
         0x0762aA185b6ed2dCA77945Ebe92De705e0C37AE3;
-    address public constant POD_CONTROLLER =
+    address public constant ORCA_POD_CONTROLLER_V1 =
+        0xD89AAd5348A34E440E72f5F596De4fA7e291A3e8;
+    address public constant ORCA_POD_CONTROLLER_V1_2 =
         0x17FDC2Eaf2bd46f3e1052CCbccD9e6AD0296C42c;
 }

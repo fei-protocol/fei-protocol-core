@@ -151,8 +151,8 @@ function deployPodWithSystem(
     // 1. Deploy PodFactory
     PodFactory factory = new PodFactory(
         core,
-        podController,
         memberToken,
+        podController,
         podExecutor
     );
     mintOrcaTokens(address(factory), 2, vm);
@@ -161,7 +161,6 @@ function deployPodWithSystem(
     PodAdminGateway podAdminGateway = new PodAdminGateway(
         MainnetAddresses.CORE,
         memberToken,
-        podController,
         address(factory)
     );
     IPodFactory.PodConfig memory podConfig = getPodParamsWithTimelock(

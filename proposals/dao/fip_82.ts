@@ -54,8 +54,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   const podFactoryEthersFactory = await ethers.getContractFactory('PodFactory');
   const podFactory = await podFactoryEthersFactory.deploy(
     addresses.core, // core
-    addresses.orcaPodController, // podController
     addresses.orcaMemberToken, // podMembershipToken
+    addresses.orcaPodController, // podController
     podExecutor.address // Public pod executor
   );
   await podFactory.deployTransaction.wait();
@@ -65,7 +65,6 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   const podAdminGateway = await podAdminGatewayFactory.deploy(
     addresses.core,
     addresses.orcaMemberToken,
-    addresses.orcaPodController,
     podFactory.address
   );
   await podAdminGateway.deployTransaction.wait();
