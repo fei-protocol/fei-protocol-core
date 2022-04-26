@@ -3,12 +3,10 @@ pragma solidity ^0.8.4;
 
 /// @title interface for putting a rate limit on how fast a contract can perform an action, e.g. Minting
 /// @author Fei Protocol
-interface IRateLimited {
+interface IRateLimitedV2 {
     // ----------- Errors -----------
     error InvalidRateLimit();
     error InvalidBufferCap();
-    error AlreadyRateLimited(address rateLimited);
-    error NotRateLimited(address notRatelLimited);
     error RateLimitExceeded();
 
     // ----------- Events -----------
@@ -22,15 +20,6 @@ interface IRateLimited {
 
     // ----------- View API -----------
 
-    /// @notice the rate per second for each address
-    function getRateLimit() external view returns (uint256);
-
-    /// @notice the last time the buffer was used by each address
-    function getBufferLastUpdate() external view returns (uint32);
-
-    /// @notice the cap of the buffer that can be used at once
-    function getBufferCap() external view returns (uint256);
-
     /// @notice the amount of action that can be used before hitting limit
     /// @dev replenishes at rateLimitPerSecond per second up to bufferCap
     function getBuffer() external view returns (uint112);
@@ -38,11 +27,11 @@ interface IRateLimited {
     // ----------- State-Chagnging API ------
 
     /// @notice sets the maximum rate limit
-    function setMaxRateLimit(uint256) external;
+    function setMaxRateLimit(uint112) external;
 
     /// @notice sets the buffer cap
-    function setBufferCap(uint256) external;
+    function setBufferCap(uint112) external;
 
     /// @notice sets the rate limit
-    function setRateLimit(uint256) external;
+    function setRateLimit(uint112) external;
 }

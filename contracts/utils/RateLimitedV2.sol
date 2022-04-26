@@ -2,13 +2,13 @@
 pragma solidity ^0.8.4;
 
 import {CoreRef} from "../refs/CoreRef.sol";
-import {IRateLimited} from "./IRateLimited.sol";
+import {IRateLimitedV2} from "./IRateLimitedV2.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
 
 /// @title abstract contract for putting a rate limit on how fast a contract can perform an action e.g. Minting
 /// @author Fei Protocol
-abstract contract RateLimitedV2 is IRateLimited, CoreRef {
+contract RateLimitedV2 is IRateLimitedV2, CoreRef {
     using SafeCast for *;
 
     /// @notice maximum rate limit per second; changeable by governance
@@ -27,10 +27,11 @@ abstract contract RateLimitedV2 is IRateLimited, CoreRef {
     uint256 private bufferStored;
 
     constructor(
+        address core,
         uint256 maximumRateLimit,
         uint256 initialRateLimit,
         uint256 theBufferCap
-    ) {
+    ) CoreRef(core) {
         bufferLastUpdate = block.timestamp.toUint32();
 
         _setBufferCap(theBufferCap);
@@ -63,7 +64,7 @@ abstract contract RateLimitedV2 is IRateLimited, CoreRef {
     /// @notice sets the maximum rate limit
     /// @dev if the new maximum is lower than the current rate limit,
     /// the current rate limit will be lowered to the new maximum.
-    function setMaxRateLimit(uint256 newMaxRateLimit)
+    function setMaxRateLimit(uint112 newMaxRateLimit)
         external
         virtual
         override
@@ -79,7 +80,7 @@ abstract contract RateLimitedV2 is IRateLimited, CoreRef {
     // ----------- Only Governor or Admin State-Changing Methods ----------
 
     /// @notice set the rate limit
-    function setRateLimit(uint256 newRateLimit)
+    function setRateLimit(uint112 newRateLimit)
         public
         virtual
         override
@@ -94,7 +95,7 @@ abstract contract RateLimitedV2 is IRateLimited, CoreRef {
     }
 
     /// @notice set the buffer cap
-    function setBufferCap(uint256 newBufferCap)
+    function setBufferCap(uint112 newBufferCap)
         external
         virtual
         override

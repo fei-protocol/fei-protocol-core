@@ -3,7 +3,7 @@ pragma solidity ^0.8.4;
 
 import {CoreRef} from "../refs/CoreRef.sol";
 import {TribeRoles} from "./../core/TribeRoles.sol";
-import {RateLimited} from "./RateLimited.sol";
+import {RateLimitedV2} from "./RateLimitedV2.sol";
 import {IMultiRateLimited} from "./IMultiRateLimited.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
@@ -14,7 +14,7 @@ import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
 /// @author Elliot Friedman, Fei Protocol
 /// this contract was made abstract so that other contracts that already construct an instance of CoreRef
 /// do not collide with this one
-abstract contract MultiRateLimited is RateLimited, IMultiRateLimited {
+contract MultiRateLimited is RateLimitedV2, IMultiRateLimited {
     using SafeCast for *;
 
     /// @notice rate limit data for each address
@@ -32,22 +32,24 @@ abstract contract MultiRateLimited is RateLimited, IMultiRateLimited {
     /// @param _maxIndividualRateLimit maximum rate limit per second per address in multi rate limited
     /// @param _maxIndividualBufferCap maximum buffer cap in multi rate limited
     constructor(
+        address core,
         uint112 _globalMaxRateLimit,
         uint112 _globalMaxBufferCap,
         uint112 _globalInitialRateLimit,
         uint112 _maxIndividualRateLimit,
         uint112 _maxIndividualBufferCap
     )
-        RateLimited(
+        RateLimitedV2(
+            core,
             _globalMaxRateLimit,
             _globalInitialRateLimit,
             _globalMaxBufferCap
         )
     {
         if (_maxIndividualBufferCap >= _globalMaxBufferCap)
-            revert InvalidBufferCap();
+            revert InvalidMultiBufferCap();
         if (_maxIndividualRateLimit >= _globalMaxRateLimit)
-            revert InvalidRateLimit();
+            revert InvalidMultiRateLimit();
 
         currentMaxIndividualRateLimit = _maxIndividualRateLimit;
         currentMaxBufferCap = _maxIndividualBufferCap;
@@ -65,6 +67,60 @@ abstract contract MultiRateLimited is RateLimited, IMultiRateLimited {
             revert AlreadyRateLimited(anAddress);
 
         _;
+    }
+
+    // ----------- Getters -----------
+
+    /// @notice the amount of action used before hitting limit
+    /// @dev replenishes at rateLimitPerSecond per second up to bufferCap
+    /// @param rateLimitedAddress the address whose buffer will be returned
+    /// @return the buffer of the specified rate limited address
+    function getBuffer(address rateLimitedAddress)
+        public
+        view
+        override
+        returns (uint112)
+    {
+        uint256 elapsed = block.timestamp -
+            rateLimitData[rateLimitedAddress].bufferLastUpdate;
+        return
+            uint112(
+                Math.min(
+                    rateLimitData[rateLimitedAddress].bufferStored +
+                        (rateLimitData[rateLimitedAddress].rateLimit * elapsed),
+                    rateLimitData[rateLimitedAddress].bufferCap
+                )
+            );
+    }
+
+    /// @notice the rate per second for each addressd
+    function getRateLimit(address limited)
+        external
+        view
+        override
+        returns (uint112)
+    {
+        return rateLimitData[limited].rateLimit;
+    }
+
+    /// @notice the last time the buffer was used by each address
+    function getBufferLastUpdate(address limited)
+        external
+        view
+        override
+        returns (uint32)
+    {
+        return rateLimitData[limited].bufferLastUpdate;
+    }
+
+    /// @notice the cap of the buffer that can be used at once
+    function getBufferCap(address limited)
+        external
+        view
+        override
+        returns (uint112)
+    {
+        return rateLimitData[limited].bufferCap;
     }
 
     // ----------- Governor and Admin only state changing api -----------
@@ -116,8 +172,8 @@ abstract contract MultiRateLimited is RateLimited, IMultiRateLimited {
         hasAnyOfTwoRoles(TribeRoles.ADD_MINTER_ROLE, TribeRoles.GOVERNOR)
     {
         if (newRateLimit > currentMaxIndividualRateLimit)
-            revert InvalidRateLimit();
-        if (newBufferCap > currentMaxBufferCap) revert InvalidBufferCap();
+            revert InvalidMultiRateLimit();
+        if (newBufferCap > currentMaxBufferCap) revert InvalidMultiBufferCap();
 
         _updateAddress(rateLimitedAddress, newRateLimit, newBufferCap);
     }
@@ -135,8 +191,8 @@ abstract contract MultiRateLimited is RateLimited, IMultiRateLimited {
         hasAnyOfTwoRoles(TribeRoles.GOVERNOR, TribeRoles.ADD_MINTER_ROLE)
     {
         if (rateLimit > currentMaxIndividualRateLimit)
-            revert InvalidRateLimit();
-        if (bufferCap > currentMaxBufferCap) revert InvalidBufferCap();
+            revert InvalidMultiRateLimit();
+        if (bufferCap > currentMaxBufferCap) revert InvalidMultiBufferCap();
 
         _addAddress(rateLimitedAddress, rateLimit, bufferCap);
     }
@@ -155,60 +211,6 @@ abstract contract MultiRateLimited is RateLimited, IMultiRateLimited {
             0
         );
         delete rateLimitData[rateLimitedAddress];
-    }
-
-    // ----------- Getters -----------
-
-    /// @notice the amount of action used before hitting limit
-    /// @dev replenishes at rateLimitPerSecond per second up to bufferCap
-    /// @param rateLimitedAddress the address whose buffer will be returned
-    /// @return the buffer of the specified rate limited address
-    function getBuffer(address rateLimitedAddress)
-        public
-        view
-        override
-        returns (uint112)
-    {
-        uint256 elapsed = block.timestamp -
-            rateLimitData[rateLimitedAddress].bufferLastUpdate;
-        return
-            uint112(
-                Math.min(
-                    rateLimitData[rateLimitedAddress].bufferStored +
-                        (rateLimitData[rateLimitedAddress].rateLimit * elapsed),
-                    rateLimitData[rateLimitedAddress].bufferCap
-                )
-            );
-    }
-
-    /// @notice the rate per second for each address
-    function getRateLimit(address limited)
-        external
-        view
-        override
-        returns (uint112)
-    {
-        return rateLimitData[limited].rateLimit;
-    }
-
-    /// @notice the last time the buffer was used by each address
-    function getBufferLastUpdate(address limited)
-        external
-        view
-        override
-        returns (uint32)
-    {
-        return rateLimitData[limited].bufferLastUpdate;
-    }
-
-    /// @notice the cap of the buffer that can be used at once
-    function getBufferCap(address limited)
-        external
-        view
-        override
-        returns (uint112)
-    {
-        return rateLimitData[limited].bufferCap;
     }
 
     // ----------- Helper Methods -----------
@@ -269,7 +271,7 @@ abstract contract MultiRateLimited is RateLimited, IMultiRateLimited {
 
         uint256 currentBuffer = getBuffer(rateLimitedAddress);
 
-        if (amountToDeplete > currentBuffer) revert RateLimitExceeded();
+        if (amountToDeplete > currentBuffer) revert MultiRateLimitExceeded();
 
         rateLimitData[rateLimitedAddress].bufferLastUpdate = block
             .timestamp

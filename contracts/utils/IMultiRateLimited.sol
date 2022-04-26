@@ -14,13 +14,13 @@ interface IMultiRateLimited {
 
     // ----------- Errors -----------
 
-    error InvalidMaxBufferCap();
-    error InvalidMaxRateLimit();
-    error InvalidRateLimit();
-    error InvalidBufferCap();
+    error InvalidMultiMaxBufferCap();
+    error InvalidMultiMaxRateLimit();
+    error InvalidMultiRateLimit();
+    error InvalidMultiBufferCap();
     error AlreadyRateLimited(address rateLimited);
     error NotRateLimited(address notRatelLimited);
-    error RateLimitExceeded();
+    error MultiRateLimitExceeded();
 
     // ----------- Events -----------
 
