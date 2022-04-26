@@ -58,10 +58,12 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // Run any validations required on the fip using mocha or console logging
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
+  // Previously transferred balance
+  const previousBalance = ethers.constants.WeiPerEther.mul(1_000_000);
   // Validate 10M Fei was seeded
   const seedAmount = ethers.constants.WeiPerEther.mul(10_000_000); // 10 M
   const pcvBalance = await contracts.turboFusePCVDeposit.balance();
-  expect(pcvBalance).to.equal(seedAmount);
+  expect(pcvBalance).to.equal(seedAmount.add(previousBalance));
 };
 
 export { deploy, setup, teardown, validate };

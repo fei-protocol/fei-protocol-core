@@ -4,10 +4,20 @@ pragma solidity ^0.8.0;
 import "../../refs/CoreRef.sol";
 import "../../core/TribeRoles.sol";
 
-interface IOZGovernor {
+interface IMetagovGovernor {
+    // OpenZeppelin Governor propose signature
     function propose(
         address[] memory targets,
         uint256[] memory values,
+        bytes[] memory calldatas,
+        string memory description
+    ) external returns (uint256 proposalId);
+
+    // Governor Bravo propose signature
+    function propose(
+        address[] memory targets,
+        uint256[] memory values,
+        string[] memory signatures,
         bytes[] memory calldatas,
         string memory description
     ) external returns (uint256 proposalId);
@@ -21,19 +31,19 @@ interface IOZGovernor {
 
 /// @title Abstract class to interact with an OZ governor.
 /// @author Fei Protocol
-abstract contract OZGovernorVoter is CoreRef {
+abstract contract GovernorVoter is CoreRef {
     // Events
-    event Proposed(IOZGovernor indexed governor, uint256 proposalId);
+    event Proposed(IMetagovGovernor indexed governor, uint256 proposalId);
     event Voted(
-        IOZGovernor indexed governor,
+        IMetagovGovernor indexed governor,
         uint256 proposalId,
         uint256 weight,
         uint8 support
     );
 
-    /// @notice propose a new proposal on the target governor.
-    function propose(
-        IOZGovernor governor,
+    /// @notice propose a new proposal on the target OZ governor.
+    function proposeOZ(
+        IMetagovGovernor governor,
         address[] memory targets,
         uint256[] memory values,
         bytes[] memory calldatas,
@@ -53,9 +63,33 @@ abstract contract OZGovernorVoter is CoreRef {
         return proposalId;
     }
 
+    /// @notice propose a new proposal on the target Bravo governor.
+    function proposeBravo(
+        IMetagovGovernor governor,
+        address[] memory targets,
+        uint256[] memory values,
+        string[] memory signatures,
+        bytes[] memory calldatas,
+        string memory description
+    )
+        external
+        onlyTribeRole(TribeRoles.METAGOVERNANCE_VOTE_ADMIN)
+        returns (uint256)
+    {
+        uint256 proposalId = governor.propose(
+            targets,
+            values,
+            signatures,
+            calldatas,
+            description
+        );
+        emit Proposed(governor, proposalId);
+        return proposalId;
+    }
+
     /// @notice cast a vote on a given proposal on the target governor.
     function castVote(
-        IOZGovernor governor,
+        IMetagovGovernor governor,
         uint256 proposalId,
         uint8 support
     )
