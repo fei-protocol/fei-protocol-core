@@ -268,7 +268,10 @@ contract PodFactory is CoreRef, IPodFactory {
     /// @param publicExecutor Non-permissioned smart contract that
     ///        allows any address to execute a ready transaction
     /// @param podAdmin Address which is the admin of the Orca pods
-    ///        Will also be able to propose
+    /// @dev Roles that individual addresses are granted on the relevant timelock:
+    //         safeAddress - PROPOSER_ROLE, CANCELLER_ROLE, EXECUTOR_ROLE
+    //         podAdmin - CANCELLER_ROLE
+    //         publicExecutor - EXECUTOR_ROLE
     function _createTimelock(
         address safeAddress,
         uint256 minDelay,
@@ -288,6 +291,10 @@ contract PodFactory is CoreRef, IPodFactory {
             proposers,
             executors
         );
+
+        // Revoke PROPOSER_ROLE priviledges from podAdmin. Only pod Safe can propose
+        timelock.revokeRole(timelock.PROPOSER_ROLE(), podAdmin);
+
         // Revoke TIMELOCK_ADMIN_ROLE priviledges from deployer factory
         timelock.revokeRole(timelock.TIMELOCK_ADMIN_ROLE(), address(this));
 

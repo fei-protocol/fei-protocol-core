@@ -26,9 +26,6 @@ contract PodFactoryIntegrationTest is DSTest {
     PodExecutor podExecutor;
     address private podAdmin;
 
-    bytes32 public constant PROPOSER_ROLE = keccak256("PROPOSER_ROLE");
-    bytes32 public constant EXECUTOR_ROLE = keccak256("EXECUTOR_ROLE");
-
     address core = MainnetAddresses.CORE;
     address memberToken = MainnetAddresses.MEMBER_TOKEN;
     address podController = MainnetAddresses.POD_CONTROLLER;
@@ -36,7 +33,7 @@ contract PodFactoryIntegrationTest is DSTest {
 
     function setUp() public {
         // 0. Deploy pod executor
-        podExecutor = new PodExecutor();
+        podExecutor = new PodExecutor(core);
 
         // 1. Deploy pod factory
         factory = new PodFactory(
@@ -225,21 +222,32 @@ contract PodFactoryIntegrationTest is DSTest {
             payable(timelock)
         );
 
-        // Gnosis safe should be the proposer
-        bool hasProposerRole = timelockContract.hasRole(PROPOSER_ROLE, safe);
-        assertTrue(hasProposerRole);
-
-        bool safeAddressIsExecutor = timelockContract.hasRole(
-            EXECUTOR_ROLE,
-            safe
+        // Gnosis safe should be: PROPOSER, EXECUTOR, CANCELLOR
+        assertTrue(
+            timelockContract.hasRole(timelockContract.PROPOSER_ROLE(), safe)
         );
-        assertTrue(safeAddressIsExecutor);
-
-        bool publicPodExecutorIsExecutor = timelockContract.hasRole(
-            EXECUTOR_ROLE,
-            address(podExecutor)
+        assertTrue(
+            timelockContract.hasRole(timelockContract.EXECUTOR_ROLE(), safe)
         );
-        assertTrue(publicPodExecutorIsExecutor);
+        assertTrue(
+            timelockContract.hasRole(timelockContract.CANCELLER_ROLE(), safe)
+        );
+
+        // PodExecutor should be: EXECUTOR
+        assertTrue(
+            timelockContract.hasRole(
+                timelockContract.EXECUTOR_ROLE(),
+                address(podExecutor)
+            )
+        );
+
+        // PodAdmin should be: CANCELLOR
+        assertTrue(
+            timelockContract.hasRole(
+                timelockContract.CANCELLER_ROLE(),
+                podAdmin
+            )
+        );
 
         // Min delay of timelock
         assertEq(timelockContract.getMinDelay(), podConfig.minDelay);

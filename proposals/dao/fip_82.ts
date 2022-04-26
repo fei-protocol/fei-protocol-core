@@ -45,8 +45,9 @@ const fipNumber = '82';
 const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: NamedAddresses, logging: boolean) => {
   // 1. Deploy public pod executor
   const podExecutorFactory = await ethers.getContractFactory('PodExecutor');
-  const podExecutor = await podExecutorFactory.deploy();
+  const podExecutor = await podExecutorFactory.deploy(addresses.core);
   await podExecutor.deployTransaction.wait();
+
   logging && console.log('PodExecutor deployed to', podExecutor.address);
 
   // 2. Deploy tribalCouncilPodFactory
@@ -143,27 +144,18 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   // 1. Validate PodAdminGateway has PROPOSER role on TribalCouncil and Protocol Pod
   ///////////////  POD ADMIN GATEWAY  //////////////////////
   const tribalCouncilTimelock = contracts.tribalCouncilTimelock;
-  const gatewayIsCouncilProposer = await tribalCouncilTimelock.hasRole(
-    ethers.utils.id('PROPOSER_ROLE'),
-    addresses.podAdminGateway
-  );
-  expect(gatewayIsCouncilProposer).to.be.true;
+  expect(await tribalCouncilTimelock.hasRole(ethers.utils.id('PROPOSER_ROLE'), addresses.podAdminGateway)).to.be.false;
+  expect(await tribalCouncilTimelock.hasRole(ethers.utils.id('CANCELLER_ROLE'), addresses.podAdminGateway)).to.be.true;
 
   ///////////////   TRIBAL COUNCIL  //////////////////
   const councilPodAdmin = await podFactory.getPodAdmin(tribalCouncilPodId);
   expect(councilPodAdmin).to.equal(addresses.podAdminGateway);
 
-  const councilSafeIsProposer = await tribalCouncilTimelock.hasRole(
-    ethers.utils.id('PROPOSER_ROLE'),
-    tribalCouncilSafeAddress
-  );
-  expect(councilSafeIsProposer).to.be.true;
+  expect(await tribalCouncilTimelock.hasRole(ethers.utils.id('PROPOSER_ROLE'), tribalCouncilSafeAddress)).to.be.true;
+  expect(await tribalCouncilTimelock.hasRole(ethers.utils.id('EXECUTOR_ROLE'), tribalCouncilSafeAddress)).to.be.true;
+  expect(await tribalCouncilTimelock.hasRole(ethers.utils.id('CANCELLER_ROLE'), tribalCouncilSafeAddress)).to.be.true;
 
-  const podExecutorIsExecutor = await tribalCouncilTimelock.hasRole(
-    ethers.utils.id('EXECUTOR_ROLE'),
-    addresses.podExecutor
-  );
-  expect(podExecutorIsExecutor).to.be.true;
+  expect(await tribalCouncilTimelock.hasRole(ethers.utils.id('EXECUTOR_ROLE'), addresses.podExecutor)).to.be.true;
 
   const councilMembershipLocked = await podFactory.getIsMembershipTransferLocked(tribalCouncilPodId);
   expect(councilMembershipLocked).to.be.true;
