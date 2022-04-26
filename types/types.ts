@@ -128,6 +128,7 @@ export enum AddressCategory {
   External = 'External',
   Deprecated = 'Deprecated',
   Fuse = 'Fuse',
+  Volt = 'Volt',
   TBD = 'TBD'
 }
 
