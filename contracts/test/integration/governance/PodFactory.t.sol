@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 import {TimelockController} from "@openzeppelin/contracts/governance/TimelockController.sol";
 import {ControllerV1} from "@orcaprotocol/contracts/contracts/ControllerV1.sol";
+import {MemberToken} from "@orcaprotocol/contracts/contracts/MemberToken.sol";
 import {IGnosisSafe} from "../../../pods/interfaces/IGnosisSafe.sol";
 import {PodFactory} from "../../../pods/PodFactory.sol";
 import {PodExecutor} from "../../../pods/PodExecutor.sol";
@@ -26,23 +27,20 @@ contract PodFactoryIntegrationTest is DSTest {
     PodExecutor podExecutor;
     address private podAdmin;
 
-    bytes32 public constant PROPOSER_ROLE = keccak256("PROPOSER_ROLE");
-    bytes32 public constant EXECUTOR_ROLE = keccak256("EXECUTOR_ROLE");
-
     address core = MainnetAddresses.CORE;
     address memberToken = MainnetAddresses.MEMBER_TOKEN;
-    address podController = MainnetAddresses.POD_CONTROLLER;
+    address podController = MainnetAddresses.ORCA_POD_CONTROLLER_V1_2;
     address feiDAOTimelock = MainnetAddresses.FEI_DAO_TIMELOCK;
 
     function setUp() public {
         // 0. Deploy pod executor
-        podExecutor = new PodExecutor();
+        podExecutor = new PodExecutor(core);
 
         // 1. Deploy pod factory
         factory = new PodFactory(
             core,
-            podController,
             memberToken,
+            podController,
             address(podExecutor)
         );
 
@@ -50,7 +48,6 @@ contract PodFactoryIntegrationTest is DSTest {
         PodAdminGateway podAdminGateway = new PodAdminGateway(
             core,
             memberToken,
-            podController,
             address(factory)
         );
         podAdmin = address(podAdminGateway);
@@ -66,11 +63,11 @@ contract PodFactoryIntegrationTest is DSTest {
 
     /// @notice Validate initial factory state
     function testInitialState() public {
-        assertEq(address(factory.podController()), podController);
         assertEq(factory.getNumberOfPods(), 0);
         assertEq(address(factory.podExecutor()), address(podExecutor));
         assertEq(address(factory.getMemberToken()), memberToken);
         assertEq(factory.MIN_TIMELOCK_DELAY(), 1 days);
+        assertEq(address(factory.defaultPodController()), podController);
 
         address[] memory podSafeAddresses = factory.getPodSafeAddresses();
         assertEq(podSafeAddresses.length, 0);
@@ -111,6 +108,11 @@ contract PodFactoryIntegrationTest is DSTest {
         address[] memory podSafeAddresses = factory.getPodSafeAddresses();
         assertEq(podSafeAddresses.length, 1);
         assertEq(podSafeAddresses[0], councilSafe);
+
+        assertEq(
+            address(factory.getPodController(councilPodId)),
+            podController
+        );
     }
 
     function testCanOnlyDeployGenesisOnce() public {
@@ -225,21 +227,32 @@ contract PodFactoryIntegrationTest is DSTest {
             payable(timelock)
         );
 
-        // Gnosis safe should be the proposer
-        bool hasProposerRole = timelockContract.hasRole(PROPOSER_ROLE, safe);
-        assertTrue(hasProposerRole);
-
-        bool safeAddressIsExecutor = timelockContract.hasRole(
-            EXECUTOR_ROLE,
-            safe
+        // Gnosis safe should be: PROPOSER, EXECUTOR, CANCELLOR
+        assertTrue(
+            timelockContract.hasRole(timelockContract.PROPOSER_ROLE(), safe)
         );
-        assertTrue(safeAddressIsExecutor);
-
-        bool publicPodExecutorIsExecutor = timelockContract.hasRole(
-            EXECUTOR_ROLE,
-            address(podExecutor)
+        assertTrue(
+            timelockContract.hasRole(timelockContract.EXECUTOR_ROLE(), safe)
         );
-        assertTrue(publicPodExecutorIsExecutor);
+        assertTrue(
+            timelockContract.hasRole(timelockContract.CANCELLER_ROLE(), safe)
+        );
+
+        // PodExecutor should be: EXECUTOR
+        assertTrue(
+            timelockContract.hasRole(
+                timelockContract.EXECUTOR_ROLE(),
+                address(podExecutor)
+            )
+        );
+
+        // PodAdmin should be: CANCELLOR
+        assertTrue(
+            timelockContract.hasRole(
+                timelockContract.CANCELLER_ROLE(),
+                podAdmin
+            )
+        );
 
         // Min delay of timelock
         assertEq(timelockContract.getMinDelay(), podConfig.minDelay);
@@ -402,5 +415,64 @@ contract PodFactoryIntegrationTest is DSTest {
 
         assertTrue(timelockContract.isOperationDone(txHash));
         assertEq(dummyContract.getVariable(), newDummyContractVar);
+    }
+
+    /// @notice Validate that the default pod controller can be updated
+    function testUpdateDefaultPodController() public {
+        address newDefaultPodController = address(0x123);
+        vm.prank(feiDAOTimelock);
+        factory.updateDefaultPodController(newDefaultPodController);
+        assertEq(
+            address(factory.defaultPodController()),
+            newDefaultPodController
+        );
+    }
+
+    /// @notice Validate that a pod controller can be updated and that will be reflected
+    ///         on the pod factory
+    function testPodControllerUpdate() public {
+        IPodFactory.PodConfig memory podConfig = getPodParamsWithTimelock(
+            podAdmin
+        );
+
+        // Set default to old version, to create pod with old controller
+        vm.prank(feiDAOTimelock);
+        factory.updateDefaultPodController(
+            MainnetAddresses.ORCA_POD_CONTROLLER_V1
+        );
+        assertEq(
+            address(factory.defaultPodController()),
+            MainnetAddresses.ORCA_POD_CONTROLLER_V1
+        );
+
+        vm.prank(feiDAOTimelock);
+        (uint256 podId, address timelock, address safe) = factory
+            .deployCouncilPod(podConfig);
+
+        // 1. Get pod controller
+        address defaultPodController = address(factory.defaultPodController());
+        address initialPodController = address(factory.getPodController(podId));
+        assertEq(defaultPodController, initialPodController);
+
+        // 2. Pod migrates it's own pod controller to another minor version
+        vm.prank(safe);
+        ControllerV1(initialPodController).migratePodController(
+            podId,
+            MainnetAddresses.ORCA_POD_CONTROLLER_V1_2,
+            MainnetAddresses.ORCA_POD_CONTROLLER_V1_2
+        );
+
+        // 3. Verify pod's controller was updated on the memberToken and factory
+        address newPodControllerOnFactory = address(
+            factory.getPodController(podId)
+        );
+        address expectedNewPodController = MemberToken(memberToken)
+            .memberController(podId);
+
+        assertEq(expectedNewPodController, newPodControllerOnFactory);
+        assertEq(
+            newPodControllerOnFactory,
+            MainnetAddresses.ORCA_POD_CONTROLLER_V1_2
+        );
     }
 }

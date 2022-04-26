@@ -33,6 +33,11 @@ interface IPodFactory {
         address indexed newController
     );
 
+    event UpdateDefaultPodController(
+        address indexed oldController,
+        address indexed newController
+    );
+
     function deployCouncilPod(PodConfig calldata _config)
         external
         returns (
@@ -41,13 +46,18 @@ interface IPodFactory {
             address
         );
 
+    function defaultPodController() external view returns (ControllerV1);
+
     function getMemberToken() external view returns (MemberToken);
 
     function getPodSafeAddresses() external view returns (address[] memory);
 
     function getNumberOfPods() external view returns (uint256);
 
-    function podController() external view returns (ControllerV1);
+    function getPodController(uint256 podId)
+        external
+        view
+        returns (ControllerV1);
 
     function getPodSafe(uint256 podId) external view returns (address);
 
@@ -78,4 +88,6 @@ interface IPodFactory {
             address,
             address
         );
+
+    function updateDefaultPodController(address _newDefaultController) external;
 }

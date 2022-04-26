@@ -616,6 +616,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x485d23ce5725ecdE46ca9033012984D90b514FFd',
     category: AddressCategory.PCV
   },
+  voltDepositWrapper: {
+    artifactName: 'ERC20PCVDepositWrapper',
+    address: '0x564eFCe5c6873219a7FbE450187c23254E3d62a4',
+    category: AddressCategory.PCV
+  },
   collateralizationOracle: {
     artifactName: 'CollateralizationOracle',
     address: '0xFF6f59333cfD8f4Ebc14aD0a0E181a83e655d257',
@@ -1970,6 +1975,31 @@ const MainnetAddresses: MainnetAddresses = {
     artifactName: 'unknown',
     address: '0x0a00F781508a2E3FF5C6Aa80DF97dAebd0fFC259',
     category: AddressCategory.Fuse
+  },
+  volt: {
+    artifactName: 'Fei',
+    address: '0x559eBC30b0E58a45Cc9fF573f77EF1e5eb1b3E18',
+    category: AddressCategory.Volt
+  },
+  voltCore: {
+    artifactName: 'Core',
+    address: '0xEC7AD284f7Ad256b64c6E69b84Eb0F48f42e8196',
+    category: AddressCategory.Volt
+  },
+  voltFeiSwapContract: {
+    artifactName: 'OtcEscrow',
+    address: '0xeF152E462B59940616E667E801762dA9F2AF97b9',
+    category: AddressCategory.Volt
+  },
+  voltFusePCVDeposit: {
+    artifactName: 'ERC20CompoundPCVDeposit',
+    address: '0xFeBDf448C8484834bb399d930d7E1bdC773E23bA',
+    category: AddressCategory.Volt
+  },
+  voltOracle: {
+    artifactName: 'unknown',
+    address: '0x84dc71500D504163A87756dB6368CC8bB654592f',
+    category: AddressCategory.Volt
   }
 };
 

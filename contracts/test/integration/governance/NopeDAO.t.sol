@@ -62,7 +62,7 @@ contract NopeDAOIntegrationTest is DSTest {
             podConfig
         ) = deployPodWithSystem(
             MainnetAddresses.CORE,
-            MainnetAddresses.POD_CONTROLLER,
+            MainnetAddresses.ORCA_POD_CONTROLLER_V1_2,
             MainnetAddresses.MEMBER_TOKEN,
             podExecutor,
             MainnetAddresses.FEI_DAO_TIMELOCK,

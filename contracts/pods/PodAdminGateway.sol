@@ -23,20 +23,15 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
     /// @notice Orca membership token for the pods. Handles permissioning pod members
     MemberToken private immutable memberToken;
 
-    /// @notice Pod controller for the pods
-    ControllerV1 public immutable podController;
-
     /// @notice Pod factory which creates optimistic pods and acts as a source of information
     IPodFactory public immutable podFactory;
 
     constructor(
         address _core,
         address _memberToken,
-        address _podController,
         address _podFactory
     ) CoreRef(_core) {
         memberToken = MemberToken(_memberToken);
-        podController = ControllerV1(_podController);
         podFactory = IPodFactory(_podFactory);
     }
 
@@ -183,6 +178,9 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
 
     /// @notice Internal method to toggle a pod membership transfer lock
     function _setMembershipTransferLock(uint256 _podId, bool _lock) internal {
+        ControllerV1 podController = ControllerV1(
+            memberToken.memberController(_podId)
+        );
         podController.setPodTransferLock(_podId, _lock);
         emit PodMembershipTransferLock(_podId, _lock);
     }

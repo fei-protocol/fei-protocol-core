@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
+import {TimelockController} from "@openzeppelin/contracts/governance/TimelockController.sol";
 import {ControllerV1} from "@orcaprotocol/contracts/contracts/ControllerV1.sol";
 import {Vm} from "../../utils/Vm.sol";
 import {DSTest} from "../../utils/DSTest.sol";
@@ -9,7 +10,6 @@ import {PodAdminGateway} from "../../../pods/PodAdminGateway.sol";
 import {IPodAdminGateway} from "../../../pods/interfaces/IPodAdminGateway.sol";
 import {mintOrcaTokens, getPodParamsWithTimelock} from "../fixtures/Orca.sol";
 import {IPodFactory} from "../../../pods/interfaces/IPodFactory.sol";
-import {ITimelock} from "../../../dao/timelock/ITimelock.sol";
 import {TribeRoles} from "../../../core/TribeRoles.sol";
 import {ICore} from "../../../core/ICore.sol";
 import {MainnetAddresses} from "../fixtures/MainnetAddresses.sol";
@@ -29,18 +29,17 @@ contract PodAdminGatewayIntegrationTest is DSTest {
 
     address core = MainnetAddresses.CORE;
     address memberToken = MainnetAddresses.MEMBER_TOKEN;
-    address podController = MainnetAddresses.POD_CONTROLLER;
+    address podController = MainnetAddresses.ORCA_POD_CONTROLLER_V1_2;
     address feiDAOTimelock = MainnetAddresses.FEI_DAO_TIMELOCK;
 
     function setUp() public {
         // 1. Deploy pod factory
-        factory = new PodFactory(core, podController, memberToken, podExecutor);
+        factory = new PodFactory(core, memberToken, podController, podExecutor);
 
         // 2. Deploy pod admin gateway, to expose pod admin functionality
         podAdminGateway = new PodAdminGateway(
             core,
             memberToken,
-            podController,
             address(factory)
         );
 
@@ -67,18 +66,18 @@ contract PodAdminGatewayIntegrationTest is DSTest {
         address podAdmin = factory.getPodAdmin(podId);
         assertEq(podAdmin, address(podAdminGateway));
 
-        // Validate VetoController has proposer role, this will allow it to veto
-        ITimelock timelockContract = ITimelock(timelock);
-        bool hasProposerRole = timelockContract.hasRole(
-            keccak256("PROPOSER_ROLE"),
-            address(address(podAdminGateway))
+        // Validate PodAdminGateway has CANCELLER role, this will allow it to veto
+        TimelockController timelockContract = TimelockController(
+            payable(timelock)
         );
-        assertTrue(hasProposerRole);
+        assertTrue(
+            timelockContract.hasRole(
+                timelockContract.CANCELLER_ROLE(),
+                address(podAdminGateway)
+            )
+        );
 
-        bool memberTransfersLocked = factory.getIsMembershipTransferLocked(
-            podId
-        );
-        assertTrue(memberTransfersLocked);
+        assertTrue(factory.getIsMembershipTransferLocked(podId));
     }
 
     /// @notice Validate that a podAdmin can be added for a particular pod by the GOVERNOR

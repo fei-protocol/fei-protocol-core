@@ -3,13 +3,13 @@ pragma solidity ^0.8.4;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {ERC20VotesComp} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20VotesComp.sol";
-import {Core} from "../../core/Core.sol";
-import {Vm} from "../utils/Vm.sol";
-import {DSTest} from "../utils/DSTest.sol";
-import {NopeDAO} from "../../dao/nopeDAO/NopeDAO.sol";
-import {getCore, getAddresses, FeiTestAddresses, DummyStorage} from "../utils/Fixtures.sol";
-import {Tribe} from "../../tribe/Tribe.sol";
-import {TribeRoles} from "../../core/TribeRoles.sol";
+import {Core} from "../../../core/Core.sol";
+import {Vm} from "../../utils/Vm.sol";
+import {DSTest} from "../../utils/DSTest.sol";
+import {NopeDAO} from "../../../dao/nopeDAO/NopeDAO.sol";
+import {getCore, getAddresses, FeiTestAddresses, DummyStorage} from "../../utils/Fixtures.sol";
+import {Tribe} from "../../../tribe/Tribe.sol";
+import {TribeRoles} from "../../../core/TribeRoles.sol";
 
 /// @notice Fixture to create a dummy proposal
 function createDummyProposal(address dummyContract, uint256 newVariable)
