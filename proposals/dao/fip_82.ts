@@ -45,7 +45,7 @@ const fipNumber = '82';
 const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: NamedAddresses, logging: boolean) => {
   // 1. Deploy public pod executor
   const podExecutorFactory = await ethers.getContractFactory('PodExecutor');
-  const podExecutor = await podExecutorFactory.deploy();
+  const podExecutor = await podExecutorFactory.deploy(addresses.core);
   await podExecutor.deployTransaction.wait();
   logging && console.log('PodExecutor deployed to', podExecutor.address);
 

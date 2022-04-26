@@ -33,7 +33,7 @@ contract PodFactoryIntegrationTest is DSTest {
 
     function setUp() public {
         // 0. Deploy pod executor
-        podExecutor = new PodExecutor();
+        podExecutor = new PodExecutor(core);
 
         // 1. Deploy pod factory
         factory = new PodFactory(

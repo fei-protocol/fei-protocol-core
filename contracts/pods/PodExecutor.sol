@@ -2,12 +2,15 @@
 pragma solidity ^0.8.0;
 
 import {ITimelock} from "../dao/timelock/ITimelock.sol";
+import {CoreRef} from "../refs/CoreRef.sol";
 
 /// @title PodExecutor
 /// @notice Executor gateway contract that allows any address to execute prepared timelock transactions
 /// @dev Access is granted to this contract to execute transactions on a timelock
-contract PodExecutor {
+contract PodExecutor is CoreRef {
     event ExecuteTransaction(address timelock, bytes32 dataHash);
+
+    constructor(address _core) CoreRef(_core) {}
 
     /// @notice Execute a timelock transaction. Must have EXECUTOR_ROLE on the appropriate timelock
     function execute(
@@ -17,7 +20,7 @@ contract PodExecutor {
         bytes calldata data,
         bytes32 predecessor,
         bytes32 salt
-    ) public payable {
+    ) public payable whenNotPaused {
         bytes32 dataPayloadHash = keccak256(data);
         ITimelock(timelock).execute(target, value, data, predecessor, salt);
         emit ExecuteTransaction(timelock, dataPayloadHash);
@@ -31,7 +34,7 @@ contract PodExecutor {
         bytes[] calldata data,
         bytes32[] memory predecessor,
         bytes32[] memory salt
-    ) external payable {
+    ) external payable whenNotPaused {
         for (uint256 i = 0; i < timelock.length; i += 1) {
             execute(
                 timelock[i],
