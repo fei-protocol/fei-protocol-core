@@ -29,7 +29,7 @@ const collateralizationAddresses = {
   ],
   dai: ['compoundDaiPCVDepositWrapper', 'daiFixedPricePSM', 'rariPool8DaiPCVDeposit'],
   usd: ['namedStaticPCVDepositWrapper', 'd3poolCurvePCVDeposit', 'd3poolConvexPCVDeposit'],
-  bal: ['balancerDepositBalWeth'],
+  bal: ['balancerDepositBalWeth', 'balancerLensVeBalBal'],
   cream: ['creamDepositWrapper'],
   weth: [
     'ethLidoPCVDepositWrapper',
@@ -40,11 +40,14 @@ const collateralizationAddresses = {
     'ethPSM',
     'rariPool146EthPCVDeposit',
     'wethDepositWrapper',
-    'balancerDepositFeiWeth'
+    'balancerDepositFeiWeth',
+    'balancerLensBpt30Fei70Weth',
+    'balancerLensVeBalWeth'
   ],
   dpi: ['rariPool19DpiPCVDepositWrapper', 'dpiDepositWrapper'],
   rai: ['rariPool9RaiPCVDepositWrapper', 'aaveRaiPCVDepositWrapper', 'raiDepositWrapper'],
-  agEUR: ['agEurDepositWrapper', 'uniswapLensAgEurUniswapGauge', 'agEurUniswapPCVDeposit']
+  agEUR: ['agEurDepositWrapper', 'uniswapLensAgEurUniswapGauge', 'agEurUniswapPCVDeposit'],
+  volt: ['voltDepositWrapper']
 };
 
 export default collateralizationAddresses;
