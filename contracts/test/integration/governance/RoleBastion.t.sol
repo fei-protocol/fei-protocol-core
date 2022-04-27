@@ -76,7 +76,6 @@ contract RoleBastionIntegrationTest is DSTest {
 
     /// @notice Validate that roleCreator can not create an already existing role
     function testCanNotCreateExistingRole() public {
-        // TODO: Checkout if this is a false positive
         bytes32 existingRole = TribeRoles.MINTER;
 
         vm.startPrank(tribalCouncil);
