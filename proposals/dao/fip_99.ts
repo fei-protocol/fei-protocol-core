@@ -124,8 +124,8 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
     ethers.constants.WeiPerEther.mul(1_000_000)
   );
 
-  // Query the rai oracle
-  const raiPrice = await contracts.chainlinkRaiUsdCompositeOracle.read();
+  // Query the rai oracle just to make sure the contract call works
+  await contracts.chainlinkRaiUsdOracleWrapper.read();
 
   // Attempt to swap some fei for rai via the rai price bound psm
   await forceEth((await ethers.getSigners())[0].address);

@@ -8,7 +8,7 @@ const fip_99: ProposalDescription = {
       values: '0',
       method: 'withdrawRatio(address, address, uint256)',
       arguments: ['{rariPool9RaiPCVDeposit}', '{aaveRaiPCVDeposit}', '8000'],
-      description: 'Withdraw all Rai from the rari pool 9 pcv deposit and sent to the aave rai pcv deposit'
+      description: 'Withdraw 80% of the Rai from the rari pool 9 pcv deposit and send to the aave rai pcv deposit'
     },
     {
       target: 'aaveRaiPCVDeposit',
