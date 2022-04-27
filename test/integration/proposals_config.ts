@@ -6,7 +6,14 @@ const proposals: ProposalsConfigMap = {
   fip_99: {
     deploy: true,
     proposalId: null,
-    affectedContractSignoff: [],
+    affectedContractSignoff: [
+      'ratioPCVControllerV2',
+      'rariPool9RaiPCVDeposit',
+      'aaveRaiPCVDeposit',
+      'raiPCVDripController',
+      'raiPriceBoundPSM',
+      'pcvGuardian'
+    ],
     deprecatedContractSignoff: [],
     category: ProposalCategory.DAO,
     totalValue: 0,
