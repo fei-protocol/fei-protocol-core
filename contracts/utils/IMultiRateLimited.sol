@@ -7,11 +7,7 @@ interface IMultiRateLimited {
     // ----------- Events -----------
 
     /// @notice emitted when a buffer is eaten into
-    event IndividualBufferUsed(
-        address rateLimitedAddress,
-        uint256 amountUsed,
-        uint256 bufferRemaining
-    );
+    event IndividualBufferUsed(address rateLimitedAddress, uint256 amountUsed, uint256 bufferRemaining);
 
     /// @notice emitted when rate limit is updated
     event IndividualRateLimitPerSecondUpdate(
@@ -24,10 +20,7 @@ interface IMultiRateLimited {
     event MultiBufferCapUpdate(uint256 oldBufferCap, uint256 newBufferCap);
 
     /// @notice emitted when the non gov buffer rate limit per second max is updated
-    event MultiMaxRateLimitPerSecondUpdate(
-        uint256 oldMaxRateLimitPerSecond,
-        uint256 newMaxRateLimitPerSecond
-    );
+    event MultiMaxRateLimitPerSecondUpdate(uint256 oldMaxRateLimitPerSecond, uint256 newMaxRateLimitPerSecond);
 
     // ----------- View API -----------
 
@@ -47,8 +40,7 @@ interface IMultiRateLimited {
     // ----------- Governance State Changing API -----------
 
     /// @notice update the non gov max rate limit per second
-    function updateMaxRateLimitPerSecond(uint256 newMaxRateLimitPerSecond)
-        external;
+    function updateMaxRateLimitPerSecond(uint256 newMaxRateLimitPerSecond) external;
 
     /// @notice update the non gov max buffer cap
     function updateMaxBufferCap(uint256 newBufferCap) external;

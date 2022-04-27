@@ -18,12 +18,7 @@ import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.
 /// @notice Peg Stability Module that holds no funds.
 /// On a mint, it transfers all proceeds to a PCV Deposit
 /// When funds are needed for a redemption, they are simply pulled from the PCV Deposit
-contract NonCustodialPSM is
-    OracleRef,
-    RateLimited,
-    ReentrancyGuard,
-    INonCustodialPSM
-{
+contract NonCustodialPSM is OracleRef, RateLimited, ReentrancyGuard, INonCustodialPSM {
     using Decimal for Decimal.D256;
     using SafeCast for *;
     using SafeERC20 for IERC20;
@@ -220,24 +215,13 @@ contract NonCustodialPSM is
         address to,
         uint256 amountFeiIn,
         uint256 minAmountOut
-    )
-        external
-        virtual
-        override
-        nonReentrant
-        whenNotPaused
-        whileRedemptionsNotPaused
-        returns (uint256 amountOut)
-    {
+    ) external virtual override nonReentrant whenNotPaused whileRedemptionsNotPaused returns (uint256 amountOut) {
         _depleteBuffer(amountFeiIn); /// deplete buffer first to save gas on buffer exhaustion sad path
 
         updateOracle();
 
         amountOut = _getRedeemAmountOut(amountFeiIn);
-        require(
-            amountOut >= minAmountOut,
-            "PegStabilityModule: Redeem not enough out"
-        );
+        require(amountOut >= minAmountOut, "PegStabilityModule: Redeem not enough out");
 
         IERC20(fei()).safeTransferFrom(msg.sender, address(this), amountFeiIn);
 
@@ -256,34 +240,16 @@ contract NonCustodialPSM is
         address to,
         uint256 amountIn,
         uint256 minFeiAmountOut
-    )
-        external
-        virtual
-        override
-        nonReentrant
-        whenNotPaused
-        whileMintingNotPaused
-        returns (uint256 amountFeiOut)
-    {
+    ) external virtual override nonReentrant whenNotPaused whileMintingNotPaused returns (uint256 amountFeiOut) {
         updateOracle();
 
         amountFeiOut = _getMintAmountOut(amountIn);
-        require(
-            amountFeiOut >= minFeiAmountOut,
-            "PegStabilityModule: Mint not enough out"
-        );
+        require(amountFeiOut >= minFeiAmountOut, "PegStabilityModule: Mint not enough out");
 
-        underlyingToken.safeTransferFrom(
-            msg.sender,
-            address(pcvDeposit),
-            amountIn
-        );
+        underlyingToken.safeTransferFrom(msg.sender, address(pcvDeposit), amountIn);
         pcvDeposit.deposit();
 
-        uint256 amountFeiToTransfer = Math.min(
-            fei().balanceOf(address(this)),
-            amountFeiOut
-        );
+        uint256 amountFeiToTransfer = Math.min(fei().balanceOf(address(this)), amountFeiOut);
         uint256 amountFeiToMint = amountFeiOut - amountFeiToTransfer;
 
         if (amountFeiToTransfer != 0) {
@@ -307,12 +273,7 @@ contract NonCustodialPSM is
     /// ensure decimals are normalized if on underlying they are not 18
     /// @param amountIn the amount of external asset to sell to the PSM
     /// @return amountFeiOut the amount of Fei received for the amountIn of external asset
-    function getMintAmountOut(uint256 amountIn)
-        public
-        view
-        override
-        returns (uint256 amountFeiOut)
-    {
+    function getMintAmountOut(uint256 amountIn) public view override returns (uint256 amountFeiOut) {
         amountFeiOut = _getMintAmountOut(amountIn);
     }
 
@@ -322,21 +283,14 @@ contract NonCustodialPSM is
     /// ensure decimals are normalized if on underlying they are not 18
     /// @param amountFeiIn the amount of Fei to redeem
     /// @return amountTokenOut the amount of the external asset received in exchange for the amount of Fei redeemed
-    function getRedeemAmountOut(uint256 amountFeiIn)
-        public
-        view
-        override
-        returns (uint256 amountTokenOut)
-    {
+    function getRedeemAmountOut(uint256 amountFeiIn) public view override returns (uint256 amountTokenOut) {
         amountTokenOut = _getRedeemAmountOut(amountFeiIn);
     }
 
     /// @notice getter to return the maximum amount of Fei that could be purchased at once
     /// @return the maximum amount of Fei available for purchase at once through this PSM
     function getMaxMintAmountOut() external view override returns (uint256) {
-        return
-            fei().balanceOf(address(this)) +
-            rateLimitedMinter.individualBuffer(address(this));
+        return fei().balanceOf(address(this)) + rateLimitedMinter.individualBuffer(address(this));
     }
 
     // ----------- Internal Methods -----------
@@ -345,12 +299,7 @@ contract NonCustodialPSM is
     /// @dev will revert if price is outside of bounds and price bound PSM is being used
     /// @param amountIn the amount of stable asset in
     /// @return amountFeiOut the amount of Fei received for the amountIn of stable assets
-    function _getMintAmountOut(uint256 amountIn)
-        internal
-        view
-        virtual
-        returns (uint256 amountFeiOut)
-    {
+    function _getMintAmountOut(uint256 amountIn) internal view virtual returns (uint256 amountFeiOut) {
         Decimal.D256 memory price = readOracle();
         _validatePriceRange(price);
 
@@ -366,19 +315,13 @@ contract NonCustodialPSM is
     /// @dev will revert if price is outside of bounds and price bound PSM is being used
     /// @param amountFeiIn the amount of Fei to redeem
     /// @return amountTokenOut the amount of the external asset received in exchange for the amount of Fei redeemed
-    function _getRedeemAmountOut(uint256 amountFeiIn)
-        internal
-        view
-        virtual
-        returns (uint256 amountTokenOut)
-    {
+    function _getRedeemAmountOut(uint256 amountFeiIn) internal view virtual returns (uint256 amountTokenOut) {
         Decimal.D256 memory price = readOracle();
         _validatePriceRange(price);
 
         /// get amount of Fei being provided being redeemed after fees
         Decimal.D256 memory adjustedAmountIn = Decimal.from(
-            (amountFeiIn *
-                (Constants.BASIS_POINTS_GRANULARITY - redeemFeeBasisPoints)) /
+            (amountFeiIn * (Constants.BASIS_POINTS_GRANULARITY - redeemFeeBasisPoints)) /
                 Constants.BASIS_POINTS_GRANULARITY
         );
 
@@ -391,13 +334,8 @@ contract NonCustodialPSM is
 
     /// @notice set the global rate limited minter this PSM calls to mint Fei
     /// @param newMinter the new minter contract that this PSM will reference
-    function _setGlobalRateLimitedMinter(GlobalRateLimitedMinter newMinter)
-        internal
-    {
-        require(
-            address(newMinter) != address(0),
-            "PegStabilityModule: Invalid new GlobalRateLimitedMinter"
-        );
+    function _setGlobalRateLimitedMinter(GlobalRateLimitedMinter newMinter) internal {
+        require(address(newMinter) != address(0), "PegStabilityModule: Invalid new GlobalRateLimitedMinter");
         GlobalRateLimitedMinter oldMinter = rateLimitedMinter;
         rateLimitedMinter = newMinter;
 
@@ -407,10 +345,7 @@ contract NonCustodialPSM is
     /// @notice set the mint fee vs oracle price in basis point terms
     /// @param newMintFeeBasisPoints the new fee for minting in basis points
     function _setMintFee(uint256 newMintFeeBasisPoints) internal {
-        require(
-            newMintFeeBasisPoints <= MAX_FEE,
-            "PegStabilityModule: Mint fee exceeds max fee"
-        );
+        require(newMintFeeBasisPoints <= MAX_FEE, "PegStabilityModule: Mint fee exceeds max fee");
         uint256 _oldMintFee = mintFeeBasisPoints;
         mintFeeBasisPoints = newMintFeeBasisPoints;
 
@@ -420,10 +355,7 @@ contract NonCustodialPSM is
     /// @notice internal helper function to set the redemption fee
     /// @param newRedeemFeeBasisPoints the new fee for redemptions in basis points
     function _setRedeemFee(uint256 newRedeemFeeBasisPoints) internal {
-        require(
-            newRedeemFeeBasisPoints <= MAX_FEE,
-            "PegStabilityModule: Redeem fee exceeds max fee"
-        );
+        require(newRedeemFeeBasisPoints <= MAX_FEE, "PegStabilityModule: Redeem fee exceeds max fee");
         uint256 _oldRedeemFee = redeemFeeBasisPoints;
         redeemFeeBasisPoints = newRedeemFeeBasisPoints;
 
@@ -433,10 +365,7 @@ contract NonCustodialPSM is
     /// @notice helper function to set the PCV deposit
     /// @param newPCVDeposit the new PCV deposit that this PSM will pull assets from and deposit assets into
     function _setPCVDeposit(IPCVDeposit newPCVDeposit) internal {
-        require(
-            address(newPCVDeposit) != address(0),
-            "PegStabilityModule: Invalid new PCVDeposit"
-        );
+        require(address(newPCVDeposit) != address(0), "PegStabilityModule: Invalid new PCVDeposit");
         /* Removed to be compatible with PCV deposit v1. (which uses token() instead of balanceReportedIn())
         require(
             newPCVDeposit.balanceReportedIn() == address(underlyingToken),
@@ -452,9 +381,5 @@ contract NonCustodialPSM is
     // ----------- Hooks -----------
 
     /// @notice overriden function in the price bound PSM
-    function _validatePriceRange(Decimal.D256 memory price)
-        internal
-        view
-        virtual
-    {}
+    function _validatePriceRange(Decimal.D256 memory price) internal view virtual {}
 }

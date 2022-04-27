@@ -50,8 +50,7 @@ interface INonCustodialPSM {
     function setPCVDeposit(IPCVDeposit newTarget) external;
 
     /// @notice set the target to call for FEI minting
-    function setGlobalRateLimitedMinter(GlobalRateLimitedMinter newMinter)
-        external;
+    function setGlobalRateLimitedMinter(GlobalRateLimitedMinter newMinter) external;
 
     /// @notice withdraw ERC20 from the contract
     function withdrawERC20(
@@ -63,16 +62,10 @@ interface INonCustodialPSM {
     // ----------- Getters -----------
 
     /// @notice calculate the amount of FEI out for a given `amountIn` of underlying
-    function getMintAmountOut(uint256 amountIn)
-        external
-        view
-        returns (uint256 amountFeiOut);
+    function getMintAmountOut(uint256 amountIn) external view returns (uint256 amountFeiOut);
 
     /// @notice calculate the amount of underlying out for a given `amountFeiIn` of FEI
-    function getRedeemAmountOut(uint256 amountFeiIn)
-        external
-        view
-        returns (uint256 amountOut);
+    function getRedeemAmountOut(uint256 amountFeiIn) external view returns (uint256 amountOut);
 
     /// @notice the maximum mint amount out
     function getMaxMintAmountOut() external view returns (uint256);
@@ -90,10 +83,7 @@ interface INonCustodialPSM {
     function pcvDeposit() external view returns (IPCVDeposit);
 
     /// @notice Rate Limited Minter contract that will be called when FEI needs to be minted
-    function rateLimitedMinter()
-        external
-        view
-        returns (GlobalRateLimitedMinter);
+    function rateLimitedMinter() external view returns (GlobalRateLimitedMinter);
 
     /// @notice the max mint and redeem fee in basis points
     function MAX_FEE() external view returns (uint256);
@@ -110,10 +100,7 @@ interface INonCustodialPSM {
     event RedeemFeeUpdate(uint256 oldRedeemFee, uint256 newRedeemFee);
 
     /// @notice event emitted when reservesThreshold is updated
-    event ReservesThresholdUpdate(
-        uint256 oldReservesThreshold,
-        uint256 newReservesThreshold
-    );
+    event ReservesThresholdUpdate(uint256 oldReservesThreshold, uint256 newReservesThreshold);
 
     /// @notice event emitted when surplus target is updated
     event PCVDepositUpdate(IPCVDeposit oldTarget, IPCVDeposit newTarget);
@@ -125,18 +112,10 @@ interface INonCustodialPSM {
     event Mint(address to, uint256 amountIn, uint256 amountFeiOut);
 
     /// @notice event emitted when ERC20 tokens get withdrawn
-    event WithdrawERC20(
-        address indexed _caller,
-        address indexed _token,
-        address indexed _to,
-        uint256 _amount
-    );
+    event WithdrawERC20(address indexed _caller, address indexed _token, address indexed _to, uint256 _amount);
 
     /// @notice event emitted when global rate limited minter is updated
-    event GlobalRateLimitedMinterUpdate(
-        GlobalRateLimitedMinter oldMinter,
-        GlobalRateLimitedMinter newMinter
-    );
+    event GlobalRateLimitedMinterUpdate(GlobalRateLimitedMinter oldMinter, GlobalRateLimitedMinter newMinter);
 
     /// @notice event that is emitted when redemptions are paused
     event RedemptionsPaused(address account);

@@ -66,12 +66,9 @@ contract DSTest {
         uint8 allowableDeviation
     ) internal {
         if (a != b) {
-            uint256 deviation = Deviation
-                .calculateDeviationThresholdBasisPoints(a, b);
+            uint256 deviation = Deviation.calculateDeviationThresholdBasisPoints(a, b);
             if (deviation > allowableDeviation) {
-                emit log(
-                    "Error: a == b not satisfied, deviation exceeded [int]"
-                );
+                emit log("Error: a == b not satisfied, deviation exceeded [int]");
                 emit log_named_int("  Expected", b);
                 emit log_named_int("    Actual", a);
                 emit log_named_int("   Max Dev", int8(allowableDeviation));

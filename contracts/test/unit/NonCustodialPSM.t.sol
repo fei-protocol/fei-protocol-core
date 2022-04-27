@@ -50,12 +50,7 @@ contract NonCustodialPSMTest is DSTest {
         fei = core.fei();
 
         underlyingToken = new MockERC20();
-        pcvDeposit = new MockPCVDepositV2(
-            address(core),
-            address(underlyingToken),
-            0,
-            0
-        );
+        pcvDeposit = new MockPCVDepositV2(address(core), address(underlyingToken), 0, 0);
 
         rateLimitedMinter = new GlobalRateLimitedMinter(
             address(core),
@@ -68,20 +63,18 @@ contract NonCustodialPSMTest is DSTest {
 
         oracle = new ConstantOracle(address(core), 10000);
 
-        NonCustodialPSM.OracleParams memory oracleParams = NonCustodialPSM
-            .OracleParams({
-                coreAddress: address(core),
-                oracleAddress: address(oracle),
-                backupOracle: address(0),
-                decimalsNormalizer: 0
-            });
+        NonCustodialPSM.OracleParams memory oracleParams = NonCustodialPSM.OracleParams({
+            coreAddress: address(core),
+            oracleAddress: address(oracle),
+            backupOracle: address(0),
+            decimalsNormalizer: 0
+        });
 
-        NonCustodialPSM.RateLimitedParams
-            memory multiRateLimitedParams = NonCustodialPSM.RateLimitedParams({
-                maxRateLimitPerSecond: rps,
-                rateLimitPerSecond: rps,
-                bufferCap: bufferCap
-            });
+        NonCustodialPSM.RateLimitedParams memory multiRateLimitedParams = NonCustodialPSM.RateLimitedParams({
+            maxRateLimitPerSecond: rps,
+            rateLimitPerSecond: rps,
+            bufferCap: bufferCap
+        });
 
         NonCustodialPSM.PSMParams memory PSMParams = NonCustodialPSM.PSMParams({
             mintFeeBasisPoints: 0,
@@ -92,11 +85,7 @@ contract NonCustodialPSMTest is DSTest {
         });
 
         /// create PSM
-        psm = new NonCustodialPSM(
-            oracleParams,
-            multiRateLimitedParams,
-            PSMParams
-        );
+        psm = new NonCustodialPSM(oracleParams, multiRateLimitedParams, PSMParams);
 
         vm.startPrank(addresses.governorAddress);
 
@@ -105,11 +94,7 @@ contract NonCustodialPSMTest is DSTest {
         core.grantMinter(address(rateLimitedMinter));
         core.grantPCVController(address(psm));
         core.grantPCVController(addresses.governorAddress);
-        rateLimitedMinter.addAddress(
-            address(psm),
-            uint112(rps),
-            uint112(bufferCap)
-        );
+        rateLimitedMinter.addAddress(address(psm), uint112(rps), uint112(bufferCap));
 
         /// mint fei to the user
         fei.mint(address(this), mintAmount);
@@ -126,9 +111,7 @@ contract NonCustodialPSMTest is DSTest {
 
     /// @notice PSM is set up correctly, all state variables and balances are correct
     function testPSMSetup() public {
-        uint256 startingPSMUnderlyingBalance = underlyingToken.balanceOf(
-            address(psm)
-        );
+        uint256 startingPSMUnderlyingBalance = underlyingToken.balanceOf(address(psm));
         uint256 startingUserfeiBalance = fei.balanceOf(address(this));
 
         assertEq(startingPSMUnderlyingBalance, 0);
@@ -167,12 +150,8 @@ contract NonCustodialPSMTest is DSTest {
         psm.mint(address(this), mintAmount, mintAmount);
 
         uint256 endingUserfeiBalance = fei.balanceOf(address(this));
-        uint256 endingPSMUnderlyingBalance = underlyingToken.balanceOf(
-            address(psm)
-        );
-        uint256 endingPCVDepositUnderlyingBalance = underlyingToken.balanceOf(
-            address(pcvDeposit)
-        );
+        uint256 endingPSMUnderlyingBalance = underlyingToken.balanceOf(address(psm));
+        uint256 endingPCVDepositUnderlyingBalance = underlyingToken.balanceOf(address(pcvDeposit));
 
         assertEq(endingPCVDepositUnderlyingBalance, mintAmount * 2);
         assertEq(endingPSMUnderlyingBalance, 0);
@@ -185,15 +164,9 @@ contract NonCustodialPSMTest is DSTest {
         psm.redeem(address(this), mintAmount, mintAmount);
 
         uint256 endingUserfeiBalance = fei.balanceOf(address(this));
-        uint256 endingUserUnderlyingBalance = underlyingToken.balanceOf(
-            address(this)
-        );
-        uint256 endingPSMUnderlyingBalance = underlyingToken.balanceOf(
-            address(psm)
-        );
-        uint256 endingPCVDepositUnderlyingBalance = underlyingToken.balanceOf(
-            address(pcvDeposit)
-        );
+        uint256 endingUserUnderlyingBalance = underlyingToken.balanceOf(address(this));
+        uint256 endingPSMUnderlyingBalance = underlyingToken.balanceOf(address(psm));
+        uint256 endingPCVDepositUnderlyingBalance = underlyingToken.balanceOf(address(pcvDeposit));
 
         assertEq(endingPSMUnderlyingBalance, 0);
         assertEq(endingUserfeiBalance, 0);
@@ -210,15 +183,9 @@ contract NonCustodialPSMTest is DSTest {
 
         uint256 bufferEnd = psm.buffer();
         uint256 endingUserfeiBalance = fei.balanceOf(address(this));
-        uint256 endingUserUnderlyingBalance = underlyingToken.balanceOf(
-            address(this)
-        );
-        uint256 endingPSMUnderlyingBalance = underlyingToken.balanceOf(
-            address(psm)
-        );
-        uint256 endingPCVDepositUnderlyingBalance = underlyingToken.balanceOf(
-            address(pcvDeposit)
-        );
+        uint256 endingUserUnderlyingBalance = underlyingToken.balanceOf(address(this));
+        uint256 endingPSMUnderlyingBalance = underlyingToken.balanceOf(address(psm));
+        uint256 endingPCVDepositUnderlyingBalance = underlyingToken.balanceOf(address(pcvDeposit));
 
         assertEq(endingPSMUnderlyingBalance, 0);
         assertEq(endingUserfeiBalance, 0);
@@ -237,12 +204,8 @@ contract NonCustodialPSMTest is DSTest {
 
         uint256 bufferEnd = rateLimitedMinter.individualBuffer(address(psm));
         uint256 endingUserfeiBalance = fei.balanceOf(address(this));
-        uint256 endingPSMUnderlyingBalance = underlyingToken.balanceOf(
-            address(psm)
-        );
-        uint256 endingPCVDepositUnderlyingBalance = underlyingToken.balanceOf(
-            address(pcvDeposit)
-        );
+        uint256 endingPSMUnderlyingBalance = underlyingToken.balanceOf(address(psm));
+        uint256 endingPCVDepositUnderlyingBalance = underlyingToken.balanceOf(address(pcvDeposit));
 
         assertEq(endingPCVDepositUnderlyingBalance, mintAmount * 2);
         assertEq(endingPSMUnderlyingBalance, 0);
@@ -292,21 +255,13 @@ contract NonCustodialPSMTest is DSTest {
 
         uint256 currBuffer = psm.buffer();
         bufferStored = psm.bufferStored();
-        assertApproxEq(
-            currBuffer.toInt256(),
-            (rps * delta + individualMintAmount).toInt256(),
-            1
-        ); /// allow 1 basis point of deviation between expected and actual
+        assertApproxEq(currBuffer.toInt256(), (rps * delta + individualMintAmount).toInt256(), 1); /// allow 1 basis point of deviation between expected and actual
 
         psm.mint(address(this), individualMintAmount, 0);
 
         bufferStored = psm.bufferStored();
         uint256 bufferEnd = psm.buffer();
-        assertApproxEq(
-            bufferEnd.toInt256(),
-            (rps * delta + individualMintAmount * 2).toInt256(),
-            1
-        ); /// allow 1 basis point of deviation between expected and actual
+        assertApproxEq(bufferEnd.toInt256(), (rps * delta + individualMintAmount * 2).toInt256(), 1); /// allow 1 basis point of deviation between expected and actual
     }
 
     /// @notice redeem fails without approval
@@ -357,9 +312,7 @@ contract NonCustodialPSMTest is DSTest {
     function testSetGlobalRateLimitedMinterFailureZeroAddress() public {
         vm.startPrank(addresses.governorAddress);
 
-        vm.expectRevert(
-            bytes("PegStabilityModule: Invalid new GlobalRateLimitedMinter")
-        );
+        vm.expectRevert(bytes("PegStabilityModule: Invalid new GlobalRateLimitedMinter"));
         psm.setGlobalRateLimitedMinter(GlobalRateLimitedMinter(address(0)));
 
         vm.stopPrank();
@@ -416,12 +369,7 @@ contract NonCustodialPSMTest is DSTest {
     function testSetPCVDepositSuccess() public {
         vm.startPrank(addresses.governorAddress);
 
-        MockPCVDepositV2 newPCVDeposit = new MockPCVDepositV2(
-            address(core),
-            address(underlyingToken),
-            0,
-            0
-        );
+        MockPCVDepositV2 newPCVDeposit = new MockPCVDepositV2(address(core), address(underlyingToken), 0, 0);
 
         psm.setPCVDeposit(IPCVDeposit(address(newPCVDeposit)));
 
