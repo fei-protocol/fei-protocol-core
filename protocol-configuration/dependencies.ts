@@ -133,6 +133,7 @@ const dependencies: DependencyMap = {
   },
   fei: {
     contractDependencies: [
+      'raiPriceBoundPSM',
       'raiPCVDripController',
       'core',
       'rariPool8Fei',
