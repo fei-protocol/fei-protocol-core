@@ -202,6 +202,9 @@ const dependencies: DependencyMap = {
       'raiPriceBoundPSM'
     ]
   },
+  raiPriceBoundPSM: {
+    contractDependencies: ['core', 'rai', 'fei', 'raiPCVDripController']
+  },
   proxyAdmin: {
     contractDependencies: [
       'feiDAOTimelock',
