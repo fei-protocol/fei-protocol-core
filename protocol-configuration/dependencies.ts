@@ -30,6 +30,7 @@ const dependencies: DependencyMap = {
   },
   core: {
     contractDependencies: [
+      'pcvGuardian',
       'raiPCVDripController',
       'collateralizationOracleGuardian',
       'fei',
