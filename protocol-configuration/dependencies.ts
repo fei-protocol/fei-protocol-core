@@ -132,6 +132,7 @@ const dependencies: DependencyMap = {
   },
   fei: {
     contractDependencies: [
+      'raiPCVDripController',
       'core',
       'rariPool8Fei',
       'feiDAOTimelock',
@@ -195,7 +196,9 @@ const dependencies: DependencyMap = {
       'lusdPSM',
       'daiFixedPricePSM',
       'compoundEthPCVDeposit',
-      'aaveEthPCVDeposit'
+      'aaveEthPCVDeposit',
+      'aaveRaiPCVDeposit',
+      'raiPriceBoundPSM'
     ]
   },
   proxyAdmin: {
