@@ -36,14 +36,7 @@ contract PodExecutor is CoreRef {
         bytes32[] memory salt
     ) external payable whenNotPaused {
         for (uint256 i = 0; i < timelock.length; i += 1) {
-            execute(
-                timelock[i],
-                target[i],
-                value[i],
-                data[i],
-                predecessor[i],
-                salt[i]
-            );
+            execute(timelock[i], target[i], value[i], data[i], predecessor[i], salt[i]);
         }
     }
 }

@@ -9,13 +9,7 @@ import {Governor} from "@openzeppelin/contracts/governance/Governor.sol";
  */
 abstract contract GovernorQuickReaction is Governor {
     /// @notice Override state to achieve early execution
-    function state(uint256 proposalId)
-        public
-        view
-        virtual
-        override
-        returns (ProposalState)
-    {
+    function state(uint256 proposalId) public view virtual override returns (ProposalState) {
         ProposalState status = super.state(proposalId);
 
         // Check if proposal is marked as Active.

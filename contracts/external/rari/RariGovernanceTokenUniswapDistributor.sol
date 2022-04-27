@@ -11,10 +11,7 @@ interface RariGovernanceTokenUniswapDistributor {
 
     function distributionEndBlock() external view returns (uint256);
 
-    function getRgtDistributed(uint256 blockNumber)
-        external
-        view
-        returns (uint256);
+    function getRgtDistributed(uint256 blockNumber) external view returns (uint256);
 
     function setDisabled(bool _disabled) external;
 

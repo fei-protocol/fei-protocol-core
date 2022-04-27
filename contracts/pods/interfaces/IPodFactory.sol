@@ -22,21 +22,11 @@ interface IPodFactory {
         uint256 minDelay;
     }
 
-    event CreatePod(
-        uint256 indexed podId,
-        address indexed safeAddress,
-        address indexed timelock
-    );
+    event CreatePod(uint256 indexed podId, address indexed safeAddress, address indexed timelock);
     event CreateTimelock(address indexed timelock);
-    event UpdatePodController(
-        address indexed oldController,
-        address indexed newController
-    );
+    event UpdatePodController(address indexed oldController, address indexed newController);
 
-    event UpdateDefaultPodController(
-        address indexed oldController,
-        address indexed newController
-    );
+    event UpdateDefaultPodController(address indexed oldController, address indexed newController);
 
     function deployCouncilPod(PodConfig calldata _config)
         external
@@ -54,10 +44,7 @@ interface IPodFactory {
 
     function getNumberOfPods() external view returns (uint256);
 
-    function getPodController(uint256 podId)
-        external
-        view
-        returns (ControllerV1);
+    function getPodController(uint256 podId) external view returns (ControllerV1);
 
     function getPodSafe(uint256 podId) external view returns (address);
 
@@ -65,17 +52,11 @@ interface IPodFactory {
 
     function getNumMembers(uint256 podId) external view returns (uint256);
 
-    function getPodMembers(uint256 podId)
-        external
-        view
-        returns (address[] memory);
+    function getPodMembers(uint256 podId) external view returns (address[] memory);
 
     function getPodThreshold(uint256 podId) external view returns (uint256);
 
-    function getIsMembershipTransferLocked(uint256 podId)
-        external
-        view
-        returns (bool);
+    function getIsMembershipTransferLocked(uint256 podId) external view returns (bool);
 
     function getNextPodId() external view returns (uint256);
 

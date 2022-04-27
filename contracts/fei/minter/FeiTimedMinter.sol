@@ -8,13 +8,7 @@ import "./IFeiTimedMinter.sol";
 
 /// @title FeiTimedMinter
 /// @notice a contract which mints FEI to a target address on a timed cadence
-contract FeiTimedMinter is
-    IFeiTimedMinter,
-    CoreRef,
-    Timed,
-    Incentivized,
-    RateLimitedMinter
-{
+contract FeiTimedMinter is IFeiTimedMinter, CoreRef, Timed, Incentivized, RateLimitedMinter {
     /// @notice most frequent that mints can happen
     uint256 public constant override MIN_MINT_FREQUENCY = 1 hours; // Min 1 hour per mint
 
@@ -44,11 +38,7 @@ contract FeiTimedMinter is
         CoreRef(_core)
         Timed(_frequency)
         Incentivized(_incentive)
-        RateLimitedMinter(
-            (_initialMintAmount + _incentive) / _frequency,
-            (_initialMintAmount + _incentive),
-            true
-        )
+        RateLimitedMinter((_initialMintAmount + _incentive) / _frequency, (_initialMintAmount + _incentive), true)
     {
         _initTimed();
 
@@ -87,28 +77,14 @@ contract FeiTimedMinter is
     }
 
     /// @notice set the mint frequency
-    function setFrequency(uint256 newFrequency)
-        external
-        override
-        onlyGovernorOrAdmin
-    {
-        require(
-            newFrequency >= MIN_MINT_FREQUENCY,
-            "FeiTimedMinter: frequency low"
-        );
-        require(
-            newFrequency <= MAX_MINT_FREQUENCY,
-            "FeiTimedMinter: frequency high"
-        );
+    function setFrequency(uint256 newFrequency) external override onlyGovernorOrAdmin {
+        require(newFrequency >= MIN_MINT_FREQUENCY, "FeiTimedMinter: frequency low");
+        require(newFrequency <= MAX_MINT_FREQUENCY, "FeiTimedMinter: frequency high");
 
         _setDuration(newFrequency);
     }
 
-    function setMintAmount(uint256 newMintAmount)
-        external
-        override
-        onlyGovernorOrAdmin
-    {
+    function setMintAmount(uint256 newMintAmount) external override onlyGovernorOrAdmin {
         _setMintAmount(newMintAmount);
     }
 
@@ -125,10 +101,7 @@ contract FeiTimedMinter is
         emit MintAmountUpdate(oldMintAmount, newMintAmount);
     }
 
-    function _mintFei(address to, uint256 amountIn)
-        internal
-        override(CoreRef, RateLimitedMinter)
-    {
+    function _mintFei(address to, uint256 amountIn) internal override(CoreRef, RateLimitedMinter) {
         RateLimitedMinter._mintFei(to, amountIn);
     }
 

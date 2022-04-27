@@ -28,15 +28,7 @@ function createPod(
     // Get the next podId
     uint256 expectedPodId = memberToken.getNextAvailablePodId();
 
-    controller.createPod(
-        members,
-        threshold,
-        podAdmin,
-        podLabel,
-        ensString,
-        expectedPodId,
-        imageUrl
-    );
+    controller.createPod(members, threshold, podAdmin, podLabel, ensString, expectedPodId, imageUrl);
     return expectedPodId;
 }
 
@@ -50,11 +42,7 @@ function setupTimelock(
 
     address[] memory executors = new address[](1);
     executors[0] = executor;
-    TimelockController timelock = new TimelockController(
-        0,
-        proposers,
-        executors
-    );
+    TimelockController timelock = new TimelockController(0, proposers, executors);
     return timelock;
 }
 
@@ -75,30 +63,21 @@ function mintOrcaTokens(
 }
 
 /// @notice Pod with a timelock
-function getPodParamsWithTimelock(address podAdmin)
-    pure
-    returns (IPodFactory.PodConfig memory)
-{
+function getPodParamsWithTimelock(address podAdmin) pure returns (IPodFactory.PodConfig memory) {
     bytes32 label = bytes32("hellopod");
     uint256 minDelay = 2 days;
     return getBasePodParams(label, minDelay, podAdmin);
 }
 
 /// @notice Pod without a timelock, minDelay is set to 0
-function getPodParamsWithNoTimelock(address podAdmin)
-    pure
-    returns (IPodFactory.PodConfig memory)
-{
+function getPodParamsWithNoTimelock(address podAdmin) pure returns (IPodFactory.PodConfig memory) {
     bytes32 label = bytes32("hellopod");
     uint256 minDelay = 0;
     return getBasePodParams(label, minDelay, podAdmin);
 }
 
 /// @notice Genesis pod, the TribalCouncil, with a timelock
-function getCouncilPodParams(address podAdmin)
-    pure
-    returns (IPodFactory.PodConfig memory)
-{
+function getCouncilPodParams(address podAdmin) pure returns (IPodFactory.PodConfig memory) {
     bytes32 label = bytes32("tribalcouncil");
     uint256 minDelay = 2 days;
     return getBasePodParams(label, minDelay, podAdmin);
@@ -149,23 +128,12 @@ function deployPodWithSystem(
     )
 {
     // 1. Deploy PodFactory
-    PodFactory factory = new PodFactory(
-        core,
-        memberToken,
-        podController,
-        podExecutor
-    );
+    PodFactory factory = new PodFactory(core, memberToken, podController, podExecutor);
     mintOrcaTokens(address(factory), 2, vm);
 
     // 2. Deploy PodAdminGateway
-    PodAdminGateway podAdminGateway = new PodAdminGateway(
-        MainnetAddresses.CORE,
-        memberToken,
-        address(factory)
-    );
-    IPodFactory.PodConfig memory podConfig = getPodParamsWithTimelock(
-        address(podAdminGateway)
-    );
+    PodAdminGateway podAdminGateway = new PodAdminGateway(MainnetAddresses.CORE, memberToken, address(factory));
+    IPodFactory.PodConfig memory podConfig = getPodParamsWithTimelock(address(podAdminGateway));
 
     // Grant POD_ADMIN role to factory
     vm.startPrank(MainnetAddresses.FEI_DAO_TIMELOCK);
@@ -175,15 +143,7 @@ function deployPodWithSystem(
 
     vm.deal(address(factory), 1000 ether);
     vm.prank(podDeployer);
-    (uint256 podId, address podTimelock, address safe) = factory
-        .createOptimisticPod(podConfig);
+    (uint256 podId, address podTimelock, address safe) = factory.createOptimisticPod(podConfig);
 
-    return (
-        podId,
-        podTimelock,
-        safe,
-        address(factory),
-        address(podAdminGateway),
-        podConfig
-    );
+    return (podId, podTimelock, safe, address(factory), address(podAdminGateway), podConfig);
 }

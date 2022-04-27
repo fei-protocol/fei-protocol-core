@@ -11,11 +11,7 @@ interface IPCVDripController {
     event SourceUpdate(address indexed oldSource, address indexed newSource);
     event TargetUpdate(address indexed oldTarget, address indexed newTarget);
     event DripAmountUpdate(uint256 oldDripAmount, uint256 newDripAmount);
-    event Dripped(
-        address indexed source,
-        address indexed target,
-        uint256 amount
-    );
+    event Dripped(address indexed source, address indexed target, uint256 amount);
 
     // ----------- Governor only state changing api -----------
 

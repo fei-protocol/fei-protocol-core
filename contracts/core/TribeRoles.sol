@@ -46,12 +46,10 @@ library TribeRoles {
     bytes32 internal constant ORACLE_ADMIN = keccak256("ORACLE_ADMIN_ROLE");
 
     /// @notice manages TribalChief incentives and related functionality.
-    bytes32 internal constant TRIBAL_CHIEF_ADMIN =
-        keccak256("TRIBAL_CHIEF_ADMIN_ROLE");
+    bytes32 internal constant TRIBAL_CHIEF_ADMIN = keccak256("TRIBAL_CHIEF_ADMIN_ROLE");
 
     /// @notice admin of PCVGuardian
-    bytes32 internal constant PCV_GUARDIAN_ADMIN =
-        keccak256("PCV_GUARDIAN_ADMIN_ROLE");
+    bytes32 internal constant PCV_GUARDIAN_ADMIN = keccak256("PCV_GUARDIAN_ADMIN_ROLE");
 
     /// @notice admin of all Minor Roles
     bytes32 internal constant MINOR_ROLE_ADMIN = keccak256("MINOR_ROLE_ADMIN");
@@ -70,24 +68,20 @@ library TribeRoles {
 
     /// @notice manages meta-governance actions, like voting & delegating.
     /// Also used to vote for gauge weights & similar liquid governance things.
-    bytes32 internal constant METAGOVERNANCE_VOTE_ADMIN =
-        keccak256("METAGOVERNANCE_VOTE_ADMIN");
+    bytes32 internal constant METAGOVERNANCE_VOTE_ADMIN = keccak256("METAGOVERNANCE_VOTE_ADMIN");
 
     /// @notice allows to manage locking of vote-escrowed tokens, and staking/unstaking
     /// governance tokens from a pre-defined contract in order to eventually allow voting.
     /// Examples: ANGLE <> veANGLE, AAVE <> stkAAVE, CVX <> vlCVX, CRV > cvxCRV.
-    bytes32 internal constant METAGOVERNANCE_TOKEN_STAKING =
-        keccak256("METAGOVERNANCE_TOKEN_STAKING");
+    bytes32 internal constant METAGOVERNANCE_TOKEN_STAKING = keccak256("METAGOVERNANCE_TOKEN_STAKING");
 
     /// @notice manages whitelisting of gauges where the protocol's tokens can be staked
-    bytes32 internal constant METAGOVERNANCE_GAUGE_ADMIN =
-        keccak256("METAGOVERNANCE_GAUGE_ADMIN");
+    bytes32 internal constant METAGOVERNANCE_GAUGE_ADMIN = keccak256("METAGOVERNANCE_GAUGE_ADMIN");
 
     /*///////////////////////////////////////////////////////////////
                                  Minor Roles
     //////////////////////////////////////////////////////////////*/
-    bytes32 internal constant POD_METADATA_REGISTER_ROLE =
-        keccak256("POD_METADATA_REGISTER_ROLE");
+    bytes32 internal constant POD_METADATA_REGISTER_ROLE = keccak256("POD_METADATA_REGISTER_ROLE");
 
     /// @notice capable of poking existing LBP auctions to exchange tokens.
     bytes32 internal constant LBP_SWAP_ROLE = keccak256("SWAP_ADMIN_ROLE");

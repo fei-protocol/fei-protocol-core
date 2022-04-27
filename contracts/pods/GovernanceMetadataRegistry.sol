@@ -13,11 +13,7 @@ contract GovernanceMetadataRegistry is CoreRef {
     mapping(bytes32 => bool) public registration;
 
     /// @notice Event that logs the metadata associated with a pod proposal
-    event RegisterProposal(
-        uint256 indexed podId,
-        uint256 indexed proposalId,
-        string metadata
-    );
+    event RegisterProposal(uint256 indexed podId, uint256 indexed proposalId, string metadata);
 
     constructor(address _core) CoreRef(_core) {}
 
@@ -30,9 +26,7 @@ contract GovernanceMetadataRegistry is CoreRef {
         uint256 proposalId,
         string memory metadata
     ) external view returns (bool) {
-        bytes32 proposalHash = keccak256(
-            abi.encode(podId, proposalId, metadata)
-        );
+        bytes32 proposalHash = keccak256(abi.encode(podId, proposalId, metadata));
         return registration[proposalHash];
     }
 
@@ -48,13 +42,8 @@ contract GovernanceMetadataRegistry is CoreRef {
     ) external onlyTribeRole(TribeRoles.POD_METADATA_REGISTER_ROLE) {
         require(bytes(metadata).length > 0, "Metadata must be non-empty");
 
-        bytes32 proposalHash = keccak256(
-            abi.encode(podId, proposalId, metadata)
-        );
-        require(
-            registration[proposalHash] == false,
-            "Proposal already registered"
-        );
+        bytes32 proposalHash = keccak256(abi.encode(podId, proposalId, metadata));
+        require(registration[proposalHash] == false, "Proposal already registered");
         registration[proposalHash] = true;
         emit RegisterProposal(podId, proposalId, metadata);
     }

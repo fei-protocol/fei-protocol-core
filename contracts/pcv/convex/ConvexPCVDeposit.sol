@@ -77,12 +77,7 @@ contract ConvexPCVDeposit is PCVDeposit {
 
     /// @notice unstake LP tokens from Convex Rewards, and withdraw Curve
     /// LP tokens from Convex
-    function withdraw(address to, uint256 amountLpTokens)
-        public
-        override
-        onlyPCVController
-        whenNotPaused
-    {
+    function withdraw(address to, uint256 amountLpTokens) public override onlyPCVController whenNotPaused {
         convexRewards.withdrawAndUnwrap(amountLpTokens, false);
         curvePool.transfer(to, amountLpTokens);
     }
@@ -108,21 +103,14 @@ contract ConvexPCVDeposit is PCVDeposit {
                 balances[i] = poolToken.balanceOf(address(curvePool));
                 totalBalances += balances[i];
             }
-            usdBalance -=
-                (usdBalance * balances[feiIndexInPool]) /
-                totalBalances;
+            usdBalance -= (usdBalance * balances[feiIndexInPool]) / totalBalances;
         }
 
         return usdBalance;
     }
 
     /// @notice returns the resistant balance in USD and FEI held by the contract
-    function resistantBalanceAndFei()
-        public
-        view
-        override
-        returns (uint256 resistantBalance, uint256 resistantFei)
-    {
+    function resistantBalanceAndFei() public view override returns (uint256 resistantBalance, uint256 resistantFei) {
         uint256 lpTokensStaked = convexRewards.balanceOf(address(this));
         uint256 virtualPrice = curvePool.get_virtual_price();
         resistantBalance = (lpTokensStaked * virtualPrice) / 1e18;
