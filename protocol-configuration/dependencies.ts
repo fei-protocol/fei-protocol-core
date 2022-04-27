@@ -350,7 +350,7 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core', 'fei']
   },
   aaveRaiPCVDeposit: {
-    contractDependencies: ['core']
+    contractDependencies: ['core', 'pcvGuardian']
   },
   agEurAngleUniswapPCVDeposit: {
     contractDependencies: ['core', 'fei', 'chainlinkEurUsdOracleWrapper']
