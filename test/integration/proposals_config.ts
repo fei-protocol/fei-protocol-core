@@ -37,7 +37,7 @@ const proposals: ProposalsConfigMap = {
   },
   fip_98: {
     deploy: false,
-    proposalId: null,
+    proposalId: '47738997083165992958921925097327638388915944734650384828020246684763693471048',
     affectedContractSignoff: [
       'fei',
       'voltFeiSwapContract',

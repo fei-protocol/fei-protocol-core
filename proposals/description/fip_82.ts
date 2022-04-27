@@ -175,12 +175,17 @@ const fip_82: ProposalDescription = {
   ],
   description: `
   FIP-82 enacts the governance upgrade to the TRIBE DAO and deploys the TribalCouncil pod. Specifically, this FIP will:
-  1. Create roles for the new governance system
-  2. Grant relevant roles to the Tribal Council and infrastructure in the new governance system
-  3. Initialise the membership of the Tribal Council
+  1. Deploy the relevant contracts for the Governance upgrade: PodFactory.sol, GovernanceMetadataRegistry.sol, PodAdminGateway.sol,
+  RoleBastion.sol, NopeDAO.sol, PodExecutor.sol
+  2. Create and grant the relevant new roles for the pod system
+  3. Initialise the membership of the Tribal Council, as accordig to the members who were elected in the Snapshot vote:
+  https://snapshot.fei.money/#/proposal/0x003adc2cb0f13784645e31440d24d0364817085aa1994e1ad72944d11bedb528 
 
-  Snapshot vote: https://snapshot.fei.money/#/proposal/0x463fd1be98d9e86c83eb845ca7e2a5555387e3c86ca0b756aada17a11df87f2b
-  Forum post discussion: https://tribe.fei.money/t/fip-82-governance-enhancements/3945
+  Forum post for the Governance upgrade: https://tribe.fei.money/t/fip-82-governance-enhancements/3945
+  Snapshot vote authorising the upgrade: https://snapshot.fei.money/#/proposal/0x463fd1be98d9e86c83eb845ca7e2a5555387e3c86ca0b756aada17a11df87f2b
+
+  There will be a second DAO vote to transfer various protocol roles to the TribalCouncil pod and to make it the admin of various roles - to allow it to 
+  operate the protocol.
   `
 };
 
