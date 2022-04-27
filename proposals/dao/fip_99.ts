@@ -7,6 +7,10 @@ import {
   TeardownUpgradeFunc,
   ValidateUpgradeFunc
 } from '@custom-types/types';
+import { contract } from '@openzeppelin/test-environment';
+import { Fei } from '@custom-types/contracts';
+import { getImpersonatedSigner } from '@test/helpers';
+import { forceEth } from '@test/integration/setup/utils';
 
 /*
 
@@ -18,8 +22,8 @@ Steps:
   1 - Move 80% of PCV RAI to AAVE from Fuse Pool 9 via the ratioPCVControllerV2
   2 - Call depsoit() on the aave rai pcv deposit
   3 - Grant the MINTER role to the rai psm
-  4 - Grant the PCV_CONTROLLER role to the rai dripper
-  5 - Pause Redeem on the rai psm
+  4 - Grant the PCV_CONTROLLER role to the rai pcv drip controller
+  5 - Pause mint on the rai psm
   6 - Whitelist the fuse pool 9 rai pcv deposit on the pcv guardian
   7 - Whitelist the aave rai pcv deposit on the pcv guardian
 */
@@ -37,12 +41,12 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
       coreAddress: addresses.core,
       oracleAddress: addresses.chainlinkRaiUsdCompositeOracle,
       backupOracle: ethers.constants.AddressZero,
-      decimalsNormalizer: 18,
+      decimalsNormalizer: 0,
       doInvert: false
     },
     0, // mint fee = 0 bp
     0, // redeem fee = 0 bp
-    2_000_000, // reserves threshold = 2m
+    ethers.constants.WeiPerEther.mul(10_000_000), // reserves threshold = 10m
     50_000, // fei rate limit = 50k fei/sec
     0, // minting buffer cap = 0 = disables minting fei
     addresses.rai, // rai as the underlying token
@@ -96,7 +100,38 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect((await contracts.aaveRaiPCVDeposit.balance()).gte(ethers.constants.WeiPerEther.mul(10_000_000)));
 
   // Ensure that minting is paused on the rai psm
-  expect(await contracts.raiPriceBoundPSM.redeemPaused()).to.equal(true);
+  expect(await contracts.raiPriceBoundPSM.mintPaused()).to.equal(true);
+
+  // Ensure that redeem is not paused on the rai psm
+  expect(await contracts.raiPriceBoundPSM.redeemPaused()).to.equal(false);
+
+  // Ensure that the fuse pool 9 rai pcv deposit and the aave rai pcv deposit are whitelisted on the pcv guardian
+  expect(await contracts.pcvGuardian.isSafeAddress(addresses.rariPool9RaiPCVDeposit)).to.equal(true);
+  expect(await contracts.pcvGuardian.isSafeAddress(addresses.aaveRaiPCVDeposit)).to.equal(true);
+
+  // Call drip on the rai pcv drip controller and make sure the rai price bound psm got the drip
+  await contracts.raiPCVDripController.drip();
+
+  expect(await contracts.rai.balanceOf(contracts.raiPriceBoundPSM.address)).to.be.gt(
+    ethers.constants.WeiPerEther.mul(1_000_000)
+  );
+
+  // Query the rai oracle
+  const raiPrice = await contracts.chainlinkRaiUsdCompositeOracle.read();
+
+  // Attempt to swap some fei for rai via the rai price bound psm
+  await forceEth((await ethers.getSigners())[0].address);
+  await forceEth(contracts.optimisticTimelock.address);
+  await contracts.fei
+    .connect(await getImpersonatedSigner(contracts.optimisticTimelock.address))
+    .transfer((await ethers.getSigners())[0].address, ethers.constants.WeiPerEther.mul(2_000_000));
+  await contracts.fei.approve(contracts.raiPriceBoundPSM.address, ethers.constants.MaxUint256);
+  await contracts.raiPriceBoundPSM.redeem(
+    addresses.feiDAOTimelock,
+    ethers.constants.WeiPerEther.mul(1_000_000),
+    ethers.constants.WeiPerEther.mul(200_000)
+  );
+  expect(await contracts.rai.balanceOf(addresses.feiDAOTimelock)).to.be.gt(ethers.constants.WeiPerEther.mul(200_000));
 };
 
 export { deploy, setup, teardown, validate };

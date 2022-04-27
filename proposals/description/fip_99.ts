@@ -34,9 +34,17 @@ const fip_99: ProposalDescription = {
     {
       target: 'raiPriceBoundPSM',
       values: '0',
-      method: 'pauseRedeem()',
+      method: 'pauseMint()',
       arguments: [],
-      description: 'Pause redeem on the rai price-bound psm'
+      description: 'Pause mint on the rai price-bound psm'
+    },
+    {
+      target: 'pcvGuardian',
+      values: '0',
+      method: 'setSafeAddresses(address[])',
+      arguments: [['{rariPool9RaiPCVDeposit}', '{aaveRaiPCVDeposit}', '{raiPriceBoundPSM}']],
+      description:
+        'Whitelist the fuse pool 9 rai pcv deposit and the aave rai pcv deposit on the pcv guardian, as well as the new rai psm'
     }
   ],
   description: 'Sell RAI to replenish DAI reserves and/or relieve upcoming peg pressure'
