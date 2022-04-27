@@ -25,6 +25,7 @@ Steps:
   5 - Pause mint on the rai psm
   6 - Whitelist the fuse pool 9 rai pcv deposit on the pcv guardian
   7 - Whitelist the aave rai pcv deposit on the pcv guardian
+  9 - Add the rai price-bound psm to the collateralization oracle
 */
 
 const fipNumber = '99'; // Change me!

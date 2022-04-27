@@ -38,6 +38,13 @@ const fip_99: ProposalDescription = {
       arguments: [['{rariPool9RaiPCVDeposit}', '{aaveRaiPCVDeposit}', '{raiPriceBoundPSM}']],
       description:
         'Whitelist the fuse pool 9 rai pcv deposit and the aave rai pcv deposit on the pcv guardian, as well as the new rai psm'
+    },
+    {
+      target: 'collateralizationOracle',
+      values: '0',
+      method: 'addDeposits(address)',
+      arguments: ['{raiPriceBoundPSM}'],
+      description: 'Add the rai price-bound psm to the collateralization oracle'
     }
   ],
   description: 'Sell RAI to replenish DAI reserves and/or relieve upcoming peg pressure'
