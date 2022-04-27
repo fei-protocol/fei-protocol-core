@@ -5,8 +5,5 @@ import "./MockCoreRef.sol";
 import "../metagov/utils/LiquidityGaugeManager.sol";
 
 contract MockLiquidityGaugeManager is LiquidityGaugeManager, MockCoreRef {
-    constructor(address core, address gaugeController)
-        MockCoreRef(core)
-        LiquidityGaugeManager(gaugeController)
-    {}
+    constructor(address core, address gaugeController) MockCoreRef(core) LiquidityGaugeManager(gaugeController) {}
 }
