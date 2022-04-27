@@ -4,10 +4,7 @@ pragma solidity ^0.8.4;
 interface ITimelock {
     function becomeAdmin() external;
 
-    function hasRole(bytes32 role, address account)
-        external
-        view
-        returns (bool);
+    function hasRole(bytes32 role, address account) external view returns (bool);
 
     function execute(
         address target,

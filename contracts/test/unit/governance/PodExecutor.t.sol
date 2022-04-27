@@ -32,14 +32,7 @@ contract PodExecutorTest is DSTest {
         podExecutor.pause();
 
         vm.expectRevert(bytes("Pausable: paused"));
-        podExecutor.execute(
-            address(1),
-            address(2),
-            uint256(3),
-            bytes("0x4"),
-            bytes32(0),
-            bytes32("0x123")
-        );
+        podExecutor.execute(address(1), address(2), uint256(3), bytes("0x4"), bytes32(0), bytes32("0x123"));
     }
 
     /// @notice Validate that only an authenticated address can pause
