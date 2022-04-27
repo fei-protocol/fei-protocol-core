@@ -27,10 +27,7 @@ abstract contract RateLimited is CoreRef {
 
     event BufferUsed(uint256 amountUsed, uint256 bufferRemaining);
     event BufferCapUpdate(uint256 oldBufferCap, uint256 newBufferCap);
-    event RateLimitPerSecondUpdate(
-        uint256 oldRateLimitPerSecond,
-        uint256 newRateLimitPerSecond
-    );
+    event RateLimitPerSecondUpdate(uint256 oldRateLimitPerSecond, uint256 newRateLimitPerSecond);
 
     constructor(
         uint256 _maxRateLimitPerSecond,
@@ -43,10 +40,7 @@ abstract contract RateLimited is CoreRef {
         _setBufferCap(_bufferCap);
         bufferStored = _bufferCap;
 
-        require(
-            _rateLimitPerSecond <= _maxRateLimitPerSecond,
-            "RateLimited: rateLimitPerSecond too high"
-        );
+        require(_rateLimitPerSecond <= _maxRateLimitPerSecond, "RateLimited: rateLimitPerSecond too high");
         _setRateLimitPerSecond(_rateLimitPerSecond);
 
         MAX_RATE_LIMIT_PER_SECOND = _maxRateLimitPerSecond;
@@ -54,26 +48,15 @@ abstract contract RateLimited is CoreRef {
     }
 
     /// @notice set the rate limit per second
-    function setRateLimitPerSecond(uint256 newRateLimitPerSecond)
-        external
-        virtual
-        onlyGovernorOrAdmin
-    {
-        require(
-            newRateLimitPerSecond <= MAX_RATE_LIMIT_PER_SECOND,
-            "RateLimited: rateLimitPerSecond too high"
-        );
+    function setRateLimitPerSecond(uint256 newRateLimitPerSecond) external virtual onlyGovernorOrAdmin {
+        require(newRateLimitPerSecond <= MAX_RATE_LIMIT_PER_SECOND, "RateLimited: rateLimitPerSecond too high");
         _updateBufferStored();
 
         _setRateLimitPerSecond(newRateLimitPerSecond);
     }
 
     /// @notice set the buffer cap
-    function setBufferCap(uint256 newBufferCap)
-        external
-        virtual
-        onlyGovernorOrAdmin
-    {
+    function setBufferCap(uint256 newBufferCap) external virtual onlyGovernorOrAdmin {
         _setBufferCap(newBufferCap);
     }
 
@@ -81,8 +64,7 @@ abstract contract RateLimited is CoreRef {
     /// @dev replenishes at rateLimitPerSecond per second up to bufferCap
     function buffer() public view returns (uint256) {
         uint256 elapsed = block.timestamp - lastBufferUsedTime;
-        return
-            Math.min(bufferStored + (rateLimitPerSecond * elapsed), bufferCap);
+        return Math.min(_bufferStored + (rateLimitPerSecond * elapsed), bufferCap);
     }
 
     /** 
@@ -134,10 +116,7 @@ abstract contract RateLimited is CoreRef {
         uint256 oldRateLimitPerSecond = rateLimitPerSecond;
         rateLimitPerSecond = newRateLimitPerSecond;
 
-        emit RateLimitPerSecondUpdate(
-            oldRateLimitPerSecond,
-            newRateLimitPerSecond
-        );
+        emit RateLimitPerSecondUpdate(oldRateLimitPerSecond, newRateLimitPerSecond);
     }
 
     function _setBufferCap(uint256 newBufferCap) internal {

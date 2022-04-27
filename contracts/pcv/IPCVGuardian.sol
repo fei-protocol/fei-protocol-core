@@ -10,17 +10,9 @@ interface IPCVGuardian {
 
     event SafeAddressRemoved(address indexed safeAddress);
 
-    event PCVGuardianWithdrawal(
-        address indexed pcvDeposit,
-        address indexed destination,
-        uint256 amount
-    );
+    event PCVGuardianWithdrawal(address indexed pcvDeposit, address indexed destination, uint256 amount);
 
-    event PCVGuardianETHWithdrawal(
-        address indexed pcvDeposit,
-        address indexed destination,
-        uint256 amount
-    );
+    event PCVGuardianETHWithdrawal(address indexed pcvDeposit, address indexed destination, uint256 amount);
 
     event PCVGuardianERC20Withdrawal(
         address indexed pcvDeposit,

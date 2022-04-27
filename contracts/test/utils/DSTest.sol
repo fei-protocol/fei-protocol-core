@@ -40,8 +40,7 @@ contract DSTest {
     bool public IS_TEST = true;
     bool public failed;
 
-    address constant HEVM_ADDRESS =
-        address(bytes20(uint160(uint256(keccak256("hevm cheat code")))));
+    address constant HEVM_ADDRESS = address(bytes20(uint160(uint256(keccak256("hevm cheat code")))));
 
     modifier mayRevert() {
         _;
@@ -634,11 +633,7 @@ contract DSTest {
         }
     }
 
-    function checkEq0(bytes memory a, bytes memory b)
-        internal
-        pure
-        returns (bool ok)
-    {
+    function checkEq0(bytes memory a, bytes memory b) internal pure returns (bool ok) {
         ok = true;
         if (a.length == b.length) {
             for (uint256 i = 0; i < a.length; i++) {

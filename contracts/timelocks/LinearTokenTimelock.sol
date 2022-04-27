@@ -11,15 +11,7 @@ contract LinearTokenTimelock is TokenTimelock {
         uint256 _cliffDuration,
         address _clawbackAdmin,
         uint256 _startTime
-    )
-        TokenTimelock(
-            _beneficiary,
-            _duration,
-            _cliffDuration,
-            _lockedToken,
-            _clawbackAdmin
-        )
-    {
+    ) TokenTimelock(_beneficiary, _duration, _cliffDuration, _lockedToken, _clawbackAdmin) {
         if (_startTime != 0) {
             startTime = _startTime;
         }
