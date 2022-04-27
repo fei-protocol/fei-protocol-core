@@ -20,13 +20,6 @@ const fip_99: ProposalDescription = {
     {
       target: 'core',
       values: '0',
-      method: 'grantMinter(address)',
-      arguments: ['{raiPriceBoundPSM}'],
-      description: 'Grant the MINTER_ROLE to the raiPriceBoundPSM'
-    },
-    {
-      target: 'core',
-      values: '0',
       method: 'grantPCVController(address)',
       arguments: ['{raiPCVDripController}'],
       description: 'Grant the PCV_CONTROLLER_ROLE to the rai pcv drip controller'

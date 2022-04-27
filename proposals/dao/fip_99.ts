@@ -21,7 +21,6 @@ Description: Sell RAI to replenish DAI reserves and/or relieve upcoming peg pres
 Steps:
   1 - Move 80% of PCV RAI to AAVE from Fuse Pool 9 via the ratioPCVControllerV2
   2 - Call depsoit() on the aave rai pcv deposit
-  3 - Grant the MINTER role to the rai psm
   4 - Grant the PCV_CONTROLLER role to the rai pcv drip controller
   5 - Pause mint on the rai psm
   6 - Whitelist the fuse pool 9 rai pcv deposit on the pcv guardian
@@ -69,7 +68,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     addresses.aaveRaiPCVDeposit, // drip source = aave rai pcv deposit
     raiPriceBoundPSM.address, // drip target = rai psm
     1800, // drip interval = 30 minutes
-    ethers.constants.WeiPerEther.mul(2_000_000), // drip size = 2 million
+    ethers.constants.WeiPerEther.mul(2_500_000), // drip size = 2.5 million
     0 // incentive amount = 0
   );
 
