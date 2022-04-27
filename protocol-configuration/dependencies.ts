@@ -203,7 +203,7 @@ const dependencies: DependencyMap = {
     ]
   },
   raiPriceBoundPSM: {
-    contractDependencies: ['core', 'rai', 'fei', 'raiPCVDripController']
+    contractDependencies: ['core', 'rai', 'fei', 'raiPCVDripController', 'pcvGuardian']
   },
   proxyAdmin: {
     contractDependencies: [
