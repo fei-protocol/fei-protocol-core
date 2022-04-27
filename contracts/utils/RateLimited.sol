@@ -64,7 +64,7 @@ abstract contract RateLimited is CoreRef {
     /// @dev replenishes at rateLimitPerSecond per second up to bufferCap
     function buffer() public view returns (uint256) {
         uint256 elapsed = block.timestamp - lastBufferUsedTime;
-        return Math.min(_bufferStored + (rateLimitPerSecond * elapsed), bufferCap);
+        return Math.min(bufferStored + (rateLimitPerSecond * elapsed), bufferCap);
     }
 
     /** 
