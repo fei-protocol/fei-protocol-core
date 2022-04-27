@@ -92,7 +92,7 @@ contract NonCustodialPSM is
             params.oracleAddress,
             params.backupOracle,
             params.decimalsNormalizer,
-            true /// hardcode doInvert to true to allow swaps to work correctly
+            false /// leaving as false for now
         )
         /// rate limited replenishable passes false as the last param as there can be no partial actions
         RateLimited(

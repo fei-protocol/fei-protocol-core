@@ -449,12 +449,10 @@ contract PegStabilityModule is
     }
 
     /// @notice Allocates a portion of escrowed PCV to a target PCV deposit
-    function _allocate(uint256 amount) internal {
+    function _allocate(uint256 amount) internal virtual {
         _transfer(address(surplusTarget), amount);
 
-        /* disabled so that we can deposit to non-pcv deposits
-        // surplusTarget.deposit();
-        */
+        surplusTarget.deposit();
 
         emit AllocateSurplus(msg.sender, amount);
     }
