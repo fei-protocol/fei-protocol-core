@@ -52,14 +52,8 @@ contract Timelock {
         uint256 minDelay_
     ) {
         MINIMUM_DELAY = minDelay_;
-        require(
-            delay_ >= minDelay_,
-            "Timelock: Delay must exceed minimum delay."
-        );
-        require(
-            delay_ <= MAXIMUM_DELAY,
-            "Timelock: Delay must not exceed maximum delay."
-        );
+        require(delay_ >= minDelay_, "Timelock: Delay must exceed minimum delay.");
+        require(delay_ <= MAXIMUM_DELAY, "Timelock: Delay must not exceed maximum delay.");
         require(admin_ != address(0), "Timelock: Admin must not be 0 address");
 
         admin = admin_;
@@ -69,28 +63,16 @@ contract Timelock {
     receive() external payable {}
 
     function setDelay(uint256 delay_) public {
-        require(
-            msg.sender == address(this),
-            "Timelock: Call must come from Timelock."
-        );
-        require(
-            delay_ >= MINIMUM_DELAY,
-            "Timelock: Delay must exceed minimum delay."
-        );
-        require(
-            delay_ <= MAXIMUM_DELAY,
-            "Timelock: Delay must not exceed maximum delay."
-        );
+        require(msg.sender == address(this), "Timelock: Call must come from Timelock.");
+        require(delay_ >= MINIMUM_DELAY, "Timelock: Delay must exceed minimum delay.");
+        require(delay_ <= MAXIMUM_DELAY, "Timelock: Delay must not exceed maximum delay.");
         delay = delay_;
 
         emit NewDelay(delay);
     }
 
     function acceptAdmin() public {
-        require(
-            msg.sender == pendingAdmin,
-            "Timelock: Call must come from pendingAdmin."
-        );
+        require(msg.sender == pendingAdmin, "Timelock: Call must come from pendingAdmin.");
         admin = msg.sender;
         pendingAdmin = address(0);
 
@@ -98,10 +80,7 @@ contract Timelock {
     }
 
     function setPendingAdmin(address pendingAdmin_) public {
-        require(
-            msg.sender == address(this),
-            "Timelock: Call must come from Timelock."
-        );
+        require(msg.sender == address(this), "Timelock: Call must come from Timelock.");
         pendingAdmin = pendingAdmin_;
 
         emit NewPendingAdmin(pendingAdmin);
@@ -115,10 +94,7 @@ contract Timelock {
         uint256 eta
     ) public virtual returns (bytes32) {
         require(msg.sender == admin, "Timelock: Call must come from admin.");
-        require(
-            eta >= getBlockTimestamp().add(delay),
-            "Timelock: Estimated execution block must satisfy delay."
-        );
+        require(eta >= getBlockTimestamp().add(delay), "Timelock: Estimated execution block must satisfy delay.");
 
         bytes32 txHash = getTxHash(target, value, signature, data, eta);
         queuedTransactions[txHash] = true;
@@ -162,18 +138,9 @@ contract Timelock {
         require(msg.sender == admin, "Timelock: Call must come from admin.");
 
         bytes32 txHash = getTxHash(target, value, signature, data, eta);
-        require(
-            queuedTransactions[txHash],
-            "Timelock: Transaction hasn't been queued."
-        );
-        require(
-            getBlockTimestamp() >= eta,
-            "Timelock: Transaction hasn't surpassed time lock."
-        );
-        require(
-            getBlockTimestamp() <= eta.add(GRACE_PERIOD),
-            "Timelock: Transaction is stale."
-        );
+        require(queuedTransactions[txHash], "Timelock: Transaction hasn't been queued.");
+        require(getBlockTimestamp() >= eta, "Timelock: Transaction hasn't surpassed time lock.");
+        require(getBlockTimestamp() <= eta.add(GRACE_PERIOD), "Timelock: Transaction is stale.");
 
         queuedTransactions[txHash] = false;
 
@@ -182,16 +149,11 @@ contract Timelock {
         if (bytes(signature).length == 0) {
             callData = data;
         } else {
-            callData = abi.encodePacked(
-                bytes4(keccak256(bytes(signature))),
-                data
-            );
+            callData = abi.encodePacked(bytes4(keccak256(bytes(signature))), data);
         }
 
         // solhint-disable-next-line avoid-low-level-calls
-        (bool success, bytes memory returnData) = target.call{value: value}(
-            callData
-        ); //solhint-disable avoid-call-value
+        (bool success, bytes memory returnData) = target.call{value: value}(callData); //solhint-disable avoid-call-value
         require(success, "Timelock: Transaction execution reverted.");
 
         emit ExecuteTransaction(txHash, target, value, signature, data, eta);

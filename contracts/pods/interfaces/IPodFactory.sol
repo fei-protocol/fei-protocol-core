@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
-import {MemberToken} from "@orcaprotocol/contracts/contracts/MemberToken.sol";
 import {ControllerV1} from "@orcaprotocol/contracts/contracts/ControllerV1.sol";
+import {MemberToken} from "@orcaprotocol/contracts/contracts/MemberToken.sol";
 
 interface IPodFactory {
     /// @notice Configuration used when creating a pod
@@ -22,16 +22,11 @@ interface IPodFactory {
         uint256 minDelay;
     }
 
-    event CreatePod(
-        uint256 indexed podId,
-        address indexed safeAddress,
-        address indexed timelock
-    );
+    event CreatePod(uint256 indexed podId, address indexed safeAddress, address indexed timelock);
     event CreateTimelock(address indexed timelock);
-    event UpdatePodController(
-        address indexed oldController,
-        address indexed newController
-    );
+    event UpdatePodController(address indexed oldController, address indexed newController);
+
+    event UpdateDefaultPodController(address indexed oldController, address indexed newController);
 
     function deployCouncilPod(PodConfig calldata _config)
         external
@@ -41,13 +36,15 @@ interface IPodFactory {
             address
         );
 
+    function defaultPodController() external view returns (ControllerV1);
+
     function getMemberToken() external view returns (MemberToken);
 
     function getPodSafeAddresses() external view returns (address[] memory);
 
     function getNumberOfPods() external view returns (uint256);
 
-    function podController() external view returns (ControllerV1);
+    function getPodController(uint256 podId) external view returns (ControllerV1);
 
     function getPodSafe(uint256 podId) external view returns (address);
 
@@ -55,17 +52,11 @@ interface IPodFactory {
 
     function getNumMembers(uint256 podId) external view returns (uint256);
 
-    function getPodMembers(uint256 podId)
-        external
-        view
-        returns (address[] memory);
+    function getPodMembers(uint256 podId) external view returns (address[] memory);
 
     function getPodThreshold(uint256 podId) external view returns (uint256);
 
-    function getIsMembershipTransferLocked(uint256 podId)
-        external
-        view
-        returns (bool);
+    function getIsMembershipTransferLocked(uint256 podId) external view returns (bool);
 
     function getNextPodId() external view returns (uint256);
 
@@ -78,4 +69,6 @@ interface IPodFactory {
             address,
             address
         );
+
+    function updateDefaultPodController(address _newDefaultController) external;
 }

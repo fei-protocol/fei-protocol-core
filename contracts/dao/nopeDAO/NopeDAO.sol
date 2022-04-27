@@ -36,49 +36,29 @@ contract NopeDAO is
         CoreRef(_core)
     {}
 
-    function quorum(uint256 blockNumber)
-        public
-        view
-        override
-        returns (uint256)
-    {
+    function quorum(uint256 blockNumber) public view override returns (uint256) {
         return _quorum;
     }
 
     ////////////     GOVERNOR ONLY FUNCTIONS     //////////////
 
     /// @notice Override of a Governor Settings function, to restrict to Tribe GOVERNOR
-    function setVotingDelay(uint256 newVotingDelay)
-        public
-        override
-        onlyTribeRole(TribeRoles.GOVERNOR)
-    {
+    function setVotingDelay(uint256 newVotingDelay) public override onlyTribeRole(TribeRoles.GOVERNOR) {
         _setVotingDelay(newVotingDelay);
     }
 
     /// @notice Override of a Governor Settings function, to restrict to Tribe GOVERNOR
-    function setVotingPeriod(uint256 newVotingPeriod)
-        public
-        override
-        onlyTribeRole(TribeRoles.GOVERNOR)
-    {
+    function setVotingPeriod(uint256 newVotingPeriod) public override onlyTribeRole(TribeRoles.GOVERNOR) {
         _setVotingPeriod(newVotingPeriod);
     }
 
     /// @notice Override of a Governor Settings function, to restrict to Tribe GOVERNOR
-    function setProposalThreshold(uint256 newProposalThreshold)
-        public
-        override
-        onlyTribeRole(TribeRoles.GOVERNOR)
-    {
+    function setProposalThreshold(uint256 newProposalThreshold) public override onlyTribeRole(TribeRoles.GOVERNOR) {
         _setProposalThreshold(newProposalThreshold);
     }
 
     /// @notice Adjust quorum of NopeDAO. Restricted to GOVERNOR, not part of GovernorSettings
-    function setQuorum(uint256 newQuroum)
-        public
-        onlyTribeRole(TribeRoles.GOVERNOR)
-    {
+    function setQuorum(uint256 newQuroum) public onlyTribeRole(TribeRoles.GOVERNOR) {
         uint256 oldQuorum = _quorum;
         _quorum = newQuroum;
         emit QuorumUpdated(oldQuorum, newQuroum);
@@ -86,39 +66,19 @@ contract NopeDAO is
 
     // The following functions are overrides required by Solidity.
 
-    function votingDelay()
-        public
-        view
-        override(IGovernor, GovernorSettings)
-        returns (uint256)
-    {
+    function votingDelay() public view override(IGovernor, GovernorSettings) returns (uint256) {
         return super.votingDelay();
     }
 
-    function votingPeriod()
-        public
-        view
-        override(IGovernor, GovernorSettings)
-        returns (uint256)
-    {
+    function votingPeriod() public view override(IGovernor, GovernorSettings) returns (uint256) {
         return super.votingPeriod();
     }
 
-    function getVotes(address account, uint256 blockNumber)
-        public
-        view
-        override(IGovernor, GovernorVotesComp)
-        returns (uint256)
-    {
+    function getVotes(address account, uint256 blockNumber) public view override(Governor) returns (uint256) {
         return super.getVotes(account, blockNumber);
     }
 
-    function state(uint256 proposalId)
-        public
-        view
-        override(GovernorQuickReaction, Governor)
-        returns (ProposalState)
-    {
+    function state(uint256 proposalId) public view override(GovernorQuickReaction, Governor) returns (ProposalState) {
         return super.state(proposalId);
     }
 
@@ -131,12 +91,7 @@ contract NopeDAO is
         return super.propose(targets, values, calldatas, description);
     }
 
-    function proposalThreshold()
-        public
-        view
-        override(Governor, GovernorSettings)
-        returns (uint256)
-    {
+    function proposalThreshold() public view override(Governor, GovernorSettings) returns (uint256) {
         return super.proposalThreshold();
     }
 
@@ -163,12 +118,7 @@ contract NopeDAO is
         return super._executor();
     }
 
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        override(Governor)
-        returns (bool)
-    {
+    function supportsInterface(bytes4 interfaceId) public view override(Governor) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 }

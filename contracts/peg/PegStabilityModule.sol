@@ -9,13 +9,7 @@ import "../Constants.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-contract PegStabilityModule is
-    IPegStabilityModule,
-    RateLimitedMinter,
-    OracleRef,
-    PCVDeposit,
-    ReentrancyGuard
-{
+contract PegStabilityModule is IPegStabilityModule, RateLimitedMinter, OracleRef, PCVDeposit, ReentrancyGuard {
     using Decimal for Decimal.D256;
     using SafeCast for *;
     using SafeERC20 for IERC20;
@@ -135,57 +129,33 @@ contract PegStabilityModule is
     }
 
     /// @notice withdraw assets from PSM to an external address
-    function withdraw(address to, uint256 amount)
-        external
-        virtual
-        override
-        onlyPCVController
-    {
+    function withdraw(address to, uint256 amount) external virtual override onlyPCVController {
         _withdrawERC20(address(underlyingToken), to, amount);
     }
 
     /// @notice set the mint fee vs oracle price in basis point terms
-    function setMintFee(uint256 newMintFeeBasisPoints)
-        external
-        override
-        onlyGovernorOrAdmin
-    {
+    function setMintFee(uint256 newMintFeeBasisPoints) external override onlyGovernorOrAdmin {
         _setMintFee(newMintFeeBasisPoints);
     }
 
     /// @notice set the redemption fee vs oracle price in basis point terms
-    function setRedeemFee(uint256 newRedeemFeeBasisPoints)
-        external
-        override
-        onlyGovernorOrAdmin
-    {
+    function setRedeemFee(uint256 newRedeemFeeBasisPoints) external override onlyGovernorOrAdmin {
         _setRedeemFee(newRedeemFeeBasisPoints);
     }
 
     /// @notice set the ideal amount of reserves for the contract to hold for redemptions
-    function setReservesThreshold(uint256 newReservesThreshold)
-        external
-        override
-        onlyGovernorOrAdmin
-    {
+    function setReservesThreshold(uint256 newReservesThreshold) external override onlyGovernorOrAdmin {
         _setReservesThreshold(newReservesThreshold);
     }
 
     /// @notice set the target for sending surplus reserves
-    function setSurplusTarget(IPCVDeposit newTarget)
-        external
-        override
-        onlyGovernorOrAdmin
-    {
+    function setSurplusTarget(IPCVDeposit newTarget) external override onlyGovernorOrAdmin {
         _setSurplusTarget(newTarget);
     }
 
     /// @notice set the mint fee vs oracle price in basis point terms
     function _setMintFee(uint256 newMintFeeBasisPoints) internal {
-        require(
-            newMintFeeBasisPoints <= MAX_FEE,
-            "PegStabilityModule: Mint fee exceeds max fee"
-        );
+        require(newMintFeeBasisPoints <= MAX_FEE, "PegStabilityModule: Mint fee exceeds max fee");
         uint256 _oldMintFee = mintFeeBasisPoints;
         mintFeeBasisPoints = newMintFeeBasisPoints;
 
@@ -194,10 +164,7 @@ contract PegStabilityModule is
 
     /// @notice internal helper function to set the redemption fee
     function _setRedeemFee(uint256 newRedeemFeeBasisPoints) internal {
-        require(
-            newRedeemFeeBasisPoints <= MAX_FEE,
-            "PegStabilityModule: Redeem fee exceeds max fee"
-        );
+        require(newRedeemFeeBasisPoints <= MAX_FEE, "PegStabilityModule: Redeem fee exceeds max fee");
         uint256 _oldRedeemFee = redeemFeeBasisPoints;
         redeemFeeBasisPoints = newRedeemFeeBasisPoints;
 
@@ -206,25 +173,16 @@ contract PegStabilityModule is
 
     /// @notice helper function to set reserves threshold
     function _setReservesThreshold(uint256 newReservesThreshold) internal {
-        require(
-            newReservesThreshold > 0,
-            "PegStabilityModule: Invalid new reserves threshold"
-        );
+        require(newReservesThreshold > 0, "PegStabilityModule: Invalid new reserves threshold");
         uint256 oldReservesThreshold = reservesThreshold;
         reservesThreshold = newReservesThreshold;
 
-        emit ReservesThresholdUpdate(
-            oldReservesThreshold,
-            newReservesThreshold
-        );
+        emit ReservesThresholdUpdate(oldReservesThreshold, newReservesThreshold);
     }
 
     /// @notice helper function to set the surplus target
     function _setSurplusTarget(IPCVDeposit newSurplusTarget) internal {
-        require(
-            address(newSurplusTarget) != address(0),
-            "PegStabilityModule: Invalid new surplus target"
-        );
+        require(address(newSurplusTarget) != address(0), "PegStabilityModule: Invalid new surplus target");
         IPCVDeposit oldTarget = surplusTarget;
         surplusTarget = newSurplusTarget;
 
@@ -236,10 +194,7 @@ contract PegStabilityModule is
     /// @notice send any surplus reserves to the PCV allocation
     function allocateSurplus() external override {
         int256 currentSurplus = reservesSurplus();
-        require(
-            currentSurplus > 0,
-            "PegStabilityModule: No surplus to allocate"
-        );
+        require(currentSurplus > 0, "PegStabilityModule: No surplus to allocate");
 
         _allocate(currentSurplus.toUint256());
     }
@@ -261,10 +216,7 @@ contract PegStabilityModule is
         updateOracle();
 
         amountOut = _getRedeemAmountOut(amountFeiIn);
-        require(
-            amountOut >= minAmountOut,
-            "PegStabilityModule: Redeem not enough out"
-        );
+        require(amountOut >= minAmountOut, "PegStabilityModule: Redeem not enough out");
 
         IERC20(fei()).safeTransferFrom(msg.sender, address(this), amountFeiIn);
 
@@ -282,17 +234,11 @@ contract PegStabilityModule is
         updateOracle();
 
         amountFeiOut = _getMintAmountOut(amountIn);
-        require(
-            amountFeiOut >= minAmountOut,
-            "PegStabilityModule: Mint not enough out"
-        );
+        require(amountFeiOut >= minAmountOut, "PegStabilityModule: Mint not enough out");
 
         _transferFrom(msg.sender, address(this), amountIn);
 
-        uint256 amountFeiToTransfer = Math.min(
-            fei().balanceOf(address(this)),
-            amountFeiOut
-        );
+        uint256 amountFeiToTransfer = Math.min(fei().balanceOf(address(this)), amountFeiOut);
         uint256 amountFeiToMint = amountFeiOut - amountFeiToTransfer;
 
         IERC20(fei()).safeTransfer(to, amountFeiToTransfer);
@@ -311,15 +257,7 @@ contract PegStabilityModule is
         address to,
         uint256 amountFeiIn,
         uint256 minAmountOut
-    )
-        external
-        virtual
-        override
-        nonReentrant
-        whenNotPaused
-        whileRedemptionsNotPaused
-        returns (uint256 amountOut)
-    {
+    ) external virtual override nonReentrant whenNotPaused whileRedemptionsNotPaused returns (uint256 amountOut) {
         amountOut = _redeem(to, amountFeiIn, minAmountOut);
     }
 
@@ -329,15 +267,7 @@ contract PegStabilityModule is
         address to,
         uint256 amountIn,
         uint256 minAmountOut
-    )
-        external
-        virtual
-        override
-        nonReentrant
-        whenNotPaused
-        whileMintingNotPaused
-        returns (uint256 amountFeiOut)
-    {
+    ) external virtual override nonReentrant whenNotPaused whileMintingNotPaused returns (uint256 amountFeiOut) {
         amountFeiOut = _mint(to, amountIn, minAmountOut);
     }
 
@@ -347,12 +277,7 @@ contract PegStabilityModule is
     /// First get oracle price of token
     /// Then figure out how many dollars that amount in is worth by multiplying price * amount.
     /// ensure decimals are normalized if on underlying they are not 18
-    function getMintAmountOut(uint256 amountIn)
-        public
-        view
-        override
-        returns (uint256 amountFeiOut)
-    {
+    function getMintAmountOut(uint256 amountIn) public view override returns (uint256 amountFeiOut) {
         amountFeiOut = _getMintAmountOut(amountIn);
     }
 
@@ -360,12 +285,7 @@ contract PegStabilityModule is
     /// First get oracle price of token
     /// Then figure out how many dollars that amount in is worth by multiplying price * amount.
     /// ensure decimals are normalized if on underlying they are not 18
-    function getRedeemAmountOut(uint256 amountFeiIn)
-        public
-        view
-        override
-        returns (uint256 amountTokenOut)
-    {
+    function getRedeemAmountOut(uint256 amountFeiIn) public view override returns (uint256 amountTokenOut) {
         amountTokenOut = _getRedeemAmountOut(amountFeiIn);
     }
 
@@ -390,17 +310,12 @@ contract PegStabilityModule is
     }
 
     /// @notice returns address of token this contracts balance is reported in
-    function balanceReportedIn() external view override returns (address) {
+    function balanceReportedIn() public view override returns (address) {
         return address(underlyingToken);
     }
 
     /// @notice override default behavior of not checking fei balance
-    function resistantBalanceAndFei()
-        public
-        view
-        override
-        returns (uint256, uint256)
-    {
+    function resistantBalanceAndFei() public view override returns (uint256, uint256) {
         return (balance(), feiBalance());
     }
 
@@ -408,12 +323,7 @@ contract PegStabilityModule is
 
     /// @notice helper function to get mint amount out based on current market prices
     /// @dev will revert if price is outside of bounds and bounded PSM is being used
-    function _getMintAmountOut(uint256 amountIn)
-        internal
-        view
-        virtual
-        returns (uint256 amountFeiOut)
-    {
+    function _getMintAmountOut(uint256 amountIn) internal view virtual returns (uint256 amountFeiOut) {
         Decimal.D256 memory price = readOracle();
         _validatePriceRange(price);
 
@@ -427,19 +337,13 @@ contract PegStabilityModule is
 
     /// @notice helper function to get redeem amount out based on current market prices
     /// @dev will revert if price is outside of bounds and bounded PSM is being used
-    function _getRedeemAmountOut(uint256 amountFeiIn)
-        internal
-        view
-        virtual
-        returns (uint256 amountTokenOut)
-    {
+    function _getRedeemAmountOut(uint256 amountFeiIn) internal view virtual returns (uint256 amountTokenOut) {
         Decimal.D256 memory price = readOracle();
         _validatePriceRange(price);
 
         /// get amount of dollars being provided
         Decimal.D256 memory adjustedAmountIn = Decimal.from(
-            (amountFeiIn *
-                (Constants.BASIS_POINTS_GRANULARITY - redeemFeeBasisPoints)) /
+            (amountFeiIn * (Constants.BASIS_POINTS_GRANULARITY - redeemFeeBasisPoints)) /
                 Constants.BASIS_POINTS_GRANULARITY
         );
 
@@ -471,19 +375,12 @@ contract PegStabilityModule is
     }
 
     /// @notice mint amount of FEI to the specified user on a rate limit
-    function _mintFei(address to, uint256 amount)
-        internal
-        override(CoreRef, RateLimitedMinter)
-    {
+    function _mintFei(address to, uint256 amount) internal override(CoreRef, RateLimitedMinter) {
         super._mintFei(to, amount);
     }
 
     // ----------- Hooks -----------
 
     /// @notice overriden function in the bounded PSM
-    function _validatePriceRange(Decimal.D256 memory price)
-        internal
-        view
-        virtual
-    {}
+    function _validatePriceRange(Decimal.D256 memory price) internal view virtual {}
 }

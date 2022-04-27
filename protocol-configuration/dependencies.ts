@@ -126,6 +126,8 @@ const dependencies: DependencyMap = {
       'delayedPCVMoverWethUniToBal',
       'angleDelegatorPCVDeposit',
       'uniswapLensAgEurUniswapGauge',
+      'veBalDelegatorPCVDeposit',
+      'uniswapLensAgEurUniswapGauge',
       'governanceMetadataRegistry',
       'nopeDAO',
       'podAdminGateway',
@@ -170,7 +172,8 @@ const dependencies: DependencyMap = {
       'ethPSMFeiSkimmer',
       'rariInfraFeiTimelock',
       'reptbRedeemer',
-      'laTribuFeiTimelock'
+      'laTribuFeiTimelock',
+      'voltFeiSwapContract'
     ]
   },
   ethPSMFeiSkimmer: {
@@ -250,7 +253,9 @@ const dependencies: DependencyMap = {
       'tribeMinter',
       'timelock',
       'pcvGuardian',
-      'pegExchanger'
+      'pegExchanger',
+      'voltFeiSwapContract',
+      'voltDepositWrapper'
     ]
   },
   guardian: {
@@ -522,7 +527,11 @@ const dependencies: DependencyMap = {
       'rariPool128FeiPCVDepositWrapper',
       'rariPool22FeiPCVDepositWrapper',
       'rariPool8LusdPCVDeposit',
-      'rariPool8DaiPCVDeposit'
+      'rariPool8DaiPCVDeposit',
+      'voltFusePCVDeposit',
+      'voltOracle',
+      'turboFusePCVDeposit',
+      'voltDepositWrapper'
     ]
   },
   collateralizationOracleWrapper: {
@@ -630,7 +639,9 @@ const dependencies: DependencyMap = {
       'chainlinkBALEthOracle',
       'chainlinkEthUsdOracleWrapper',
       'collateralizationOracle',
-      'balancerDepositBalWeth'
+      'balancerDepositBalWeth',
+      'balancerLensVeBalBal',
+      'balancerLensVeBalWeth'
     ]
   },
   chainlinkBALEthOracle: {
@@ -657,7 +668,10 @@ const dependencies: DependencyMap = {
       'collateralizationOracle',
       'uniswapPCVDeposit',
       'balancerDepositBalWeth',
-      'balancerDepositFeiWeth'
+      'balancerDepositFeiWeth',
+      'balancerLensBpt30Fei70Weth',
+      'balancerLensVeBalBal',
+      'balancerLensVeBalWeth'
     ]
   },
   chainlinkEurUsdOracleWrapper: {
@@ -696,7 +710,7 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core', 'chainlinkEthUsdOracleWrapper', 'chainlinkCREAMEthOracle', 'collateralizationOracle']
   },
   oneConstantOracle: {
-    contractDependencies: ['core', 'collateralizationOracle', 'balancerDepositFeiWeth']
+    contractDependencies: ['core', 'collateralizationOracle', 'balancerDepositFeiWeth', 'balancerLensBpt30Fei70Weth']
   },
   tribeUsdCompositeOracle: {
     contractDependencies: [
@@ -1008,6 +1022,24 @@ const dependencies: DependencyMap = {
   },
   governanceMetadataRegistry: {
     contractDependencies: ['core']
+  },
+  turboFusePCVDeposit: {
+    contractDependencies: ['collateralizationOracle']
+  },
+  voltFeiSwapContract: {
+    contractDependencies: ['fei', 'feiDAOTimelock']
+  },
+  voltDepositWrapper: {
+    contractDependencies: ['volt', 'feiDAOTimelock', 'collateralizationOracle', 'voltOracle']
+  },
+  volt: {
+    contractDependencies: ['voltDepositWrapper', 'voltOracle']
+  },
+  voltFusePCVDeposit: {
+    contractDependencies: ['collateralizationOracle']
+  },
+  voltOracle: {
+    contractDependencies: ['volt', 'voltDepositWrapper', 'collateralizationOracle']
   }
 };
 

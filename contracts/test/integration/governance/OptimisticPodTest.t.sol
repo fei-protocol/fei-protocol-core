@@ -22,7 +22,7 @@ contract OptimisticPodIntegrationTest is DSTest {
 
     MemberToken memberToken = MemberToken(MainnetAddresses.MEMBER_TOKEN);
 
-    ControllerV1 controller = ControllerV1(MainnetAddresses.POD_CONTROLLER);
+    ControllerV1 controller = ControllerV1(MainnetAddresses.ORCA_POD_CONTROLLER_V1_2);
 
     address proposer = address(0x1);
     address executor = address(0x2);
@@ -65,22 +65,11 @@ contract OptimisticPodIntegrationTest is DSTest {
     /// @notice Verify that the pod is set as the proposer and can propose on the timelock
     function testLinkTimelockController() public {
         address safeAddress = controller.podIdToSafe(podId);
-        TimelockController timelock = setupTimelock(
-            safeAddress,
-            safeAddress,
-            MainnetAddresses.CORE
-        );
+        TimelockController timelock = setupTimelock(safeAddress, safeAddress, MainnetAddresses.CORE);
 
         // Be able to call propose via pod/safe. This verifies that the safe has onlyPropose role
         vm.prank(safeAddress);
-        timelock.schedule(
-            address(0x10),
-            5,
-            "",
-            bytes32("testing"),
-            bytes32("random"),
-            0
-        );
+        timelock.schedule(address(0x10), 5, "", bytes32("testing"), bytes32("random"), 0);
     }
 
     /// @notice Validate that a member can be removed from a pod by the admin

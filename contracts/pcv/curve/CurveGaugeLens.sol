@@ -4,10 +4,10 @@ pragma solidity ^0.8.10;
 import "../../metagov/utils/LiquidityGaugeManager.sol";
 import "../IPCVDepositBalances.sol";
 
-/// @title GaugeLens
+/// @title CurveGaugeLens
 /// @author Fei Protocol
 /// @notice a contract to read tokens held in a gauge
-contract GaugeLens is IPCVDepositBalances {
+contract CurveGaugeLens is IPCVDepositBalances {
     /// @notice FEI token address
     address private constant FEI = 0x956F47F50A910163D8BF957Cf5846D573E7f87CA;
 
@@ -23,7 +23,7 @@ contract GaugeLens is IPCVDepositBalances {
     constructor(address _gaugeAddress, address _stakerAddress) {
         gaugeAddress = _gaugeAddress;
         stakerAddress = _stakerAddress;
-        balanceReportedIn = ILiquidityGauge(_gaugeAddress).staking_token();
+        balanceReportedIn = ILiquidityGauge(_gaugeAddress).lp_token();
     }
 
     /// @notice returns the amount of tokens staked by stakerAddress in
@@ -39,12 +39,7 @@ contract GaugeLens is IPCVDepositBalances {
     /// underlying amounts of XYZ and FEI tokens held within the LP tokens.
     /// This lens can be coupled with another lens in order to compute the
     /// underlying amounts of FEI and XYZ held inside the LP tokens.
-    function resistantBalanceAndFei()
-        public
-        view
-        override
-        returns (uint256, uint256)
-    {
+    function resistantBalanceAndFei() public view override returns (uint256, uint256) {
         uint256 stakedBalance = balance();
         if (balanceReportedIn == FEI) {
             return (stakedBalance, stakedBalance);

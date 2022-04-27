@@ -53,16 +53,9 @@ contract NopeDAOIntegrationTest is DSTest {
         vm.stopPrank();
 
         // Create pod, using a podFactory
-        (
-            podId,
-            podTimelock,
-            safe,
-            factory,
-            podAdmin,
-            podConfig
-        ) = deployPodWithSystem(
+        (podId, podTimelock, safe, factory, podAdmin, podConfig) = deployPodWithSystem(
             MainnetAddresses.CORE,
-            MainnetAddresses.POD_CONTROLLER,
+            MainnetAddresses.ORCA_POD_CONTROLLER_V1_2,
             MainnetAddresses.MEMBER_TOKEN,
             podExecutor,
             MainnetAddresses.FEI_DAO_TIMELOCK,
@@ -124,22 +117,14 @@ contract NopeDAOIntegrationTest is DSTest {
 
         uint256 newVotingDelay = 10;
         bytes[] memory calldatas = new bytes[](1);
-        bytes memory data = abi.encodePacked(
-            bytes4(keccak256(bytes("setVotingDelay(uint256)"))),
-            newVotingDelay
-        );
+        bytes memory data = abi.encodePacked(bytes4(keccak256(bytes("setVotingDelay(uint256)"))), newVotingDelay);
         calldatas[0] = data;
 
         string memory description = "Dummy proposal";
         bytes32 descriptionHash = keccak256(bytes(description));
 
         vm.prank(user);
-        uint256 proposalId = nopeDAO.propose(
-            targets,
-            values,
-            calldatas,
-            description
-        );
+        uint256 proposalId = nopeDAO.propose(targets, values, calldatas, description);
         vm.roll(block.number + 1);
 
         // Cast a vote for the proposal, in excess of quorum
@@ -165,9 +150,7 @@ contract NopeDAOIntegrationTest is DSTest {
         DummyStorage dummyContract = new DummyStorage();
         assertEq(dummyContract.getVariable(), 5);
 
-        TimelockController timelockContract = TimelockController(
-            payable(podTimelock)
-        );
+        TimelockController timelockContract = TimelockController(payable(podTimelock));
 
         // 2. Schedle a transaction from the Pod's safe address to timelock. Transaction sets a variable on a dummy contract
         uint256 newDummyContractVar = 10;
@@ -205,22 +188,13 @@ contract NopeDAOIntegrationTest is DSTest {
         values[0] = uint256(0);
 
         bytes[] memory calldatas = new bytes[](1);
-        bytes memory data = abi.encodeWithSignature(
-            "veto(uint256,bytes32)",
-            podId,
-            timelockProposalId
-        );
+        bytes memory data = abi.encodeWithSignature("veto(uint256,bytes32)", podId, timelockProposalId);
         calldatas[0] = data;
 
         string memory description = "Veto proposal";
         bytes32 descriptionHash = keccak256(bytes(description));
 
-        uint256 nopeDAOProposalId = nopeDAO.propose(
-            targets,
-            values,
-            calldatas,
-            description
-        );
+        uint256 nopeDAOProposalId = nopeDAO.propose(targets, values, calldatas, description);
 
         // 5. Have user with >quorum delegated TRIBE veto
         vm.roll(block.number + 1);
@@ -235,9 +209,7 @@ contract NopeDAOIntegrationTest is DSTest {
         nopeDAO.execute(targets, values, calldatas, descriptionHash);
 
         // 6. Verify that timelocked transaction was vetoed
-        uint256 proposalTimestampReady = timelockContract.getTimestamp(
-            timelockProposalId
-        );
+        uint256 proposalTimestampReady = timelockContract.getTimestamp(timelockProposalId);
         assertEq(proposalTimestampReady, 0);
     }
 }

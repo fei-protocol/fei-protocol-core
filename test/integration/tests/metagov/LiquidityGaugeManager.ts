@@ -243,5 +243,21 @@ describe('e2e-metagov', function () {
         expect(await contracts.angleAgEurFeiPool.balanceOf(manager.address)).to.be.equal(e18(2000));
       });
     });
+
+    describe('claimGaugeRewards()', function () {
+      it('should be able to claim rewards', async function () {
+        // not reverting is enough of a test here (we'd have to simulate
+        // seeding the gauge with rewards & actually staking tokens to
+        // have a non-zero claim...).
+        manager.claimGaugeRewards(contracts.angleAgEurFeiPool.address);
+      });
+
+      it('should revert for gauges that are not configured', async function () {
+        await expectRevert(
+          manager.claimGaugeRewards(contracts.angle.address),
+          'LiquidityGaugeManager: token has no gauge configured'
+        );
+      });
+    });
   });
 });

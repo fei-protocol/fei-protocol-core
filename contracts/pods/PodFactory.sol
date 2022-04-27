@@ -20,14 +20,14 @@ import {PodExecutor} from "./PodExecutor.sol";
 /// The timelock and Orca pod are then linked up so that the Orca pod is
 /// the only proposer and executor.
 contract PodFactory is CoreRef, IPodFactory {
-    /// @notice Orca controller for Pod
-    ControllerV1 public immutable override podController;
-
     /// @notice Orca membership token for the pods. Handles permissioning pod members
     MemberToken public immutable memberToken;
 
     /// @notice Public contract that will be granted to execute all timelocks created
     PodExecutor public immutable podExecutor;
+
+    /// @notice Default podController used to create pods
+    ControllerV1 public override defaultPodController;
 
     /// @notice Mapping between podId and it's timelock
     mapping(uint256 => address) public override getPodTimelock;
@@ -45,17 +45,17 @@ contract PodFactory is CoreRef, IPodFactory {
     uint256 public constant MIN_TIMELOCK_DELAY = 1 days;
 
     /// @param _core Fei core address
-    /// @param _podController Orca pod controller
     /// @param _memberToken Membership token that manages the Orca pod membership
+    /// @param _defaultPodController Default pod controller that will be used to create pods initially
     /// @param _podExecutor Public contract that will be granted to execute all timelocks created
     constructor(
         address _core,
-        address _podController,
         address _memberToken,
+        address _defaultPodController,
         address _podExecutor
     ) CoreRef(_core) {
         podExecutor = PodExecutor(_podExecutor);
-        podController = ControllerV1(_podController);
+        defaultPodController = ControllerV1(_defaultPodController);
         memberToken = MemberToken(_memberToken);
     }
 
@@ -67,12 +67,7 @@ contract PodFactory is CoreRef, IPodFactory {
     }
 
     /// @notice Get the safe addresses of all pods created by this factory
-    function getPodSafeAddresses()
-        external
-        view
-        override
-        returns (address[] memory)
-    {
+    function getPodSafeAddresses() external view override returns (address[] memory) {
         return podSafeAddresses;
     }
 
@@ -81,20 +76,21 @@ contract PodFactory is CoreRef, IPodFactory {
         return memberToken;
     }
 
+    /// @notice Get the pod controller for a podId
+    function getPodController(uint256 podId) external view override returns (ControllerV1) {
+        return ControllerV1(memberToken.memberController(podId));
+    }
+
     /// @notice Get the address of the Gnosis safe that represents a pod
     /// @param podId Unique id for the orca pod
     function getPodSafe(uint256 podId) public view override returns (address) {
+        ControllerV1 podController = ControllerV1(memberToken.memberController(podId));
         return podController.podIdToSafe(podId);
     }
 
     /// @notice Get the number of pod members
     /// @param podId Unique id for the orca pod
-    function getNumMembers(uint256 podId)
-        external
-        view
-        override
-        returns (uint256)
-    {
+    function getNumMembers(uint256 podId) external view override returns (uint256) {
         address safe = getPodSafe(podId);
         address[] memory members = IGnosisSafe(safe).getOwners();
         return uint256(members.length);
@@ -102,24 +98,15 @@ contract PodFactory is CoreRef, IPodFactory {
 
     /// @notice Get all members on the pod
     /// @param podId Unique id for the orca pod
-    function getPodMembers(uint256 podId)
-        public
-        view
-        override
-        returns (address[] memory)
-    {
+    function getPodMembers(uint256 podId) public view override returns (address[] memory) {
+        ControllerV1 podController = ControllerV1(memberToken.memberController(podId));
         address safeAddress = podController.podIdToSafe(podId);
         return IGnosisSafe(safeAddress).getOwners();
     }
 
     /// @notice Get the signer threshold on the pod
     /// @param podId Unique id for the orca pod
-    function getPodThreshold(uint256 podId)
-        external
-        view
-        override
-        returns (uint256)
-    {
+    function getPodThreshold(uint256 podId) external view override returns (uint256) {
         address safe = getPodSafe(podId);
         uint256 threshold = uint256(IGnosisSafe(safe).getThreshold());
         return threshold;
@@ -133,22 +120,14 @@ contract PodFactory is CoreRef, IPodFactory {
     /// @notice Get the podAdmin from the base Orca controller
     /// @dev Controller only allows existing admin to change
     /// @param podId Unique id for the orca pod
-    function getPodAdmin(uint256 podId)
-        external
-        view
-        override
-        returns (address)
-    {
+    function getPodAdmin(uint256 podId) external view override returns (address) {
+        ControllerV1 podController = ControllerV1(memberToken.memberController(podId));
         return podController.podAdmin(podId);
     }
 
     /// @notice Get whether membership transfers are enabled for a pod
-    function getIsMembershipTransferLocked(uint256 podId)
-        external
-        view
-        override
-        returns (bool)
-    {
+    function getIsMembershipTransferLocked(uint256 podId) external view override returns (bool) {
+        ControllerV1 podController = ControllerV1(memberToken.memberController(podId));
         return podController.isTransferLocked(podId);
     }
 
@@ -182,13 +161,21 @@ contract PodFactory is CoreRef, IPodFactory {
             address
         )
     {
-        (uint256 podId, address timelock, address safe) = _createOptimisticPod(
-            _config
-        );
+        (uint256 podId, address timelock, address safe) = _createOptimisticPod(_config);
 
         // Disable membership transfers by default
         PodAdminGateway(_config.admin).lockMembershipTransfers(podId);
         return (podId, timelock, safe);
+    }
+
+    /// @notice Update the default pod controller
+    function updateDefaultPodController(address _newDefaultController)
+        external
+        override
+        hasAnyOfTwoRoles(TribeRoles.GOVERNOR, TribeRoles.POD_ADMIN)
+    {
+        emit UpdateDefaultPodController(address(defaultPodController), _newDefaultController);
+        defaultPodController = ControllerV1(_newDefaultController);
     }
 
     ////////////////////////     INTERNAL          ////////////////////////////
@@ -218,18 +205,8 @@ contract PodFactory is CoreRef, IPodFactory {
         // Timelock will by default be address(0) if no `minDelay` is provided
         address timelock;
         if (_config.minDelay != 0) {
-            require(
-                _config.minDelay >= MIN_TIMELOCK_DELAY,
-                "Min delay too small"
-            );
-            timelock = address(
-                _createTimelock(
-                    safeAddress,
-                    _config.minDelay,
-                    address(podExecutor),
-                    _config.admin
-                )
-            );
+            require(_config.minDelay >= MIN_TIMELOCK_DELAY, "Min delay too small");
+            timelock = address(_createTimelock(safeAddress, _config.minDelay, address(podExecutor), _config.admin));
             // Set mapping from podId to timelock for reference
             getPodTimelock[podId] = timelock;
             getPodId[timelock] = podId;
@@ -250,16 +227,8 @@ contract PodFactory is CoreRef, IPodFactory {
         address _admin,
         uint256 podId
     ) internal returns (address) {
-        podController.createPod(
-            _members,
-            _threshold,
-            _admin,
-            _label,
-            _ensString,
-            podId,
-            _imageUrl
-        );
-        return podController.podIdToSafe(podId);
+        defaultPodController.createPod(_members, _threshold, _admin, _label, _ensString, podId, _imageUrl);
+        return defaultPodController.podIdToSafe(podId);
     }
 
     /// @notice Create a timelock, linking to an Orca pod
@@ -268,7 +237,10 @@ contract PodFactory is CoreRef, IPodFactory {
     /// @param publicExecutor Non-permissioned smart contract that
     ///        allows any address to execute a ready transaction
     /// @param podAdmin Address which is the admin of the Orca pods
-    ///        Will also be able to propose
+    /// @dev Roles that individual addresses are granted on the relevant timelock:
+    //         safeAddress - PROPOSER_ROLE, CANCELLER_ROLE, EXECUTOR_ROLE
+    //         podAdmin - CANCELLER_ROLE
+    //         publicExecutor - EXECUTOR_ROLE
     function _createTimelock(
         address safeAddress,
         uint256 minDelay,
@@ -283,11 +255,11 @@ contract PodFactory is CoreRef, IPodFactory {
         executors[0] = safeAddress;
         executors[1] = publicExecutor;
 
-        TimelockController timelock = new TimelockController(
-            minDelay,
-            proposers,
-            executors
-        );
+        TimelockController timelock = new TimelockController(minDelay, proposers, executors);
+
+        // Revoke PROPOSER_ROLE priviledges from podAdmin. Only pod Safe can propose
+        timelock.revokeRole(timelock.PROPOSER_ROLE(), podAdmin);
+
         // Revoke TIMELOCK_ADMIN_ROLE priviledges from deployer factory
         timelock.revokeRole(timelock.TIMELOCK_ADMIN_ROLE(), address(this));
 

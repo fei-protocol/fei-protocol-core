@@ -19,11 +19,7 @@ contract RoleBastion is CoreRef {
     ///      have an admin i.e. that it is a new admin.
     ///      Specificially, can not create the bytes32(0) role as this is set as the CONTRACT_ADMIN_ROLE
     ///      in core and has not been created yet.
-    function createRole(bytes32 role)
-        external
-        onlyTribeRole(TribeRoles.ROLE_ADMIN)
-        whenNotPaused
-    {
+    function createRole(bytes32 role) external onlyTribeRole(TribeRoles.ROLE_ADMIN) whenNotPaused {
         require(role != bytes32(0), "Can not create zero role");
 
         bytes32 roleAdmin = core().getRoleAdmin(role);

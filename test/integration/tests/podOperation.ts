@@ -1,4 +1,4 @@
-import { PodFactory } from '@custom-types/contracts';
+import { PodAdminGateway, PodFactory } from '@custom-types/contracts';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
@@ -64,6 +64,7 @@ describe('Pod operation and veto', function () {
     doLogging && console.log(`Environment loaded.`);
 
     podFactory = contracts.podFactory as PodFactory;
+    const podAdminGateway = contracts.podAdminGateway as PodAdminGateway;
     tribalCouncilTimelockSigner = await getImpersonatedSigner(contractAddresses.tribalCouncilTimelock);
 
     await forceEth(contractAddresses.tribalCouncilTimelock);
@@ -81,7 +82,8 @@ describe('Pod operation and veto', function () {
       ensString: 'testPod.eth',
       imageUrl: 'testPod.com',
       minDelay: MIN_TIMELOCK_DELAY,
-      numMembers: 4
+      numMembers: 4,
+      admin: podAdminGateway.address
     };
 
     // Test Fixture:
@@ -99,9 +101,10 @@ describe('Pod operation and veto', function () {
     // 1. Deploy a pod through which a proposal will be executed
     const deployTx = await podFactory.connect(tribalCouncilTimelockSigner).createOptimisticPod(podConfig);
     const { args } = (await deployTx.wait()).events.find((elem) => elem.event === 'CreatePod');
-    const safeAddress = await podFactory.getPodSafe(args.podId);
-    timelockAddress = await podFactory.getPodTimelock(podId);
 
+    podId = args.podId;
+    const safeAddress = await podFactory.getPodSafe(podId);
+    timelockAddress = await podFactory.getPodTimelock(podId);
     const podMemberSigner = await getImpersonatedSigner(podConfig.members[0]);
 
     // 2.0 Instantiate Gnosis SDK

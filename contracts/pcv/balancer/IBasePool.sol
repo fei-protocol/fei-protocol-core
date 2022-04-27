@@ -13,10 +13,7 @@ interface IBasePool is IERC20 {
 
     function setSwapFeePercentage(uint256 swapFeePercentage) external;
 
-    function setAssetManagerPoolConfig(
-        IERC20 token,
-        IAssetManager.PoolConfig memory poolConfig
-    ) external;
+    function setAssetManagerPoolConfig(IERC20 token, IAssetManager.PoolConfig memory poolConfig) external;
 
     function setPaused(bool paused) external;
 

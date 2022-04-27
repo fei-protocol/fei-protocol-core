@@ -39,9 +39,7 @@ function getAddresses() pure returns (FeiTestAddresses memory) {
 
 /// @dev Deploy and configure Core
 function getCore() returns (Core) {
-    address HEVM_ADDRESS = address(
-        bytes20(uint160(uint256(keccak256("hevm cheat code"))))
-    );
+    address HEVM_ADDRESS = address(bytes20(uint160(uint256(keccak256("hevm cheat code")))));
     Vm vm = Vm(HEVM_ADDRESS);
     FeiTestAddresses memory addresses = getAddresses();
 

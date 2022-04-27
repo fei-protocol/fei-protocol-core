@@ -35,7 +35,7 @@ export const permissions = {
   PSM_ADMIN_ROLE: ['tribalCouncilTimelock'],
   TRIBAL_CHIEF_ADMIN_ROLE: ['optimisticTimelock', 'tribalChiefSyncV2'],
   FUSE_ADMIN: ['optimisticTimelock', 'tribalChiefSyncV2'],
-  VOTIUM_ADMIN_ROLE: ['opsOptimisticTimelock', 'protocolPodTimelock'],
+  VOTIUM_ADMIN_ROLE: ['opsOptimisticTimelock'],
   PCV_GUARDIAN_ADMIN_ROLE: ['optimisticTimelock'],
   METAGOVERNANCE_VOTE_ADMIN: ['feiDAOTimelock', 'opsOptimisticTimelock'],
   METAGOVERNANCE_TOKEN_STAKING: ['feiDAOTimelock', 'opsOptimisticTimelock'],

@@ -58,11 +58,7 @@ contract PCVSentinel is IPCVSentinel, CoreRef, ReentrancyGuard {
      * @notice adds a guard contract to the PCV Sentinel
      * @param guard the guard-contract to add
      */
-    function knight(address guard)
-        external
-        override
-        hasAnyOfTwoRoles(TribeRoles.GUARDIAN, TribeRoles.GOVERNOR)
-    {
+    function knight(address guard) external override hasAnyOfTwoRoles(TribeRoles.GUARDIAN, TribeRoles.GOVERNOR) {
         guards.add(guard);
 
         // Inform the kingdom of this glorious news
@@ -73,11 +69,7 @@ contract PCVSentinel is IPCVSentinel, CoreRef, ReentrancyGuard {
      * @notice removes a guard
      * @param traitor the guard-contract to remove
      */
-    function slay(address traitor)
-        external
-        override
-        hasAnyOfTwoRoles(TribeRoles.GUARDIAN, TribeRoles.GOVERNOR)
-    {
+    function slay(address traitor) external override hasAnyOfTwoRoles(TribeRoles.GUARDIAN, TribeRoles.GOVERNOR) {
         guards.remove(traitor);
 
         // Inform the kingdom of this sudden and inevitable betrayal
@@ -94,23 +86,14 @@ contract PCVSentinel is IPCVSentinel, CoreRef, ReentrancyGuard {
         require(guards.contains(guard), "Guard does not exist.");
         require(IGuard(guard).check(), "No need to protec.");
 
-        (
-            address[] memory targets,
-            bytes[] memory calldatas,
-            uint256[] memory values
-        ) = IGuard(guard).getProtecActions();
+        (address[] memory targets, bytes[] memory calldatas, uint256[] memory values) = IGuard(guard)
+            .getProtecActions();
 
         for (uint256 i = 0; i < targets.length; i++) {
             require(targets[i] != address(this), "Cannot target self.");
             require(address(this).balance >= values[i], "Insufficient ETH.");
-            (bool success, bytes memory returndata) = targets[i].call{
-                value: values[i]
-            }(calldatas[i]);
-            Address.verifyCallResult(
-                success,
-                returndata,
-                "Guard sub-action failed with empty error message."
-            );
+            (bool success, bytes memory returndata) = targets[i].call{value: values[i]}(calldatas[i]);
+            Address.verifyCallResult(success, returndata, "Guard sub-action failed with empty error message.");
         }
 
         emit Protected(guard);

@@ -3,13 +3,13 @@ pragma solidity ^0.8.4;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {ERC20VotesComp} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20VotesComp.sol";
-import {Core} from "../../core/Core.sol";
-import {Vm} from "../utils/Vm.sol";
-import {DSTest} from "../utils/DSTest.sol";
-import {NopeDAO} from "../../dao/nopeDAO/NopeDAO.sol";
-import {getCore, getAddresses, FeiTestAddresses, DummyStorage} from "../utils/Fixtures.sol";
-import {Tribe} from "../../tribe/Tribe.sol";
-import {TribeRoles} from "../../core/TribeRoles.sol";
+import {Core} from "../../../core/Core.sol";
+import {Vm} from "../../utils/Vm.sol";
+import {DSTest} from "../../utils/DSTest.sol";
+import {NopeDAO} from "../../../dao/nopeDAO/NopeDAO.sol";
+import {getCore, getAddresses, FeiTestAddresses, DummyStorage} from "../../utils/Fixtures.sol";
+import {Tribe} from "../../../tribe/Tribe.sol";
+import {TribeRoles} from "../../../core/TribeRoles.sol";
 
 /// @notice Fixture to create a dummy proposal
 function createDummyProposal(address dummyContract, uint256 newVariable)
@@ -28,10 +28,7 @@ function createDummyProposal(address dummyContract, uint256 newVariable)
     values[0] = uint256(0);
 
     bytes[] memory calldatas = new bytes[](1);
-    bytes memory data = abi.encodePacked(
-        bytes4(keccak256(bytes("setVariable(uint256)"))),
-        newVariable
-    );
+    bytes memory data = abi.encodePacked(bytes4(keccak256(bytes("setVariable(uint256)"))), newVariable);
     calldatas[0] = data;
 
     string memory description = "Dummy proposal";
@@ -108,12 +105,7 @@ contract NopeDAOTest is DSTest {
         ) = createDummyProposal(address(dummyStorageContract), newVariable);
 
         // Propose and validate state
-        uint256 proposalId = nopeDAO.propose(
-            targets,
-            values,
-            calldatas,
-            description
-        );
+        uint256 proposalId = nopeDAO.propose(targets, values, calldatas, description);
 
         // 1. Validate Pending
         uint8 statePending = uint8(nopeDAO.state(proposalId));
@@ -149,12 +141,7 @@ contract NopeDAOTest is DSTest {
         ) = createDummyProposal(address(dummyStorageContract), newVariable);
 
         vm.prank(user);
-        uint256 proposalId = nopeDAO.propose(
-            targets,
-            values,
-            calldatas,
-            description
-        );
+        uint256 proposalId = nopeDAO.propose(targets, values, calldatas, description);
 
         // Advance past the 1 voting block
         vm.roll(block.number + 1);
