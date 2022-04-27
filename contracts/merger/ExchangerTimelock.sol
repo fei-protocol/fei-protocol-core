@@ -20,13 +20,10 @@ contract ExchangerTimelock is Ownable {
     address public immutable timelock;
 
     /// @notice rari DAO timelock can clawback in event of no-deal
-    address public constant guardian =
-        0x8ace03Fc45139fDDba944c6A4082b604041d19FC;
+    address public constant guardian = 0x8ace03Fc45139fDDba944c6A4082b604041d19FC;
 
-    IERC20 public constant rgt =
-        IERC20(0xD291E7a03283640FDc51b121aC401383A46cC623);
-    IERC20 public constant tribe =
-        IERC20(0xc7283b66Eb1EB5FB86327f08e1B5816b0720212B);
+    IERC20 public constant rgt = IERC20(0xD291E7a03283640FDc51b121aC401383A46cC623);
+    IERC20 public constant tribe = IERC20(0xc7283b66Eb1EB5FB86327f08e1B5816b0720212B);
 
     constructor(IExchanger _exchanger, address _timelock) {
         exchanger = _exchanger;

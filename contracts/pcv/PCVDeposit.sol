@@ -34,12 +34,7 @@ abstract contract PCVDeposit is IPCVDeposit, CoreRef {
     /// @notice withdraw ETH from the contract
     /// @param to address to send ETH
     /// @param amountOut amount of ETH to send
-    function withdrawETH(address payable to, uint256 amountOut)
-        external
-        virtual
-        override
-        onlyPCVController
-    {
+    function withdrawETH(address payable to, uint256 amountOut) external virtual override onlyPCVController {
         Address.sendValue(to, amountOut);
         emit WithdrawETH(msg.sender, to, amountOut);
     }
@@ -48,17 +43,8 @@ abstract contract PCVDeposit is IPCVDeposit, CoreRef {
 
     function balanceReportedIn() public view virtual override returns (address);
 
-    function resistantBalanceAndFei()
-        public
-        view
-        virtual
-        override
-        returns (uint256, uint256)
-    {
+    function resistantBalanceAndFei() public view virtual override returns (uint256, uint256) {
         uint256 tokenBalance = balance();
-        return (
-            tokenBalance,
-            balanceReportedIn() == address(fei()) ? tokenBalance : 0
-        );
+        return (tokenBalance, balanceReportedIn() == address(fei()) ? tokenBalance : 0);
     }
 }

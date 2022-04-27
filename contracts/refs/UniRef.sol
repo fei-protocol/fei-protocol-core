@@ -37,17 +37,10 @@ abstract contract UniRef is IUniRef, OracleRef {
     }
 
     /// @notice pair reserves with fei listed first
-    function getReserves()
-        public
-        view
-        override
-        returns (uint256 feiReserves, uint256 tokenReserves)
-    {
+    function getReserves() public view override returns (uint256 feiReserves, uint256 tokenReserves) {
         address token0 = pair.token0();
         (uint256 reserve0, uint256 reserve1, ) = pair.getReserves();
-        (feiReserves, tokenReserves) = address(fei()) == token0
-            ? (reserve0, reserve1)
-            : (reserve1, reserve0);
+        (feiReserves, tokenReserves) = address(fei()) == token0 ? (reserve0, reserve1) : (reserve1, reserve0);
         return (feiReserves, tokenReserves);
     }
 
