@@ -9,8 +9,7 @@ export const permissions = {
     'daiFixedPricePSM',
     'ethPSM',
     'lusdPSM',
-    'balancerDepositFeiWeth',
-    'globalRateLimitedMinter'
+    'balancerDepositFeiWeth'
   ],
   BURNER_ROLE: [],
   GOVERN_ROLE: ['core', 'feiDAOTimelock'],
