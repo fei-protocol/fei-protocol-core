@@ -44,11 +44,11 @@ See the [docs](https://docs.fei.money)
 Every Thursday, do the following for the weekly release:
 
  1) Update the current release branch's fixed hardhat block to something within the last hour
- 2) Clean the release branch if necessary (add these commits straight to the release branch)
+ 2) Clean the release branch if necessary:
     - fix any failing tests
     - clear out proposals-config
  3) Merge the release branch into master. Create a release via the github UI, using the version number of the release branch.
- 4) Merge master back into develop to ensure that any fixes added are pulled back into develop.
+ 4) Merge master back into develop to ensure that any fixes added are pulled back into develop, and so that the hardcoded fork block is set correctly for the most recent release.
  5) Create a new branch off of develop of the format release/major.minor.patch, using an incremented minor version number
 
 For hotfix releases or bugfixes to master, branch off of master, add in the necessary fixes, and merge back into master.
