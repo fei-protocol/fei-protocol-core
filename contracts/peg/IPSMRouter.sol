@@ -13,16 +13,10 @@ interface IPSMRouter {
     function fei() external returns (IFei);
 
     /// @notice calculate the amount of FEI out for a given `amountIn` of underlying
-    function getMintAmountOut(uint256 amountIn)
-        external
-        view
-        returns (uint256 amountFeiOut);
+    function getMintAmountOut(uint256 amountIn) external view returns (uint256 amountFeiOut);
 
     /// @notice calculate the amount of underlying out for a given `amountFeiIn` of FEI
-    function getRedeemAmountOut(uint256 amountFeiIn)
-        external
-        view
-        returns (uint256 amountOut);
+    function getRedeemAmountOut(uint256 amountFeiIn) external view returns (uint256 amountOut);
 
     /// @notice the maximum mint amount out
     function getMaxMintAmountOut() external view returns (uint256);

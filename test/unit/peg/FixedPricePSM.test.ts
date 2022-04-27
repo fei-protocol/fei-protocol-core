@@ -449,13 +449,6 @@ describe('FixedPricePSM', function () {
         );
       });
 
-      it('fails when token is not approved to be spent by the PSM', async () => {
-        await expectRevert(
-          psm.connect(impersonatedSigners[userAddress]).mint(userAddress, mintAmount, 0),
-          'ERC20: insufficient allowance'
-        );
-      });
-
       it('mint fails when contract is paused', async () => {
         await psm.connect(impersonatedSigners[governorAddress]).pause();
         expect(await psm.paused()).to.be.true;
@@ -819,7 +812,7 @@ describe('FixedPricePSM', function () {
         await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, 100);
         await expectRevert(
           psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, 100, 0),
-          'ERC20: insufficient allowance'
+          'ERC20: transfer amount exceeds allowance'
         );
       });
     });

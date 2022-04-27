@@ -43,10 +43,7 @@ abstract contract CoreRef is ICoreRef, Pausable {
     }
 
     modifier onlyPCVController() {
-        require(
-            _core.isPCVController(msg.sender),
-            "CoreRef: Caller is not a PCV controller"
-        );
+        require(_core.isPCVController(msg.sender), "CoreRef: Caller is not a PCV controller");
         _;
     }
 
@@ -59,10 +56,7 @@ abstract contract CoreRef is ICoreRef, Pausable {
     }
 
     modifier onlyGovernor() {
-        require(
-            _core.isGovernor(msg.sender),
-            "CoreRef: Caller is not a governor"
-        );
+        require(_core.isGovernor(msg.sender), "CoreRef: Caller is not a governor");
         _;
     }
 
@@ -76,9 +70,7 @@ abstract contract CoreRef is ICoreRef, Pausable {
 
     modifier isGovernorOrGuardianOrAdmin() {
         require(
-            _core.isGovernor(msg.sender) ||
-                _core.isGuardian(msg.sender) ||
-                isContractAdmin(msg.sender),
+            _core.isGovernor(msg.sender) || _core.isGuardian(msg.sender) || isContractAdmin(msg.sender),
             "CoreRef: Caller is not governor or guardian or admin"
         );
         _;
@@ -92,11 +84,7 @@ abstract contract CoreRef is ICoreRef, Pausable {
 
     // Modifiers to allow any combination of roles
     modifier hasAnyOfTwoRoles(bytes32 role1, bytes32 role2) {
-        require(
-            _core.hasRole(role1, msg.sender) ||
-                _core.hasRole(role2, msg.sender),
-            "UNAUTHORIZED"
-        );
+        require(_core.hasRole(role1, msg.sender) || _core.hasRole(role2, msg.sender), "UNAUTHORIZED");
         _;
     }
 
@@ -106,9 +94,7 @@ abstract contract CoreRef is ICoreRef, Pausable {
         bytes32 role3
     ) {
         require(
-            _core.hasRole(role1, msg.sender) ||
-                _core.hasRole(role2, msg.sender) ||
-                _core.hasRole(role3, msg.sender),
+            _core.hasRole(role1, msg.sender) || _core.hasRole(role2, msg.sender) || _core.hasRole(role3, msg.sender),
             "UNAUTHORIZED"
         );
         _;
@@ -174,21 +160,12 @@ abstract contract CoreRef is ICoreRef, Pausable {
     }
 
     /// @notice sets a new admin role for this contract
-    function setContractAdminRole(bytes32 newContractAdminRole)
-        external
-        override
-        onlyGovernor
-    {
+    function setContractAdminRole(bytes32 newContractAdminRole) external override onlyGovernor {
         _setContractAdminRole(newContractAdminRole);
     }
 
     /// @notice returns whether a given address has the admin role for this contract
-    function isContractAdmin(address _admin)
-        public
-        view
-        override
-        returns (bool)
-    {
+    function isContractAdmin(address _admin) public view override returns (bool) {
         return _core.hasRole(CONTRACT_ADMIN_ROLE, _admin);
     }
 
@@ -245,9 +222,6 @@ abstract contract CoreRef is ICoreRef, Pausable {
     function _setContractAdminRole(bytes32 newContractAdminRole) internal {
         bytes32 oldContractAdminRole = CONTRACT_ADMIN_ROLE;
         CONTRACT_ADMIN_ROLE = newContractAdminRole;
-        emit ContractAdminRoleUpdate(
-            oldContractAdminRole,
-            newContractAdminRole
-        );
+        emit ContractAdminRoleUpdate(oldContractAdminRole, newContractAdminRole);
     }
 }

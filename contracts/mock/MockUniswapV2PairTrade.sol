@@ -41,12 +41,8 @@ contract MockUniswapV2PairTrade {
     ) external {
         uint32 timeElapsed = blockTimestamp - blockTimestampLast;
         if (timeElapsed > 0 && reserve0 != 0 && reserve1 != 0) {
-            price0CumulativeLast +=
-                uint256(FixedPoint.fraction(reserve1, reserve0)._x) *
-                timeElapsed;
-            price1CumulativeLast +=
-                uint256(FixedPoint.fraction(reserve0, reserve1)._x) *
-                timeElapsed;
+            price0CumulativeLast += uint256(FixedPoint.fraction(reserve1, reserve0)._x) * timeElapsed;
+            price1CumulativeLast += uint256(FixedPoint.fraction(reserve0, reserve1)._x) * timeElapsed;
         }
         reserve0 = newReserve0;
         reserve1 = newReserve1;

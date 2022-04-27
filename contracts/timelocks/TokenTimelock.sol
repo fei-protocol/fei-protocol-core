@@ -35,10 +35,7 @@ abstract contract TokenTimelock is ITokenTimelock, Timed {
         address _clawbackAdmin
     ) Timed(_duration) {
         require(_duration != 0, "TokenTimelock: duration is 0");
-        require(
-            _beneficiary != address(0),
-            "TokenTimelock: Beneficiary must not be 0 address"
-        );
+        require(_beneficiary != address(0), "TokenTimelock: Beneficiary must not be 0 address");
 
         beneficiary = _beneficiary;
         _initTimed();
@@ -61,39 +58,23 @@ abstract contract TokenTimelock is ITokenTimelock, Timed {
     }
 
     modifier onlyBeneficiary() {
-        require(
-            msg.sender == beneficiary,
-            "TokenTimelock: Caller is not a beneficiary"
-        );
+        require(msg.sender == beneficiary, "TokenTimelock: Caller is not a beneficiary");
         _;
     }
 
     /// @notice releases `amount` unlocked tokens to address `to`
-    function release(address to, uint256 amount)
-        external
-        override
-        onlyBeneficiary
-        balanceCheck
-    {
+    function release(address to, uint256 amount) external override onlyBeneficiary balanceCheck {
         require(amount != 0, "TokenTimelock: no amount desired");
         require(passedCliff(), "TokenTimelock: Cliff not passed");
 
         uint256 available = availableForRelease();
-        require(
-            amount <= available,
-            "TokenTimelock: not enough released tokens"
-        );
+        require(amount <= available, "TokenTimelock: not enough released tokens");
 
         _release(to, amount);
     }
 
     /// @notice releases maximum unlocked tokens to address `to`
-    function releaseMax(address to)
-        external
-        override
-        onlyBeneficiary
-        balanceCheck
-    {
+    function releaseMax(address to) external override onlyBeneficiary balanceCheck {
         require(passedCliff(), "TokenTimelock: Cliff not passed");
         _release(to, availableForRelease());
     }
@@ -112,21 +93,13 @@ abstract contract TokenTimelock is ITokenTimelock, Timed {
     function availableForRelease() public view override returns (uint256) {
         uint256 elapsed = timeSinceStart();
 
-        uint256 totalAvailable = _proportionAvailable(
-            initialBalance,
-            elapsed,
-            duration
-        );
+        uint256 totalAvailable = _proportionAvailable(initialBalance, elapsed, duration);
         uint256 netAvailable = totalAvailable - alreadyReleasedAmount();
         return netAvailable;
     }
 
     /// @notice current beneficiary can appoint new beneficiary, which must be accepted
-    function setPendingBeneficiary(address _pendingBeneficiary)
-        public
-        override
-        onlyBeneficiary
-    {
+    function setPendingBeneficiary(address _pendingBeneficiary) public override onlyBeneficiary {
         pendingBeneficiary = _pendingBeneficiary;
         emit PendingBeneficiaryUpdate(_pendingBeneficiary);
     }
@@ -137,10 +110,7 @@ abstract contract TokenTimelock is ITokenTimelock, Timed {
     }
 
     function clawback() public balanceCheck {
-        require(
-            msg.sender == clawbackAdmin,
-            "TokenTimelock: Only clawbackAdmin"
-        );
+        require(msg.sender == clawbackAdmin, "TokenTimelock: Only clawbackAdmin");
         if (passedCliff()) {
             _release(beneficiary, availableForRelease());
         }
@@ -158,10 +128,7 @@ abstract contract TokenTimelock is ITokenTimelock, Timed {
     ) internal pure virtual returns (uint256);
 
     function _setBeneficiary(address newBeneficiary) internal {
-        require(
-            newBeneficiary == pendingBeneficiary,
-            "TokenTimelock: Caller is not pending beneficiary"
-        );
+        require(newBeneficiary == pendingBeneficiary, "TokenTimelock: Caller is not pending beneficiary");
         beneficiary = newBeneficiary;
         emit BeneficiaryUpdate(newBeneficiary);
         pendingBeneficiary = address(0);
