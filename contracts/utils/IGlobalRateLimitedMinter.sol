@@ -11,7 +11,7 @@ interface IGlobalRateLimitedMinter is IMultiRateLimited {
     /// pausable and depletes the msg.sender's buffer
     /// @param to the recipient address of the minted Fei
     /// @param amount the amount of Fei to mint
-    function mintFei(address to, uint256 amount) external;
+    function mint(address to, uint256 amount) external;
 
     /// @notice mint Fei to the target address and deplete the whole rate limited
     ///  minter's buffer, pausable and completely depletes the msg.sender's buffer

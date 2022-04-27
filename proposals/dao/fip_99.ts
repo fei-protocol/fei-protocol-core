@@ -92,7 +92,7 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // Run any validations required on the fip using mocha or console logging
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  // Ensure that the global rate limited minter has the MINTER role & the noncustodialpriceboundpsm has the PCV_CONTROLLER role
+  // Ensure that the global rate limited minter has the MINTER role & the rai pricebound psm has the PCV_CONTROLLER role
   await contracts.core.hasRole(ethers.utils.id('MINTER_ROLE'), addresses.raiPriceBoundPSM);
   await contracts.core.hasRole(ethers.utils.id('PCV_CONTROLLER_ROLE'), addresses.raiPCVDripController);
 

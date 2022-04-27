@@ -68,9 +68,7 @@ contract PCVDripController is
         _initTimed();
 
         // incentivize caller
-        if (incentiveAmount != 0) {
-            _incentivize();
-        }
+        _incentivize();
 
         // drip
         source.withdraw(address(target), dripAmount);
