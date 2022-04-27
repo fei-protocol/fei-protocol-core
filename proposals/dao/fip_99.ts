@@ -33,13 +33,20 @@ const fipNumber = '99'; // Change me!
 // Do any deployments
 // This should exclusively include new contract deployments
 const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: NamedAddresses, logging: boolean) => {
+  const chainlinkOracleWrapperFactory = await ethers.getContractFactory('ChainlinkOracleWrapper');
+  const raiUsdChainlinkOracleWrapper = await chainlinkOracleWrapperFactory.deploy(
+    addresses.core,
+    '0x483d36f6a1d063d580c7a24f9a42b346f3a69fbb'
+  );
+  await raiUsdChainlinkOracleWrapper.deployed();
+
   const priceBoundPSMFactory = await ethers.getContractFactory('PriceBoundPSM');
   const raiPriceBoundPSM = await priceBoundPSMFactory.deploy(
     30_000,
     ethers.constants.WeiPerEther,
     {
       coreAddress: addresses.core,
-      oracleAddress: addresses.chainlinkRaiUsdCompositeOracle,
+      oracleAddress: raiUsdChainlinkOracleWrapper.address,
       backupOracle: ethers.constants.AddressZero,
       decimalsNormalizer: 0,
       doInvert: false
@@ -71,6 +78,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   logging && console.log('Rai PCV drip controller and rai price-bound psm deployed');
 
   return {
+    raiUsdChainlinkOracleWrapper,
     raiPriceBoundPSM,
     raiPCVDripController
   };
