@@ -96,7 +96,7 @@ const withdrawFromDepositReport = [];
 const harvestReport = [];
 const depositReport = [];
 
-describe('TribalChief', () => {
+describe.only('TribalChief', () => {
   // this is the process ID of the staking rewards that we will use
   let pid;
   let minterAddress;
@@ -401,10 +401,10 @@ describe('TribalChief', () => {
       );
     });
 
-    it('should not be able to deposit without LPToken approval', async function () {
+    it.only('should not be able to deposit without LPToken approval', async function () {
       await expectRevert(
         this.tribalChief.connect(impersonatedSigners[userAddress]).deposit(pid, totalStaked, 100),
-        'ERC20: transfer amount exceeds allowance'
+        'ERC20: insufficient allowance'
       );
     });
 

@@ -571,7 +571,7 @@ describe('RatioPCVControllerV2', function () {
             pcvController
               .connect(impersonatedSigners[pcvControllerAddress])
               .transferFrom(pcvDepositEth.address, token.address, userAddress, pcvAmount, {}),
-            'ERC20: transfer amount exceeds allowance'
+            'ERC20: insufficient allowance'
           );
         });
 
@@ -677,7 +677,7 @@ describe('RatioPCVControllerV2', function () {
             pcvController
               .connect(impersonatedSigners[pcvControllerAddress])
               .transferFromRatio(pcvDepositEth.address, token.address, userAddress, '10000', {}),
-            'ERC20: transfer amount exceeds allowance'
+            'ERC20: insufficient allowance'
           );
         });
 
