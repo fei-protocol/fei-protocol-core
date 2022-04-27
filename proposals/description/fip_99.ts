@@ -42,7 +42,7 @@ const fip_99: ProposalDescription = {
     {
       target: 'collateralizationOracle',
       values: '0',
-      method: 'addDeposits(address)',
+      method: 'addDeposit(address)',
       arguments: ['{raiPriceBoundPSM}'],
       description: 'Add the rai price-bound psm to the collateralization oracle'
     }
