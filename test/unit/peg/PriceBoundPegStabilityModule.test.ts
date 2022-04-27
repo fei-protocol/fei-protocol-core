@@ -866,14 +866,6 @@ describe('PriceBoundPegStabilityModule', function () {
           'PegStabilityModule: Redeem not enough out'
         );
       });
-
-      it('fails when token is not approved to be spent by the PSM', async () => {
-        await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, 100);
-        await expectRevert(
-          psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, 100, 0),
-          'ERC20: transfer amount exceeds allowance'
-        );
-      });
     });
   });
 
