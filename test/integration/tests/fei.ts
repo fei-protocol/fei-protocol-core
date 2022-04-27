@@ -99,7 +99,7 @@ describe('e2e-fei', function () {
       await contracts.core.grantGuardian(deployAddress);
       await mockCoreRefTest.connect(deploySigner).governorOrGuardianTest();
       await contracts.core.revokeGuardian(deployAddress);
-      expect(await mockCoreRefTest.connect(deploySigner).governorOrGuardianTest()).to.be.revertedWith('UNAUTHORIZED');
+      await expect(mockCoreRefTest.connect(deploySigner).governorOrGuardianTest()).to.be.revertedWith('UNAUTHORIZED');
     });
   });
 });
