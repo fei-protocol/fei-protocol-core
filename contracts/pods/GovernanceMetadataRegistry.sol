@@ -4,9 +4,9 @@ import {CoreRef} from "../refs/CoreRef.sol";
 import {TribeRoles} from "../core/TribeRoles.sol";
 
 /// @title Metadata registry for Pods
-/// @notice Exposes a single public method which should be called as part of a Pods proposal.
-/// @dev Expected that a call is made to this GovernanceMetadataRegistry contract as the first function call in the
-/// calldata that is
+/// @notice Exposes a single public state changing method that should be called as part of a Pods proposal
+/// @dev Expected that a call is made to this GovernanceMetadataRegistry contract as the first function call in a proposal
+///      submitted to a pod
 contract GovernanceMetadataRegistry is CoreRef {
     /// @notice Mapping identifying whether a particular proposal metadata was submitted for registration
     /// @dev Maps the hash of the proposal metadata to a bool identifying if it was submitted
