@@ -92,14 +92,5 @@ describe('e2e-fei', function () {
       await fei.connect(deploySigner).unpause();
       expect(await fei.paused()).to.be.false;
     });
-
-    it('hasAnyOfRoles works', async function () {
-      const mockCoreRefTestFactory = await ethers.getContractFactory('MockCoreRefTest');
-      const mockCoreRefTest = await mockCoreRefTestFactory.deploy(contracts.core.address);
-      await contracts.core.grantGuardian(deployAddress);
-      await mockCoreRefTest.connect(deploySigner).governorOrGuardianTest();
-      await contracts.core.revokeGuardian(deployAddress);
-      expect(mockCoreRefTest.connect(deploySigner).governorOrGuardianTest()).to.be.revertedWith('UNAUTHORIZED');
-    });
   });
 });
