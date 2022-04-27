@@ -1906,6 +1906,21 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x2dC77678Be7F900e81c638b056F4835BB7203C96',
     category: AddressCategory.TBD
   },
+  orcaPodController: {
+    artifactName: 'IControllerV1',
+    address: '0x17FDC2Eaf2bd46f3e1052CCbccD9e6AD0296C42c',
+    category: AddressCategory.External
+  },
+  orcaMemberToken: {
+    artifactName: 'IMemberToken',
+    address: '0x0762aA185b6ed2dCA77945Ebe92De705e0C37AE3',
+    category: AddressCategory.External
+  },
+  orcaShipToken: {
+    artifactName: 'unknown',
+    address: '0x872EdeaD0c56930777A82978d4D7deAE3A2d1539',
+    category: AddressCategory.External
+  },
   rariGovernanceProxyAdmin: {
     artifactName: 'ProxyAdmin',
     address: '0x1c9aA54a013962C2444ECae06902F31D532c6AD3',

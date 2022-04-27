@@ -404,7 +404,7 @@ describe('TribalChief', () => {
     it('should not be able to deposit without LPToken approval', async function () {
       await expectRevert(
         this.tribalChief.connect(impersonatedSigners[userAddress]).deposit(pid, totalStaked, 100),
-        'ERC20: transfer amount exceeds allowance'
+        'ERC20: insufficient allowance'
       );
     });
 

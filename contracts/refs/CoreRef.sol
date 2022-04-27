@@ -134,6 +134,26 @@ abstract contract CoreRef is ICoreRef, Pausable {
         _;
     }
 
+    modifier hasAnyOfSixRoles(
+        bytes32 role1,
+        bytes32 role2,
+        bytes32 role3,
+        bytes32 role4,
+        bytes32 role5,
+        bytes32 role6
+    ) {
+        require(
+            _core.hasRole(role1, msg.sender) ||
+                _core.hasRole(role2, msg.sender) ||
+                _core.hasRole(role3, msg.sender) ||
+                _core.hasRole(role4, msg.sender) ||
+                _core.hasRole(role5, msg.sender) ||
+                _core.hasRole(role6, msg.sender),
+            "UNAUTHORIZED"
+        );
+        _;
+    }
+
     modifier onlyFei() {
         require(msg.sender == address(_fei), "CoreRef: Caller is not FEI");
         _;
