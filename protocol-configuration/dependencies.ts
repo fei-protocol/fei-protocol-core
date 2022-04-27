@@ -297,10 +297,7 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core', 'fei', 'daiFixedPricePSM', 'compoundDaiPCVDeposit']
   },
   raiPCVDripController: {
-    contractDependencies: ['core', 'fei', 'raiFixedPricePSM', 'compoundRaiPCVDeposit']
-  },
-  raiFixedPricePSM: {
-    contractDependencies: ['core', 'fei', 'raiFixedPricePSM', 'aaveRaiPCVDeposit', 'chainlinkRaiUsdOracleWrapper']
+    contractDependencies: ['core', 'fei', 'aaveRaiPCVDeposit', 'raiPriceBoundPSM']
   },
   daiFixedPricePSM: {
     contractDependencies: [
@@ -354,7 +351,7 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core', 'fei']
   },
   aaveRaiPCVDeposit: {
-    contractDependencies: ['core', 'pcvGuardian']
+    contractDependencies: ['core', 'pcvGuardian', 'raiPCVDripController']
   },
   agEurAngleUniswapPCVDeposit: {
     contractDependencies: ['core', 'fei', 'chainlinkEurUsdOracleWrapper']
