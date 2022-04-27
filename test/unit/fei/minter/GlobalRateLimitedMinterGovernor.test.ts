@@ -171,9 +171,9 @@ describe('GlobalRateLimitedMinterBuffer', function () {
         expect(await fei.balanceOf(userAddress)).to.be.equal(0);
       });
 
-      it('non whitelisted address fails mints on mintFei', async function () {
+      it('non whitelisted address fails mints on mint', async function () {
         await expectRevert(
-          globalRateLimitedMinter.connect(impersonatedSigners[userAddress]).mintFei(userAddress, 1),
+          globalRateLimitedMinter.connect(impersonatedSigners[userAddress]).mint(userAddress, 1),
           'MultiRateLimited: no rate limit buffer'
         );
         expect(await fei.balanceOf(userAddress)).to.be.equal(0);
@@ -182,7 +182,7 @@ describe('GlobalRateLimitedMinterBuffer', function () {
 
     describe('Full mint', function () {
       beforeEach(async function () {
-        await authorizedMinter.mintFei(userAddress, bufferCap);
+        await authorizedMinter.mint(userAddress, bufferCap);
       });
 
       it('clears out buffer', async function () {
@@ -191,7 +191,7 @@ describe('GlobalRateLimitedMinterBuffer', function () {
       });
 
       it('second mint reverts', async function () {
-        await expectRevert(authorizedMinter.mintFei(userAddress, bufferCap), 'RateLimited: rate limit hit');
+        await expectRevert(authorizedMinter.mint(userAddress, bufferCap), 'RateLimited: rate limit hit');
       });
 
       it('mint fails when user has no buffer or allocation in the system', async function () {
@@ -204,7 +204,7 @@ describe('GlobalRateLimitedMinterBuffer', function () {
         expect(bufferStored).to.be.equal(0);
 
         await expectRevert(
-          globalRateLimitedMinter.connect(impersonatedSigners[userAddress]).mintFei(userAddress, 100),
+          globalRateLimitedMinter.connect(impersonatedSigners[userAddress]).mint(userAddress, 100),
           'MultiRateLimited: no rate limit buffer'
         );
       });
@@ -236,7 +236,7 @@ describe('GlobalRateLimitedMinterBuffer', function () {
 
     it('second minter mints successfully and depletes global buffer', async function () {
       const startingUserFeiBalance = await fei.balanceOf(userAddress);
-      await secondAuthorizedMinter.mintFei(userAddress, await globalRateLimitedMinter.buffer());
+      await secondAuthorizedMinter.mint(userAddress, await globalRateLimitedMinter.buffer());
       const endingUserFeiBalance = await fei.balanceOf(userAddress);
 
       expect(endingUserFeiBalance.sub(startingUserFeiBalance)).to.be.equal(await globalRateLimitedMinter.bufferCap());
@@ -246,8 +246,8 @@ describe('GlobalRateLimitedMinterBuffer', function () {
       const globalBuffer = await globalRateLimitedMinter.buffer();
       const mintAmount = globalBuffer.div(2);
 
-      await authorizedMinter.mintFei(userAddress, mintAmount);
-      await secondAuthorizedMinter.mintFei(userAddress, mintAmount);
+      await authorizedMinter.mint(userAddress, mintAmount);
+      await secondAuthorizedMinter.mint(userAddress, mintAmount);
 
       /// expect individual buffers to be 50% depleted + 2 seconds of replenishment for the first minter
       expect((await globalRateLimitedMinter.individualBuffer(secondAuthorizedMinter.address)).mul(2)).to.be.equal(
@@ -274,9 +274,9 @@ describe('GlobalRateLimitedMinterBuffer', function () {
 
     it('second minter mint fails as global buffer is depleted', async function () {
       const remainingGlobalBuffer = await globalRateLimitedMinter.buffer();
-      await authorizedMinter.mintFei(userAddress, remainingGlobalBuffer);
+      await authorizedMinter.mint(userAddress, remainingGlobalBuffer);
       await expectRevert(
-        secondAuthorizedMinter.mintFei(userAddress, remainingGlobalBuffer),
+        secondAuthorizedMinter.mint(userAddress, remainingGlobalBuffer),
         'RateLimited: rate limit hit'
       );
     });
@@ -305,7 +305,7 @@ describe('GlobalRateLimitedMinterBuffer', function () {
         .connect(impersonatedSigners[governorAddress])
         .addAddress(authorizedMinter.address, globalRateLimitPerSecond, bufferCap);
 
-      await authorizedMinter.mintFei(userAddress, mintAmount);
+      await authorizedMinter.mint(userAddress, mintAmount);
     });
 
     it('partially clears out buffer', async function () {
@@ -314,7 +314,7 @@ describe('GlobalRateLimitedMinterBuffer', function () {
     });
 
     it('second mint does not have enough buffer and fails', async function () {
-      await expectRevert(authorizedMinter.mintFei(userAddress, bufferCap.mul(2)), 'RateLimited: rate limit hit');
+      await expectRevert(authorizedMinter.mint(userAddress, bufferCap.mul(2)), 'RateLimited: rate limit hit');
     });
 
     it('time increase replenishes buffer', async function () {
@@ -333,13 +333,13 @@ describe('GlobalRateLimitedMinterBuffer', function () {
         .updateAddress(authorizedMinter.address, newRateLimitPerSecond, newBufferCap);
 
       // clear the whole buffer out
-      await authorizedMinter.mintFei(userAddress, newBufferCap);
+      await authorizedMinter.mint(userAddress, newBufferCap);
     });
 
     it('time increase partially replenishes buffer and mint fails due to MultiRateLimit', async function () {
       /// only refresh the buffer 10%
       await time.increase('100');
-      await expectRevert(authorizedMinter.mintFei(userAddress, newBufferCap), 'MultiRateLimited: rate limit hit');
+      await expectRevert(authorizedMinter.mint(userAddress, newBufferCap), 'MultiRateLimited: rate limit hit');
     });
   });
 

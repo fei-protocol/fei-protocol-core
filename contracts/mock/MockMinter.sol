@@ -10,7 +10,7 @@ contract MockMinter {
         globalRateLimitedMinter = _globalRateLimitedMinter;
     }
 
-    function mintFei(address to, uint256 amount) external {
+    function mint(address to, uint256 amount) external {
         globalRateLimitedMinter.mint(to, amount);
     }
 

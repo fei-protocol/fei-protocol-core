@@ -215,10 +215,7 @@ describe('GlobalRateLimitedMinterGovernor', function () {
       expect(await globalRateLimitedMinter.getRateLimitPerSecond(authorizedMinter.address)).to.be.equal(0);
       expect(await globalRateLimitedMinter.getBufferCap(authorizedMinter.address)).to.be.equal(0);
 
-      await expectRevert(
-        authorizedMinter.mintFei(authorizedMinter.address, 1),
-        'MultiRateLimited: no rate limit buffer'
-      );
+      await expectRevert(authorizedMinter.mint(authorizedMinter.address, 1), 'MultiRateLimited: no rate limit buffer');
     });
 
     it('governor fails to remove non rate limited address', async function () {
