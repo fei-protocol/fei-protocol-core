@@ -60,6 +60,7 @@ const proposals: ProposalsConfigMap = {
     deploy: false,
     proposalId: null,
     affectedContractSignoff: [
+      'collateralizationOracle',
       'ratioPCVControllerV2',
       'rariPool9RaiPCVDeposit',
       'aaveRaiPCVDeposit',
