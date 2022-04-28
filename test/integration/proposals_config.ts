@@ -60,12 +60,12 @@ const proposals: ProposalsConfigMap = {
     deploy: false,
     proposalId: null,
     affectedContractSignoff: [
-      'ratioPCVControllerV2',
       'rariPool9RaiPCVDeposit',
       'aaveRaiPCVDeposit',
       'raiPCVDripController',
       'raiPriceBoundPSM',
-      'pcvGuardian'
+      'pcvGuardian',
+      'core'
     ],
     deprecatedContractSignoff: [],
     category: ProposalCategory.DAO,
