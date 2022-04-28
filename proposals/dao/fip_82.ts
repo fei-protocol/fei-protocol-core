@@ -43,6 +43,7 @@ const transferOrcaTokens = async (
 const fipNumber = '82';
 
 const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: NamedAddresses, logging: boolean) => {
+  const deploySigner = (await ethers.getSigners())[0];
   // 1. Deploy public pod executor
   const podExecutorFactory = await ethers.getContractFactory('PodExecutor');
   const podExecutor = await podExecutorFactory.deploy(addresses.core);
@@ -59,6 +60,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     podExecutor.address // Public pod executor
   );
   await podFactory.deployTransaction.wait();
+  logging && console.log('Pod factory deployed to:', podFactory.address);
 
   // 3. Deploy PodAdminGateway contract
   const podAdminGatewayFactory = await ethers.getContractFactory('PodAdminGateway');
@@ -69,8 +71,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   );
   await podAdminGateway.deployTransaction.wait();
   logging && console.log(`Deployed PodAdminGateway at ${podAdminGateway.address}`);
-  await transferOrcaTokens(addresses.orcaShipToken, deployAddress, podFactory.address, 2);
-  logging && console.log('Pod factory deployed to:', podFactory.address);
+  await transferOrcaTokens(addresses.orcaShipToken, deployAddress, podFactory.address, 1);
 
   // 4. Create TribalCouncil and Protocol Tier pods
   const tribalCouncilPod: PodCreationConfig = {
@@ -82,6 +83,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     minDelay: tribeCouncilPodConfig.minDelay,
     admin: podAdminGateway.address
   };
+
+  console.log({ tribalCouncilPod });
 
   const genesisTx = await podFactory.deployCouncilPod(tribalCouncilPod);
   const { args } = (await genesisTx.wait()).events.find((elem) => elem.event === 'CreatePod');
@@ -95,9 +98,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   logging && console.log('Tribal council Gnosis safe is: ', councilSafeAddress);
 
   // 5. Create contract artifacts for timelock, so address is available to DAO script
-  const mockSigner = await getImpersonatedSigner(deployAddress);
-  const tribalCouncilTimelock = new ethers.Contract(councilTimelockAddress, timelockABI, mockSigner);
-  const tribalCouncilSafe = new ethers.Contract(councilSafeAddress, gnosisSafeABI, mockSigner);
+  const tribalCouncilTimelock = new ethers.Contract(councilTimelockAddress, timelockABI, deploySigner);
+  const tribalCouncilSafe = new ethers.Contract(councilSafeAddress, gnosisSafeABI, deploySigner);
 
   // 6. Deploy GovernanceMetadataRegistry contract
   const metadataRegistryFactory = await ethers.getContractFactory('GovernanceMetadataRegistry');
