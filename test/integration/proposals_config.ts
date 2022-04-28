@@ -57,7 +57,7 @@ const proposals: ProposalsConfigMap = {
   },
 
   fip_99: {
-    deploy: true,
+    deploy: false,
     proposalId: null,
     affectedContractSignoff: [
       'ratioPCVControllerV2',
