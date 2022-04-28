@@ -38,7 +38,8 @@ const transferOrcaTokens = async (
     const priviledgedSigner = await getImpersonatedSigner(priviledgedOrcaMinter);
     await inviteToken.connect(priviledgedSigner).mint(deploySigner.address, amount);
   }
-  await inviteToken.transfer(receiver, amount);
+  const transferTx = await inviteToken.transfer(receiver, amount);
+  await transferTx.wait();
 };
 
 const fipNumber = '82';
@@ -52,15 +53,13 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 
   logging && console.log('PodExecutor deployed to', podExecutor.address);
 
-  console.log('Deploying');
-
   // 2. Deploy tribalCouncilPodFactory
   const podFactoryEthersFactory = await ethers.getContractFactory('PodFactory');
   const podFactory = await podFactoryEthersFactory.deploy(
     addresses.core, // core
     addresses.orcaMemberToken, // podMembershipToken
     addresses.orcaPodController, // podController
-    addresses.podExecutor // Public pod executor
+    podExecutor.address // Public pod executor
   );
   await podFactory.deployTransaction.wait();
   logging && console.log('Pod factory deployed to:', podFactory.address);
@@ -103,32 +102,32 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   const tribalCouncilSafe = new ethers.Contract(councilSafeAddress, gnosisSafeABI, deploySigner);
 
   // 6. Deploy GovernanceMetadataRegistry contract
-  // const metadataRegistryFactory = await ethers.getContractFactory('GovernanceMetadataRegistry');
-  // const governanceMetadataRegistry = await metadataRegistryFactory.deploy(addresses.core);
-  // await governanceMetadataRegistry.deployTransaction.wait();
-  // logging && console.log('GovernanceMetadataRegistry deployed to:', governanceMetadataRegistry.address);
+  const metadataRegistryFactory = await ethers.getContractFactory('GovernanceMetadataRegistry');
+  const governanceMetadataRegistry = await metadataRegistryFactory.deploy(addresses.core);
+  await governanceMetadataRegistry.deployTransaction.wait();
+  logging && console.log('GovernanceMetadataRegistry deployed to:', governanceMetadataRegistry.address);
 
   // 7. Deploy RoleBastion, to allow TribalCouncil to manage roles
-  // const roleBastionFactory = await ethers.getContractFactory('RoleBastion');
-  // const roleBastion = await roleBastionFactory.deploy(addresses.core);
-  // await roleBastion.deployTransaction.wait();
-  // logging && console.log('RoleBastion deployed to:', roleBastion.address);
+  const roleBastionFactory = await ethers.getContractFactory('RoleBastion');
+  const roleBastion = await roleBastionFactory.deploy(addresses.core);
+  await roleBastion.deployTransaction.wait();
+  logging && console.log('RoleBastion deployed to:', roleBastion.address);
 
   // 8. Deploy NopeDAO
-  // const nopeDAOFactory = await ethers.getContractFactory('NopeDAO');
-  // const nopeDAO = await nopeDAOFactory.deploy(addresses.tribe, addresses.core);
-  // await nopeDAO.deployTransaction.wait();
-  // logging && console.log('NopeDAO deployed to:', nopeDAO.address);
+  const nopeDAOFactory = await ethers.getContractFactory('NopeDAO');
+  const nopeDAO = await nopeDAOFactory.deploy(addresses.tribe, addresses.core);
+  await nopeDAO.deployTransaction.wait();
+  logging && console.log('NopeDAO deployed to:', nopeDAO.address);
 
   return {
-    // podExecutor,
+    podExecutor,
     podFactory,
     tribalCouncilTimelock,
     podAdminGateway,
-    tribalCouncilSafe
-    // governanceMetadataRegistry,
-    // roleBastion,
-    // nopeDAO
+    tribalCouncilSafe,
+    governanceMetadataRegistry,
+    roleBastion,
+    nopeDAO
   };
 };
 
