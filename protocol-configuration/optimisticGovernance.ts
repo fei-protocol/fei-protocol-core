@@ -56,4 +56,4 @@ export const tribeCouncilPodConfig: PodConfig = {
   placeHolderMembers: placeHolderCouncilMembers
 };
 
-export const TRIBAL_COUNCIL_POD_ID = 24;
+export const TRIBAL_COUNCIL_POD_ID = 25;

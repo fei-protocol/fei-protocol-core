@@ -2018,17 +2018,17 @@ const MainnetAddresses: MainnetAddresses = {
   },
   podExecutor: {
     artifactName: 'PodExecutor',
-    address: '0x489BeB7b2829D0e57f1776899D561afc1bBeef11',
+    address: '0x99d8b669F48A708f7C0373AF6CE31F0726ab6CaD',
     category: AddressCategory.Governance
   },
   podAdminGateway: {
     artifactName: 'PodAdminGateway',
-    address: '0xf14DccfB071672F1394BaA58d136D94dD1cEDc85',
+    address: '0xDDe8AA537c5b289De9cede462E6F0ec3a3a99e39',
     category: AddressCategory.Governance
   },
   podFactory: {
     artifactName: 'PodFactory',
-    address: '0xeF9f961266Ad9Bb46396577A77234dBFEb4dAac7',
+    address: '0x4B2c8894D29d05dbc0d5A1CE23535be08d844819',
     category: AddressCategory.Governance
   },
   governanceMetadataRegistry: {
@@ -2043,12 +2043,12 @@ const MainnetAddresses: MainnetAddresses = {
   },
   tribalCouncilTimelock: {
     artifactName: 'TimelockController',
-    address: '0x9F80E03985303eB8b2ABC031Cb82716D7913f531',
+    address: '0xe0C7DE94395B629860Cbb3c42995F300F56e6d7a',
     category: AddressCategory.Governance
   },
   tribalCouncilSafe: {
     artifactName: 'unknown',
-    address: '0xdb6236E5363aBdeb807198e820DD5CC04BfC8dDd',
+    address: '0x2EC598d8e3DF35E5D6F13AE2f05a7bB2704e92Ea',
     category: AddressCategory.Governance
   },
   roleBastion: {

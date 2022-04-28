@@ -130,7 +130,7 @@ const fip_82: ProposalDescription = {
       values: '0',
       method: 'batchAddPodMember(uint256 _podId,address[] memory _members)',
       arguments: [
-        '24', // TODO: Update to correct TribalCouncil ID once pod is deployed
+        '25',
         [
           '0xc8eefb8b3d50ca87Da7F99a661720148acf97EfA', // TODO: Complete with real member addresses
           '0x72b7448f470D07222Dbf038407cD69CC380683F3',
@@ -150,7 +150,7 @@ const fip_82: ProposalDescription = {
       values: '0',
       method: 'batchRemovePodMember(uint256 _podId, address[] memory)',
       arguments: [
-        '24', // TODO: Update to correct TribalCouncil ID once pod is deployed
+        '25',
         [
           '0x0000000000000000000000000000000000000004',
           '0x0000000000000000000000000000000000000005',
@@ -169,7 +169,7 @@ const fip_82: ProposalDescription = {
       target: 'podAdminGateway',
       values: '0',
       method: 'lockMembershipTransfers(uint256 _podId)',
-      arguments: ['24'],
+      arguments: ['25'],
       description: 'Lock TribalCouncil membership transfers'
     }
   ],
