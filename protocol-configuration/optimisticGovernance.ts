@@ -1,5 +1,3 @@
-import { ethers } from 'ethers';
-
 export type PodConfig = {
   members: string[];
   threshold: number;
@@ -57,3 +55,5 @@ export const tribeCouncilPodConfig: PodConfig = {
   numMembers: tribalCouncilMembers.length,
   placeHolderMembers: placeHolderCouncilMembers
 };
+
+export const TRIBAL_COUNCIL_POD_ID = 24;

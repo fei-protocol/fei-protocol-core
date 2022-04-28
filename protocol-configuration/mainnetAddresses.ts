@@ -2000,6 +2000,46 @@ const MainnetAddresses: MainnetAddresses = {
     artifactName: 'unknown',
     address: '0x84dc71500D504163A87756dB6368CC8bB654592f',
     category: AddressCategory.Volt
+  },
+  podExecutor: {
+    artifactName: 'PodExecutor',
+    address: '0x489BeB7b2829D0e57f1776899D561afc1bBeef11',
+    category: AddressCategory.Governance
+  },
+  podAdminGateway: {
+    artifactName: 'PodAdminGateway',
+    address: '0xf14DccfB071672F1394BaA58d136D94dD1cEDc85',
+    category: AddressCategory.Governance
+  },
+  podFactory: {
+    artifactName: 'PodFactory',
+    address: '0xeF9f961266Ad9Bb46396577A77234dBFEb4dAac7',
+    category: AddressCategory.Governance
+  },
+  governanceMetadataRegistry: {
+    artifactName: 'GovernanceMetadataRegistry',
+    address: '0xd78Cd3AaE6168BE43B548877aAc68312B9df9AFb',
+    category: AddressCategory.Governance
+  },
+  nopeDAO: {
+    artifactName: 'NopeDAO',
+    address: '0x6C7aF43Ce97686e0C8AcbBc03b2E4f313c0394C7',
+    category: AddressCategory.Governance
+  },
+  tribalCouncilTimelock: {
+    artifactName: 'TimelockController',
+    address: '0x9F80E03985303eB8b2ABC031Cb82716D7913f531',
+    category: AddressCategory.Governance
+  },
+  tribalCouncilGnosisSafe: {
+    artifactName: 'contracts/pods/interfaces/IGnosisSafe.sol:IGnosisSafe',
+    address: '0xdb6236E5363aBdeb807198e820DD5CC04BfC8dDd',
+    category: AddressCategory.Governance
+  },
+  roleBastion: {
+    artifactName: 'RoleBastion',
+    address: '0x8096314D9014EbB69Fc777ED3791DDE6FFbaFAed',
+    category: AddressCategory.Governance
   }
 };
 
