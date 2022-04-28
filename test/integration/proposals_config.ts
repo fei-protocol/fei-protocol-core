@@ -23,16 +23,19 @@ const proposals: ProposalsConfigMap = {
     proposal: fip_82, // full proposal file, imported from '@proposals/description/fip_xx.ts'
     proposalId: '',
     affectedContractSignoff: [
-      'podAdminFactory',
       'roleBastion',
       'podFactory',
       'podExecutor',
       'nopeDAO',
       'governanceMetadataRegistry',
       'core',
-      'tribe'
+      'tribe',
+      'feiDAOTimelock',
+      'tribalCouncilTimelock',
+      'tribalCouncilSafe',
+      'podAdminGateway'
     ],
-    deprecatedContractSignoff: [''],
+    deprecatedContractSignoff: [],
     category: ProposalCategory.DAO
   },
   fip_98: {

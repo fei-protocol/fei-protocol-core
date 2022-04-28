@@ -1024,10 +1024,10 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core', 'podExecutor', 'podAdminGateway']
   },
   podAdminGateway: {
-    contractDependencies: ['core', 'podFactory']
+    contractDependencies: ['core', 'podFactory', 'tribalCouncilTimelock']
   },
   podExecutor: {
-    contractDependencies: ['podFactory']
+    contractDependencies: ['podFactory', 'tribalCouncilTimelock']
   },
   nopeDAO: {
     contractDependencies: ['core', 'tribe']
@@ -1052,6 +1052,12 @@ const dependencies: DependencyMap = {
   },
   voltOracle: {
     contractDependencies: ['volt', 'voltDepositWrapper', 'collateralizationOracle']
+  },
+  tribalCouncilTimelock: {
+    contractDependencies: ['podExecutor', 'tribalCouncilSafe', 'podAdminGateway']
+  },
+  tribalCouncilSafe: {
+    contractDependencies: ['tribalCouncilTimelock']
   }
 };
 
