@@ -157,6 +157,17 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
         emit PodMembershipTransferLock(_podId, _lock);
     }
 
+    /// @notice Transfer the admin of a pod to a new address
+    /// @dev Permissioned to GOVERNOR, POD_ADMIN and the specific pod admin role
+    function transferAdmin(uint256 _podId, address _newAdmin)
+        external
+        hasAnyOfTwoRoles(TribeRoles.GOVERNOR, TribeRoles.POD_ADMIN, getSpecificPodAdminRole(_podId))
+    {
+        ControllerV1 podController = ControllerV1(memberToken.memberController(_podId));
+        podController.updatePodAdmin(_podId, _newAdmin);
+        emit UpdateAdmin(_podId, _newAdmin);
+    }
+
     ///////////////  VETO CONTROLLER /////////////////
 
     /// @notice Allow a proposal to be vetoed in a pod timelock
