@@ -40,13 +40,15 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   );
   await raiUsdChainlinkOracleWrapper.deployed();
 
+  logging && console.log(`Chainlink oracle wrapper deployed`);
+
   const priceBoundPSMFactory = await ethers.getContractFactory('PriceBoundPSM');
   const raiPriceBoundPSM = await priceBoundPSMFactory.deploy(
     30_000,
     ethers.constants.WeiPerEther,
     {
       coreAddress: addresses.core,
-      oracleAddress: raiUsdChainlinkOracleWrapper.address,
+      oracleAddress: addresses.chainlinkRaiUsdOracleWrapper,
       backupOracle: ethers.constants.AddressZero,
       decimalsNormalizer: 0,
       doInvert: false
@@ -75,7 +77,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 
   logging && console.log(`Rai pcv drip controller deployed`);
 
-  logging && console.log('Rai PCV drip controller and rai price-bound psm deployed');
+  logging && console.log('Chainlink oracle wrapper, Rai PCV drip controller and rai price-bound psm deployed');
 
   return {
     raiUsdChainlinkOracleWrapper,
@@ -100,8 +102,6 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // Run any validations required on the fip using mocha or console logging
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  // Ensure that the global rate limited minter has the MINTER role & the rai pricebound psm has the PCV_CONTROLLER role
-  await contracts.core.hasRole(ethers.utils.id('MINTER_ROLE'), addresses.raiPriceBoundPSM);
   await contracts.core.hasRole(ethers.utils.id('PCV_CONTROLLER_ROLE'), addresses.raiPCVDripController);
 
   // Ensure that the rai aave pcv deposit has >= 10m RAI

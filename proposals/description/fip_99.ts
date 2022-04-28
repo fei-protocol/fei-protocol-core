@@ -47,7 +47,17 @@ const fip_99: ProposalDescription = {
       description: 'Add the rai price-bound psm to the collateralization oracle'
     }
   ],
-  description: 'Sell RAI to replenish DAI reserves and/or relieve upcoming peg pressure'
+  description: `Sell RAI to replenish DAI reserves and/or relieve upcoming peg pressure.
+  Forum post: https://tribe.fei.money/t/fip-99-sell-rai/4120
+  Steps:
+
+  - Withdraw 80% of the rai from fuse pool 9 and send to the aave rai pcv deposit
+  - Call deposit() on the aave rai pcv deposit
+  - Grant the PCV_CONTROLLER_ROLE to the rai pcv drip controller
+  - Pause mint on the rai price-bound psm
+  - Whitelist the fuse pool 9 rai pcv deposit on the pcv guardian, as well as the new rai psm and the aave rai pcv deposit
+  - Add the rai price-bound psm to the collateralization oracle
+  `
 };
 
 export default fip_99;
