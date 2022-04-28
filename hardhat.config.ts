@@ -70,7 +70,7 @@ export default {
     mainnet: {
       url: `https://eth-mainnet.alchemyapi.io/v2/${mainnetAlchemyApiKey}`,
       accounts: privateKey ? [privateKey] : [],
-      gasPrice: 150000000000
+      gasPrice: 70000000000
     }
   },
 
