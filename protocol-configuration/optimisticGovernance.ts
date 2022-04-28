@@ -48,8 +48,8 @@ export const MIN_TIMELOCK_DELAY = 86400; // 1 day
 export const tribeCouncilPodConfig: PodConfig = {
   members: tribalCouncilMembers,
   threshold: 5,
-  label: '0xcc74924992a4b3a8d464650443c1d35252c3c4eacfcae441e1a646c194eda9c9', // tribalcouncil
-  ensString: 'tribalcouncil.pod.xyz',
+  label: '0xbbbb0f283d36ab6734712e97b09b54eecf6cdb83ad20efc8b1718c7fe38cb0b8', // tribecouncil
+  ensString: 'tribecouncil.pod.xyz',
   imageUrl: '',
   minDelay: 86400 * 4, // 4 days
   numMembers: tribalCouncilMembers.length,
