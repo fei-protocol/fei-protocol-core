@@ -1,6 +1,7 @@
 import { HardhatUserConfig } from 'hardhat/config';
 import '@nomiclabs/hardhat-waffle';
 import '@nomiclabs/hardhat-ethers';
+import '@nomiclabs/hardhat-etherscan';
 import '@typechain/hardhat';
 import '@idle-finance/hardhat-proposals-plugin';
 import 'hardhat-gas-reporter';
@@ -20,6 +21,7 @@ const enableMainnetForking = process.env.ENABLE_MAINNET_FORKING;
 const mainnetAlchemyApiKey = process.env.MAINNET_ALCHEMY_API_KEY;
 const runAllTests = process.env.RUN_ALL_TESTS;
 const useJSONTestReporter = process.env.REPORT_TEST_RESULTS_AS_JSON;
+const etherscanKey = process.env.ETHERSCAN_API_KEY;
 
 if (!(process.env.NODE_OPTIONS && process.env.NODE_OPTIONS.includes('max-old-space-size'))) {
   throw new Error(
@@ -72,6 +74,10 @@ export default {
       accounts: privateKey ? [privateKey] : [],
       gasPrice: 150000000000
     }
+  },
+
+  etherscan: {
+    apiKey: etherscanKey
   },
 
   solidity: {
