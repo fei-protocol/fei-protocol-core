@@ -161,11 +161,13 @@ contract PodAdminGateway is CoreRef, IPodAdminGateway {
     /// @dev Permissioned to GOVERNOR, POD_ADMIN and the specific pod admin role
     function transferAdmin(uint256 _podId, address _newAdmin)
         external
-        hasAnyOfTwoRoles(TribeRoles.GOVERNOR, TribeRoles.POD_ADMIN, getSpecificPodAdminRole(_podId))
+        hasAnyOfThreeRoles(TribeRoles.GOVERNOR, TribeRoles.POD_ADMIN, getSpecificPodAdminRole(_podId))
     {
         ControllerV1 podController = ControllerV1(memberToken.memberController(_podId));
+        address oldPodAdmin = podController.podAdmin(_podId);
+
         podController.updatePodAdmin(_podId, _newAdmin);
-        emit UpdateAdmin(_podId, _newAdmin);
+        emit UpdatePodAdmin(_podId, oldPodAdmin, _newAdmin);
     }
 
     ///////////////  VETO CONTROLLER /////////////////

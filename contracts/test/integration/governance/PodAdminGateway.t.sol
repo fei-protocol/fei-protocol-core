@@ -149,6 +149,20 @@ contract PodAdminGatewayIntegrationTest is DSTest {
         assertFalse(memberTransfersLocked);
     }
 
+    /// @notice Transfer pod admin to new admin
+    function testTransferPodAdmin() public {
+        address newAdmin = address(0x22);
+
+        vm.prank(feiDAOTimelock);
+        podAdminGateway.transferAdmin(podId, newAdmin);
+
+        address newAdminOnFactory = factory.getPodAdmin(podId);
+        assertEq(newAdminOnFactory, newAdmin);
+
+        address newAdminOnController = ControllerV1(podController).podAdmin(podId);
+        assertEq(newAdminOnController, newAdmin);
+    }
+
     /// @notice Validate that a non-PodAdmin fails to call a priviledged admin method
     function testNonAdminFailsToRemoveMember() public {
         vm.expectRevert(bytes("UNAUTHORIZED"));
