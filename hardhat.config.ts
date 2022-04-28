@@ -7,6 +7,7 @@ import 'hardhat-gas-reporter';
 import 'hardhat-contract-sizer';
 import 'solidity-coverage';
 import 'tsconfig-paths/register';
+import '@nomiclabs/hardhat-etherscan';
 
 import * as dotenv from 'dotenv';
 
@@ -45,7 +46,9 @@ export default {
   gasReporter: {
     enabled: !!process.env.REPORT_GAS
   },
-
+  etherscan: {
+    apiKey: '82DJ4332MCDTMRMSVHNVWY4RDCWEF6M7B2'
+  },
   networks: {
     hardhat: {
       gas: 12e6,
@@ -70,7 +73,7 @@ export default {
     mainnet: {
       url: `https://eth-mainnet.alchemyapi.io/v2/${mainnetAlchemyApiKey}`,
       accounts: privateKey ? [privateKey] : [],
-      gasPrice: 150000000000
+      gasPrice: 60000000000
     }
   },
 

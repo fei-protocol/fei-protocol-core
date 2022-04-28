@@ -21,7 +21,8 @@ export const permissions = {
     'daiPCVDripController',
     'lusdPCVDripController',
     'ethPSMFeiSkimmer',
-    'lusdPSMFeiSkimmer'
+    'lusdPSMFeiSkimmer',
+    'raiPCVDripController'
   ],
   GUARDIAN_ROLE: ['multisig', 'pcvGuardian', 'pcvSentinel'],
   ORACLE_ADMIN_ROLE: ['collateralizationOracleGuardian', 'optimisticTimelock', 'opsOptimisticTimelock'],

@@ -30,6 +30,8 @@ const dependencies: DependencyMap = {
   },
   core: {
     contractDependencies: [
+      'raiPriceBoundPSM',
+      'raiPCVDripController',
       'collateralizationOracleGuardian',
       'fei',
       'feiTribeLBPSwapper',
@@ -137,6 +139,8 @@ const dependencies: DependencyMap = {
   },
   fei: {
     contractDependencies: [
+      'raiPriceBoundPSM',
+      'raiPCVDripController',
       'core',
       'rariPool8Fei',
       'feiDAOTimelock',
@@ -200,8 +204,13 @@ const dependencies: DependencyMap = {
       'lusdPSM',
       'daiFixedPricePSM',
       'compoundEthPCVDeposit',
-      'aaveEthPCVDeposit'
+      'aaveEthPCVDeposit',
+      'aaveRaiPCVDeposit',
+      'raiPriceBoundPSM'
     ]
+  },
+  raiPriceBoundPSM: {
+    contractDependencies: ['core', 'fei', 'raiPCVDripController', 'pcvGuardian']
   },
   proxyAdmin: {
     contractDependencies: [
@@ -294,6 +303,9 @@ const dependencies: DependencyMap = {
   daiPCVDripController: {
     contractDependencies: ['core', 'fei', 'daiFixedPricePSM', 'compoundDaiPCVDeposit']
   },
+  raiPCVDripController: {
+    contractDependencies: ['core', 'fei', 'aaveRaiPCVDeposit', 'raiPriceBoundPSM']
+  },
   daiFixedPricePSM: {
     contractDependencies: [
       'core',
@@ -346,7 +358,7 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core', 'fei']
   },
   aaveRaiPCVDeposit: {
-    contractDependencies: ['core']
+    contractDependencies: ['core', 'pcvGuardian', 'raiPCVDripController']
   },
   agEurAngleUniswapPCVDeposit: {
     contractDependencies: ['core', 'fei', 'chainlinkEurUsdOracleWrapper']

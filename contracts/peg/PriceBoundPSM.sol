@@ -64,6 +64,13 @@ contract PriceBoundPSM is PegStabilityModule, IPriceBound {
         return _validPrice(readOracle());
     }
 
+    /// @notice Allocates a portion of escrowed PCV to a target PCV deposit
+    function _allocate(uint256 amount) internal override {
+        _transfer(address(surplusTarget), amount);
+
+        emit AllocateSurplus(msg.sender, amount);
+    }
+
     /// @notice helper function to set the ceiling in basis points
     function _setCeilingBasisPoints(uint256 newCeilingBasisPoints) internal {
         require(newCeilingBasisPoints != 0, "PegStabilityModule: invalid ceiling");
