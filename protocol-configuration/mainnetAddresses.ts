@@ -116,6 +116,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x3e0f66c5687FF917809A3F7fA7096e1Bc409fB03',
     category: AddressCategory.Peg
   },
+  raiPCVDripController: {
+    artifactName: 'PCVDripController',
+    address: '0x64d216dFbe31d0C88BBcAdfF51Ab2aD704A3aAd9',
+    category: AddressCategory.Peg
+  },
   daiPSM: {
     artifactName: 'PriceBoundPSM',
     address: '0x210300C158f95E1342fD008aE417ef68311c49C2',
@@ -134,6 +139,11 @@ const MainnetAddresses: MainnetAddresses = {
   lusdPCVDripController: {
     artifactName: 'PCVDripController',
     address: '0x59fA1bB4fBd7fcB055476645F228f13ac14754a8',
+    category: AddressCategory.Peg
+  },
+  raiPriceBoundPSM: {
+    artifactName: 'PriceBoundPSM',
+    address: '0x5ddE9B4b14eDf59CB23c1d4579B279846998205e',
     category: AddressCategory.Peg
   },
   ethPSM: {
@@ -694,6 +704,11 @@ const MainnetAddresses: MainnetAddresses = {
   chainlinkRaiEthOracleWrapper: {
     artifactName: 'ChainlinkOracleWrapper',
     address: '0x3d49573ee6aFCBDe606F8a1c2AA1C498048E7190',
+    category: AddressCategory.Oracle
+  },
+  chainlinkRaiUsdOracleWrapper: {
+    artifactName: 'ChainlinkOracleWrapper',
+    address: '0xC7a950418eC90df99B1516F3d0276423bF46D4C2',
     category: AddressCategory.Oracle
   },
   chainlinkRaiUsdCompositeOracle: {
