@@ -266,14 +266,14 @@ contract NonCustodialPSMTest is DSTest {
 
     /// @notice redeem fails without approval
     function testSwapfeiForUnderlyingFailsWithoutApproval() public {
-        vm.expectRevert(bytes("ERC20: transfer amount exceeds allowance"));
+        vm.expectRevert(bytes("ERC20: insufficient allowance"));
 
         psm.redeem(address(this), mintAmount, mintAmount);
     }
 
     /// @notice mint fails without approval
     function testSwapUnderlyingForfeiFailsWithoutApproval() public {
-        vm.expectRevert(bytes("ERC20: transfer amount exceeds allowance"));
+        vm.expectRevert(bytes("ERC20: insufficient allowance"));
 
         psm.mint(address(this), mintAmount, mintAmount);
     }
