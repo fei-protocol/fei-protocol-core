@@ -84,8 +84,6 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     admin: podAdminGateway.address
   };
 
-  console.log({ tribalCouncilPod });
-
   const genesisTx = await podFactory.deployCouncilPod(tribalCouncilPod);
   const { args } = (await genesisTx.wait()).events.find((elem) => elem.event === 'CreatePod');
   const tribalCouncilPodId = args.podId;

@@ -2031,8 +2031,8 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x9F80E03985303eB8b2ABC031Cb82716D7913f531',
     category: AddressCategory.Governance
   },
-  tribalCouncilGnosisSafe: {
-    artifactName: 'contracts/pods/interfaces/IGnosisSafe.sol:IGnosisSafe',
+  tribalCouncilSafe: {
+    artifactName: 'unknown',
     address: '0xdb6236E5363aBdeb807198e820DD5CC04BfC8dDd',
     category: AddressCategory.Governance
   },
