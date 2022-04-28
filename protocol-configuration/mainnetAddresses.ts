@@ -1286,6 +1286,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x06cb22615ba53e60d67bf6c341a0fd5e718e1655',
     category: AddressCategory.External
   },
+  curveLusdMetapool: {
+    artifactName: 'ICurveMetapool',
+    address: '0xEd279fDD11cA84bEef15AF5D39BB4d4bEE23F0cA',
+    category: AddressCategory.External
+  },
   cvx: {
     artifactName: 'IERC20',
     address: '0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B',
