@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 import {TimelockController} from "@openzeppelin/contracts/governance/TimelockController.sol";
 import {ControllerV1} from "@orcaprotocol/contracts/contracts/ControllerV1.sol";
+import {MemberToken} from "@orcaprotocol/contracts/contracts/MemberToken.sol";
 import {Vm} from "../../utils/Vm.sol";
 import {DSTest} from "../../utils/DSTest.sol";
 import {PodFactory} from "../../../pods/PodFactory.sol";
@@ -147,6 +148,32 @@ contract PodAdminGatewayIntegrationTest is DSTest {
 
         bool memberTransfersLocked = factory.getIsMembershipTransferLocked(podId);
         assertFalse(memberTransfersLocked);
+    }
+
+    /// @notice Transfer pod admin to new admin
+    function testTransferPodAdmin() public {
+        address memberToRemove = podConfig.members[0];
+        address newAdmin = address(0x22);
+
+        vm.prank(feiDAOTimelock);
+        podAdminGateway.transferAdmin(podId, newAdmin);
+
+        address newAdminOnFactory = factory.getPodAdmin(podId);
+        assertEq(newAdminOnFactory, newAdmin);
+
+        address newAdminOnController = ControllerV1(podController).podAdmin(podId);
+        assertEq(newAdminOnController, newAdmin);
+
+        // Validate new pod admin can perform an admin function, such as removing a member
+        vm.prank(newAdmin);
+        MemberToken(memberToken).burn(memberToRemove, podId);
+
+        uint256 numPodMembers = factory.getNumMembers(podId);
+        assertEq(numPodMembers, podConfig.members.length - 1);
+
+        address[] memory podMembers = factory.getPodMembers(podId);
+        assertEq(podMembers[0], podConfig.members[1]);
+        assertEq(podMembers[1], podConfig.members[2]);
     }
 
     /// @notice Validate that a non-PodAdmin fails to call a priviledged admin method
