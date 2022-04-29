@@ -119,6 +119,7 @@ contract BalancerPool2Lens is IPCVDepositBalances {
         }
         if (feiInPair) {
             uint256 otherReserves = _getIdealReserves(balances, prices, weights, j);
+            otherReserves = (otherReserves * bptsOwned) / totalSupply;
             return (reserves, otherReserves);
         }
         return (reserves, 0);

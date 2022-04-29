@@ -15,10 +15,7 @@ interface IPhantomStablePool is IStablePool {
 
     function getScalingFactor(address token) external view returns (uint256);
 
-    function getRateProviders()
-        external
-        view
-        returns (address[] memory providers);
+    function getRateProviders() external view returns (address[] memory providers);
 
     // Returns the token rate for token. All token rates are fixed-point values with 18 decimals.
     // In case there is no rate provider for the provided token it returns 1e18.
@@ -38,15 +35,11 @@ interface IPhantomStablePool is IStablePool {
 
     // Sets a new duration for a token rate cache. It reverts if there was no rate provider set initially.
     // Note this function also updates the current cached value.
-    function setTokenRateCacheDuration(address token, uint256 duration)
-        external;
+    function setTokenRateCacheDuration(address token, uint256 duration) external;
 
     function updateTokenRateCache(address token) external;
 
-    function getCachedProtocolSwapFeePercentage()
-        external
-        view
-        returns (uint256);
+    function getCachedProtocolSwapFeePercentage() external view returns (uint256);
 
     function updateCachedProtocolSwapFeePercentage() external;
 

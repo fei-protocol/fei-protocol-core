@@ -10,13 +10,9 @@ interface IERC4626 is IERC20 {
 
     function totalAssets() external view returns (uint256 totalAssets);
 
-    function deposit(uint256 assets, address receiver)
-        external
-        returns (uint256 shares);
+    function deposit(uint256 assets, address receiver) external returns (uint256 shares);
 
-    function mint(uint256 shares, address receiver)
-        external
-        returns (uint256 assets);
+    function mint(uint256 shares, address receiver) external returns (uint256 assets);
 
     function withdraw(
         uint256 assets,
@@ -30,44 +26,23 @@ interface IERC4626 is IERC20 {
         address owner
     ) external returns (uint256 assets);
 
-    function convertToShares(uint256 assets)
-        external
-        view
-        returns (uint256 shares);
+    function convertToShares(uint256 assets) external view returns (uint256 shares);
 
-    function convertToAssets(uint256 shares)
-        external
-        view
-        returns (uint256 assets);
+    function convertToAssets(uint256 shares) external view returns (uint256 assets);
 
-    function maxDeposit(address owner)
-        external
-        view
-        returns (uint256 maxAssets);
+    function maxDeposit(address owner) external view returns (uint256 maxAssets);
 
-    function maxWithdraw(address owner)
-        external
-        view
-        returns (uint256 maxAssets);
+    function maxWithdraw(address owner) external view returns (uint256 maxAssets);
 
     function maxMint(address owner) external view returns (uint256 maxShares);
 
     function maxRedeem(address owner) external view returns (uint256 maxShares);
 
-    function previewDeposit(uint256 assets)
-        external
-        view
-        returns (uint256 shares);
+    function previewDeposit(uint256 assets) external view returns (uint256 shares);
 
-    function previewWithdraw(uint256 assets)
-        external
-        view
-        returns (uint256 shares);
+    function previewWithdraw(uint256 assets) external view returns (uint256 shares);
 
     function previewMint(uint256 shares) external view returns (uint256 assets);
 
-    function previewRedeem(uint256 shares)
-        external
-        view
-        returns (uint256 assets);
+    function previewRedeem(uint256 shares) external view returns (uint256 assets);
 }

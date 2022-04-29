@@ -16,16 +16,10 @@ contract StableBalancerPoolManager is BaseBalancerPoolManager {
         uint256 rawEndValue,
         uint256 endTime
     ) external onlyGovernorOrAdmin {
-        IStablePool(pool).startAmplificationParameterUpdate(
-            rawEndValue,
-            endTime
-        );
+        IStablePool(pool).startAmplificationParameterUpdate(rawEndValue, endTime);
     }
 
-    function stopAmplificationParameterUpdate(address pool)
-        external
-        onlyGovernorOrAdmin
-    {
+    function stopAmplificationParameterUpdate(address pool) external onlyGovernorOrAdmin {
         IStablePool(pool).stopAmplificationParameterUpdate();
     }
 
@@ -35,10 +29,7 @@ contract StableBalancerPoolManager is BaseBalancerPoolManager {
         uint256[] calldata duration
     ) external onlyGovernorOrAdmin {
         for (uint256 i = 0; i < token.length; i++) {
-            IPhantomStablePool(pool).setTokenRateCacheDuration(
-                token[i],
-                duration[i]
-            );
+            IPhantomStablePool(pool).setTokenRateCacheDuration(token[i], duration[i]);
         }
     }
 }

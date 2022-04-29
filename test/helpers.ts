@@ -156,7 +156,7 @@ async function expectApprox(
 async function expectApproxAbs(
   actual: string | number | BigNumberish,
   expected: string | number | BigNumberish,
-  diff = '1000000000000000000'
+  diff: string | number | BigNumberish = '1000000000000000000'
 ): Promise<void> {
   const actualBN = toBN(actual);
   const expectedBN = toBN(expected);

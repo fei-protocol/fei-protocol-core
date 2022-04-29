@@ -27,7 +27,7 @@ const proposals: ProposalsConfigMap = {
     category: ProposalCategory.DAO,
     totalValue: 0,
     proposal: fip_90
-  } /*,
+  },
   fip_82: {
     deploy: false, // deploy flag for whether to run deploy action during e2e tests or use mainnet state
     totalValue: 0, // amount of ETH to send to DAO execution
@@ -68,7 +68,6 @@ const proposals: ProposalsConfigMap = {
     totalValue: 0,
     proposal: fip_98
   },
-
   fip_99: {
     deploy: false,
     proposalId: null,
@@ -86,7 +85,7 @@ const proposals: ProposalsConfigMap = {
     category: ProposalCategory.DAO,
     totalValue: 0,
     proposal: fip_99
-  }*/
+  }
 };
 
 export default proposals;

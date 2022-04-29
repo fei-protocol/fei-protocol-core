@@ -156,6 +156,53 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
       await proposal.simulate();
     }
 
+    if (config.category === ProposalCategory.DEBUG) {
+      console.log('Simulating DAO proposal in DEBUG mode (step by step)...');
+      console.log('  Title: ', config.proposal.title);
+
+      const signer = await getImpersonatedSigner(contracts.feiDAOTimelock.address);
+      await forceEth(contracts.feiDAOTimelock.address);
+
+      let totalGasUsed = 0;
+      for (let i = 0; i < config.proposal.commands.length; i++) {
+        const cmd = config.proposal.commands[i];
+        // build tx & print details
+        console.log('  Step' + (config.proposal.commands.length >= 10 && i < 10 ? ' ' : ''), i, ':', cmd.description);
+        let types = [];
+        if (cmd.method.indexOf('(') !== -1 && cmd.method.indexOf('()') === -1) {
+          // e.g. ['address', 'bytes32', 'uint256'], or empty array []
+          types = cmd.method.split('(')[1].split(')')[0].split(',');
+        }
+        const cmdArguments = cmd.arguments.map((arg) => {
+          if (arg.indexOf('{') == 0) {
+            arg = contractAddresses[arg.replace('{', '').replace('}', '')] || arg;
+          }
+          return arg;
+        });
+        const functionSig = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(cmd.method));
+        const calldata = ethers.utils.defaultAbiCoder
+          .encode(types, cmdArguments)
+          .replace('0x', functionSig.substring(0, 10)); // prepend function signature
+        const to = contractAddresses[cmd.target] || cmd.target;
+        const value = cmd.values;
+        console.log('    Target:', cmd.target, '[' + to + ']');
+        console.log('    Method:', cmd.method);
+        types.forEach((type, i) => {
+          console.log('      Argument', i, '[' + type + ']', cmdArguments[i]);
+        });
+        //console.log('    Value:', value);
+        //console.log('    Calldata:', calldata);
+        process.stdout.write('    Calling... ');
+
+        // send tx
+        const tx = await signer.sendTransaction({ data: calldata, to, value: Number(value) });
+        const d = await tx.wait();
+        process.stdout.write('Done. Used ' + d.cumulativeGasUsed.toString() + ' gas.\n');
+        totalGasUsed += Number(d.cumulativeGasUsed.toString());
+      }
+      console.log('  Done. Used', totalGasUsed, 'gas in total.');
+    }
+
     if (config.category === ProposalCategory.OA) {
       this.config.logging && console.log(`Simulating OA proposal...`);
       await simulateOAProposal(

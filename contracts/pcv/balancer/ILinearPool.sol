@@ -27,13 +27,9 @@ interface ILinearPool is IBasePool {
     // Linear Pools feature a lower and upper target that represent the desired range of values for the
     // main token balance. Any action that moves the main balance away from this range is charged a proportional fee,
     // and any action that moves it towards this range is incentivized by paying the actor using these collected fees.
-    function getTargets()
-        external
-        view
-        returns (uint256 lowerTarget, uint256 upperTarget);
+    function getTargets() external view returns (uint256 lowerTarget, uint256 upperTarget);
 
-    function setTargets(uint256 newLowerTarget, uint256 newUpperTarget)
-        external;
+    function setTargets(uint256 newLowerTarget, uint256 newUpperTarget) external;
 
     // In other pools, this would be the same as `totalSupply`, but since this pool pre-mints all BPT, `totalSupply`
     // remains constant, whereas `virtualSupply` increases as users join the pool and decreases as they exit it.
