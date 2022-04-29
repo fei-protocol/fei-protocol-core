@@ -5,10 +5,7 @@ pragma solidity ^0.8.4;
 /// @author eswak
 interface IPCVSwapper {
     // ----------- Events -----------
-    event UpdateReceivingAddress(
-        address oldTokenReceivingAddress,
-        address newTokenReceivingAddress
-    );
+    event UpdateReceivingAddress(address oldTokenReceivingAddress, address newTokenReceivingAddress);
 
     event Swap(
         address indexed _caller,

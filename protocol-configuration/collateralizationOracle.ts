@@ -45,8 +45,9 @@ const collateralizationAddresses = {
     'balancerLensVeBalWeth'
   ],
   dpi: ['rariPool19DpiPCVDepositWrapper', 'dpiDepositWrapper'],
-  rai: ['rariPool9RaiPCVDepositWrapper', 'aaveRaiPCVDepositWrapper', 'raiDepositWrapper'],
-  agEUR: ['agEurDepositWrapper', 'uniswapLensAgEurUniswapGauge', 'agEurUniswapPCVDeposit']
+  rai: ['rariPool9RaiPCVDepositWrapper', 'aaveRaiPCVDepositWrapper', 'raiDepositWrapper', 'raiPriceBoundPSM'],
+  agEUR: ['agEurDepositWrapper', 'uniswapLensAgEurUniswapGauge', 'agEurUniswapPCVDeposit'],
+  volt: ['voltDepositWrapper']
 };
 
 export default collateralizationAddresses;

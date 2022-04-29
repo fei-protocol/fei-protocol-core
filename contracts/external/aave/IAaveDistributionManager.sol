@@ -5,11 +5,7 @@ pragma experimental ABIEncoderV2;
 interface IAaveDistributionManager {
     event AssetConfigUpdated(address indexed asset, uint256 emission);
     event AssetIndexUpdated(address indexed asset, uint256 index);
-    event UserIndexUpdated(
-        address indexed user,
-        address indexed asset,
-        uint256 index
-    );
+    event UserIndexUpdated(address indexed user, address indexed asset, uint256 index);
     event DistributionEndUpdated(uint256 newDistributionEnd);
 
     /**
@@ -36,10 +32,7 @@ interface IAaveDistributionManager {
      * @param asset The address of the reference asset of the distribution
      * @return The new index
      **/
-    function getUserAssetData(address user, address asset)
-        external
-        view
-        returns (uint256);
+    function getUserAssetData(address user, address asset) external view returns (uint256);
 
     /**
      * @dev Returns the configuration of the distribution for a certain asset

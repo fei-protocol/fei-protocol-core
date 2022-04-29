@@ -39,7 +39,7 @@ describe('e2e-metagov', function () {
     before(async function () {
       // Create the contract
       const factory = await ethers.getContractFactory('MockGovernorVoter');
-      voter = await factory.deploy(contracts.core.address);
+      voter = (await factory.deploy(contracts.core.address)) as MockGovernorVoter;
       await voter.deployTransaction.wait();
 
       // Seed the contract with some TRIBE tokens

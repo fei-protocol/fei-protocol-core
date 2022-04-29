@@ -9,7 +9,7 @@ import proposals from '@test/integration/proposals_config';
 import { forceEth } from '@test/integration/setup/utils';
 import { Contract, Signer } from 'ethers';
 import { expectApprox } from '@test/helpers';
-import { WETH9 } from '@custom-types/contracts';
+import { FeiDAO, WETH9 } from '@custom-types/contracts';
 
 const toBN = ethers.BigNumber.from;
 
@@ -23,14 +23,19 @@ describe('e2e-peg-stability-module', function () {
   let ethPSMRouter: Contract;
   let userAddress;
   let minterAddress;
+  let governorAddress;
   let weth: Contract;
   let dai: Contract;
   let daiPSM: Contract;
+  let raiPriceBoundPSM: Contract;
   let ethPSM: Contract;
   let fei: Contract;
+  let rai: Contract;
   let core: Contract;
-  let feiDAOTimelock: Contract;
+  let feiDAOTimelock;
   let beneficiaryAddress1;
+  let guardianAddress;
+  let daiFixedPricePSM: Contract;
 
   before(async () => {
     chai.use(CBN(ethers.BigNumber));
@@ -44,18 +49,6 @@ describe('e2e-peg-stability-module', function () {
     deployAddress = (await ethers.getSigners())[0].address;
     if (!deployAddress) throw new Error(`No deploy address!`);
     const addresses = await getAddresses();
-    // add any addresses you want to impersonate here
-    const impersonatedAddresses = [
-      addresses.userAddress,
-      addresses.pcvControllerAddress,
-      addresses.governorAddress,
-      addresses.minterAddress,
-      addresses.burnerAddress,
-      addresses.beneficiaryAddress1,
-      addresses.beneficiaryAddress2
-    ];
-
-    ({ userAddress, minterAddress, beneficiaryAddress1 } = addresses);
 
     doLogging = Boolean(process.env.LOGGING);
 
@@ -69,9 +62,38 @@ describe('e2e-peg-stability-module', function () {
 
     doLogging && console.log(`Loading environment...`);
     ({ contracts } = await e2eCoord.loadEnvironment());
-    ({ dai, weth, daiPSM, ethPSM, ethPSMRouter, fei, core, daiPCVDripController, feiDAOTimelock } = contracts);
+    ({
+      dai,
+      weth,
+      daiFixedPricePSM,
+      ethPSM,
+      ethPSMRouter,
+      fei,
+      core,
+      daiPCVDripController,
+      feiDAOTimelock,
+      raiPriceBoundPSM,
+      rai
+    } = contracts);
     doLogging && console.log(`Environment loaded.`);
     weth = contracts.weth as WETH9;
+    daiPSM = daiFixedPricePSM;
+
+    // add any addresses you want to impersonate here
+    const impersonatedAddresses = [
+      addresses.userAddress,
+      addresses.pcvControllerAddress,
+      addresses.governorAddress,
+      addresses.minterAddress,
+      addresses.burnerAddress,
+      addresses.beneficiaryAddress1,
+      addresses.beneficiaryAddress2,
+      addresses.guardianAddress,
+      contracts.feiDAOTimelock.address
+    ];
+
+    ({ userAddress, minterAddress, beneficiaryAddress1, guardianAddress } = addresses);
+
     await core.grantMinter(minterAddress);
 
     for (const address of impersonatedAddresses) {
@@ -255,7 +277,7 @@ describe('e2e-peg-stability-module', function () {
     });
   });
 
-  describe.skip('dai-psm pcv drip controller', async () => {
+  describe('dai-psm pcv drip controller', async () => {
     before(async function () {
       // make sure there is enough DAI available to the dripper and on the PSM
       const DAI_HOLDER = '0xbebc44782c7db0a1a60cb6fe97d0b483032ff1c7'; // curve 3pool
@@ -297,15 +319,15 @@ describe('e2e-peg-stability-module', function () {
     });
   });
 
-  describe.skip('dai_psm', async () => {
+  describe('dai_psm', async () => {
     describe('redeem', function () {
-      const redeemAmount = 10_000_000;
+      const redeemAmount = 500_000;
       beforeEach(async () => {
         await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, redeemAmount);
         await fei.connect(impersonatedSigners[userAddress]).approve(daiPSM.address, redeemAmount);
       });
 
-      it('exchanges 10,000,000 FEI for DAI', async () => {
+      it('exchanges 500,000 FEI for DAI', async () => {
         const startingFEIBalance = await fei.balanceOf(userAddress);
         const startingDAIBalance = await dai.balanceOf(userAddress);
         const expectedDAIAmount = await daiPSM.getRedeemAmountOut(redeemAmount);
@@ -320,21 +342,6 @@ describe('e2e-peg-stability-module', function () {
         expect(expectedDAIAmount).to.be.gt(0);
       });
 
-      it('exchanges 5,000,000 FEI for DAI', async () => {
-        const startingFEIBalance = await fei.balanceOf(userAddress);
-        const startingDAIBalance = await dai.balanceOf(userAddress);
-        const expectedDAIAmount = await daiPSM.getRedeemAmountOut(redeemAmount / 2);
-
-        await daiPSM.connect(impersonatedSigners[userAddress]).redeem(userAddress, redeemAmount / 2, expectedDAIAmount);
-
-        const endingFEIBalance = await fei.balanceOf(userAddress);
-        const endingDAIBalance = await dai.balanceOf(userAddress);
-
-        expect(endingDAIBalance.sub(startingDAIBalance)).to.be.equal(expectedDAIAmount);
-        expect(startingFEIBalance.sub(endingFEIBalance)).to.be.equal(redeemAmount / 2);
-        expect(expectedDAIAmount).to.be.gt(0); //if you receive 0 weth, there is an oracle failure or improperly setup oracle
-      });
-
       it('DAI price sanity check', async () => {
         const actualDAIAmountOut = await daiPSM.getRedeemAmountOut(redeemAmount);
         await expectApprox(actualDAIAmountOut, redeemAmount);
@@ -342,7 +349,7 @@ describe('e2e-peg-stability-module', function () {
     });
 
     describe('mint', function () {
-      const mintAmount = 10_000_000;
+      const mintAmount = 500_000;
 
       beforeEach(async () => {
         const daiAccount = '0xbb2e5c2ff298fd96e166f90c8abacaf714df14f8';
@@ -352,7 +359,7 @@ describe('e2e-peg-stability-module', function () {
         await dai.connect(impersonatedSigners[userAddress]).approve(daiPSM.address, mintAmount);
       });
 
-      it('mint succeeds with 5_000_000 DAI', async () => {
+      it('mint succeeds with 500_000 DAI', async () => {
         const minAmountOut = await daiPSM.getMintAmountOut(mintAmount / 2);
         const userStartingFEIBalance = await fei.balanceOf(userAddress);
         const psmStartingDAIBalance = await dai.balanceOf(daiPSM.address);
@@ -366,23 +373,113 @@ describe('e2e-peg-stability-module', function () {
         expect(psmEndingDAIBalance.sub(psmStartingDAIBalance)).to.be.equal(mintAmount / 2);
       });
 
-      it('mint succeeds with 10_000_000 DAI', async () => {
-        const minAmountOut = await daiPSM.getMintAmountOut(mintAmount);
-        const userStartingFEIBalance = await fei.balanceOf(userAddress);
-        const psmStartingDAIBalance = await dai.balanceOf(daiPSM.address);
-
-        await daiPSM.connect(impersonatedSigners[userAddress]).mint(userAddress, mintAmount, minAmountOut);
-
-        const psmEndingDAIBalance = await dai.balanceOf(daiPSM.address);
-        const userEndingFEIBalance = await fei.balanceOf(userAddress);
-
-        expect(userEndingFEIBalance.sub(userStartingFEIBalance)).to.be.equal(minAmountOut);
-        expect(psmEndingDAIBalance.sub(psmStartingDAIBalance)).to.be.equal(mintAmount);
-      });
-
       it('DAI price sanity check', async () => {
         const actualDAIAmountOut = await daiPSM.getMintAmountOut(mintAmount);
         await expectApprox(actualDAIAmountOut, mintAmount);
+      });
+    });
+  });
+
+  describe('rai_psm', async () => {
+    describe('redeem', function () {
+      const redeemAmount = 10_000_000;
+      beforeEach(async () => {
+        await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, redeemAmount);
+        await fei.connect(impersonatedSigners[userAddress]).approve(rai.address, redeemAmount);
+      });
+
+      it('exchanges 10,000,000 FEI for rai', async () => {
+        const startingFEIBalance = await fei.balanceOf(userAddress);
+        const startingraiBalance = await rai.balanceOf(userAddress);
+        const expectedraiAmount = await raiPriceBoundPSM.getRedeemAmountOut(redeemAmount);
+
+        await raiPriceBoundPSM
+          .connect(impersonatedSigners[userAddress])
+          .redeem(userAddress, redeemAmount, expectedraiAmount);
+
+        const endingFEIBalance = await fei.balanceOf(userAddress);
+        const endingraiBalance = await rai.balanceOf(userAddress);
+
+        expect(endingraiBalance.sub(startingraiBalance)).to.be.equal(expectedraiAmount);
+        expect(startingFEIBalance.sub(endingFEIBalance)).to.be.equal(redeemAmount);
+        expect(expectedraiAmount).to.be.gt(0);
+      });
+
+      it('exchanges 5,000,000 FEI for rai', async () => {
+        const startingFEIBalance = await fei.balanceOf(userAddress);
+        const startingraiBalance = await rai.balanceOf(userAddress);
+        const expectedraiAmount = await raiPriceBoundPSM.getRedeemAmountOut(redeemAmount / 2);
+
+        await raiPriceBoundPSM
+          .connect(impersonatedSigners[userAddress])
+          .redeem(userAddress, redeemAmount / 2, expectedraiAmount);
+
+        const endingFEIBalance = await fei.balanceOf(userAddress);
+        const endingraiBalance = await rai.balanceOf(userAddress);
+
+        expect(endingraiBalance.sub(startingraiBalance)).to.be.equal(expectedraiAmount);
+        expect(startingFEIBalance.sub(endingFEIBalance)).to.be.equal(redeemAmount / 2);
+        expect(expectedraiAmount).to.be.gt(0); //if you receive 0 weth, there is an oracle failure or improperly setup oracle
+      });
+
+      it('rai price sanity check', async () => {
+        const actualraiAmountOut = await raiPriceBoundPSM.getRedeemAmountOut(redeemAmount);
+        await expectApprox(actualraiAmountOut, redeemAmount);
+      });
+    });
+
+    describe('mint', function () {
+      const mintAmount = 10_000_000;
+
+      beforeEach(async () => {
+        const raiAccount = '0x618788357d0ebd8a37e763adab3bc575d54c2c7d';
+        const raiSigner = await getImpersonatedSigner(raiAccount);
+        await forceEth(raiAccount);
+        await rai.connect(raiSigner).transfer(userAddress, mintAmount);
+        await rai.connect(impersonatedSigners[userAddress]).approve(raiPriceBoundPSM.address, mintAmount);
+      });
+
+      it('cannot mint because the rai psm is paused', async () => {
+        await expect(
+          raiPriceBoundPSM.connect(impersonatedSigners[userAddress]).mint(userAddress, mintAmount, mintAmount)
+        ).to.be.revertedWith('PegStabilityModule: Minting paused');
+      });
+
+      it('mint succeeds with 5_000_000 rai', async () => {
+        await raiPriceBoundPSM.connect(impersonatedSigners[feiDAOTimelock.address]).unpauseMint();
+        const minAmountOut = await raiPriceBoundPSM.getMintAmountOut(mintAmount / 2);
+        const userStartingFEIBalance = await fei.balanceOf(userAddress);
+        const psmStartingraiBalance = await rai.balanceOf(raiPriceBoundPSM.address);
+
+        await raiPriceBoundPSM
+          .connect(impersonatedSigners[userAddress])
+          .mint(userAddress, mintAmount / 2, minAmountOut);
+
+        const psmEndingraiBalance = await rai.balanceOf(raiPriceBoundPSM.address);
+        const userEndingFEIBalance = await fei.balanceOf(userAddress);
+
+        expect(userEndingFEIBalance.sub(userStartingFEIBalance)).to.be.gte(minAmountOut);
+        expect(psmEndingraiBalance.sub(psmStartingraiBalance)).to.be.equal(mintAmount / 2);
+      });
+
+      it('mint succeeds with 10_000_000 rai', async () => {
+        await raiPriceBoundPSM.connect(impersonatedSigners[feiDAOTimelock.address]).unpauseMint();
+        const minAmountOut = await raiPriceBoundPSM.getMintAmountOut(mintAmount);
+        const userStartingFEIBalance = await fei.balanceOf(userAddress);
+        const psmStartingraiBalance = await rai.balanceOf(raiPriceBoundPSM.address);
+
+        await raiPriceBoundPSM.connect(impersonatedSigners[userAddress]).mint(userAddress, mintAmount, minAmountOut);
+
+        const psmEndingraiBalance = await rai.balanceOf(raiPriceBoundPSM.address);
+        const userEndingFEIBalance = await fei.balanceOf(userAddress);
+
+        expect(userEndingFEIBalance.sub(userStartingFEIBalance)).to.be.equal(minAmountOut);
+        expect(psmEndingraiBalance.sub(psmStartingraiBalance)).to.be.equal(mintAmount);
+      });
+
+      it('rai price sanity check', async () => {
+        const actualraiAmountOut = await raiPriceBoundPSM.getMintAmountOut(mintAmount);
+        await expectApprox(actualraiAmountOut, mintAmount);
       });
     });
   });

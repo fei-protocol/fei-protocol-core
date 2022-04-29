@@ -7,17 +7,10 @@ import "./BaseBalancerPoolManager.sol";
 /// @title WeightedBalancerPoolManager
 /// @notice an abstract utility class for a contract that manages a Balancer WeightedPool (including LBP)
 /// exposes the governable methods to Fei Governors or admins
-abstract contract WeightedBalancerPoolManager is
-    IWeightedBalancerPoolManager,
-    BaseBalancerPoolManager
-{
+abstract contract WeightedBalancerPoolManager is IWeightedBalancerPoolManager, BaseBalancerPoolManager {
     constructor() BaseBalancerPoolManager() {}
 
-    function setSwapEnabled(IWeightedPool pool, bool swapEnabled)
-        public
-        override
-        onlyGovernorOrAdmin
-    {
+    function setSwapEnabled(IWeightedPool pool, bool swapEnabled) public override onlyGovernorOrAdmin {
         pool.setSwapEnabled(swapEnabled);
     }
 
@@ -39,10 +32,11 @@ abstract contract WeightedBalancerPoolManager is
         pool.updateWeightsGradually(startTime, endTime, endWeights);
     }
 
-    function withdrawCollectedManagementFees(
-        IWeightedPool pool,
-        address recipient
-    ) public override onlyGovernorOrAdmin {
+    function withdrawCollectedManagementFees(IWeightedPool pool, address recipient)
+        public
+        override
+        onlyGovernorOrAdmin
+    {
         pool.withdrawCollectedManagementFees(recipient);
     }
 }

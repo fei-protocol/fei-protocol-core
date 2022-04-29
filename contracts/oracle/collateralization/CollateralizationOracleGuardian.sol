@@ -18,10 +18,7 @@ import "@openzeppelin/contracts/utils/math/SafeCast.sol";
 contract CollateralizationOracleGuardian is CoreRef, Timed {
     using SafeCast for uint256;
 
-    event DeviationThresholdUpdate(
-        uint256 oldDeviationThresholdBasisPoints,
-        uint256 newDeviationThresholdBasisPoints
-    );
+    event DeviationThresholdUpdate(uint256 oldDeviationThresholdBasisPoints, uint256 newDeviationThresholdBasisPoints);
 
     /// @notice the oracle wrapper to update
     ICollateralizationOracleWrapper public immutable oracleWrapper;
@@ -53,76 +50,54 @@ contract CollateralizationOracleGuardian is CoreRef, Timed {
     /// @param protocolControlledValue new PCV value
     /// @param userCirculatingFei new user FEI value
     /// @dev make sure to pause the CR oracle wrapper or else the set value would be overwritten on next update
-    function setCache(
-        uint256 protocolControlledValue,
-        uint256 userCirculatingFei
-    ) external onlyGuardianOrGovernor afterTime {
+    function setCache(uint256 protocolControlledValue, uint256 userCirculatingFei)
+        external
+        onlyGuardianOrGovernor
+        afterTime
+    {
         // Reset timer
         _initTimed();
 
         // Check boundaries on new update values
         uint256 cachedPCV = oracleWrapper.cachedProtocolControlledValue();
         require(
-            calculateDeviationThresholdBasisPoints(
-                protocolControlledValue,
-                cachedPCV
-            ) <= deviationThresholdBasisPoints,
+            calculateDeviationThresholdBasisPoints(protocolControlledValue, cachedPCV) <= deviationThresholdBasisPoints,
             "CollateralizationOracleGuardian: Cached PCV exceeds deviation"
         );
 
         uint256 cachedUserFei = oracleWrapper.cachedUserCirculatingFei();
         require(
-            calculateDeviationThresholdBasisPoints(
-                userCirculatingFei,
-                cachedUserFei
-            ) <= deviationThresholdBasisPoints,
+            calculateDeviationThresholdBasisPoints(userCirculatingFei, cachedUserFei) <= deviationThresholdBasisPoints,
             "CollateralizationOracleGuardian: Cached User FEI exceeds deviation"
         );
 
         // Set the new cache values
-        int256 equity = protocolControlledValue.toInt256() -
-            userCirculatingFei.toInt256();
-        oracleWrapper.setCache(
-            protocolControlledValue,
-            userCirculatingFei,
-            equity
-        );
+        int256 equity = protocolControlledValue.toInt256() - userCirculatingFei.toInt256();
+        oracleWrapper.setCache(protocolControlledValue, userCirculatingFei, equity);
 
         assert(oracleWrapper.cachedProtocolEquity() == equity);
     }
 
     /// @notice return the percent deviation between a and b in basis points terms
-    function calculateDeviationThresholdBasisPoints(uint256 a, uint256 b)
-        public
-        pure
-        returns (uint256)
-    {
+    function calculateDeviationThresholdBasisPoints(uint256 a, uint256 b) public pure returns (uint256) {
         uint256 delta = (a < b) ? (b - a) : (a - b);
         return (delta * Constants.BASIS_POINTS_GRANULARITY) / a;
     }
 
     /// @notice governance setter for maximum deviation the guardian can change per update
-    function setDeviationThresholdBasisPoints(
-        uint256 newDeviationThresholdBasisPoints
-    ) external onlyGovernor {
+    function setDeviationThresholdBasisPoints(uint256 newDeviationThresholdBasisPoints) external onlyGovernor {
         _setDeviationThresholdBasisPoints(newDeviationThresholdBasisPoints);
     }
 
-    function _setDeviationThresholdBasisPoints(
-        uint256 newDeviationThresholdBasisPoints
-    ) internal {
+    function _setDeviationThresholdBasisPoints(uint256 newDeviationThresholdBasisPoints) internal {
         require(
-            newDeviationThresholdBasisPoints <=
-                Constants.BASIS_POINTS_GRANULARITY,
+            newDeviationThresholdBasisPoints <= Constants.BASIS_POINTS_GRANULARITY,
             "CollateralizationOracleGuardian: deviation exceeds granularity"
         );
 
         uint256 oldDeviationThresholdBasisPoints = deviationThresholdBasisPoints;
         deviationThresholdBasisPoints = newDeviationThresholdBasisPoints;
 
-        emit DeviationThresholdUpdate(
-            oldDeviationThresholdBasisPoints,
-            newDeviationThresholdBasisPoints
-        );
+        emit DeviationThresholdUpdate(oldDeviationThresholdBasisPoints, newDeviationThresholdBasisPoints);
     }
 }

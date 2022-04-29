@@ -116,6 +116,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x3e0f66c5687FF917809A3F7fA7096e1Bc409fB03',
     category: AddressCategory.Peg
   },
+  raiPCVDripController: {
+    artifactName: 'PCVDripController',
+    address: '0x64d216dFbe31d0C88BBcAdfF51Ab2aD704A3aAd9',
+    category: AddressCategory.Peg
+  },
   daiPSM: {
     artifactName: 'PriceBoundPSM',
     address: '0x210300C158f95E1342fD008aE417ef68311c49C2',
@@ -134,6 +139,11 @@ const MainnetAddresses: MainnetAddresses = {
   lusdPCVDripController: {
     artifactName: 'PCVDripController',
     address: '0x59fA1bB4fBd7fcB055476645F228f13ac14754a8',
+    category: AddressCategory.Peg
+  },
+  raiPriceBoundPSM: {
+    artifactName: 'PriceBoundPSM',
+    address: '0x5ddE9B4b14eDf59CB23c1d4579B279846998205e',
     category: AddressCategory.Peg
   },
   ethPSM: {
@@ -616,6 +626,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x485d23ce5725ecdE46ca9033012984D90b514FFd',
     category: AddressCategory.PCV
   },
+  voltDepositWrapper: {
+    artifactName: 'ERC20PCVDepositWrapper',
+    address: '0x564eFCe5c6873219a7FbE450187c23254E3d62a4',
+    category: AddressCategory.PCV
+  },
   collateralizationOracle: {
     artifactName: 'CollateralizationOracle',
     address: '0xFF6f59333cfD8f4Ebc14aD0a0E181a83e655d257',
@@ -689,6 +704,11 @@ const MainnetAddresses: MainnetAddresses = {
   chainlinkRaiEthOracleWrapper: {
     artifactName: 'ChainlinkOracleWrapper',
     address: '0x3d49573ee6aFCBDe606F8a1c2AA1C498048E7190',
+    category: AddressCategory.Oracle
+  },
+  chainlinkRaiUsdOracleWrapper: {
+    artifactName: 'ChainlinkOracleWrapper',
+    address: '0xC7a950418eC90df99B1516F3d0276423bF46D4C2',
     category: AddressCategory.Oracle
   },
   chainlinkRaiUsdCompositeOracle: {
@@ -1901,6 +1921,21 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x2dC77678Be7F900e81c638b056F4835BB7203C96',
     category: AddressCategory.TBD
   },
+  orcaPodController: {
+    artifactName: 'IControllerV1',
+    address: '0x17FDC2Eaf2bd46f3e1052CCbccD9e6AD0296C42c',
+    category: AddressCategory.External
+  },
+  orcaMemberToken: {
+    artifactName: 'IMemberToken',
+    address: '0x0762aA185b6ed2dCA77945Ebe92De705e0C37AE3',
+    category: AddressCategory.External
+  },
+  orcaShipToken: {
+    artifactName: 'unknown',
+    address: '0x872EdeaD0c56930777A82978d4D7deAE3A2d1539',
+    category: AddressCategory.External
+  },
   rariGovernanceProxyAdmin: {
     artifactName: 'ProxyAdmin',
     address: '0x1c9aA54a013962C2444ECae06902F31D532c6AD3',
@@ -1955,6 +1990,71 @@ const MainnetAddresses: MainnetAddresses = {
     artifactName: 'unknown',
     address: '0x0a00F781508a2E3FF5C6Aa80DF97dAebd0fFC259',
     category: AddressCategory.Fuse
+  },
+  volt: {
+    artifactName: 'Fei',
+    address: '0x559eBC30b0E58a45Cc9fF573f77EF1e5eb1b3E18',
+    category: AddressCategory.Volt
+  },
+  voltCore: {
+    artifactName: 'Core',
+    address: '0xEC7AD284f7Ad256b64c6E69b84Eb0F48f42e8196',
+    category: AddressCategory.Volt
+  },
+  voltFeiSwapContract: {
+    artifactName: 'OtcEscrow',
+    address: '0xeF152E462B59940616E667E801762dA9F2AF97b9',
+    category: AddressCategory.Volt
+  },
+  voltFusePCVDeposit: {
+    artifactName: 'ERC20CompoundPCVDeposit',
+    address: '0xFeBDf448C8484834bb399d930d7E1bdC773E23bA',
+    category: AddressCategory.Volt
+  },
+  voltOracle: {
+    artifactName: 'unknown',
+    address: '0x84dc71500D504163A87756dB6368CC8bB654592f',
+    category: AddressCategory.Volt
+  },
+  podExecutor: {
+    artifactName: 'PodExecutor',
+    address: '0x99d8b669F48A708f7C0373AF6CE31F0726ab6CaD',
+    category: AddressCategory.Governance
+  },
+  podAdminGateway: {
+    artifactName: 'PodAdminGateway',
+    address: '0xDDe8AA537c5b289De9cede462E6F0ec3a3a99e39',
+    category: AddressCategory.Governance
+  },
+  podFactory: {
+    artifactName: 'PodFactory',
+    address: '0x4B2c8894D29d05dbc0d5A1CE23535be08d844819',
+    category: AddressCategory.Governance
+  },
+  governanceMetadataRegistry: {
+    artifactName: 'GovernanceMetadataRegistry',
+    address: '0xd78Cd3AaE6168BE43B548877aAc68312B9df9AFb',
+    category: AddressCategory.Governance
+  },
+  nopeDAO: {
+    artifactName: 'NopeDAO',
+    address: '0x6C7aF43Ce97686e0C8AcbBc03b2E4f313c0394C7',
+    category: AddressCategory.Governance
+  },
+  tribalCouncilTimelock: {
+    artifactName: 'TimelockController',
+    address: '0xe0C7DE94395B629860Cbb3c42995F300F56e6d7a',
+    category: AddressCategory.Governance
+  },
+  tribalCouncilSafe: {
+    artifactName: 'unknown',
+    address: '0x2EC598d8e3DF35E5D6F13AE2f05a7bB2704e92Ea',
+    category: AddressCategory.Governance
+  },
+  roleBastion: {
+    artifactName: 'RoleBastion',
+    address: '0x8096314D9014EbB69Fc777ED3791DDE6FFbaFAed',
+    category: AddressCategory.Governance
   }
 };
 

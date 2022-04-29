@@ -9,10 +9,7 @@ contract MockRateLimitedMinter is RateLimitedMinter {
         uint256 _feiLimitPerSecond,
         uint256 _mintingBufferCap,
         bool _doPartialMint
-    )
-        CoreRef(_core)
-        RateLimitedMinter(_feiLimitPerSecond, _mintingBufferCap, _doPartialMint)
-    {}
+    ) CoreRef(_core) RateLimitedMinter(_feiLimitPerSecond, _mintingBufferCap, _doPartialMint) {}
 
     function setDoPartialMint(bool _doPartialMint) public {
         doPartialAction = _doPartialMint;

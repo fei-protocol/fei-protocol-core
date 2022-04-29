@@ -16,13 +16,10 @@ contract MockCurveMetapool is MockERC20 {
         slippage = _slippage;
     }
 
-    function add_liquidity(uint256[2] memory amounts, uint256 min_mint_amount)
-        public
-    {
+    function add_liquidity(uint256[2] memory amounts, uint256 min_mint_amount) public {
         IERC20(coins[0]).transferFrom(msg.sender, address(this), amounts[0]);
         IERC20(coins[1]).transferFrom(msg.sender, address(this), amounts[1]);
-        uint256 totalTokens = ((amounts[0] + amounts[1]) * (10000 - slippage)) /
-            10000;
+        uint256 totalTokens = ((amounts[0] + amounts[1]) * (10000 - slippage)) / 10000;
         MockERC20(this).mint(msg.sender, totalTokens);
     }
 
@@ -30,9 +27,7 @@ contract MockCurveMetapool is MockERC20 {
         return IERC20(coins[i]).balanceOf(address(this));
     }
 
-    function remove_liquidity(uint256 _amount, uint256[2] memory min_amounts)
-        public
-    {
+    function remove_liquidity(uint256 _amount, uint256[2] memory min_amounts) public {
         uint256[2] memory amounts;
         amounts[0] = _amount / 2;
         amounts[1] = _amount / 2;
@@ -56,11 +51,7 @@ contract MockCurveMetapool is MockERC20 {
         return 1000000000000000000;
     }
 
-    function calc_withdraw_one_coin(uint256 _token_amount, int128 i)
-        public
-        view
-        returns (uint256)
-    {
+    function calc_withdraw_one_coin(uint256 _token_amount, int128 i) public view returns (uint256) {
         uint256 _amountOut = (_token_amount * (10000 - slippage)) / 10000;
         _amountOut = (_amountOut * 10000) / 10002; // 0.02% fee
         return _amountOut;

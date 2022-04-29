@@ -26,9 +26,18 @@ library TribeRoles {
     /// @notice can mint FEI arbitrarily
     bytes32 internal constant MINTER = keccak256("MINTER_ROLE");
 
+    /// @notice Manages lower level - Admin and Minor - roles. Able to grant and revoke these
+    bytes32 internal constant ROLE_ADMIN = keccak256("ROLE_ADMIN");
+
     /*///////////////////////////////////////////////////////////////
                                  Admin Roles
     //////////////////////////////////////////////////////////////*/
+
+    /// @notice has access to all admin functionality on pods
+    bytes32 internal constant POD_ADMIN = keccak256("POD_ADMIN");
+
+    /// @notice capable of granting and revoking other TribeRoles from having veto power over a pod
+    bytes32 internal constant POD_VETO_ADMIN = keccak256("POD_VETO_ADMIN");
 
     /// @notice can manage the majority of Tribe protocol parameters. Sets boundaries for MINOR_PARAM_ROLE.
     bytes32 internal constant PARAMETER_ADMIN = keccak256("PARAMETER_ADMIN");
@@ -37,12 +46,10 @@ library TribeRoles {
     bytes32 internal constant ORACLE_ADMIN = keccak256("ORACLE_ADMIN_ROLE");
 
     /// @notice manages TribalChief incentives and related functionality.
-    bytes32 internal constant TRIBAL_CHIEF_ADMIN =
-        keccak256("TRIBAL_CHIEF_ADMIN_ROLE");
+    bytes32 internal constant TRIBAL_CHIEF_ADMIN = keccak256("TRIBAL_CHIEF_ADMIN_ROLE");
 
     /// @notice admin of PCVGuardian
-    bytes32 internal constant PCV_GUARDIAN_ADMIN =
-        keccak256("PCV_GUARDIAN_ADMIN_ROLE");
+    bytes32 internal constant PCV_GUARDIAN_ADMIN = keccak256("PCV_GUARDIAN_ADMIN_ROLE");
 
     /// @notice admin of all Minor Roles
     bytes32 internal constant MINOR_ROLE_ADMIN = keccak256("MINOR_ROLE_ADMIN");
@@ -61,22 +68,20 @@ library TribeRoles {
 
     /// @notice manages meta-governance actions, like voting & delegating.
     /// Also used to vote for gauge weights & similar liquid governance things.
-    bytes32 internal constant METAGOVERNANCE_VOTE_ADMIN =
-        keccak256("METAGOVERNANCE_VOTE_ADMIN");
+    bytes32 internal constant METAGOVERNANCE_VOTE_ADMIN = keccak256("METAGOVERNANCE_VOTE_ADMIN");
 
     /// @notice allows to manage locking of vote-escrowed tokens, and staking/unstaking
     /// governance tokens from a pre-defined contract in order to eventually allow voting.
     /// Examples: ANGLE <> veANGLE, AAVE <> stkAAVE, CVX <> vlCVX, CRV > cvxCRV.
-    bytes32 internal constant METAGOVERNANCE_TOKEN_STAKING =
-        keccak256("METAGOVERNANCE_TOKEN_STAKING");
+    bytes32 internal constant METAGOVERNANCE_TOKEN_STAKING = keccak256("METAGOVERNANCE_TOKEN_STAKING");
 
     /// @notice manages whitelisting of gauges where the protocol's tokens can be staked
-    bytes32 internal constant METAGOVERNANCE_GAUGE_ADMIN =
-        keccak256("METAGOVERNANCE_GAUGE_ADMIN");
+    bytes32 internal constant METAGOVERNANCE_GAUGE_ADMIN = keccak256("METAGOVERNANCE_GAUGE_ADMIN");
 
     /*///////////////////////////////////////////////////////////////
                                  Minor Roles
     //////////////////////////////////////////////////////////////*/
+    bytes32 internal constant POD_METADATA_REGISTER_ROLE = keccak256("POD_METADATA_REGISTER_ROLE");
 
     /// @notice capable of poking existing LBP auctions to exchange tokens.
     bytes32 internal constant LBP_SWAP_ROLE = keccak256("SWAP_ADMIN_ROLE");
@@ -84,6 +89,12 @@ library TribeRoles {
     /// @notice capable of engaging with Votium for voting incentives.
     bytes32 internal constant VOTIUM_ROLE = keccak256("VOTIUM_ADMIN_ROLE");
 
+    /// @notice capable of adding an address to multi rate limited
+    bytes32 internal constant ADD_MINTER_ROLE = keccak256("ADD_MINTER_ROLE");
+
     /// @notice capable of changing parameters within non-critical ranges
     bytes32 internal constant MINOR_PARAM_ROLE = keccak256("MINOR_PARAM_ROLE");
+
+    /// @notice capable of changing PCV Deposit and Global Rate Limited Minter in the PSM
+    bytes32 internal constant PSM_ADMIN_ROLE = keccak256("PSM_ADMIN_ROLE");
 }

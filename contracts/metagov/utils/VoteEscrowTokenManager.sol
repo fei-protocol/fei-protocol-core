@@ -63,21 +63,14 @@ abstract contract VoteEscrowTokenManager is CoreRef {
     }
 
     /// @notice Set the amount of time tokens will be vote-escrowed for in lock() calls
-    function setLockDuration(uint256 newLockDuration)
-        external
-        onlyTribeRole(TribeRoles.METAGOVERNANCE_TOKEN_STAKING)
-    {
+    function setLockDuration(uint256 newLockDuration) external onlyTribeRole(TribeRoles.METAGOVERNANCE_TOKEN_STAKING) {
         lockDuration = newLockDuration;
     }
 
     /// @notice Deposit tokens to get veTokens. Set lock duration to lockDuration.
     /// The only way to withdraw tokens will be to pause this contract
     /// for lockDuration and then call exitLock().
-    function lock()
-        external
-        whenNotPaused
-        onlyTribeRole(TribeRoles.METAGOVERNANCE_TOKEN_STAKING)
-    {
+    function lock() external whenNotPaused onlyTribeRole(TribeRoles.METAGOVERNANCE_TOKEN_STAKING) {
         uint256 tokenBalance = liquidToken.balanceOf(address(this));
         uint256 locked = veToken.locked(address(this));
         uint256 lockHorizon = ((block.timestamp + lockDuration) / WEEK) * WEEK;
@@ -110,10 +103,7 @@ abstract contract VoteEscrowTokenManager is CoreRef {
     /// by calling lock(). This function will recover tokens on the contract,
     /// which can then be moved by calling withdraw() as a PCVController if the
     /// contract is also a PCVDeposit, for instance.
-    function exitLock()
-        external
-        onlyTribeRole(TribeRoles.METAGOVERNANCE_TOKEN_STAKING)
-    {
+    function exitLock() external onlyTribeRole(TribeRoles.METAGOVERNANCE_TOKEN_STAKING) {
         veToken.withdraw();
 
         emit Unlock(liquidToken.balanceOf(address(this)));
@@ -121,8 +111,6 @@ abstract contract VoteEscrowTokenManager is CoreRef {
 
     /// @notice returns total balance of tokens, vote-escrowed or liquid.
     function _totalTokensManaged() internal view returns (uint256) {
-        return
-            liquidToken.balanceOf(address(this)) +
-            veToken.locked(address(this));
+        return liquidToken.balanceOf(address(this)) + veToken.locked(address(this));
     }
 }

@@ -1,4 +1,3 @@
-import { ethers } from 'hardhat';
 import { permissions } from '@protocol/permissions';
 import { getAllContractAddresses, getAllContracts } from './loadContracts';
 import {
@@ -22,8 +21,6 @@ import constructProposal from '@scripts/utils/constructProposal';
 import '@nomiclabs/hardhat-ethers';
 import { resetFork } from '@test/helpers';
 import simulateOAProposal from '@scripts/utils/simulateOAProposal';
-import { forceEth } from '@test/integration/setup/utils';
-import { getImpersonatedSigner } from '@test/helpers';
 
 /**
  * Coordinate initialising an end-to-end testing environment
@@ -126,6 +123,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
         contractAddressesBefore,
         this.config.logging
       );
+      console.log(`Deployment complete.`);
     }
 
     const contracts: NamedContracts = {
