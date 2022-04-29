@@ -130,17 +130,17 @@ const fip_82: ProposalDescription = {
       values: '0',
       method: 'batchAddPodMember(uint256 _podId,address[] memory _members)',
       arguments: [
-        '24', // TODO: Update to correct TribalCouncil ID once pod is deployed
+        '25',
         [
-          '0x000000000000000000000000000000000000000D', // TODO: Complete with real member addresses
-          '0x000000000000000000000000000000000000000E',
-          '0x000000000000000000000000000000000000000F',
-          '0x0000000000000000000000000000000000000010',
-          '0x0000000000000000000000000000000000000011',
-          '0x0000000000000000000000000000000000000012',
-          '0x0000000000000000000000000000000000000013',
-          '0x0000000000000000000000000000000000000014',
-          '0x0000000000000000000000000000000000000015'
+          '0xc8eefb8b3d50ca87Da7F99a661720148acf97EfA',
+          '0x72b7448f470D07222Dbf038407cD69CC380683F3',
+          '0xA6D08774604d6Da7C96684ca6c4f61f89c4e5b96',
+          '0xe0ac4559739bD36f0913FB0A3f5bFC19BCBaCD52',
+          '0xC2138f77E97A9Ac0A4bC26F42D80D29D1a091866',
+          '0x9f5e6F58CC8823D3c022AeBE3942EeF689E9AcD9',
+          '0xaB339ae6eab3C3CF4f5885E56F7B49391a01DDA6',
+          '0xd90E9181B20D8D1B5034d9f5737804Da182039F6',
+          '0x7671f0615B1764fb4bf4b8dF06B7338843f99678'
         ]
       ],
       description: 'Add designated members to the Tribal Council'
@@ -150,7 +150,7 @@ const fip_82: ProposalDescription = {
       values: '0',
       method: 'batchRemovePodMember(uint256 _podId, address[] memory)',
       arguments: [
-        '24', // TODO: Update to correct TribalCouncil ID once pod is deployed
+        '25',
         [
           '0x0000000000000000000000000000000000000004',
           '0x0000000000000000000000000000000000000005',
@@ -169,7 +169,7 @@ const fip_82: ProposalDescription = {
       target: 'podAdminGateway',
       values: '0',
       method: 'lockMembershipTransfers(uint256 _podId)',
-      arguments: ['24'],
+      arguments: ['25'],
       description: 'Lock TribalCouncil membership transfers'
     }
   ],

@@ -98,6 +98,12 @@ library TribeRoles {
     /// @notice capable of engaging with Votium for voting incentives.
     bytes32 internal constant VOTIUM_ROLE = keccak256("VOTIUM_ADMIN_ROLE");
 
+    /// @notice capable of adding an address to multi rate limited
+    bytes32 internal constant ADD_MINTER_ROLE = keccak256("ADD_MINTER_ROLE");
+
     /// @notice capable of changing parameters within non-critical ranges
     bytes32 internal constant MINOR_PARAM_ROLE = keccak256("MINOR_PARAM_ROLE");
+
+    /// @notice capable of changing PCV Deposit and Global Rate Limited Minter in the PSM
+    bytes32 internal constant PSM_ADMIN_ROLE = keccak256("PSM_ADMIN_ROLE");
 }

@@ -116,6 +116,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x3e0f66c5687FF917809A3F7fA7096e1Bc409fB03',
     category: AddressCategory.Peg
   },
+  raiPCVDripController: {
+    artifactName: 'PCVDripController',
+    address: '0x64d216dFbe31d0C88BBcAdfF51Ab2aD704A3aAd9',
+    category: AddressCategory.Peg
+  },
   daiPSM: {
     artifactName: 'PriceBoundPSM',
     address: '0x210300C158f95E1342fD008aE417ef68311c49C2',
@@ -134,6 +139,11 @@ const MainnetAddresses: MainnetAddresses = {
   lusdPCVDripController: {
     artifactName: 'PCVDripController',
     address: '0x59fA1bB4fBd7fcB055476645F228f13ac14754a8',
+    category: AddressCategory.Peg
+  },
+  raiPriceBoundPSM: {
+    artifactName: 'PriceBoundPSM',
+    address: '0x5ddE9B4b14eDf59CB23c1d4579B279846998205e',
     category: AddressCategory.Peg
   },
   ethPSM: {
@@ -694,6 +704,11 @@ const MainnetAddresses: MainnetAddresses = {
   chainlinkRaiEthOracleWrapper: {
     artifactName: 'ChainlinkOracleWrapper',
     address: '0x3d49573ee6aFCBDe606F8a1c2AA1C498048E7190',
+    category: AddressCategory.Oracle
+  },
+  chainlinkRaiUsdOracleWrapper: {
+    artifactName: 'ChainlinkOracleWrapper',
+    address: '0xC7a950418eC90df99B1516F3d0276423bF46D4C2',
     category: AddressCategory.Oracle
   },
   chainlinkRaiUsdCompositeOracle: {
@@ -2000,6 +2015,46 @@ const MainnetAddresses: MainnetAddresses = {
     artifactName: 'unknown',
     address: '0x84dc71500D504163A87756dB6368CC8bB654592f',
     category: AddressCategory.Volt
+  },
+  podExecutor: {
+    artifactName: 'PodExecutor',
+    address: '0x99d8b669F48A708f7C0373AF6CE31F0726ab6CaD',
+    category: AddressCategory.Governance
+  },
+  podAdminGateway: {
+    artifactName: 'PodAdminGateway',
+    address: '0xDDe8AA537c5b289De9cede462E6F0ec3a3a99e39',
+    category: AddressCategory.Governance
+  },
+  podFactory: {
+    artifactName: 'PodFactory',
+    address: '0x4B2c8894D29d05dbc0d5A1CE23535be08d844819',
+    category: AddressCategory.Governance
+  },
+  governanceMetadataRegistry: {
+    artifactName: 'GovernanceMetadataRegistry',
+    address: '0xd78Cd3AaE6168BE43B548877aAc68312B9df9AFb',
+    category: AddressCategory.Governance
+  },
+  nopeDAO: {
+    artifactName: 'NopeDAO',
+    address: '0x6C7aF43Ce97686e0C8AcbBc03b2E4f313c0394C7',
+    category: AddressCategory.Governance
+  },
+  tribalCouncilTimelock: {
+    artifactName: 'TimelockController',
+    address: '0xe0C7DE94395B629860Cbb3c42995F300F56e6d7a',
+    category: AddressCategory.Governance
+  },
+  tribalCouncilSafe: {
+    artifactName: 'unknown',
+    address: '0x2EC598d8e3DF35E5D6F13AE2f05a7bB2704e92Ea',
+    category: AddressCategory.Governance
+  },
+  roleBastion: {
+    artifactName: 'RoleBastion',
+    address: '0x8096314D9014EbB69Fc777ED3791DDE6FFbaFAed',
+    category: AddressCategory.Governance
   }
 };
 

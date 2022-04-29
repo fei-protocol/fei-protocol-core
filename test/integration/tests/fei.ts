@@ -12,7 +12,7 @@ const toBN = ethers.BigNumber.from;
 
 describe('e2e-fei', function () {
   let contracts: NamedContracts;
-  let contractAddresses: NamedAddresses;
+  let contractAddresses;
   let deployAddress: string;
   let deploySigner: Signer;
   let e2eCoord: TestEndtoEndCoordinator;

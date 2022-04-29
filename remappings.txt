@@ -1,3 +1,4 @@
 @openzeppelin/=node_modules/@openzeppelin/
 @chainlink/=node_modules/@chainlink/
 @uniswap/=node_modules/@uniswap/
+@rari-capital/=node_modules/@rari-capital/

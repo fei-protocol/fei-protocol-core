@@ -1,4 +1,3 @@
-import { ethers } from 'hardhat';
 import { permissions } from '@protocol/permissions';
 import { getAllContractAddresses, getAllContracts } from './loadContracts';
 import {
@@ -124,6 +123,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
         contractAddressesBefore,
         this.config.logging
       );
+      console.log(`Deployment complete.`);
     }
 
     const contracts: NamedContracts = {

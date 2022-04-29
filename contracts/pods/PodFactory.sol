@@ -13,17 +13,16 @@ import {ICore} from "../core/ICore.sol";
 import {PodAdminGateway} from "./PodAdminGateway.sol";
 import {PodExecutor} from "./PodExecutor.sol";
 
-/// @dev This contract is primarily a factory contract which an admin
-/// can use to deploy more optimistic governance pods. It will create an
-/// Orca pod and deploy a timelock alongside it.
-///
-/// The timelock and Orca pod are then linked up so that the Orca pod is
-/// the only proposer and executor.
+/// @title PodFactory for TRIBE Governance pods
+/// @notice A factory to create optimistic pods used in the Tribe Governance system
+/// @dev This contract is primarily a factory contract which can be used to deploy
+/// more optimistic governance pods. It will create an Orca pod and if specified,
+/// deploy a timelock alongside it. The timelock and Orca pod are linked.
 contract PodFactory is CoreRef, IPodFactory {
     /// @notice Orca membership token for the pods. Handles permissioning pod members
     MemberToken public immutable memberToken;
 
-    /// @notice Public contract that will be granted to execute all timelocks created
+    /// @notice Public contract that has EXECUTOR_ROLE on all pod timelocks, to allow permissionless execution
     PodExecutor public immutable podExecutor;
 
     /// @notice Default podController used to create pods
@@ -35,10 +34,10 @@ contract PodFactory is CoreRef, IPodFactory {
     /// @notice Mapping between timelock and podId
     mapping(address => uint256) public getPodId;
 
-    /// @notice Number of pods created
+    /// @notice Created pod safe addresses
     address[] private podSafeAddresses;
 
-    /// @notice Track whether the one time use initial pod deploy has been used
+    /// @notice Track whether the one time use Council pod was used
     bool public tribalCouncilDeployed;
 
     /// @notice Minimum delay of a pod timelock, if one is to be created with one
@@ -47,7 +46,7 @@ contract PodFactory is CoreRef, IPodFactory {
     /// @param _core Fei core address
     /// @param _memberToken Membership token that manages the Orca pod membership
     /// @param _defaultPodController Default pod controller that will be used to create pods initially
-    /// @param _podExecutor Public contract that will be granted to execute all timelocks created
+    /// @param _podExecutor Public contract that will be granted the role to execute transactions on all timelocks
     constructor(
         address _core,
         address _memberToken,
@@ -117,8 +116,7 @@ contract PodFactory is CoreRef, IPodFactory {
         return memberToken.getNextAvailablePodId();
     }
 
-    /// @notice Get the podAdmin from the base Orca controller
-    /// @dev Controller only allows existing admin to change
+    /// @notice Get the podAdmin from the pod controller
     /// @param podId Unique id for the orca pod
     function getPodAdmin(uint256 podId) external view override returns (address) {
         ControllerV1 podController = ControllerV1(memberToken.memberController(podId));
@@ -133,7 +131,8 @@ contract PodFactory is CoreRef, IPodFactory {
 
     //////////////////// STATE-CHANGING API ////////////////////
 
-    /// @notice Deploy the genesis pod, one time use method
+    /// @notice Deploy the genesis pod, one time use method. It will not lock membership transfers, has to be done
+    ///         in a seperate call to the PodAdminGateway
     function deployCouncilPod(PodConfig calldata _config)
         external
         override
