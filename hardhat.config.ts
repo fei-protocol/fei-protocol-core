@@ -21,6 +21,7 @@ const enableMainnetForking = process.env.ENABLE_MAINNET_FORKING;
 const mainnetAlchemyApiKey = process.env.MAINNET_ALCHEMY_API_KEY;
 const runAllTests = process.env.RUN_ALL_TESTS;
 const useJSONTestReporter = process.env.REPORT_TEST_RESULTS_AS_JSON;
+const etherscanKey = process.env.ETHERSCAN_API_KEY;
 
 if (!(process.env.NODE_OPTIONS && process.env.NODE_OPTIONS.includes('max-old-space-size'))) {
   throw new Error(
@@ -47,7 +48,7 @@ export default {
     enabled: !!process.env.REPORT_GAS
   },
   etherscan: {
-    apiKey: '82DJ4332MCDTMRMSVHNVWY4RDCWEF6M7B2'
+    apiKey: etherscanKey
   },
   networks: {
     hardhat: {
@@ -73,7 +74,7 @@ export default {
     mainnet: {
       url: `https://eth-mainnet.alchemyapi.io/v2/${mainnetAlchemyApiKey}`,
       accounts: privateKey ? [privateKey] : [],
-      gasPrice: 60000000000
+      gasPrice: 70000000000
     }
   },
 

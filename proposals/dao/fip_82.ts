@@ -12,7 +12,8 @@ import { tribeCouncilPodConfig, PodCreationConfig } from '@protocol/optimisticGo
 import { abi as inviteTokenABI } from '../../artifacts/@orcaprotocol/contracts/contracts/InviteToken.sol/InviteToken.json';
 import { abi as timelockABI } from '../../artifacts/@openzeppelin/contracts/governance/TimelockController.sol/TimelockController.json';
 import { abi as gnosisSafeABI } from '../../artifacts/contracts/pods/interfaces/IGnosisSafe.sol/IGnosisSafe.json';
-import { Contract } from 'ethers';
+import { Contract, Signer } from 'ethers';
+import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 
 const validateArraysEqual = (arrayA: string[], arrayB: string[]) => {
   arrayA.every((a) => expect(arrayB.map((b) => b.toLowerCase()).includes(a.toLowerCase())));
@@ -22,22 +23,23 @@ const validateArraysEqual = (arrayA: string[], arrayB: string[]) => {
 // Requirement of holding Orca tokens to deploy is a slow rollout mechanism used by Orca
 const transferOrcaTokens = async (
   orcaERC20Address: string,
-  deployAddress: string,
+  deploySigner: SignerWithAddress,
   receiver: string,
   amount: number
 ) => {
   // Mint Orca Ship tokens to deploy address, to allow to deploy contracts
-  const deployAddressSigner = await getImpersonatedSigner(deployAddress);
-  const inviteToken = new ethers.Contract(orcaERC20Address, inviteTokenABI, deployAddressSigner);
-  const deployerBalance = await inviteToken.balanceOf(deployAddress);
+  const inviteToken = new ethers.Contract(orcaERC20Address, inviteTokenABI, deploySigner);
+  const deployerBalance = await inviteToken.balanceOf(deploySigner.address);
+  console.log('Orca balance: ', deployerBalance);
 
   if (deployerBalance.lt(amount)) {
     // In test environment, mint tokens to deployer
     const priviledgedOrcaMinter = '0x2149A222feD42fefc3A120B3DdA34482190fC666';
     const priviledgedSigner = await getImpersonatedSigner(priviledgedOrcaMinter);
-    await inviteToken.connect(priviledgedSigner).mint(deployAddress, amount);
+    await inviteToken.connect(priviledgedSigner).mint(deploySigner.address, amount);
   }
-  await inviteToken.transfer(receiver, amount);
+  const transferTx = await inviteToken.transfer(receiver, amount);
+  await transferTx.wait();
 };
 
 const fipNumber = '82';
@@ -71,7 +73,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   );
   await podAdminGateway.deployTransaction.wait();
   logging && console.log(`Deployed PodAdminGateway at ${podAdminGateway.address}`);
-  await transferOrcaTokens(addresses.orcaShipToken, deployAddress, podFactory.address, 1);
+  await transferOrcaTokens(addresses.orcaShipToken, deploySigner, podFactory.address, 1);
 
   // 4. Create TribalCouncil and Protocol Tier pods
   const tribalCouncilPod: PodCreationConfig = {
