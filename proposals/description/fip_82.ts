@@ -179,6 +179,20 @@ const fip_82: ProposalDescription = {
   2. Install the 9 members of the TribalCouncil who were previously elected by the community in the Snapshot vote:
   https://snapshot.fei.money/#/proposal/0x003adc2cb0f13784645e31440d24d0364817085aa1994e1ad72944d11bedb528 
 
+  The Ethereum addresses of the 9 elected members are:
+  
+  [
+    '0xc8eefb8b3d50ca87Da7F99a661720148acf97EfA',
+    '0x72b7448f470D07222Dbf038407cD69CC380683F3',
+    '0xA6D08774604d6Da7C96684ca6c4f61f89c4e5b96',
+    '0xe0ac4559739bD36f0913FB0A3f5bFC19BCBaCD52',
+    '0xC2138f77E97A9Ac0A4bC26F42D80D29D1a091866',
+    '0x9f5e6F58CC8823D3c022AeBE3942EeF689E9AcD9',
+    '0xaB339ae6eab3C3CF4f5885E56F7B49391a01DDA6',
+    '0xd90E9181B20D8D1B5034d9f5737804Da182039F6',
+    '0x7671f0615B1764fb4bf4b8dF06B7338843f99678'
+  ]
+
   There will be a second DAO vote to transfer various protocol roles to the TribalCouncil pod and to make it the admin of various roles - to allow it to 
   operate the protocol.
 
