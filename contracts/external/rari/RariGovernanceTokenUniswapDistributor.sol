@@ -7,12 +7,11 @@ pragma solidity ^0.8.4;
  * @notice RariGovernanceTokenUniswapDistributor distributes RGT (Rari Governance Token) to Uniswap LP token holders.
  */
 interface RariGovernanceTokenUniswapDistributor {
+    function setDistributionEndBlock() external;
+
     function distributionEndBlock() external view returns (uint256);
 
-    function getRgtDistributed(uint256 blockNumber)
-        external
-        view
-        returns (uint256);
+    function getRgtDistributed(uint256 blockNumber) external view returns (uint256);
 
     function setDisabled(bool _disabled) external;
 

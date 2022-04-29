@@ -7,7 +7,7 @@ import proposals from '@test/integration/proposals_config';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
 import { getImpersonatedSigner, expectRevert, time } from '@test/helpers';
 import { forceEth } from '@test/integration/setup/utils';
-import { MockOZGovernorVoter } from '@custom-types/contracts';
+import { MockGovernorVoter } from '@custom-types/contracts';
 
 const e18 = (x) => ethers.constants.WeiPerEther.mul(x);
 
@@ -34,34 +34,57 @@ describe('e2e-metagov', function () {
   });
 
   describe('utils/OZGovernorVoter.sol', function () {
-    let voter: MockOZGovernorVoter;
+    let voter: MockGovernorVoter;
 
     before(async function () {
       // Create the contract
-      const factory = await ethers.getContractFactory('MockOZGovernorVoter');
-      voter = await factory.deploy(contracts.core.address);
+      const factory = await ethers.getContractFactory('MockGovernorVoter');
+      voter = (await factory.deploy(contracts.core.address)) as MockGovernorVoter;
       await voter.deployTransaction.wait();
 
-      // Seed the contract with some tokens
+      // Seed the contract with some TRIBE tokens
       const daoSigner = await getImpersonatedSigner(contracts.feiDAOTimelock.address);
       await forceEth(contracts.feiDAOTimelock.address);
       await contracts.core.connect(daoSigner).allocateTribe(voter.address, e18(25_000_000));
+
+      // Seed the contract with some COMP tokens
+      const compSigner = await getImpersonatedSigner('0x2775b1c75658Be0F640272CCb8c72ac986009e38');
+      await forceEth('0x2775b1c75658Be0F640272CCb8c72ac986009e38');
+      await contracts.comp.connect(compSigner).transfer(voter.address, e18(1_000_000));
 
       // TRIBE does not delegate itself automatically, so we call delegate() on the token
       const voterSigner = await getImpersonatedSigner(voter.address);
       await forceEth(voter.address);
       await contracts.tribe.connect(voterSigner).delegate(voter.address);
+      // COMP does not delegate itself automatically, so we call delegate() on the token
+      await contracts.comp.connect(voterSigner).delegate(voter.address);
     });
 
     describe('without METAGOVERNANCE_VOTE_ADMIN role', function () {
-      it('propose() should revert', async function () {
+      it('propose() [OZ signature] should revert', async function () {
         await expectRevert(
-          voter.propose(
+          voter.proposeOZ(
             contracts.feiDAO.address,
             [contracts.fei.address], // targets
             ['0'], // values
             [
               '0x095ea7b30000000000000000000000006ef71cA9cD708883E129559F5edBFb9d9D5C61480000000000000000000000000000000000000000000000000000000000003039'
+            ], // calldata
+            'description' // description
+          ),
+          'UNAUTHORIZED'
+        );
+      });
+
+      it('propose() [Bravo signature] should revert', async function () {
+        await expectRevert(
+          voter.proposeBravo(
+            '0xc0Da02939E1441F497fd74F78cE7Decb17B66529',
+            [contracts.fei.address], // targets
+            ['0'], // values
+            ['approve(address,uint256)'], // signatures
+            [
+              '0x0000000000000000000000006ef71cA9cD708883E129559F5edBFb9d9D5C61480000000000000000000000000000000000000000000000000000000000003039'
             ], // calldata
             'description' // description
           ),
@@ -96,12 +119,12 @@ describe('e2e-metagov', function () {
         await contracts.core.connect(daoSigner).revokeRole(ethers.utils.id('METAGOVERNANCE_VOTE_ADMIN'), deployAddress);
       });
 
-      it('should be able to create a proposal and vote for it', async function () {
-        const governor = await ethers.getContractAt('IOZGovernor', contracts.feiDAO.address);
+      it('should be able to create a proposal [OZ signature] and vote for it', async function () {
+        const governor = await ethers.getContractAt('IMetagovGovernor', contracts.feiDAO.address);
 
         // create proposal
-        const proposeTx = await voter.propose(
-          contracts.feiDAO.address,
+        const proposeTx = await voter.proposeOZ(
+          governor.address,
           [contracts.fei.address], // targets
           ['0'], // values
           [
@@ -121,6 +144,28 @@ describe('e2e-metagov', function () {
         expect((await contracts.feiDAO.proposals(proposalId)).forVotes).to.be.equal(0);
         await voter.castVote(contracts.feiDAO.address, proposalId, '1');
         expect((await contracts.feiDAO.proposals(proposalId)).forVotes).to.be.equal(e18(25_000_000));
+      });
+
+      it('should be able to create a proposal [Bravo signature]', async function () {
+        // Compound Governor Bravo
+        const governor = await ethers.getContractAt('IMetagovGovernor', '0xc0Da02939E1441F497fd74F78cE7Decb17B66529');
+
+        // create proposal
+        const proposeTx = await voter.proposeBravo(
+          governor.address,
+          [contracts.fei.address], // targets
+          ['0'], // values
+          ['approve(address,uint256)'], // signatures
+          [
+            '0x0000000000000000000000006ef71cA9cD708883E129559F5edBFb9d9D5C61480000000000000000000000000000000000000000000000000000000000003039'
+          ], // calldatas
+          'description' // description
+        );
+        const proposeTxReceipt = await proposeTx.wait();
+        const proposalId = proposeTxReceipt.logs[0].data.slice(0, 66); // '0xabcdef...'
+
+        // check state of proposal
+        expect(await governor.state(proposalId)).to.be.equal(0); // 0: pending
       });
     });
   });

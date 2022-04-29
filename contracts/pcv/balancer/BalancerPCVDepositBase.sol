@@ -16,11 +16,7 @@ abstract contract BalancerPCVDepositBase is PCVDeposit {
 
     // @notice event generated when pool position is exited (LP tokens redeemed
     // for tokens in proportion to the pool's weights.
-    event ExitPool(
-        bytes32 indexed _poodId,
-        address indexed _to,
-        uint256 _bptAmount
-    );
+    event ExitPool(bytes32 indexed _poodId, address indexed _to, uint256 _bptAmount);
 
     // Maximum tolerated slippage for deposits
     uint256 public maximumSlippageBasisPoints;
@@ -80,9 +76,7 @@ abstract contract BalancerPCVDepositBase is PCVDeposit {
     /// sending to another PCVDeposit that needs pure ETH.
     /// Balancer uses WETH in its pools, and not ETH.
     function unwrapETH() external onlyPCVController {
-        uint256 wethBalance = IERC20(address(Constants.WETH)).balanceOf(
-            address(this)
-        );
+        uint256 wethBalance = IERC20(address(Constants.WETH)).balanceOf(address(this));
         if (wethBalance != 0) {
             Constants.WETH.withdraw(wethBalance);
         }
@@ -90,10 +84,7 @@ abstract contract BalancerPCVDepositBase is PCVDeposit {
 
     /// @notice Sets the maximum slippage vs 1:1 price accepted during withdraw.
     /// @param _maximumSlippageBasisPoints the maximum slippage expressed in basis points (1/10_000)
-    function setMaximumSlippage(uint256 _maximumSlippageBasisPoints)
-        external
-        onlyGovernorOrAdmin
-    {
+    function setMaximumSlippage(uint256 _maximumSlippageBasisPoints) external onlyGovernorOrAdmin {
         require(
             _maximumSlippageBasisPoints <= Constants.BASIS_POINTS_GRANULARITY,
             "BalancerPCVDepositBase: Exceeds bp granularity."
@@ -105,28 +96,18 @@ abstract contract BalancerPCVDepositBase is PCVDeposit {
     /// @notice redeeem all assets from LP pool
     /// @param _to address to send underlying tokens to
     function exitPool(address _to) external whenNotPaused onlyPCVController {
-        uint256 bptBalance = IWeightedPool(poolAddress).balanceOf(
-            address(this)
-        );
+        uint256 bptBalance = IWeightedPool(poolAddress).balanceOf(address(this));
         if (bptBalance != 0) {
             IVault.ExitPoolRequest memory request;
 
             // Uses encoding for exact BPT IN withdrawal using all held BPT
-            bytes memory userData = abi.encode(
-                IWeightedPool.ExitKind.EXACT_BPT_IN_FOR_TOKENS_OUT,
-                bptBalance
-            );
+            bytes memory userData = abi.encode(IWeightedPool.ExitKind.EXACT_BPT_IN_FOR_TOKENS_OUT, bptBalance);
             request.assets = poolAssets;
             request.minAmountsOut = new uint256[](poolAssets.length); // 0 minimums
             request.userData = userData;
             request.toInternalBalance = false; // use external balances to be able to transfer out tokenReceived
 
-            vault.exitPool(
-                poolId,
-                address(this),
-                payable(address(_to)),
-                request
-            );
+            vault.exitPool(poolId, address(this), payable(address(_to)), request);
 
             if (_to == address(this)) {
                 _burnFeiHeld();

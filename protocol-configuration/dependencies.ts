@@ -30,6 +30,8 @@ const dependencies: DependencyMap = {
   },
   core: {
     contractDependencies: [
+      'raiPriceBoundPSM',
+      'raiPCVDripController',
       'collateralizationOracleGuardian',
       'fei',
       'feiTribeLBPSwapper',
@@ -125,11 +127,20 @@ const dependencies: DependencyMap = {
       'balancerDepositFeiWeth',
       'delayedPCVMoverWethUniToBal',
       'angleDelegatorPCVDeposit',
-      'uniswapLensAgEurUniswapGauge'
+      'uniswapLensAgEurUniswapGauge',
+      'veBalDelegatorPCVDeposit',
+      'uniswapLensAgEurUniswapGauge',
+      'governanceMetadataRegistry',
+      'nopeDAO',
+      'podAdminGateway',
+      'podFactory',
+      'roleBastion'
     ]
   },
   fei: {
     contractDependencies: [
+      'raiPriceBoundPSM',
+      'raiPCVDripController',
       'core',
       'rariPool8Fei',
       'feiDAOTimelock',
@@ -165,7 +176,8 @@ const dependencies: DependencyMap = {
       'ethPSMFeiSkimmer',
       'rariInfraFeiTimelock',
       'reptbRedeemer',
-      'laTribuFeiTimelock'
+      'laTribuFeiTimelock',
+      'voltFeiSwapContract'
     ]
   },
   ethPSMFeiSkimmer: {
@@ -192,8 +204,13 @@ const dependencies: DependencyMap = {
       'lusdPSM',
       'daiFixedPricePSM',
       'compoundEthPCVDeposit',
-      'aaveEthPCVDeposit'
+      'aaveEthPCVDeposit',
+      'aaveRaiPCVDeposit',
+      'raiPriceBoundPSM'
     ]
+  },
+  raiPriceBoundPSM: {
+    contractDependencies: ['core', 'fei', 'raiPCVDripController', 'pcvGuardian']
   },
   proxyAdmin: {
     contractDependencies: [
@@ -220,7 +237,8 @@ const dependencies: DependencyMap = {
       'rariPool8d3',
       'rariInfraTribeTimelock',
       'pegExchanger',
-      'laTribuTribeTimelock'
+      'laTribuTribeTimelock',
+      'nopeDAO'
     ]
   },
   tribeMinter: {
@@ -244,7 +262,9 @@ const dependencies: DependencyMap = {
       'tribeMinter',
       'timelock',
       'pcvGuardian',
-      'pegExchanger'
+      'pegExchanger',
+      'voltFeiSwapContract',
+      'voltDepositWrapper'
     ]
   },
   guardian: {
@@ -282,6 +302,9 @@ const dependencies: DependencyMap = {
   },
   daiPCVDripController: {
     contractDependencies: ['core', 'fei', 'daiFixedPricePSM', 'compoundDaiPCVDeposit']
+  },
+  raiPCVDripController: {
+    contractDependencies: ['core', 'fei', 'aaveRaiPCVDeposit', 'raiPriceBoundPSM']
   },
   daiFixedPricePSM: {
     contractDependencies: [
@@ -335,7 +358,7 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core', 'fei']
   },
   aaveRaiPCVDeposit: {
-    contractDependencies: ['core']
+    contractDependencies: ['core', 'pcvGuardian', 'raiPCVDripController']
   },
   agEurAngleUniswapPCVDeposit: {
     contractDependencies: ['core', 'fei', 'chainlinkEurUsdOracleWrapper']
@@ -516,7 +539,11 @@ const dependencies: DependencyMap = {
       'rariPool128FeiPCVDepositWrapper',
       'rariPool22FeiPCVDepositWrapper',
       'rariPool8LusdPCVDeposit',
-      'rariPool8DaiPCVDeposit'
+      'rariPool8DaiPCVDeposit',
+      'voltFusePCVDeposit',
+      'voltOracle',
+      'turboFusePCVDeposit',
+      'voltDepositWrapper'
     ]
   },
   collateralizationOracleWrapper: {
@@ -624,7 +651,9 @@ const dependencies: DependencyMap = {
       'chainlinkBALEthOracle',
       'chainlinkEthUsdOracleWrapper',
       'collateralizationOracle',
-      'balancerDepositBalWeth'
+      'balancerDepositBalWeth',
+      'balancerLensVeBalBal',
+      'balancerLensVeBalWeth'
     ]
   },
   chainlinkBALEthOracle: {
@@ -651,7 +680,10 @@ const dependencies: DependencyMap = {
       'collateralizationOracle',
       'uniswapPCVDeposit',
       'balancerDepositBalWeth',
-      'balancerDepositFeiWeth'
+      'balancerDepositFeiWeth',
+      'balancerLensBpt30Fei70Weth',
+      'balancerLensVeBalBal',
+      'balancerLensVeBalWeth'
     ]
   },
   chainlinkEurUsdOracleWrapper: {
@@ -690,7 +722,7 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core', 'chainlinkEthUsdOracleWrapper', 'chainlinkCREAMEthOracle', 'collateralizationOracle']
   },
   oneConstantOracle: {
-    contractDependencies: ['core', 'collateralizationOracle', 'balancerDepositFeiWeth']
+    contractDependencies: ['core', 'collateralizationOracle', 'balancerDepositFeiWeth', 'balancerLensBpt30Fei70Weth']
   },
   tribeUsdCompositeOracle: {
     contractDependencies: [
@@ -984,6 +1016,60 @@ const dependencies: DependencyMap = {
   },
   timelock: {
     contractDependencies: ['feiDAOTimelock']
+  },
+  veBalDelegatorPCVDeposit: {
+    contractDependencies: ['core', 'balancerLensVeBalBal', 'balancerLensVeBalWeth']
+  },
+  balancerLensBpt30Fei70Weth: {
+    contractDependencies: ['oneConstantOracle', 'chainlinkEthUsdOracleWrapper']
+  },
+  balancerLensVeBalBal: {
+    contractDependencies: ['veBalDelegatorPCVDeposit', 'balUsdCompositeOracle', 'chainlinkEthUsdOracleWrapper']
+  },
+  balancerLensVeBalWeth: {
+    contractDependencies: ['veBalDelegatorPCVDeposit', 'balUsdCompositeOracle', 'chainlinkEthUsdOracleWrapper']
+  },
+  roleBastion: {
+    contractDependencies: ['core']
+  },
+  podFactory: {
+    contractDependencies: ['core', 'podExecutor', 'podAdminGateway']
+  },
+  podAdminGateway: {
+    contractDependencies: ['core', 'podFactory', 'tribalCouncilTimelock']
+  },
+  podExecutor: {
+    contractDependencies: ['podFactory', 'tribalCouncilTimelock']
+  },
+  nopeDAO: {
+    contractDependencies: ['core', 'tribe']
+  },
+  governanceMetadataRegistry: {
+    contractDependencies: ['core']
+  },
+  turboFusePCVDeposit: {
+    contractDependencies: ['collateralizationOracle']
+  },
+  voltFeiSwapContract: {
+    contractDependencies: ['fei', 'feiDAOTimelock']
+  },
+  voltDepositWrapper: {
+    contractDependencies: ['volt', 'feiDAOTimelock', 'collateralizationOracle', 'voltOracle']
+  },
+  volt: {
+    contractDependencies: ['voltDepositWrapper', 'voltOracle']
+  },
+  voltFusePCVDeposit: {
+    contractDependencies: ['collateralizationOracle']
+  },
+  voltOracle: {
+    contractDependencies: ['volt', 'voltDepositWrapper', 'collateralizationOracle']
+  },
+  tribalCouncilTimelock: {
+    contractDependencies: ['podExecutor', 'tribalCouncilSafe', 'podAdminGateway']
+  },
+  tribalCouncilSafe: {
+    contractDependencies: ['tribalCouncilTimelock']
   }
 };
 

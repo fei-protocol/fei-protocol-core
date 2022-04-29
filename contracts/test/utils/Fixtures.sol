@@ -39,9 +39,7 @@ function getAddresses() pure returns (FeiTestAddresses memory) {
 
 /// @dev Deploy and configure Core
 function getCore() returns (Core) {
-    address HEVM_ADDRESS = address(
-        bytes20(uint160(uint256(keccak256("hevm cheat code"))))
-    );
+    address HEVM_ADDRESS = address(bytes20(uint160(uint256(keccak256("hevm cheat code")))));
     Vm vm = Vm(HEVM_ADDRESS);
     FeiTestAddresses memory addresses = getAddresses();
 
@@ -57,4 +55,17 @@ function getCore() returns (Core) {
 
     vm.stopPrank();
     return core;
+}
+
+/// @notice Dummy contract used to test NopeDAO and Safe proposals
+contract DummyStorage {
+    uint256 private variable = 5;
+
+    function getVariable() external view returns (uint256) {
+        return variable;
+    }
+
+    function setVariable(uint256 x) external {
+        variable = x;
+    }
 }

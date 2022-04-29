@@ -17,18 +17,14 @@ contract MergerBase {
     /// @notice the granularity of the exchange rate
     uint256 public constant scalar = 1e9;
 
-    address public constant rgtTimelock =
-        0x8ace03Fc45139fDDba944c6A4082b604041d19FC;
-    address public constant tribeTimelock =
-        0xd51dbA7a94e1adEa403553A8235C302cEbF41a3c;
+    address public constant rgtTimelock = 0x8ace03Fc45139fDDba944c6A4082b604041d19FC;
+    address public constant tribeTimelock = 0xd51dbA7a94e1adEa403553A8235C302cEbF41a3c;
 
     bool public rgtAccepted;
     bool public tribeAccepted;
 
-    IERC20 public constant rgt =
-        IERC20(0xD291E7a03283640FDc51b121aC401383A46cC623);
-    IERC20 public constant tribe =
-        IERC20(0xc7283b66Eb1EB5FB86327f08e1B5816b0720212B);
+    IERC20 public constant rgt = IERC20(0xD291E7a03283640FDc51b121aC401383A46cC623);
+    IERC20 public constant tribe = IERC20(0xc7283b66Eb1EB5FB86327f08e1B5816b0720212B);
 
     /// @notice the new DAO to assume governance for rgtTimelock
     address public immutable tribeRariDAO;
@@ -57,10 +53,7 @@ contract MergerBase {
     /// @notice make sure Tribe rari timelock is active
     function setBothPartiesAccepted() external {
         require(!bothPartiesAccepted, "already set");
-        require(
-            Timelock(payable(rgtTimelock)).admin() == tribeRariDAO,
-            "admin not accepted"
-        );
+        require(Timelock(payable(rgtTimelock)).admin() == tribeRariDAO, "admin not accepted");
         require(tribeAccepted, "Tribe DAO not yet accepted");
         require(rgtAccepted, "Rari DAO not yet accepted");
         bothPartiesAccepted = true;

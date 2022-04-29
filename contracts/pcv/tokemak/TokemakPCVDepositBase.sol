@@ -32,22 +32,12 @@ interface ITokemakRewards {
 /// @author Fei Protocol
 abstract contract TokemakPCVDepositBase is PCVDeposit {
     /// @notice event generated when rewards are claimed
-    event ClaimRewards(
-        address indexed _caller,
-        address indexed _token,
-        address indexed _to,
-        uint256 _amount
-    );
+    event ClaimRewards(address indexed _caller, address indexed _token, address indexed _to, uint256 _amount);
 
     /// @notice event generated when a withdrawal is requested
-    event RequestWithdrawal(
-        address indexed _caller,
-        address indexed _to,
-        uint256 _amount
-    );
+    event RequestWithdrawal(address indexed _caller, address indexed _to, uint256 _amount);
 
-    address private constant TOKE_TOKEN_ADDRESS =
-        address(0x2e9d63788249371f1DFC918a52f8d799F4a38C94);
+    address private constant TOKE_TOKEN_ADDRESS = address(0x2e9d63788249371f1DFC918a52f8d799F4a38C94);
 
     /// @notice the tokemak pool to deposit in
     address public immutable pool;
@@ -89,11 +79,7 @@ abstract contract TokemakPCVDepositBase is PCVDeposit {
     /// @dev note that withdraw() calls will revert if this function has not been
     /// called before.
     /// @param amountUnderlying of tokens to withdraw in a subsequent withdraw() call.
-    function requestWithdrawal(uint256 amountUnderlying)
-        external
-        onlyGovernorOrAdmin
-        whenNotPaused
-    {
+    function requestWithdrawal(uint256 amountUnderlying) external onlyGovernorOrAdmin whenNotPaused {
         ITokemakPool(pool).requestWithdrawal(amountUnderlying);
 
         emit RequestWithdrawal(msg.sender, address(this), amountUnderlying);
@@ -127,11 +113,6 @@ abstract contract TokemakPCVDepositBase is PCVDeposit {
 
         ITokemakRewards(rewards).claim(recipient, v, r, s);
 
-        emit ClaimRewards(
-            msg.sender,
-            address(TOKE_TOKEN_ADDRESS),
-            address(this),
-            amount
-        );
+        emit ClaimRewards(msg.sender, address(TOKE_TOKEN_ADDRESS), address(this), amount);
     }
 }
