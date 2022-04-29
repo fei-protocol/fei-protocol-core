@@ -529,7 +529,7 @@ describe('CollateralizationOracle', function () {
     describe('isOvercollateralized()', function () {
       it('should revert if paused', async function () {
         await this.oracle.connect(impersonatedSigners[governorAddress]).pause();
-        await expectRevert(this.oracle.isOvercollateralized(), 'Pausable: paused');
+        await expectUnspecifiedRevert(this.oracle.isOvercollateralized());
       });
       it('should revert if invalid', async function () {
         expect(await this.oracle.isOvercollateralized()).to.be.equal(true);

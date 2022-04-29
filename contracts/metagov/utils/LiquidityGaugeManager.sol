@@ -14,6 +14,10 @@ interface ILiquidityGauge {
 
     function balanceOf(address) external view returns (uint256);
 
+    // curve & balancer use lp_token()
+    function lp_token() external view returns (address);
+
+    // angle use staking_token()
     function staking_token() external view returns (address);
 
     function reward_tokens(uint256 i) external view returns (address token);
@@ -80,6 +84,16 @@ abstract contract LiquidityGaugeManager is CoreRef {
         emit GaugeControllerChanged(oldController, gaugeController);
     }
 
+    /// @notice returns the token address to be staked in the given gauge
+    function _tokenStakedInGauge(address gaugeAddress)
+        internal
+        view
+        virtual
+        returns (address)
+    {
+        return ILiquidityGauge(gaugeAddress).lp_token();
+    }
+
     /// @notice Set gauge for a given token.
     /// @param token the token address to stake in gauge
     /// @param gaugeAddress the address of the gauge where to stake token
@@ -88,7 +102,7 @@ abstract contract LiquidityGaugeManager is CoreRef {
         onlyTribeRole(TribeRoles.METAGOVERNANCE_GAUGE_ADMIN)
     {
         require(
-            ILiquidityGauge(gaugeAddress).staking_token() == token,
+            _tokenStakedInGauge(gaugeAddress) == token,
             "LiquidityGaugeManager: wrong gauge for token"
         );
         require(
@@ -181,7 +195,13 @@ abstract contract LiquidityGaugeManager is CoreRef {
 
     /// @notice Claim rewards associated to a gauge where this contract stakes
     /// tokens.
-    function claimGaugeRewards(address gaugeAddress) public whenNotPaused {
+    function claimGaugeRewards(address token) public whenNotPaused {
+        address gaugeAddress = tokenToGauge[token];
+        require(
+            gaugeAddress != address(0),
+            "LiquidityGaugeManager: token has no gauge configured"
+        );
+
         uint256 nTokens = ILiquidityGauge(gaugeAddress).reward_count();
         address[] memory tokens = new address[](nTokens);
         uint256[] memory amounts = new uint256[](nTokens);
