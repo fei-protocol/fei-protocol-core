@@ -27,7 +27,6 @@ const fipNumber = 'fip_82b';
 // Do any deployments
 // This should exclusively include new contract deployments
 const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: NamedAddresses, logging: boolean) => {
-  console.log(`No deploy actions for fip${fipNumber}`);
   const deploySigner = (await ethers.getSigners())[0];
   const previousPCVGuardian = await ethers.getContractAt('PCVGuardian', addresses.pcvGuardian, deploySigner);
   const safeAddresses = await previousPCVGuardian.getSafeAddresses();
@@ -35,6 +34,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   const pcvGuardianFactory = await ethers.getContractFactory('PCVGuardian');
   const pcvGuardianNew = await pcvGuardianFactory.deploy(addresses.core, safeAddresses);
   logging && console.log('PCVGuardian deployed to: ', pcvGuardianNew.address);
+  logging && console.log('PCVGuardian safeAddresses: ', safeAddresses);
 
   return {
     pcvGuardianNew
@@ -59,7 +59,7 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
   // 1. Validate new PCVGuardian deployment and roles granted
   const core = contracts.core;
-  const newPCVGuardian = contracts.newPCVGuardian;
+  const newPCVGuardian = contracts.pcvGuardianNew;
 
   const safeAddresses = await newPCVGuardian.getSafeAddresses();
   const expectedSafeAddresses = [
@@ -81,7 +81,6 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
     '0x5dde9b4b14edf59cb23c1d4579b279846998205e'
   ];
   validateArraysEqual(safeAddresses, expectedSafeAddresses);
-  expect(safeAddresses.length).to.be.equal(expectedSafeAddresses.length);
 
   // New PCV Guardian roles - validate granted
   expect(await core.hasRole(ethers.utils.id('GUARDIAN_ROLE'), newPCVGuardian.address)).to.be.true;
@@ -89,7 +88,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 
   // Old PCV Guardian roles - validate revoked
   expect(await core.hasRole(ethers.utils.id('GUARDIAN_ROLE'), addresses.pcvGuardian)).to.be.false;
-  expect(await core.hasRole(ethers.utils.id('PCV_CONTROLLER_ROLE'), addresses.pcvGuardian)).to.be.true;
+  expect(await core.hasRole(ethers.utils.id('PCV_CONTROLLER_ROLE'), addresses.pcvGuardian)).to.be.false;
 
   // 2. Validate TribalCouncil role transfers
   await validateTransferredRoleAdmins(contracts.core);
@@ -131,6 +130,7 @@ const validateNewCouncilRoles = async (core: Contract) => {
   expect(await core.getRoleAdmin(ethers.utils.id('PCV_MINOR_PARAM_ROLE'))).to.be.equal(ROLE_ADMIN);
   expect(await core.getRoleAdmin(ethers.utils.id('PSM_ADMIN_ROLE'))).to.be.equal(ROLE_ADMIN);
   expect(await core.getRoleAdmin(ethers.utils.id('PCV_SAFE_MOVER_ROLE'))).to.be.equal(ROLE_ADMIN);
+  expect(await core.getRoleAdmin(ethers.utils.id('PCV_SAFE_ADMIN_ROLE'))).to.be.equal(ROLE_ADMIN);
 };
 
 /// Validate that the relevant contract admins have been set to their expected values
@@ -145,7 +145,6 @@ const validateContractAdmins = async (contracts: NamedContracts) => {
   );
   expect(await contracts.uniswapPCVDeposit.CONTRACT_ADMIN_ROLE()).to.be.equal(ethers.utils.id('PCV_MINOR_PARAM_ROLE'));
 
-  expect(await contracts.daiPSMFeiSkimmer.CONTRACT_ADMIN_ROLE()).to.be.equal(ethers.utils.id('PCV_MINOR_PARAM_ROLE'));
   expect(await contracts.lusdPSMFeiSkimmer.CONTRACT_ADMIN_ROLE()).to.be.equal(ethers.utils.id('PCV_MINOR_PARAM_ROLE'));
   expect(await contracts.ethPSMFeiSkimmer.CONTRACT_ADMIN_ROLE()).to.be.equal(ethers.utils.id('PCV_MINOR_PARAM_ROLE'));
 
@@ -156,9 +155,6 @@ const validateContractAdmins = async (contracts: NamedContracts) => {
     ethers.utils.id('PCV_MINOR_PARAM_ROLE')
   );
   expect(await contracts.lusdPCVDripController.CONTRACT_ADMIN_ROLE()).to.be.equal(
-    ethers.utils.id('PCV_MINOR_PARAM_ROLE')
-  );
-  expect(await contracts.compoundEthPCVDripController.CONTRACT_ADMIN_ROLE()).to.be.equal(
     ethers.utils.id('PCV_MINOR_PARAM_ROLE')
   );
 };
@@ -184,6 +180,7 @@ const validateTribalCouncilRoles = async (core: Contract, tribalCouncilTimelockA
   expect(await core.hasRole(ethers.utils.id('ORACLE_ADMIN_ROLE'), tribalCouncilTimelockAddress)).to.be.true;
   expect(await core.hasRole(ethers.utils.id('PSM_ADMIN_ROLE'), tribalCouncilTimelockAddress)).to.be.true;
   expect(await core.hasRole(ethers.utils.id('PCV_SAFE_MOVER_ROLE'), tribalCouncilTimelockAddress)).to.be.true;
+  expect(await core.hasRole(ethers.utils.id('PCV_SAFE_ADMIN_ROLE'), tribalCouncilTimelockAddress)).to.be.true;
 };
 
 export { deploy, setup, teardown, validate };

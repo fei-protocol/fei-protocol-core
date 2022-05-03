@@ -17,14 +17,14 @@ export const permissions = {
     'feiDAOTimelock',
     'ratioPCVControllerV2',
     'aaveEthPCVDripController',
-    'pcvGuardian',
+    'pcvGuardianNew',
     'daiPCVDripController',
     'lusdPCVDripController',
     'ethPSMFeiSkimmer',
     'lusdPSMFeiSkimmer',
     'raiPCVDripController'
   ],
-  GUARDIAN_ROLE: ['multisig', 'pcvGuardian', 'pcvSentinel'],
+  GUARDIAN_ROLE: ['multisig', 'pcvGuardianNew', 'pcvSentinel'],
   ORACLE_ADMIN_ROLE: [
     'collateralizationOracleGuardian',
     'optimisticTimelock',
@@ -37,8 +37,9 @@ export const permissions = {
   TRIBAL_CHIEF_ADMIN_ROLE: ['optimisticTimelock', 'tribalChiefSyncV2'],
   FUSE_ADMIN: ['optimisticTimelock', 'tribalChiefSyncV2', 'tribalCouncilTimelock'],
   VOTIUM_ADMIN_ROLE: ['opsOptimisticTimelock'],
-  PCV_GUARDIAN_ADMIN_ROLE: ['optimisticTimelock', 'tribalCouncilTimelock'],
-  PCV_SAFE_MOVER_ROLE: ['optimisticTimelock', 'tribalCouncilTimelock'],
+  PCV_GUARDIAN_ADMIN_ROLE: ['optimisticTimelock'],
+  PCV_SAFE_MOVER_ROLE: ['tribalCouncilTimelock'],
+  PCV_SAFE_ADMIN_ROLE: ['tribalCouncilTimelock'],
   METAGOVERNANCE_VOTE_ADMIN: ['feiDAOTimelock', 'opsOptimisticTimelock'],
   METAGOVERNANCE_TOKEN_STAKING: ['feiDAOTimelock', 'opsOptimisticTimelock'],
   METAGOVERNANCE_GAUGE_ADMIN: ['feiDAOTimelock', 'optimisticTimelock'],
@@ -47,6 +48,6 @@ export const permissions = {
   FEI_MINT_ADMIN: ['feiDAOTimelock', 'tribalCouncilTimelock'],
   POD_VETO_ADMIN: ['nopeDAO'],
   POD_ADMIN: ['tribalCouncilTimelock', 'podFactory'],
-  PCV_MINOR_PARAM_ROLE: ['feiDAOTimelock', 'optimisticTimelock'],
+  PCV_MINOR_PARAM_ROLE: ['feiDAOTimelock', 'optimisticTimelock', 'tribalCouncilTimelock'],
   TOKEMAK_DEPOSIT_ADMIN_ROLE: ['optimisticTimelock']
 };

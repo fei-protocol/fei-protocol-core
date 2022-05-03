@@ -135,6 +135,7 @@ async function getCore(): Promise<Core> {
 }
 
 const validateArraysEqual = (arrayA: string[], arrayB: string[]) => {
+  expect(arrayA.length).to.equal(arrayB.length);
   arrayA.every((a) => expect(arrayB.map((b) => b.toLowerCase()).includes(a.toLowerCase())));
 };
 

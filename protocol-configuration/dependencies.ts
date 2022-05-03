@@ -656,6 +656,9 @@ const dependencies: DependencyMap = {
       'balancerLensVeBalWeth'
     ]
   },
+  balancerLensVeBalBal: {
+    contractDependencies: ['balUsdCompositeOracle', 'chainlinkEthUsdOracleWrapper']
+  },
   chainlinkBALEthOracle: {
     contractDependencies: ['core', 'balUsdCompositeOracle']
   },
@@ -1058,6 +1061,15 @@ const dependencies: DependencyMap = {
   },
   tribalCouncilSafe: {
     contractDependencies: ['tribalCouncilTimelock']
+  },
+  veBalDelegatorPCVDeposit: {
+    contractDependencies: ['core']
+  },
+  balancerLensVeBalWeth: {
+    contractDependencies: ['balUsdCompositeOracle', 'chainlinkEthUsdOracleWrapper']
+  },
+  balancerLensBpt30Fei70Weth: {
+    contractDependencies: ['oneConstantOracle', 'chainlinkEthUsdOracleWrapper']
   }
 };
 

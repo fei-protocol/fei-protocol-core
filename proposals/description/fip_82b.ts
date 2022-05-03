@@ -175,6 +175,16 @@ const fip_82b: ProposalDescription = {
       ],
       description: 'Create PCV_SAFE_MOVER_ROLE role, assigning ROLE_ADMIN as the role admin'
     },
+    {
+      target: 'core',
+      values: '0',
+      method: 'createRole(bytes32,bytes32)',
+      arguments: [
+        '0x65081acbf882e80af3e93eb980591b048c84107352e86863546b9096bdbf6c45', // PCV_SAFE_ADMIN_ROLE
+        '0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096' // ROLE_ADMIN
+      ],
+      description: 'Create PCV_SAFE_ADMIN_ROLE role, assigning ROLE_ADMIN as the role admin'
+    },
     ///////   Set the relevant contract admins to the newly created roles //////////
     // FUSE_ADMIN
     {
@@ -233,15 +243,6 @@ const fip_82b: ProposalDescription = {
       description: 'Set the contract admin of the uniswapPCVDeposit to be the PCV_MINOR_PARAM_ROLE'
     },
     {
-      target: 'daiPSMFeiSkimmer',
-      values: '0',
-      method: 'setContractAdminRole(bytes32)',
-      arguments: [
-        '0x46797b318ce8c2d83979760ef100a5c0fdb980de4b574d6142ce4d0afce307ed' // PCV_MINOR_PARAM_ROLE
-      ],
-      description: 'Set the contract admin of the DAI PSM Fei Skimmer to be the PCV_MINOR_PARAM_ROLE'
-    },
-    {
       target: 'lusdPSMFeiSkimmer',
       values: '0',
       method: 'setContractAdminRole(bytes32)',
@@ -286,15 +287,6 @@ const fip_82b: ProposalDescription = {
       ],
       description: 'Set the contract admin of the LUSDC PCV Drip Controller to be the PCV_MINOR_PARAM_ROLE'
     },
-    {
-      target: 'compoundEthPCVDripController',
-      values: '0',
-      method: 'setContractAdminRole(bytes32)',
-      arguments: [
-        '0x46797b318ce8c2d83979760ef100a5c0fdb980de4b574d6142ce4d0afce307ed' // PCV_MINOR_PARAM_ROLE
-      ],
-      description: 'Set the contract admin of the Compound ETH PCV Drip Controller to be the PCV_MINOR_PARAM_ROLE'
-    },
     //////////  Grant the Tribal Council timelock the relevant roles //////////
     {
       target: 'core',
@@ -325,16 +317,6 @@ const fip_82b: ProposalDescription = {
         '{tribalCouncilTimelock}'
       ],
       description: 'Grant TribalCouncil timelock the PCV_MINOR_PARAM_ROLE role'
-    },
-    {
-      target: 'core',
-      values: '0',
-      method: 'grantRole(bytes32,address)',
-      arguments: [
-        '0xdf6ce05acd28d71e96472375ef55c4a692f167af3ccda9500570f7373c1ba22c', // PCV_GUARDIAN_ADMIN_ROLE
-        '{tribalCouncilTimelock}'
-      ],
-      description: 'Grant TribalCouncil timelock the PCV_GUARDIAN_ADMIN_ROLE role'
     },
     {
       target: 'core',
@@ -427,6 +409,16 @@ const fip_82b: ProposalDescription = {
       ],
       description: 'Grant tribalCouncilTimelock the PCV_SAFE_MOVER_ROLE role'
     },
+    {
+      target: 'core',
+      values: '0',
+      method: 'grantRole(bytes32,address)',
+      arguments: [
+        '0x65081acbf882e80af3e93eb980591b048c84107352e86863546b9096bdbf6c45', // PCV_SAFE_ADMIN_ROLE
+        '{tribalCouncilTimelock}'
+      ],
+      description: 'Grant tribalCouncilTimelock the PCV_SAFE_ADMIN_ROLE role'
+    },
     ////// Authorise new PCV Guardian and revoke old PCV Guardian ////////
     {
       target: 'core',
@@ -451,7 +443,7 @@ const fip_82b: ProposalDescription = {
     {
       target: 'core',
       values: '0',
-      method: 'revokeRoke(bytes32,address)',
+      method: 'revokeRole(bytes32,address)',
       arguments: [
         '0x0866eae1216ed05a11636a648003f3f62921eb97ccb05acc30636f62958a8bd6', // PCV_CONTROLLER
         '{pcvGuardian}'
