@@ -12,7 +12,7 @@ import { tribeCouncilPodConfig, PodCreationConfig } from '@protocol/optimisticGo
 import { abi as inviteTokenABI } from '../../artifacts/@orcaprotocol/contracts/contracts/InviteToken.sol/InviteToken.json';
 import { abi as timelockABI } from '../../artifacts/@openzeppelin/contracts/governance/TimelockController.sol/TimelockController.json';
 import { abi as gnosisSafeABI } from '../../artifacts/contracts/pods/interfaces/IGnosisSafe.sol/IGnosisSafe.json';
-import { Contract, Signer } from 'ethers';
+import { Contract } from 'ethers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 
 const validateArraysEqual = (arrayA: string[], arrayB: string[]) => {
@@ -178,7 +178,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const isProposalRegistered = await governanceMetadataRegistry.isProposalRegistered(0, 0, 'test');
   expect(isProposalRegistered).to.be.false;
 
-  await validateTribeRoles(
+  await validateContractRoles(
     contracts.core,
     addresses.feiDAOTimelock,
     addresses.tribalCouncilTimelock,
@@ -190,7 +190,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 };
 
 // Validate that the relevant timelocks and Safes have the relevant TribeRoles
-const validateTribeRoles = async (
+const validateContractRoles = async (
   core: Contract,
   feiDAOTimelockAddress: string,
   tribalCouncilTimelockAddress: string,

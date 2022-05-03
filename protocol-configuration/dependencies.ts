@@ -1017,18 +1017,6 @@ const dependencies: DependencyMap = {
   timelock: {
     contractDependencies: ['feiDAOTimelock']
   },
-  veBalDelegatorPCVDeposit: {
-    contractDependencies: ['core', 'balancerLensVeBalBal', 'balancerLensVeBalWeth']
-  },
-  balancerLensBpt30Fei70Weth: {
-    contractDependencies: ['oneConstantOracle', 'chainlinkEthUsdOracleWrapper']
-  },
-  balancerLensVeBalBal: {
-    contractDependencies: ['veBalDelegatorPCVDeposit', 'balUsdCompositeOracle', 'chainlinkEthUsdOracleWrapper']
-  },
-  balancerLensVeBalWeth: {
-    contractDependencies: ['veBalDelegatorPCVDeposit', 'balUsdCompositeOracle', 'chainlinkEthUsdOracleWrapper']
-  },
   roleBastion: {
     contractDependencies: ['core']
   },
