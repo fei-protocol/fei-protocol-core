@@ -87,6 +87,7 @@ const validateNewCouncilRoles = async (core: Contract) => {
   expect(await core.getRoleAdmin(ethers.utils.id('FEI_MINT_ADMIN'))).to.be.equal(ROLE_ADMIN);
   expect(await core.getRoleAdmin(ethers.utils.id('PCV_MINOR_PARAM_ROLE'))).to.be.equal(ROLE_ADMIN);
   expect(await core.getRoleAdmin(ethers.utils.id('PSM_ADMIN_ROLE'))).to.be.equal(ROLE_ADMIN);
+  expect(await core.getRoleAdmin(ethers.utils.id('PCV_SAFE_MOVER_ROLE'))).to.be.equal(ROLE_ADMIN);
 };
 
 /// Validate that the relevant contract admins have been set to their expected values
@@ -130,6 +131,8 @@ const validateCallingContractsHaveNewAdmin = async (core: Contract, addresses: N
   // GOVERNOR : PCV_MINOR_PARAM_ROLE
   expect(await core.hasRole(ethers.utils.id('PCV_MINOR_PARAM_ROLE'), addresses.feiDAOTimelock)).to.be.true;
   expect(await core.hasRole(ethers.utils.id('PCV_MINOR_PARAM_ROLE'), addresses.optimisticTimelock)).to.be.true;
+
+  expect(await core.hasRole(ethers.utils.id('PCV_SAFE_MOVER_ROLE'), addresses.optimisticTimelock)).to.be.true;
 };
 
 const validateTribalCouncilRoles = async (core: Contract, tribalCouncilTimelockAddress: string) => {
@@ -139,6 +142,7 @@ const validateTribalCouncilRoles = async (core: Contract, tribalCouncilTimelockA
   expect(await core.hasRole(ethers.utils.id('PCV_GUARDIAN_ADMIN_ROLE'), tribalCouncilTimelockAddress)).to.be.true;
   expect(await core.hasRole(ethers.utils.id('ORACLE_ADMIN_ROLE'), tribalCouncilTimelockAddress)).to.be.true;
   expect(await core.hasRole(ethers.utils.id('PSM_ADMIN_ROLE'), tribalCouncilTimelockAddress)).to.be.true;
+  expect(await core.hasRole(ethers.utils.id('PCV_SAFE_MOVER_ROLE'), tribalCouncilTimelockAddress)).to.be.true;
 };
 
 export { deploy, setup, teardown, validate };
