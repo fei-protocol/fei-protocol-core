@@ -33,11 +33,11 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   const safeAddresses = await previousPCVGuardian.getSafeAddresses();
 
   const pcvGuardianFactory = await ethers.getContractFactory('PCVGuardian');
-  const newPCVGuardian = await pcvGuardianFactory.deploy(addresses.core, safeAddresses);
-  logging && console.log('PCVGuardian deployed to: ', newPCVGuardian.address);
+  const pcvGuardianNew = await pcvGuardianFactory.deploy(addresses.core, safeAddresses);
+  logging && console.log('PCVGuardian deployed to: ', pcvGuardianNew.address);
 
   return {
-    newPCVGuardian
+    pcvGuardianNew
   };
 };
 
@@ -82,8 +82,14 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   ];
   validateArraysEqual(safeAddresses, expectedSafeAddresses);
   expect(safeAddresses.length).to.be.equal(expectedSafeAddresses.length);
+
+  // New PCV Guardian roles - validate granted
   expect(await core.hasRole(ethers.utils.id('GUARDIAN_ROLE'), newPCVGuardian.address)).to.be.true;
   expect(await core.hasRole(ethers.utils.id('PCV_CONTROLLER_ROLE'), newPCVGuardian.address)).to.be.true;
+
+  // Old PCV Guardian roles - validate revoked
+  expect(await core.hasRole(ethers.utils.id('GUARDIAN_ROLE'), addresses.pcvGuardian)).to.be.false;
+  expect(await core.hasRole(ethers.utils.id('PCV_CONTROLLER_ROLE'), addresses.pcvGuardian)).to.be.true;
 
   // 2. Validate TribalCouncil role transfers
   await validateTransferredRoleAdmins(contracts.core);
