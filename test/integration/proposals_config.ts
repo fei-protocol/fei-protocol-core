@@ -67,7 +67,7 @@ const proposals: ProposalsConfigMap = {
       'optimisticTimelock',
       'tribalChiefSyncV2'
     ],
-    deprecatedContractSignoff: ['daiPSMFeiSkimmer', 'compoundEthPCVDripController'],
+    deprecatedContractSignoff: [],
     category: ProposalCategory.DAO
   },
   fip_98: {
