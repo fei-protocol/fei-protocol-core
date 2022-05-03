@@ -209,6 +209,13 @@ describe('PCV Guardian', function () {
       expect(await token.balanceOf(userAddress)).to.eq(1);
     });
 
+    it('should withdraw from a token-pcv deposit when called by the governor', async () => {
+      await pcvGuardianWithoutStartingAddresses
+        .connect(impersonatedSigners[governorAddress])
+        .withdrawToSafeAddress(tokenPCVDeposit.address, userAddress, 1, false, false);
+      expect(await token.balanceOf(userAddress)).to.eq(1);
+    });
+
     it('should withdraw from a token-pcv deposit and deposit after', async () => {
       await pcvGuardianWithoutStartingAddresses
         .connect(impersonatedSigners[governorAddress])

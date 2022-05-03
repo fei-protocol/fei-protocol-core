@@ -6,6 +6,7 @@ import "../refs/CoreRef.sol";
 import "./IPCVGuardian.sol";
 import "./IPCVDeposit.sol";
 import "../libs/CoreRefPauseableLib.sol";
+import {TribeRoles} from "../core/TribeRoles.sol";
 
 contract PCVGuardian is IPCVGuardian, CoreRef {
     using CoreRefPauseableLib for address;
@@ -81,7 +82,7 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
         uint256 amount,
         bool pauseAfter,
         bool depositAfter
-    ) external override isGovernorOrGuardianOrAdmin {
+    ) external override hasAnyOfThreeRoles(TribeRoles.GOVERNOR, TribeRoles.PCV_SAFE_MOVER_ROLE, TribeRoles.GUARDIAN) {
         require(isSafeAddress(safeAddress), "Provided address is not a safe address!");
 
         pcvDeposit._ensureUnpaused();
