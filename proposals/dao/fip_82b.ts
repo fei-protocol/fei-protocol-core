@@ -61,8 +61,8 @@ const validateTransferredRoleAdmins = async (core: Contract) => {
   const ROLE_ADMIN = ethers.utils.id('ROLE_ADMIN');
 
   // Non-major roles that previously had 0x0 as their admin
+  expect(await core.getRoleAdmin(ethers.utils.id('RATE_LIMITED_MINTER_ADMIN'))).to.be.equal(ROLE_ADMIN);
   expect(await core.getRoleAdmin(ethers.utils.id('PARAMETER_ADMIN'))).to.be.equal(ROLE_ADMIN);
-  expect(await core.getRoleAdmin(ethers.utils.id('MINTER_ADMIN'))).to.be.equal(ROLE_ADMIN);
   expect(await core.getRoleAdmin(ethers.utils.id('OPTIMISTIC_ADMIN'))).to.be.equal(ROLE_ADMIN);
 
   expect(await core.getRoleAdmin(ethers.utils.id('MINOR_PARAM_ROLE'))).to.be.equal(ROLE_ADMIN);

@@ -19,10 +19,10 @@ const fip_82b: ProposalDescription = {
       values: '0',
       method: 'createRole(bytes32,bytes32)',
       arguments: [
-        '0x498a9dae57f391d8efcc7bb3e7440ad6a25b1261044ef1b555c5484cb9f67659', // MINTER_ADMIN
+        '0xdc81827f5af6c7965785d62c38ca3481ccf540d7f561cac825518e49d6161c95', // RATE_LIMITED_MINTER_ADMIN
         '0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096' // ROLE_ADMIN
       ],
-      description: 'Transfer MINTER_ADMIN role admin to ROLE_ADMIN'
+      description: 'Transfer RATE_LIMITED_MINTER_ADMIN role admin to ROLE_ADMIN'
     },
     {
       target: 'core',

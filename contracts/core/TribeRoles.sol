@@ -64,7 +64,7 @@ library TribeRoles {
     bytes32 internal constant PCV_MINOR_PARAM_ROLE = keccak256("PCV_MINOR_PARAM_ROLE");
 
     /// @notice capable of setting FEI Minters within global rate limits and caps
-    bytes32 internal constant MINTER_ADMIN = keccak256("MINTER_ADMIN");
+    bytes32 internal constant RATE_LIMITED_MINTER_ADMIN = keccak256("RATE_LIMITED_MINTER_ADMIN");
 
     /// @notice manages the constituents of Optimistic Timelocks, including Proposers and Executors
     bytes32 internal constant OPTIMISTIC_ADMIN = keccak256("OPTIMISTIC_ADMIN");
