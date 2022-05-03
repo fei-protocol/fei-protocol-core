@@ -124,16 +124,11 @@ const validateCallingContractsHaveNewAdmin = async (core: Contract, addresses: N
   expect(await core.hasRole(ethers.utils.id('FUSE_ADMIN'), addresses.tribalChiefSyncV2)).to.be.true;
 
   // GOVERNOR : FEI_MINT_ADMIN
-  expect(await core.hasRole(ethers.utils.id('FEI_MINT_ADMIN'), addresses.core)).to.be.true;
   expect(await core.hasRole(ethers.utils.id('FEI_MINT_ADMIN'), addresses.feiDAOTimelock)).to.be.true;
-  expect(await core.hasRole(ethers.utils.id('FEI_MINT_ADMIN'), addresses.roleBastion)).to.be.true;
 
   // GOVERNOR : PCV_MINOR_PARAM_ROLE
   expect(await core.hasRole(ethers.utils.id('PCV_MINOR_PARAM_ROLE'), addresses.feiDAOTimelock)).to.be.true;
-  expect(await core.hasRole(ethers.utils.id('PCV_MINOR_PARAM_ROLE'), addresses.core)).to.be.true;
-  expect(await core.hasRole(ethers.utils.id('PCV_MINOR_PARAM_ROLE'), addresses.roleBastion)).to.be.true;
   expect(await core.hasRole(ethers.utils.id('PCV_MINOR_PARAM_ROLE'), addresses.optimisticTimelock)).to.be.true;
-  expect(await core.hasRole(ethers.utils.id('PCV_MINOR_PARAM_ROLE'), addresses.opsOptimisticTimelock)).to.be.true;
 };
 
 const validateTribalCouncilRoles = async (core: Contract, tribalCouncilTimelockAddress: string) => {
