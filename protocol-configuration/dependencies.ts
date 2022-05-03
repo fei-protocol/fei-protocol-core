@@ -1064,6 +1064,12 @@ const dependencies: DependencyMap = {
   },
   veBalDelegatorPCVDeposit: {
     contractDependencies: ['core']
+  },
+  balancerLensVeBalWeth: {
+    contractDependencies: ['balUsdCompositeOracle', 'chainlinkEthUsdOracleWrapper']
+  },
+  balancerLensBpt30Fei70Weth: {
+    contractDependencies: ['oneConstantOracle', 'chainlinkEthUsdOracleWrapper']
   }
 };
 

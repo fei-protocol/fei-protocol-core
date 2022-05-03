@@ -100,7 +100,6 @@ const validateContractAdmins = async (contracts: NamedContracts) => {
   );
   expect(await contracts.uniswapPCVDeposit.CONTRACT_ADMIN_ROLE()).to.be.equal(ethers.utils.id('PCV_MINOR_PARAM_ROLE'));
 
-  expect(await contracts.daiPSMFeiSkimmer.CONTRACT_ADMIN_ROLE()).to.be.equal(ethers.utils.id('PCV_MINOR_PARAM_ROLE'));
   expect(await contracts.lusdPSMFeiSkimmer.CONTRACT_ADMIN_ROLE()).to.be.equal(ethers.utils.id('PCV_MINOR_PARAM_ROLE'));
   expect(await contracts.ethPSMFeiSkimmer.CONTRACT_ADMIN_ROLE()).to.be.equal(ethers.utils.id('PCV_MINOR_PARAM_ROLE'));
 
@@ -111,9 +110,6 @@ const validateContractAdmins = async (contracts: NamedContracts) => {
     ethers.utils.id('PCV_MINOR_PARAM_ROLE')
   );
   expect(await contracts.lusdPCVDripController.CONTRACT_ADMIN_ROLE()).to.be.equal(
-    ethers.utils.id('PCV_MINOR_PARAM_ROLE')
-  );
-  expect(await contracts.compoundEthPCVDripController.CONTRACT_ADMIN_ROLE()).to.be.equal(
     ethers.utils.id('PCV_MINOR_PARAM_ROLE')
   );
 };

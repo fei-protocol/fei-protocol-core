@@ -223,15 +223,6 @@ const fip_82b: ProposalDescription = {
       description: 'Set the contract admin of the uniswapPCVDeposit to be the PCV_MINOR_PARAM_ROLE'
     },
     {
-      target: 'daiPSMFeiSkimmer',
-      values: '0',
-      method: 'setContractAdminRole(bytes32)',
-      arguments: [
-        '0x46797b318ce8c2d83979760ef100a5c0fdb980de4b574d6142ce4d0afce307ed' // PCV_MINOR_PARAM_ROLE
-      ],
-      description: 'Set the contract admin of the DAI PSM Fei Skimmer to be the PCV_MINOR_PARAM_ROLE'
-    },
-    {
       target: 'lusdPSMFeiSkimmer',
       values: '0',
       method: 'setContractAdminRole(bytes32)',
@@ -275,15 +266,6 @@ const fip_82b: ProposalDescription = {
         '0x46797b318ce8c2d83979760ef100a5c0fdb980de4b574d6142ce4d0afce307ed' // PCV_MINOR_PARAM_ROLE
       ],
       description: 'Set the contract admin of the LUSDC PCV Drip Controller to be the PCV_MINOR_PARAM_ROLE'
-    },
-    {
-      target: 'compoundEthPCVDripController',
-      values: '0',
-      method: 'setContractAdminRole(bytes32)',
-      arguments: [
-        '0x46797b318ce8c2d83979760ef100a5c0fdb980de4b574d6142ce4d0afce307ed' // PCV_MINOR_PARAM_ROLE
-      ],
-      description: 'Set the contract admin of the Compound ETH PCV Drip Controller to be the PCV_MINOR_PARAM_ROLE'
     },
     //////////  Grant the Tribal Council timelock the relevant roles //////////
     {
