@@ -84,7 +84,8 @@ async function resetFork(): Promise<void> {
       {
         forking: hre.config.networks.hardhat.forking
           ? {
-              jsonRpcUrl: hre.config.networks.hardhat.forking.url
+              jsonRpcUrl: hre.config.networks.hardhat.forking.url,
+              blockNumber: hre.config.networks.hardhat.forking.blockNumber
             }
           : undefined
       }

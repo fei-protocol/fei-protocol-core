@@ -58,7 +58,6 @@ const proposals: ProposalsConfigMap = {
     totalValue: 0,
     proposal: fip_98
   },
-
   fip_99: {
     deploy: false,
     proposalId: null,
