@@ -43,9 +43,9 @@ export const permissions = {
   METAGOVERNANCE_GAUGE_ADMIN: ['feiDAOTimelock', 'optimisticTimelock'],
   ROLE_ADMIN: ['feiDAOTimelock', 'tribalCouncilTimelock'],
   POD_METADATA_REGISTER_ROLE: ['tribalCouncilSafe'],
-  FEI_MINT_ADMIN: ['core', 'feiDAOTimelock', 'roleBastion'],
+  FEI_MINT_ADMIN: ['feiDAOTimelock', 'roleBastion'],
   POD_VETO_ADMIN: ['nopeDAO'],
   POD_ADMIN: ['tribalCouncilTimelock', 'podFactory'],
-  PCV_MINOR_PARAM_ROLE: ['core', 'feiDAOTimelock', 'roleBastion', 'optimisticTimelock', 'opsOptimisticTimelock'],
+  PCV_MINOR_PARAM_ROLE: ['feiDAOTimelock', 'roleBastion', 'optimisticTimelock', 'opsOptimisticTimelock'],
   TOKEMAK_DEPOSIT_ADMIN_ROLE: ['optimisticTimelock']
 };
