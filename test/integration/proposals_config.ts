@@ -18,27 +18,6 @@ const proposals: ProposalsConfigMap = {
       category: ProposalCategory.DAO
     }
     */
-  fip_82: {
-    deploy: false, // deploy flag for whether to run deploy action during e2e tests or use mainnet state
-    totalValue: 0, // amount of ETH to send to DAO execution
-    proposal: fip_82, // full proposal file, imported from '@proposals/description/fip_xx.ts'
-    proposalId: '',
-    affectedContractSignoff: [
-      'roleBastion',
-      'podFactory',
-      'podExecutor',
-      'nopeDAO',
-      'governanceMetadataRegistry',
-      'core',
-      'tribe',
-      'feiDAOTimelock',
-      'tribalCouncilTimelock',
-      'tribalCouncilSafe',
-      'podAdminGateway'
-    ],
-    deprecatedContractSignoff: [],
-    category: ProposalCategory.DAO
-  },
   fip_98: {
     deploy: false,
     proposalId: '47738997083165992958921925097327638388915944734650384828020246684763693471048',
