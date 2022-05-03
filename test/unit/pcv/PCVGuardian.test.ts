@@ -85,22 +85,20 @@ describe('PCV Guardian', function () {
 
   describe('access control', async () => {
     it('should revert when calling setSafeAddress & setSafeAddresses from a non-governor address', async () => {
-      await expect(pcvGuardianWithoutStartingAddresses.setSafeAddress(userAddress)).to.be.revertedWith(
-        'CoreRef: Caller is not a governor'
-      );
+      await expect(pcvGuardianWithoutStartingAddresses.setSafeAddress(userAddress)).to.be.revertedWith('UNAUTHORIZED');
       await expect(
         pcvGuardianWithoutStartingAddresses.setSafeAddresses([userAddress, userAddress2])
-      ).to.be.revertedWith('CoreRef: Caller is not a governor');
+      ).to.be.revertedWith('UNAUTHORIZED');
     });
 
     it('should revert when calling unsetSafeAddress & unsetSafeAddresses from a non-guardian-or-governor-or-admin address', async () => {
       await expect(pcvGuardianWithoutStartingAddresses.unsetSafeAddress(userAddress)).to.be.revertedWith(
-        'CoreRef: Caller is not governor or guardian or admin'
+        'UNAUTHORIZED'
       );
 
       await expect(
         pcvGuardianWithoutStartingAddresses.unsetSafeAddresses([userAddress, userAddress2])
-      ).to.be.revertedWith('CoreRef: Caller is not governor or guardian or admin');
+      ).to.be.revertedWith('UNAUTHORIZED');
     });
 
     it('should revert when calling withdrawToSafeAddress from a non-guardian-or-governor-or-admin address', async () => {

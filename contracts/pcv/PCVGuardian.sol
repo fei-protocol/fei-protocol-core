@@ -16,8 +16,6 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
     EnumerableSet.AddressSet private safeAddresses;
 
     constructor(address _core, address[] memory _safeAddresses) CoreRef(_core) {
-        _setContractAdminRole(keccak256("PCV_GUARDIAN_ADMIN_ROLE"));
-
         for (uint256 i = 0; i < _safeAddresses.length; i++) {
             _setSafeAddress(_safeAddresses[i]);
         }
@@ -36,34 +34,50 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
         return safeAddresses.values();
     }
 
-    // ---------- Governor-or-Admin-Only State-Changing API ----------
+    // ---------- GOVERNOR-or-PCV_SAFE_ADMIN_ROLE-Only State-Changing API ----------
 
     /// @notice governor-only method to set an address as "safe" to withdraw funds to
     /// @param pcvDeposit the address to set as safe
-    function setSafeAddress(address pcvDeposit) external override onlyGovernorOrAdmin {
+    function setSafeAddress(address pcvDeposit)
+        external
+        override
+        hasAnyOfTwoRoles(TribeRoles.GOVERNOR, TribeRoles.PCV_SAFE_ADMIN_ROLE)
+    {
         _setSafeAddress(pcvDeposit);
     }
 
     /// @notice batch version of setSafeAddress
     /// @param _safeAddresses the addresses to set as safe, as calldata
-    function setSafeAddresses(address[] calldata _safeAddresses) external override onlyGovernorOrAdmin {
+    function setSafeAddresses(address[] calldata _safeAddresses)
+        external
+        override
+        hasAnyOfTwoRoles(TribeRoles.GOVERNOR, TribeRoles.PCV_SAFE_ADMIN_ROLE)
+    {
         require(_safeAddresses.length != 0, "empty");
         for (uint256 i = 0; i < _safeAddresses.length; i++) {
             _setSafeAddress(_safeAddresses[i]);
         }
     }
 
-    // ---------- Governor-or-Admin-Or-Guardian-Only State-Changing API ----------
+    // ---------- GOVERNOR-or-PCV_SAFE_ADMIN_ROLE-Or-GUARDIAN-Only State-Changing API ----------
 
     /// @notice governor-or-guardian-only method to un-set an address as "safe" to withdraw funds to
     /// @param pcvDeposit the address to un-set as safe
-    function unsetSafeAddress(address pcvDeposit) external override isGovernorOrGuardianOrAdmin {
+    function unsetSafeAddress(address pcvDeposit)
+        external
+        override
+        hasAnyOfThreeRoles(TribeRoles.GOVERNOR, TribeRoles.GUARDIAN, TribeRoles.PCV_SAFE_ADMIN_ROLE)
+    {
         _unsetSafeAddress(pcvDeposit);
     }
 
     /// @notice batch version of unsetSafeAddresses
     /// @param _safeAddresses the addresses to un-set as safe
-    function unsetSafeAddresses(address[] calldata _safeAddresses) external override isGovernorOrGuardianOrAdmin {
+    function unsetSafeAddresses(address[] calldata _safeAddresses)
+        external
+        override
+        hasAnyOfThreeRoles(TribeRoles.GOVERNOR, TribeRoles.GUARDIAN, TribeRoles.PCV_SAFE_ADMIN_ROLE)
+    {
         require(_safeAddresses.length != 0, "empty");
         for (uint256 i = 0; i < _safeAddresses.length; i++) {
             _unsetSafeAddress(_safeAddresses[i]);
