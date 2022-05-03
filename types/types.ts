@@ -62,6 +62,7 @@ export type DependencyMap = { [key: string]: Dependency };
 
 export enum ProposalCategory {
   DAO,
+  DEBUG,
   OA,
   None
 }
