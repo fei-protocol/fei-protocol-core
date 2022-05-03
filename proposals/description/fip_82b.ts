@@ -353,39 +353,9 @@ const fip_82b: ProposalDescription = {
       method: 'grantRole(bytes32,address)',
       arguments: [
         '0x46797b318ce8c2d83979760ef100a5c0fdb980de4b574d6142ce4d0afce307ed', // PCV_MINOR_PARAM_ROLE
-        '{core}'
-      ],
-      description: 'Grant core the PCV_MINOR_PARAM_ROLE role'
-    },
-    {
-      target: 'core',
-      values: '0',
-      method: 'grantRole(bytes32,address)',
-      arguments: [
-        '0x46797b318ce8c2d83979760ef100a5c0fdb980de4b574d6142ce4d0afce307ed', // PCV_MINOR_PARAM_ROLE
         '{feiDAOTimelock}'
       ],
       description: 'Grant feiDAOtimelock the PCV_MINOR_PARAM_ROLE role'
-    },
-    {
-      target: 'core',
-      values: '0',
-      method: 'grantRole(bytes32,address)',
-      arguments: [
-        '0x46797b318ce8c2d83979760ef100a5c0fdb980de4b574d6142ce4d0afce307ed', // PCV_MINOR_PARAM_ROLE
-        '{roleBastion}'
-      ],
-      description: 'Grant roleBastion the PCV_MINOR_PARAM_ROLE role'
-    },
-    {
-      target: 'core',
-      values: '0',
-      method: 'grantRole(bytes32,address)',
-      arguments: [
-        '0x46797b318ce8c2d83979760ef100a5c0fdb980de4b574d6142ce4d0afce307ed', // PCV_MINOR_PARAM_ROLE
-        '{opsOptimisticTimelock}'
-      ],
-      description: 'Grant opsOptimisticTimelock the PCV_MINOR_PARAM_ROLE role'
     },
     {
       target: 'core',
@@ -423,29 +393,9 @@ const fip_82b: ProposalDescription = {
       method: 'grantRole(bytes32,address)',
       arguments: [
         '0x4a4f013dcba6b46103e81e286782135c0dda175e82564e878ae500734753e55e', // FEI_MINT_ADMIN
-        '{core}'
-      ],
-      description: 'Grant core the FEI_MINT_ADMIN role'
-    },
-    {
-      target: 'core',
-      values: '0',
-      method: 'grantRole(bytes32,address)',
-      arguments: [
-        '0x4a4f013dcba6b46103e81e286782135c0dda175e82564e878ae500734753e55e', // FEI_MINT_ADMIN
         '{feiDAOTimelock}'
       ],
       description: 'Grant feiDAOTimelock the FEI_MINT_ADMIN role'
-    },
-    {
-      target: 'core',
-      values: '0',
-      method: 'grantRole(bytes32,address)',
-      arguments: [
-        '0x4a4f013dcba6b46103e81e286782135c0dda175e82564e878ae500734753e55e', // FEI_MINT_ADMIN
-        '{roleBastion}'
-      ],
-      description: 'Grant roleBastion the FEI_MINT_ADMIN role'
     },
     {
       target: 'core',
