@@ -432,10 +432,20 @@ const fip_82b: ProposalDescription = {
       values: '0',
       method: 'grantRole(bytes32,address)',
       arguments: [
-        '0x6c9ecf07a5886fd74a8d32f4d3c317a7d5e5b5c7a073a3ab06c217e9ce5288e3', // PCV_SAFE_MOVER_ROLE
-        '{optimisticTimelock}'
+        '0x0866eae1216ed05a11636a648003f3f62921eb97ccb05acc30636f62958a8bd6', // PCV_CONTROLLER
+        '{newPCVGuardian}'
       ],
-      description: 'Grant optimisticTimelock the PCV_SAFE_MOVER_ROLE role'
+      description: 'Grant newPCVGuardian the PCV_CONTROLLER_ROLE'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'grantRole(bytes32,address)',
+      arguments: [
+        '0x55435dd261a4b9b3364963f7738a7a662ad9c84396d64be3365284bb7f0a5041', // GUARDIAN
+        '{newPCVGuardian}'
+      ],
+      description: 'Grant newPCVGuardian the GUARDIAN role'
     }
   ],
   description: `
