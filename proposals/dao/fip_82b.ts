@@ -130,7 +130,7 @@ const validateNewCouncilRoles = async (core: Contract) => {
   expect(await core.getRoleAdmin(ethers.utils.id('PCV_MINOR_PARAM_ROLE'))).to.be.equal(ROLE_ADMIN);
   expect(await core.getRoleAdmin(ethers.utils.id('PSM_ADMIN_ROLE'))).to.be.equal(ROLE_ADMIN);
   expect(await core.getRoleAdmin(ethers.utils.id('PCV_SAFE_MOVER_ROLE'))).to.be.equal(ROLE_ADMIN);
-  expect(await core.getRoleAdmin(ethers.utils.id('PCV_SAFE_ADMIN_ROLE'))).to.be.equal(ROLE_ADMIN);
+  expect(await core.getRoleAdmin(ethers.utils.id('PCV_GUARDIAN_ADMIN_ROLE'))).to.be.equal(ROLE_ADMIN);
 };
 
 /// Validate that the relevant contract admins have been set to their expected values
@@ -180,7 +180,6 @@ const validateTribalCouncilRoles = async (core: Contract, tribalCouncilTimelockA
   expect(await core.hasRole(ethers.utils.id('ORACLE_ADMIN_ROLE'), tribalCouncilTimelockAddress)).to.be.true;
   expect(await core.hasRole(ethers.utils.id('PSM_ADMIN_ROLE'), tribalCouncilTimelockAddress)).to.be.true;
   expect(await core.hasRole(ethers.utils.id('PCV_SAFE_MOVER_ROLE'), tribalCouncilTimelockAddress)).to.be.true;
-  expect(await core.hasRole(ethers.utils.id('PCV_SAFE_ADMIN_ROLE'), tribalCouncilTimelockAddress)).to.be.true;
 };
 
 export { deploy, setup, teardown, validate };

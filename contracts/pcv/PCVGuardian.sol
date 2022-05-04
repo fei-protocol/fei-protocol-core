@@ -34,14 +34,14 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
         return safeAddresses.values();
     }
 
-    // ---------- GOVERNOR-or-PCV_SAFE_ADMIN_ROLE-Only State-Changing API ----------
+    // ---------- GOVERNOR-or-PCV_GUARDIAN_ADMIN-Only State-Changing API ----------
 
     /// @notice governor-only method to set an address as "safe" to withdraw funds to
     /// @param pcvDeposit the address to set as safe
     function setSafeAddress(address pcvDeposit)
         external
         override
-        hasAnyOfTwoRoles(TribeRoles.GOVERNOR, TribeRoles.PCV_SAFE_ADMIN_ROLE)
+        hasAnyOfTwoRoles(TribeRoles.GOVERNOR, TribeRoles.PCV_GUARDIAN_ADMIN)
     {
         _setSafeAddress(pcvDeposit);
     }
@@ -51,7 +51,7 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
     function setSafeAddresses(address[] calldata _safeAddresses)
         external
         override
-        hasAnyOfTwoRoles(TribeRoles.GOVERNOR, TribeRoles.PCV_SAFE_ADMIN_ROLE)
+        hasAnyOfTwoRoles(TribeRoles.GOVERNOR, TribeRoles.PCV_GUARDIAN_ADMIN)
     {
         require(_safeAddresses.length != 0, "empty");
         for (uint256 i = 0; i < _safeAddresses.length; i++) {
@@ -59,14 +59,14 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
         }
     }
 
-    // ---------- GOVERNOR-or-PCV_SAFE_ADMIN_ROLE-Or-GUARDIAN-Only State-Changing API ----------
+    // ---------- GOVERNOR-or-PCV_GUARDIAN_ADMIN-Or-GUARDIAN-Only State-Changing API ----------
 
     /// @notice governor-or-guardian-only method to un-set an address as "safe" to withdraw funds to
     /// @param pcvDeposit the address to un-set as safe
     function unsetSafeAddress(address pcvDeposit)
         external
         override
-        hasAnyOfThreeRoles(TribeRoles.GOVERNOR, TribeRoles.GUARDIAN, TribeRoles.PCV_SAFE_ADMIN_ROLE)
+        hasAnyOfThreeRoles(TribeRoles.GOVERNOR, TribeRoles.GUARDIAN, TribeRoles.PCV_GUARDIAN_ADMIN)
     {
         _unsetSafeAddress(pcvDeposit);
     }
@@ -76,7 +76,7 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
     function unsetSafeAddresses(address[] calldata _safeAddresses)
         external
         override
-        hasAnyOfThreeRoles(TribeRoles.GOVERNOR, TribeRoles.GUARDIAN, TribeRoles.PCV_SAFE_ADMIN_ROLE)
+        hasAnyOfThreeRoles(TribeRoles.GOVERNOR, TribeRoles.GUARDIAN, TribeRoles.PCV_GUARDIAN_ADMIN)
     {
         require(_safeAddresses.length != 0, "empty");
         for (uint256 i = 0; i < _safeAddresses.length; i++) {

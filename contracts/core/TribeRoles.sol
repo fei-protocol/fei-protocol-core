@@ -103,7 +103,4 @@ library TribeRoles {
 
     /// @notice capable of moving PCV between safe addresses on the PCVGuardian
     bytes32 internal constant PCV_SAFE_MOVER_ROLE = keccak256("PCV_SAFE_MOVER_ROLE");
-
-    /// @notice capable of setting and unsetting safe addresses on the PCVGuardian
-    bytes32 internal constant PCV_SAFE_ADMIN_ROLE = keccak256("PCV_SAFE_ADMIN_ROLE");
 }
