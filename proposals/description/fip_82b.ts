@@ -49,17 +49,7 @@ const fip_82b: ProposalDescription = {
       values: '0',
       method: 'createRole(bytes32,bytes32)',
       arguments: [
-        '0x471cfe1a44bf1b786db7d7104d51e6728ed7b90a35394ad7cc424adf8ed16816', // SWAP_ADMIN_ROLE
-        '0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096' // ROLE_ADMIN
-      ],
-      description: 'Transfer SWAP_ADMIN_ROLE role admin to ROLE_ADMIN'
-    },
-    {
-      target: 'core',
-      values: '0',
-      method: 'createRole(bytes32,bytes32)',
-      arguments: [
-        '0x23970cab3799b6876df4319661e6c03cc45bd59628799d92e988dd8cbdc90e31', // TRIBAL_CHIEF_ADMIN
+        '0x23970cab3799b6876df4319661e6c03cc45bd59628799d92e988dd8cbdc90e31', // TRIBAL_CHIEF_ADMIN_ROLE
         '0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096' // ROLE_ADMIN
       ],
       description: 'Transfer TRIBAL_CHIEF_ADMIN role admin from GOVERNOR to ROLE_ADMIN'
@@ -109,7 +99,7 @@ const fip_82b: ProposalDescription = {
       values: '0',
       method: 'createRole(bytes32,bytes32)',
       arguments: [
-        '0x471cfe1a44bf1b786db7d7104d51e6728ed7b90a35394ad7cc424adf8ed16816', // LBP_SWAP_ROLE
+        '0x471cfe1a44bf1b786db7d7104d51e6728ed7b90a35394ad7cc424adf8ed16816', // SWAP_ADMIN_ROLE
         '0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096' // ROLE_ADMIN
       ],
       description: 'Transfer LBP_SWAP_ROLE role admin from GOVERNOR to ROLE_ADMIN'
@@ -480,7 +470,7 @@ const fip_82b: ProposalDescription = {
     
     Specifically, the proposal:
     1. Creates various new operational roles which the TribalCouncil will hold
-    2. Transfers the admin of all non-major roles to the TribalCouncil
+    2. Transfers the admin of all non-major roles to the TribalCouncil (all major roles remain under the control of the DAO)
     3. Makes the TribalCouncil the admin of various operational smart contracts
     4. Creates a new PCVGuardian with a modern, more secure access control pattern
 
