@@ -186,22 +186,13 @@ const fip_82b: ProposalDescription = {
       description: 'Set the contract admin of the PCV Equity Minter to be the FEI_MINT_ADMIN'
     },
     {
-      target: 'indexDelegator', // this is SnapshotDelegatorPCVDeposit
-      values: '0',
-      method: 'setContractAdminRole(bytes32)',
-      arguments: [
-        '0x46797b318ce8c2d83979760ef100a5c0fdb980de4b574d6142ce4d0afce307ed' // PCV_MINOR_PARAM_ROLE
-      ],
-      description: 'Set the contract admin of the indexDelegator to be the PCV_MINOR_PARAM_ROLE'
-    },
-    {
       target: 'ethTokemakPCVDeposit', // TokemakPCVDepositBase
       values: '0',
       method: 'setContractAdminRole(bytes32)',
       arguments: [
-        '0x46797b318ce8c2d83979760ef100a5c0fdb980de4b574d6142ce4d0afce307ed' // PCV_MINOR_PARAM_ROLE
+        '0x6c9ecf07a5886fd74a8d32f4d3c317a7d5e5b5c7a073a3ab06c217e9ce5288e3' // TOKEMAK_DEPOSIT_ADMIN_ROLE
       ],
-      description: 'Set the contract admin of the ethTokemarkPCVdeposit to be the PCV_MINOR_PARAM_ROLE'
+      description: 'Set the contract admin of the ethTokemarkPCVdeposit to be the TOKEMAK_DEPOSIT_ADMIN_ROLE'
     },
     {
       target: 'uniswapPCVDeposit',
@@ -267,6 +258,36 @@ const fip_82b: ProposalDescription = {
         '{tribalCouncilTimelock}'
       ],
       description: 'Grant TribalCouncil timelock the FUSE_ADMIN role'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'grantRole(bytes32,address)',
+      arguments: [
+        '0xb02f76effb323167cad756bb4f3edbfb9d9291f9bfcdc72c9ceea005562f32eb', // METAGOVERNANCE_VOTE_ADMIN
+        '{tribalCouncilTimelock}'
+      ],
+      description: 'Grant METAGOVERNANCE_VOTE_ADMIN to the tribalCouncilTimelock'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'grantRole(bytes32,address)',
+      arguments: [
+        '0x6c9ecf07a5886fd74a8d32f4d3c317a7d5e5b5c7a073a3ab06c217e9ce5288e3', // TOKEMAK_DEPOSIT_ADMIN_ROLE
+        '{tribalCouncilTimelock}'
+      ],
+      description: 'Grant TOKEMAK_DEPOSIT_ADMIN_ROLE to the tribalCouncilTimelock'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'grantRole(bytes32,address)',
+      arguments: [
+        '0x6c9ecf07a5886fd74a8d32f4d3c317a7d5e5b5c7a073a3ab06c217e9ce5288e3', // TOKEMAK_DEPOSIT_ADMIN_ROLE
+        '{feiDAOTimelock}'
+      ],
+      description: 'Grant TOKEMAK_DEPOSIT_ADMIN_ROLE to the feiDAOTimelock'
     },
     {
       target: 'core',

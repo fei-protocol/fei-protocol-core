@@ -136,9 +136,11 @@ const validateContractAdmins = async (contracts: NamedContracts) => {
 
   expect(await contracts.optimisticMinter.CONTRACT_ADMIN_ROLE()).to.be.equal(ethers.utils.id('FEI_MINT_ADMIN'));
   expect(await contracts.pcvEquityMinter.CONTRACT_ADMIN_ROLE()).to.be.equal(ethers.utils.id('FEI_MINT_ADMIN'));
-  expect(await contracts.indexDelegator.CONTRACT_ADMIN_ROLE()).to.be.equal(ethers.utils.id('PCV_MINOR_PARAM_ROLE'));
+  expect(await contracts.indexDelegator.CONTRACT_ADMIN_ROLE()).to.be.equal(
+    ethers.utils.id('METAGOVERNANCE_VOTE_ADMIN')
+  );
   expect(await contracts.ethTokemakPCVDeposit.CONTRACT_ADMIN_ROLE()).to.be.equal(
-    ethers.utils.id('PCV_MINOR_PARAM_ROLE')
+    ethers.utils.id('TOKEMAK_DEPOSIT_ADMIN_ROLE')
   );
   expect(await contracts.uniswapPCVDeposit.CONTRACT_ADMIN_ROLE()).to.be.equal(ethers.utils.id('PCV_MINOR_PARAM_ROLE'));
 
@@ -167,6 +169,9 @@ const validateCallingContractsHaveNewAdmin = async (core: Contract, addresses: N
   // GOVERNOR : PCV_MINOR_PARAM_ROLE
   expect(await core.hasRole(ethers.utils.id('PCV_MINOR_PARAM_ROLE'), addresses.feiDAOTimelock)).to.be.true;
   expect(await core.hasRole(ethers.utils.id('PCV_MINOR_PARAM_ROLE'), addresses.optimisticTimelock)).to.be.true;
+
+  expect(await core.hasRole(ethers.utils.id('TOKEMAK_DEPOSIT_ADMIN_ROLE'), addresses.optimisticTimelock)).to.be.true;
+  expect(await core.hasRole(ethers.utils.id('TOKEMAK_DEPOSIT_ADMIN_ROLE'), addresses.feiDAOTimelock)).to.be.true;
 };
 
 const validateTribalCouncilRoles = async (core: Contract, tribalCouncilTimelockAddress: string) => {
@@ -177,6 +182,7 @@ const validateTribalCouncilRoles = async (core: Contract, tribalCouncilTimelockA
   expect(await core.hasRole(ethers.utils.id('ORACLE_ADMIN_ROLE'), tribalCouncilTimelockAddress)).to.be.true;
   expect(await core.hasRole(ethers.utils.id('PSM_ADMIN_ROLE'), tribalCouncilTimelockAddress)).to.be.true;
   expect(await core.hasRole(ethers.utils.id('PCV_SAFE_MOVER_ROLE'), tribalCouncilTimelockAddress)).to.be.true;
+  expect(await core.hasRole(ethers.utils.id('TOKEMAK_DEPOSIT_ADMIN_ROLE'), tribalCouncilTimelockAddress)).to.be.true;
 };
 
 export { deploy, setup, teardown, validate };

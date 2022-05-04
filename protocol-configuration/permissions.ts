@@ -41,7 +41,7 @@ export const permissions = {
   VOTIUM_ADMIN_ROLE: ['opsOptimisticTimelock'],
   PCV_GUARDIAN_ADMIN_ROLE: ['optimisticTimelock', 'tribalCouncilTimelock'],
   PCV_SAFE_MOVER_ROLE: ['tribalCouncilTimelock'],
-  METAGOVERNANCE_VOTE_ADMIN: ['feiDAOTimelock', 'opsOptimisticTimelock'],
+  METAGOVERNANCE_VOTE_ADMIN: ['feiDAOTimelock', 'opsOptimisticTimelock', 'tribalCouncilTimelock'],
   METAGOVERNANCE_TOKEN_STAKING: ['feiDAOTimelock', 'opsOptimisticTimelock'],
   METAGOVERNANCE_GAUGE_ADMIN: ['feiDAOTimelock', 'optimisticTimelock'],
   ROLE_ADMIN: ['feiDAOTimelock', 'tribalCouncilTimelock'],
@@ -50,5 +50,5 @@ export const permissions = {
   POD_VETO_ADMIN: ['nopeDAO'],
   POD_ADMIN: ['tribalCouncilTimelock', 'podFactory'],
   PCV_MINOR_PARAM_ROLE: ['feiDAOTimelock', 'optimisticTimelock', 'tribalCouncilTimelock'],
-  TOKEMAK_DEPOSIT_ADMIN_ROLE: ['optimisticTimelock']
+  TOKEMAK_DEPOSIT_ADMIN_ROLE: ['optimisticTimelock', 'feiDAOTimelock', 'tribalCouncilTimelock']
 };
