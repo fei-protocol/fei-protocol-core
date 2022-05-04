@@ -95,6 +95,6 @@ library TribeRoles {
     /// @notice capable of changing PCV Deposit and Global Rate Limited Minter in the PSM
     bytes32 internal constant PSM_ADMIN_ROLE = keccak256("PSM_ADMIN_ROLE");
 
-    /// @notice capable of moving PCV on the PCVGuardian
-    bytes32 internal constant PCV_MOVER = keccak256("PCV_MOVER");
+    /// @notice capable of moving PCV between safe addresses on the PCVGuardian
+    bytes32 internal constant PCV_SAFE_MOVER_ROLE = keccak256("PCV_SAFE_MOVER_ROLE");
 }
