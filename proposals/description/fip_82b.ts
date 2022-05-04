@@ -102,7 +102,7 @@ const fip_82b: ProposalDescription = {
         '0x471cfe1a44bf1b786db7d7104d51e6728ed7b90a35394ad7cc424adf8ed16816', // SWAP_ADMIN_ROLE
         '0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096' // ROLE_ADMIN
       ],
-      description: 'Transfer LBP_SWAP_ROLE role admin from GOVERNOR to ROLE_ADMIN'
+      description: 'Transfer SWAP_ADMIN_ROLE role admin from GOVERNOR to ROLE_ADMIN'
     },
     {
       target: 'core',

@@ -60,7 +60,7 @@ library TribeRoles {
     /// @notice admin of minting Fei for specific scoped contracts
     bytes32 internal constant FEI_MINT_ADMIN = keccak256("FEI_MINT_ADMIN");
 
-    /// @notice admin of minting Fei for specific scoped contracts
+    /// @notice capable of admin functionality on PCVDeposits
     bytes32 internal constant PCV_MINOR_PARAM_ROLE = keccak256("PCV_MINOR_PARAM_ROLE");
 
     /// @notice capable of setting FEI Minters within global rate limits and caps
@@ -88,9 +88,6 @@ library TribeRoles {
                                  Minor Roles
     //////////////////////////////////////////////////////////////*/
     bytes32 internal constant POD_METADATA_REGISTER_ROLE = keccak256("POD_METADATA_REGISTER_ROLE");
-
-    /// @notice capable of poking existing LBP auctions to exchange tokens.
-    bytes32 internal constant LBP_SWAP_ROLE = keccak256("SWAP_ADMIN_ROLE");
 
     /// @notice capable of engaging with Votium for voting incentives.
     bytes32 internal constant VOTIUM_ROLE = keccak256("VOTIUM_ADMIN_ROLE");
