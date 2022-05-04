@@ -381,11 +381,23 @@ const fip_82b: ProposalDescription = {
     }
   ],
   description: `
-    FIP_82b: Create, grant and make the TribalCouncil admin of various access control roles to allow
-    it to manage the protocol.
+    FIP_82b: Authorise the TribalCouncil with necessary protocol roles
+    
+    This is the second stage of the Tribe DAO Governance upgrade. Overall, this proposal prepares the 
+    TribalCouncil and optimistic governance pods system to operate the protocol in an optimistic fashion.
+    
+    Specifically, the proposal:
+    1. Creates various new operational roles which the TribalCouncil will hold
+    2. Transfers the admin of all non-major roles to the TribalCouncil
+    3. Makes the TribalCouncil the admin of various operational smart contracts
+    4. Creates a new PCVGuardian with a modern, more secure access control pattern
 
-    These roles allow the TribalCouncil to authorise pods with the necessary access control to operate 
-    distinct parts of the protocol.
+    The governance upgrade discussed and authorised by the following forum post and snapshot vote:
+    - Forum: https://tribe.fei.money/t/fip-82-governance-enhancements/3945
+    - Snapshot vote: https://snapshot.fei.money/#/proposal/0x463fd1be98d9e86c83eb845ca7e2a5555387e3c86ca0b756aada17a11df87f2b
+
+    The executable code associated with this proposal is available here:
+    - https://github.com/fei-protocol/fei-protocol-core/pull/678 
   `
 };
 
