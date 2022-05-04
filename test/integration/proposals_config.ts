@@ -78,7 +78,7 @@ const proposals: ProposalsConfigMap = {
     proposal: fip_99
   },
   fip_82b: {
-    deploy: true, // deploy flag for whether to run deploy action during e2e tests or use mainnet state
+    deploy: false, // deploy flag for whether to run deploy action during e2e tests or use mainnet state
     totalValue: 0, // amount of ETH to send to DAO execution
     proposal: fip_82b,
     proposalId: '',
