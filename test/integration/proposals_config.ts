@@ -1,6 +1,7 @@
 import { ProposalCategory, ProposalsConfigMap } from '@custom-types/types';
 
 import fip_82 from '@proposals/description/fip_82';
+import fip_82b from '@proposals/description/fip_82b';
 import fip_98 from '@proposals/description/fip_98';
 import fip_99 from '@proposals/description/fip_99';
 
@@ -21,7 +22,7 @@ const proposals: ProposalsConfigMap = {
   fip_82: {
     deploy: false, // deploy flag for whether to run deploy action during e2e tests or use mainnet state
     totalValue: 0, // amount of ETH to send to DAO execution
-    proposal: fip_82, // full proposal file, imported from '@proposals/description/fip_xx.ts'
+    proposal: fip_82,
     proposalId: '',
     affectedContractSignoff: [
       'roleBastion',
@@ -75,6 +76,34 @@ const proposals: ProposalsConfigMap = {
     category: ProposalCategory.DAO,
     totalValue: 0,
     proposal: fip_99
+  },
+  fip_82b: {
+    deploy: true, // deploy flag for whether to run deploy action during e2e tests or use mainnet state
+    totalValue: 0, // amount of ETH to send to DAO execution
+    proposal: fip_82b,
+    proposalId: '',
+    affectedContractSignoff: [
+      'core',
+      'fuseGuardian',
+      'optimisticMinter',
+      'pcvEquityMinter',
+      'indexDelegator',
+      'ethTokemakPCVDeposit',
+      'uniswapPCVDeposit',
+      'lusdPSMFeiSkimmer',
+      'ethPSMFeiSkimmer',
+      'aaveEthPCVDripController',
+      'daiPCVDripController',
+      'lusdPCVDripController',
+      'tribalCouncilTimelock',
+      'feiDAOTimelock',
+      'roleBastion',
+      'opsOptimisticTimelock',
+      'optimisticTimelock',
+      'tribalChiefSyncV2'
+    ],
+    deprecatedContractSignoff: [],
+    category: ProposalCategory.DAO
   }
 };
 
