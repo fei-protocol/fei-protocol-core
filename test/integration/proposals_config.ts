@@ -59,24 +59,6 @@ const proposals: ProposalsConfigMap = {
     totalValue: 0,
     proposal: fip_98
   },
-  fip_99: {
-    deploy: false,
-    proposalId: null,
-    affectedContractSignoff: [
-      'collateralizationOracle',
-      'ratioPCVControllerV2',
-      'rariPool9RaiPCVDeposit',
-      'aaveRaiPCVDeposit',
-      'raiPCVDripController',
-      'raiPriceBoundPSM',
-      'pcvGuardian',
-      'core'
-    ],
-    deprecatedContractSignoff: [],
-    category: ProposalCategory.DAO,
-    totalValue: 0,
-    proposal: fip_99
-  },
   fip_82b: {
     deploy: false, // deploy flag for whether to run deploy action during e2e tests or use mainnet state
     totalValue: 0, // amount of ETH to send to DAO execution
