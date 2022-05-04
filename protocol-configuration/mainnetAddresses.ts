@@ -34,7 +34,7 @@ const MainnetAddresses: MainnetAddresses = {
   pcvGuardian: {
     artifactName: 'PCVGuardian',
     address: '0x2D1b1b509B6432A73e3d798572f0648f6453a5D9',
-    category: AddressCategory.Core
+    category: AddressCategory.Deprecated
   },
   pcvSentinel: {
     artifactName: 'PCVSentinel',
