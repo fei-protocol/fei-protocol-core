@@ -155,16 +155,6 @@ const fip_82b: ProposalDescription = {
       ],
       description: 'Create PCV_SAFE_MOVER_ROLE role, assigning ROLE_ADMIN as the role admin'
     },
-    {
-      target: 'core',
-      values: '0',
-      method: 'createRole(bytes32,bytes32)',
-      arguments: [
-        '0xd387c7eec7161b3637e694ef5cf8f1a9e29bfd35135c86c9b540bebec4ef221a', // PCV_SAFE_MOVER_ROLE
-        '0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096' // ROLE_ADMIN
-      ],
-      description: 'Create PCV_SAFE_MOVER_ROLE role, assigning ROLE_ADMIN as the role admin'
-    },
     ///////   Set the relevant contract admins to the newly created roles //////////
     // FUSE_ADMIN
     {
