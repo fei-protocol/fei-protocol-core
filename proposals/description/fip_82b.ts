@@ -175,16 +175,6 @@ const fip_82b: ProposalDescription = {
       ],
       description: 'Create PCV_SAFE_MOVER_ROLE role, assigning ROLE_ADMIN as the role admin'
     },
-    {
-      target: 'core',
-      values: '0',
-      method: 'createRole(bytes32,bytes32)',
-      arguments: [
-        '0xdf6ce05acd28d71e96472375ef55c4a692f167af3ccda9500570f7373c1ba22c', // PCV_GUARDIAN_ADMIN_ROLE
-        '0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096' // ROLE_ADMIN
-      ],
-      description: 'Create PCV_GUARDIAN_ADMIN_ROLE role, assigning ROLE_ADMIN as the role admin'
-    },
     ///////   Set the relevant contract admins to the newly created roles //////////
     // FUSE_ADMIN
     {
@@ -404,7 +394,7 @@ const fip_82b: ProposalDescription = {
       values: '0',
       method: 'grantRole(bytes32,address)',
       arguments: [
-        '0x6c9ecf07a5886fd74a8d32f4d3c317a7d5e5b5c7a073a3ab06c217e9ce5288e3', // PCV_SAFE_MOVER_ROLE
+        '0xd387c7eec7161b3637e694ef5cf8f1a9e29bfd35135c86c9b540bebec4ef221a', // PCV_SAFE_MOVER_ROLE
         '{tribalCouncilTimelock}'
       ],
       description: 'Grant tribalCouncilTimelock the PCV_SAFE_MOVER_ROLE role'
