@@ -134,11 +134,6 @@ async function getCore(): Promise<Core> {
   return core;
 }
 
-const validateArraysEqual = (arrayA: string[], arrayB: string[]) => {
-  expect(arrayA.length).to.equal(arrayB.length);
-  arrayA.every((a) => expect(arrayB.map((b) => b.toLowerCase()).includes(a.toLowerCase())));
-};
-
 async function expectApprox(
   actual: string | number | BigNumberish,
   expected: string | number | BigNumberish,
@@ -348,6 +343,5 @@ export {
   resetFork,
   overwriteChainlinkAggregator,
   performDAOAction,
-  initialiseGnosisSDK,
-  validateArraysEqual
+  initialiseGnosisSDK
 };
