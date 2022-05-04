@@ -29,20 +29,10 @@ const fip_82b: ProposalDescription = {
       values: '0',
       method: 'createRole(bytes32,bytes32)',
       arguments: [
-        '0x6cad5c16d973906992d8e1412f4aefeca4ae44220c203bbcd6e8e66e7c717be0', // OPTIMISTIC_ADMIN
+        '0xc307c44629779eb8fc0b85f224c3d22f5876a6c84de0ee42d481eb7814f0d3a8', // ORACLE_ADMIN_ROLE
         '0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096' // ROLE_ADMIN
       ],
-      description: 'Transfer OPTIMISTIC_ADMIN role admin to ROLE_ADMIN'
-    },
-    {
-      target: 'core',
-      values: '0',
-      method: 'createRole(bytes32,bytes32)',
-      arguments: [
-        '0xc307c44629779eb8fc0b85f224c3d22f5876a6c84de0ee42d481eb7814f0d3a8', // ORACLE_ADMIN
-        '0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096' // ROLE_ADMIN
-      ],
-      description: 'Transfer ORACLE_ADMIN role admin from GOVERNOR to ROLE_ADMIN'
+      description: 'Transfer ORACLE_ADMIN_ROLE role admin from GOVERNOR to ROLE_ADMIN'
     },
     {
       target: 'core',
@@ -59,10 +49,10 @@ const fip_82b: ProposalDescription = {
       values: '0',
       method: 'createRole(bytes32,bytes32)',
       arguments: [
-        '0xdf6ce05acd28d71e96472375ef55c4a692f167af3ccda9500570f7373c1ba22c', // PCV_GUARDIAN_ADMIN
+        '0xdf6ce05acd28d71e96472375ef55c4a692f167af3ccda9500570f7373c1ba22c', // PCV_GUARDIAN_ADMIN_ROLE
         '0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096' // ROLE_ADMIN
       ],
-      description: 'Transfer PCV_GUARDIAN_ADMIN role admin from GOVERNOR to ROLE_ADMIN'
+      description: 'Transfer PCV_GUARDIAN_ADMIN_ROLE role from GOVERNOR to ROLE_ADMIN'
     },
     {
       target: 'core',
@@ -160,10 +150,10 @@ const fip_82b: ProposalDescription = {
       values: '0',
       method: 'createRole(bytes32,bytes32)',
       arguments: [
-        '0x64bdfa4de883e5fe4519e80a554fbf0d63c0f6271ac8b89b18edcc9ef151ad60', // MINOR_PARAM_ROLE
+        '0xd387c7eec7161b3637e694ef5cf8f1a9e29bfd35135c86c9b540bebec4ef221a', // PCV_SAFE_MOVER_ROLE
         '0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096' // ROLE_ADMIN
       ],
-      description: 'Create MINOR_PARAM_ROLE role, assigning ROLE_ADMIN as the role admin'
+      description: 'Create PCV_SAFE_MOVER_ROLE role, assigning ROLE_ADMIN as the role admin'
     },
     ///////   Set the relevant contract admins to the newly created roles //////////
     // FUSE_ADMIN

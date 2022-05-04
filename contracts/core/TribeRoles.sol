@@ -39,7 +39,7 @@ library TribeRoles {
     /// @notice capable of granting and revoking other TribeRoles from having veto power over a pod
     bytes32 internal constant POD_VETO_ADMIN = keccak256("POD_VETO_ADMIN");
 
-    /// @notice can manage the majority of Tribe protocol parameters. Sets boundaries for MINOR_PARAM_ROLE.
+    /// @notice can manage the majority of Tribe protocol parameters
     bytes32 internal constant PARAMETER_ADMIN = keccak256("PARAMETER_ADMIN");
 
     /// @notice manages the Collateralization Oracle as well as other protocol oracles.
@@ -66,9 +66,6 @@ library TribeRoles {
     /// @notice capable of setting FEI Minters within global rate limits and caps
     bytes32 internal constant RATE_LIMITED_MINTER_ADMIN = keccak256("RATE_LIMITED_MINTER_ADMIN");
 
-    /// @notice manages the constituents of Optimistic Timelocks, including Proposers and Executors
-    bytes32 internal constant OPTIMISTIC_ADMIN = keccak256("OPTIMISTIC_ADMIN");
-
     /// @notice manages meta-governance actions, like voting & delegating.
     /// Also used to vote for gauge weights & similar liquid governance things.
     bytes32 internal constant METAGOVERNANCE_VOTE_ADMIN = keccak256("METAGOVERNANCE_VOTE_ADMIN");
@@ -94,9 +91,6 @@ library TribeRoles {
 
     /// @notice capable of adding an address to multi rate limited
     bytes32 internal constant ADD_MINTER_ROLE = keccak256("ADD_MINTER_ROLE");
-
-    /// @notice capable of changing parameters within non-critical ranges
-    bytes32 internal constant MINOR_PARAM_ROLE = keccak256("MINOR_PARAM_ROLE");
 
     /// @notice capable of changing PCV Deposit and Global Rate Limited Minter in the PSM
     bytes32 internal constant PSM_ADMIN_ROLE = keccak256("PSM_ADMIN_ROLE");
