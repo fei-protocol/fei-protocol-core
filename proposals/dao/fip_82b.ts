@@ -20,6 +20,7 @@ Description:
 2. Create several new TribeRoles for management of the protocol, with the ROLE_ADMIN as their admin
 3. Transfer contract admins of various contracts to these new roles
 4. Grant the TribalCouncil the various roles it needs to run the protocol
+5. Deploy and configure a new PCVGuardian with migrated state. It has a more granular access control
 */
 
 const fipNumber = 'fip_82b';
@@ -92,7 +93,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 
   // 2. Validate TribalCouncil role transfers
   await validateTransferredRoleAdmins(contracts.core);
-  await validateNewCouncilRoles(contracts.core);
+  await validateNewlyCreatedRoles(contracts.core);
   await validateContractAdmins(contracts);
   await validateTribalCouncilRoles(contracts.core, addresses.tribalCouncilTimelock);
   await validateCallingContractsHaveNewAdmin(contracts.core, addresses);
@@ -122,7 +123,7 @@ const validateTransferredRoleAdmins = async (core: Contract) => {
 };
 
 /// Validate that the expected new TribeRoles have been created
-const validateNewCouncilRoles = async (core: Contract) => {
+const validateNewlyCreatedRoles = async (core: Contract) => {
   const ROLE_ADMIN = ethers.utils.id('ROLE_ADMIN');
 
   expect(await core.getRoleAdmin(ethers.utils.id('FUSE_ADMIN'))).to.be.equal(ROLE_ADMIN);

@@ -1063,13 +1063,13 @@ const dependencies: DependencyMap = {
     contractDependencies: ['tribalCouncilTimelock']
   },
   veBalDelegatorPCVDeposit: {
-    contractDependencies: ['core']
-  },
-  balancerLensVeBalWeth: {
-    contractDependencies: ['balUsdCompositeOracle', 'chainlinkEthUsdOracleWrapper']
+    contractDependencies: ['core', 'balancerLensVeBalBal', 'balancerLensVeBalWeth']
   },
   balancerLensBpt30Fei70Weth: {
     contractDependencies: ['oneConstantOracle', 'chainlinkEthUsdOracleWrapper']
+  },
+  balancerLensVeBalWeth: {
+    contractDependencies: ['veBalDelegatorPCVDeposit', 'balUsdCompositeOracle', 'chainlinkEthUsdOracleWrapper']
   }
 };
 
