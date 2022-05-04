@@ -116,6 +116,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x3e0f66c5687FF917809A3F7fA7096e1Bc409fB03',
     category: AddressCategory.Peg
   },
+  raiPSM: {
+    artifactName: 'PriceBoundPSM',
+    address: '0x5ddE9B4b14eDf59CB23c1d4579B279846998205e',
+    category: AddressCategory.Peg
+  },
   daiPSM: {
     artifactName: 'PriceBoundPSM',
     address: '0x210300C158f95E1342fD008aE417ef68311c49C2',
