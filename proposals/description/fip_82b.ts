@@ -39,6 +39,26 @@ const fip_82b: ProposalDescription = {
       values: '0',
       method: 'createRole(bytes32,bytes32)',
       arguments: [
+        '0x2ed79c21cc719d0c08e90d592e29828e4bd23efdb9ac45a4fe9b6c0ab5955b80', // BALANCER_MANAGER_ADMIN_ROLE
+        '0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096' // ROLE_ADMIN
+      ],
+      description: 'Transfer BALANCER_MANAGER_ADMIN_ROLE role admin to ROLE_ADMIN'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'createRole(bytes32,bytes32)',
+      arguments: [
+        '0x471cfe1a44bf1b786db7d7104d51e6728ed7b90a35394ad7cc424adf8ed16816', // SWAP_ADMIN_ROLE
+        '0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096' // ROLE_ADMIN
+      ],
+      description: 'Transfer SWAP_ADMIN_ROLE role admin to ROLE_ADMIN'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'createRole(bytes32,bytes32)',
+      arguments: [
         '0x23970cab3799b6876df4319661e6c03cc45bd59628799d92e988dd8cbdc90e31', // TRIBAL_CHIEF_ADMIN
         '0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096' // ROLE_ADMIN
       ],

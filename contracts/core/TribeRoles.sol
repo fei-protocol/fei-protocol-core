@@ -78,6 +78,12 @@ library TribeRoles {
     /// @notice manages whitelisting of gauges where the protocol's tokens can be staked
     bytes32 internal constant METAGOVERNANCE_GAUGE_ADMIN = keccak256("METAGOVERNANCE_GAUGE_ADMIN");
 
+    /// @notice capable of performing swaps on Balancer LBP Swapper
+    bytes32 internal constant SWAP_ADMIN_ROLE = keccak256("SWAP_ADMIN_ROLE");
+
+    /// @notice capable of setting properties on Balancer BasePool utility wrapper
+    bytes32 internal constant BALANCER_MANAGER_ADMIN_ROLE = keccak256("BALANCER_MANAGER_ADMIN_ROLE");
+
     /*///////////////////////////////////////////////////////////////
                                  Minor Roles
     //////////////////////////////////////////////////////////////*/

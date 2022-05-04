@@ -116,6 +116,9 @@ const validateTransferredRoleAdmins = async (core: Contract) => {
   expect(await core.getRoleAdmin(ethers.utils.id('SWAP_ADMIN_ROLE'))).to.be.equal(ROLE_ADMIN);
   expect(await core.getRoleAdmin(ethers.utils.id('VOTIUM_ADMIN_ROLE'))).to.be.equal(ROLE_ADMIN);
   expect(await core.getRoleAdmin(ethers.utils.id('RATE_LIMITED_MINTER_ADMIN'))).to.be.equal(ROLE_ADMIN);
+
+  expect(await core.getRoleAdmin(ethers.utils.id('BALANCER_MANAGER_ADMIN_ROLE'))).to.be.equal(ROLE_ADMIN);
+  expect(await core.getRoleAdmin(ethers.utils.id('SWAP_ADMIN_ROLE'))).to.be.equal(ROLE_ADMIN);
 };
 
 /// Validate that the expected new TribeRoles have been created
