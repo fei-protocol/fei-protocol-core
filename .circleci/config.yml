@@ -1,13 +1,17 @@
 version: 2.1
 
-jobs:
-  build:
-    working_directory: ~/repo
+executors:
+  node-image:
     docker:
       - image: cimg/node:16.14
+    working_directory: ~/repo
     resource_class: xlarge
+    
+jobs:
+  build:
+    executor: node-image
     steps:
-      - checkout 
+      - checkout
       - restore_cache:
           key: package-cache-{{ checksum "package-lock.json" }}
       - run:
@@ -23,6 +27,7 @@ jobs:
           paths:
             - artifacts 
             - cache/solidity-files-cache.json
+            - types/contracts
       - run:
           name: Compile contracts
           command: npm run compile:hardhat
@@ -31,21 +36,27 @@ jobs:
           paths:
             - artifacts
             - cache/solidity-files-cache.json
+            - types/contracts
+      - persist_to_workspace:
+          root: ~/repo
+          paths:
+            - ./
   lint:
     working_directory: ~/repo
-    docker:
-      - image: cimg/node:16.14
+    executor: node-img
     steps:
+      - attach_workspace:
+        at: ./
       - run:
           name: Run linter
           command: npm run lint
   test:
     working_directory: ~/repo
-    docker:
-      - image: cimg/node:16.14
+    executor: node-img
     parallelism: 16
-    resource_class: large
     steps:
+      - attach_workspace:
+        at: ./
       - run:
           name: Run tests
           command: |
@@ -58,10 +69,11 @@ jobs:
 
   test-forge:
     working_directory: ~/repo
-    docker: 
-      - image: cimg/node:16.14 
-    resource_class: xlarge 
-    steps: 
+    executor: node-img
+    parallelism: 16
+    steps:
+      - attach_workspace:
+          at: ./
       - checkout 
       - restore_cache: 
           keys: 
@@ -83,14 +95,11 @@ jobs:
 
   e2e-test:
     working_directory: ~/repo
-    docker:
-      - image: cimg/node:16.14
-    parallelism: 5
-    resource_class: xlarge
+    executor: node-img
+    parallelism: 16
     steps:
-      - restore_cache:
-          keys:
-            - repo-{{ .Environment.CIRCLE_SHA1 }}
+      - attach_workspace:
+          at: ./
       - run:
           name: Run end-to-end tests
           command: |
