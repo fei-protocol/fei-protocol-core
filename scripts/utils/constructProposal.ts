@@ -1,4 +1,4 @@
-import { proposals } from 'hardhat';
+import hre, { proposals } from 'hardhat';
 import { MainnetContracts, NamedAddresses, ProposalDescription } from '@custom-types/types';
 import format from 'string-template';
 import { AlphaProposal } from '@idle-finance/hardhat-proposals-plugin/dist/src/proposals/compound-alpha';
@@ -10,7 +10,7 @@ import { PACKAGE_NAME, errors } from '@idle-finance/hardhat-proposals-plugin/dis
 export class SigmaProposal extends AlphaProposal {
   protected async mineBlocks(blocks: any) {
     const blocksToMine = BigNumber.from(blocks).toNumber();
-    await this.hre.network.provider.send('hardhat_mine', [blocksToMine]);
+    await hre.network.provider.send('hardhat_mine', [blocksToMine]);
   }
 
   async simulate(fullSimulation = false, force?: boolean) {
@@ -56,7 +56,7 @@ export default async function constructProposal(
   proposalBuilder.setDescription(`${proposalInfo.title}\n${proposalDescription.toString()}`); // Set proposal description
 
   const proposal = proposalBuilder.build();
-  proposal.simulate = new SigmaProposal(this.hre).simulate;
+  proposal.simulate = new SigmaProposal(hre).simulate;
   logging && console.log(await proposal.printProposalInfo());
   return proposal;
 }
