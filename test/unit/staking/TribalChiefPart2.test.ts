@@ -11,6 +11,7 @@ import { expect } from 'chai';
 import hre, { ethers } from 'hardhat';
 import { Signer } from 'ethers';
 import { TransactionReceipt, TransactionResponse } from '@ethersproject/abstract-provider';
+import { BN } from 'ethereumjs-util';
 
 const toBN = ethers.BigNumber.from;
 
@@ -600,9 +601,7 @@ describe('TribalChief', () => {
       // to the staked amount which is total staked x 2
       expect((await this.tribalChief.poolInfo(pid)).virtualTotalSupply).to.be.equal(toBN(totalStaked).mul(toBN('2')));
 
-      for (let i = 0; i < 50; i++) {
-        await time.advanceBlock();
-      }
+      await hre.network.provider.send('hardhat_mine', [new BN(50)]);
 
       let pendingTribe = await this.tribalChief.pendingRewards(pid, userAddress);
       await this.tribalChief
@@ -623,9 +622,7 @@ describe('TribalChief', () => {
       expect(await this.LPToken.balanceOf(userAddress)).to.be.equal(toBN(totalStaked));
       expect(await this.tribe.balanceOf(userAddress)).to.be.gte(pendingTribe);
 
-      for (let i = 0; i < 50; i++) {
-        await time.advanceBlock();
-      }
+      await hre.network.provider.send('hardhat_mine', [new BN(50)]);
       pendingTribe = await this.tribalChief.pendingRewards(pid, userAddress);
       const currentTribe = await this.tribe.balanceOf(userAddress);
       // assert that the virtual total supply is equal to the staked amount

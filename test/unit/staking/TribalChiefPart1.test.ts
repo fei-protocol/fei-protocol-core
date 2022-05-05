@@ -9,8 +9,9 @@ import { time } from '../../helpers';
 import { expectRevert, expectUnspecifiedRevert, getCore, getAddresses, expectApprox } from '../../helpers';
 import { expect } from 'chai';
 import hre, { ethers } from 'hardhat';
-import { Signer } from 'ethers';
+import { BigNumber, Signer } from 'ethers';
 import { TransactionReceipt, TransactionResponse } from '@ethersproject/abstract-provider';
+import { BN } from 'ethereumjs-util';
 
 const toBN = ethers.BigNumber.from;
 
@@ -482,10 +483,7 @@ describe('TribalChief', () => {
           pid
         );
 
-        for (let i = 0; i < 98; i++) {
-          await time.advanceBlock();
-        }
-
+        await hre.network.provider.send('hardhat_mine', [new BN(98)]);
         await this.tribalChief.updatePool(pid);
 
         const expectedAccTribePerShare = toBN(100)
