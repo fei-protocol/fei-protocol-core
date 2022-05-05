@@ -45,7 +45,7 @@
   "author": "joeysantoro",
   "license": "AGPL-3.0-only",
   "engines": {
-    "npm": ">=8.0.0",
+    "npm": ">=8.0.1",
     "node": ">=16.0.0"
   },
   "dependencies": {
