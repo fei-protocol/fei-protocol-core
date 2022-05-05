@@ -9,8 +9,9 @@ import { time } from '../../helpers';
 import { expectRevert, expectUnspecifiedRevert, getCore, getAddresses, expectApprox } from '../../helpers';
 import { expect } from 'chai';
 import hre, { ethers } from 'hardhat';
-import { Signer } from 'ethers';
+import { BigNumber, Signer } from 'ethers';
 import { TransactionReceipt, TransactionResponse } from '@ethersproject/abstract-provider';
+import { BN } from 'ethereumjs-util';
 
 const toBN = ethers.BigNumber.from;
 
@@ -600,9 +601,7 @@ describe('TribalChief', () => {
       // to the staked amount which is total staked x 2
       expect((await this.tribalChief.poolInfo(pid)).virtualTotalSupply).to.be.equal(toBN(totalStaked).mul(toBN('2')));
 
-      for (let i = 0; i < 50; i++) {
-        await time.advanceBlock();
-      }
+      await hre.network.provider.send('hardhat_mine', [ethers.utils.hexStripZeros(BigNumber.from(50).toHexString())]);
 
       let pendingTribe = await this.tribalChief.pendingRewards(pid, userAddress);
       await this.tribalChief
@@ -623,9 +622,7 @@ describe('TribalChief', () => {
       expect(await this.LPToken.balanceOf(userAddress)).to.be.equal(toBN(totalStaked));
       expect(await this.tribe.balanceOf(userAddress)).to.be.gte(pendingTribe);
 
-      for (let i = 0; i < 50; i++) {
-        await time.advanceBlock();
-      }
+      await hre.network.provider.send('hardhat_mine', [ethers.utils.hexStripZeros(BigNumber.from(50).toHexString())]);
       pendingTribe = await this.tribalChief.pendingRewards(pid, userAddress);
       const currentTribe = await this.tribe.balanceOf(userAddress);
       // assert that the virtual total supply is equal to the staked amount
