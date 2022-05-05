@@ -1,7 +1,7 @@
 version: 2.1
 
 executors:
-  node-image:
+  nodeimage:
     docker:
       - image: cimg/node:16.14
     working_directory: ~/repo
@@ -9,7 +9,7 @@ executors:
     
 jobs:
   build:
-    executor: node-image
+    executor: nodeimage
     steps:
       - checkout
       - restore_cache:
@@ -24,10 +24,6 @@ jobs:
             - node_modules
       - restore_cache:
           key: solcache-{{ checksum "cache/solidity-files-cache.json" }}
-          paths:
-            - artifacts 
-            - cache/solidity-files-cache.json
-            - types/contracts
       - run:
           name: Compile contracts
           command: npm run compile:hardhat
@@ -43,20 +39,20 @@ jobs:
             - ./
   lint:
     working_directory: ~/repo
-    executor: node-img
+    executor: nodeimage
     steps:
       - attach_workspace:
-        at: ./
+          at: ./
       - run:
           name: Run linter
           command: npm run lint
   test:
     working_directory: ~/repo
-    executor: node-img
+    executor: nodeimage
     parallelism: 16
     steps:
       - attach_workspace:
-        at: ./
+          at: ./
       - run:
           name: Run tests
           command: |
@@ -69,7 +65,7 @@ jobs:
 
   test-forge:
     working_directory: ~/repo
-    executor: node-img
+    executor: nodeimage
     parallelism: 16
     steps:
       - attach_workspace:
@@ -95,7 +91,7 @@ jobs:
 
   e2e-test:
     working_directory: ~/repo
-    executor: node-img
+    executor: nodeimage
     parallelism: 16
     steps:
       - attach_workspace:
