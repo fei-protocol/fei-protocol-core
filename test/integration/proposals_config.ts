@@ -37,6 +37,8 @@ const proposals: ProposalsConfigMap = {
       'tribalCouncilTimelock',
       'feiDAOTimelock',
       'roleBastion',
+      'pcvGuardianNew',
+      'pcvGuardian',
       'opsOptimisticTimelock',
       'optimisticTimelock',
       'tribalChiefSyncV2'
