@@ -6,11 +6,12 @@ import { BigNumber } from 'ethers';
 import { InternalProposalState } from '@idle-finance/hardhat-proposals-plugin/dist/src/proposals/proposal';
 import { HardhatPluginError } from 'hardhat/plugins';
 import { PACKAGE_NAME, errors } from '@idle-finance/hardhat-proposals-plugin/dist/src/constants';
+import { BN } from 'ethereumjs-util';
 
 export class SigmaProposal extends AlphaProposal {
   protected async mineBlocks(blocks: any) {
     const blocksToMine = BigNumber.from(blocks).toNumber();
-    await hre.network.provider.send('hardhat_mine', [blocksToMine]);
+    await hre.network.provider.send('hardhat_mine', [new BN(blocksToMine)]);
   }
 
   async simulate(fullSimulation = false, force?: boolean) {
