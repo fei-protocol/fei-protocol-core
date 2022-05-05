@@ -58,7 +58,14 @@ jobs:
 
   test-forge:
     working_directory: ~/repo
-    docker: - image: cimg/node:16.14 resource_class: xlarge steps: - checkout - restore_cache: keys: - repo-{{ .Environment.CIRCLE_SHA1 }}
+    docker: 
+      - image: cimg/node:16.14 
+    resource_class: xlarge 
+    steps: 
+      - checkout 
+      - restore_cache: 
+          keys: 
+            - repo-{{ .Environment.CIRCLE_SHA1 }}
       - run:
           name: Setup env
           command: echo "export PATH=$PATH:$(pwd)/.circleci" >> /home/circleci/.bashrc
