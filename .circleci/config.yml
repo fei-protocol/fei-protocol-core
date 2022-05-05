@@ -12,31 +12,32 @@ jobs:
     executor: nodeimage
     steps:
       - checkout
-      - restore_cache:
+      - restore_cache: # This one restores node_modules, and .npm if the package-lock.json checksum is the same
           key: package-cache-{{ checksum "package-lock.json" }}
-      - run:
+      - run: # Set the npm ci cache directory so that it won't always reinstall everything
           name: Set npm cache
           command: npm set cache .npm
-      - run:
+      - run: # npm ci is faster than npm install
           name: Install dependencies
           command: npm ci
-      - save_cache:
+      - save_cache: # Save the node_modules and .npm directories into the cache by the checksum of package-lock.json
           key: package-cache-{{ checksum "package-lock.json" }}
           paths: 
-            - package-lock.json
             - node_modules
             - .npm
-      - restore_cache:
+      - restore_cache: # Restore the solidity files cache the same way we do node_modules (by the checksum of the .json file)
           key: solcache-{{ checksum "cache/solidity-files-cache.json" }}
       - run:
           name: Compile contracts
           command: npm run compile:hardhat
-      - save_cache:
+      - save_cache: # Save the solidity files cache, the compiled artifacts, and the generated types
           key: solcache-{{ checksum "cache/solidity-files-cache.json" }}
           paths:
             - artifacts
             - cache/solidity-files-cache.json
             - types/contracts
+      - restore_cache: # Restore the hardhat network fork cache if the hardhad-config hasn't changed
+          key: hardhat-config-{{ checksum "hardhat.config.ts" }}
       - persist_to_workspace:
           root: ~/repo
           paths:
@@ -70,7 +71,6 @@ jobs:
   test-forge:
     working_directory: ~/repo
     executor: nodeimage
-    parallelism: 16
     steps:
       - attach_workspace:
           at: ./
@@ -109,6 +109,10 @@ jobs:
             path: test-results
       - store_artifacts:
             path: test-results
+      - save_cache:
+          key: hardhat-config-{{ checksum "hardhat.config.ts" }}
+          paths: # Save the hardhat-network-fork cache
+            - cache/hardhat-network-fork
 
 workflows:
   main:
