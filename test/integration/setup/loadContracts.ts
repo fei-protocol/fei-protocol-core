@@ -13,7 +13,7 @@ interface MainnetContractsJSON {
 
 export async function getAllContracts(): Promise<MainnetContracts> {
   const addresses = mainnetAddresses as MainnetContractsJSON;
-  const contracts = await Promise.all(
+  const contractsAsArrayEntries = await Promise.all(
     Object.entries(addresses)
       .filter((entry) => entry[1].artifactName != 'unknown')
       .map(async (entry) => {
@@ -21,7 +21,7 @@ export async function getAllContracts(): Promise<MainnetContracts> {
       })
   );
 
-  return contracts as unknown as MainnetContracts;
+  return Object.fromEntries(contractsAsArrayEntries) as MainnetContracts;
 }
 
 export function getAllContractAddresses(): NamedAddresses {
