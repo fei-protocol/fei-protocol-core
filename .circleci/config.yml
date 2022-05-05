@@ -14,17 +14,13 @@ jobs:
       - checkout
       - restore_cache: # This one restores node_modules, and .npm if the package-lock.json checksum is the same
           key: package-cache-{{ checksum "package-lock.json" }}
-      - run: # Set the npm ci cache directory so that it won't always reinstall everything
-          name: Set npm cache
-          command: npm set cache .npm
-      - run: # npm ci is faster than npm install
+      - run: # we use npm install and not npm ci because npm ci removes node-modules entirely
           name: Install dependencies
-          command: npm ci
+          command: npm install
       - save_cache: # Save the node_modules and .npm directories into the cache by the checksum of package-lock.json
           key: package-cache-{{ checksum "package-lock.json" }}
           paths: 
             - node_modules
-            - .npm
       - run: # generate a checksum of all of the source solidity files to see if they have changed, which we use as the key for caching
           name: Generate solidity source checksum
           command: ./checksum.sh /tmp/checksum.txt
