@@ -9,6 +9,7 @@ coverage/
 tenderly.yaml
 artifacts
 cache
+!cache/solidity-files-cache.json
 types/contracts
 .eslintcache
 .xml
