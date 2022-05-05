@@ -216,7 +216,9 @@ describe('e2e-staking', function () {
         const startingTribeBalance = await tribe.balanceOf(rariRewardsDistributorDelegator);
 
         const blocksToAdvance = 10;
-        await hre.network.provider.send('hardhat_mine', [BigNumber.from(blocksToAdvance).toHexString()]);
+        await hre.network.provider.send('hardhat_mine', [
+          ethers.utils.hexStripZeros(BigNumber.from(blocksToAdvance).toHexString())
+        ]);
 
         /// add 1 as calling the harvest is another block where rewards are received
         const pendingTribe = toBN(blocksToAdvance + 1)

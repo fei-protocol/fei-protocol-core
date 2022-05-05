@@ -483,7 +483,7 @@ describe('TribalChief', () => {
           pid
         );
 
-        await hre.network.provider.send('hardhat_mine', [BigNumber.from(98).toHexString()]);
+        await hre.network.provider.send('hardhat_mine', [ethers.utils.hexStripZeros(BigNumber.from(98).toHexString())]);
         await this.tribalChief.updatePool(pid);
 
         const expectedAccTribePerShare = toBN(100)
