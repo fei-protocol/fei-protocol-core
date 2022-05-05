@@ -240,17 +240,11 @@ const time = {
     target = ethers.BigNumber.from(target);
 
     const currentBlock = await time.latestBlock();
-    const start = Date.now();
-    let notified;
     if (target.lt(currentBlock))
       throw Error(`Target block #(${target}) is lower than current block #(${currentBlock})`);
-    while (ethers.BigNumber.from(await time.latestBlock()).lt(target)) {
-      if (!notified && Date.now() - start >= 5000) {
-        notified = true;
-        console.warn(`You're advancing many blocks; this test may be slow.`);
-      }
-      await time.advanceBlock();
-    }
+
+    const diff = target.sub(currentBlock);
+    await hre.network.provider.send('hardhat_mine', [diff.toNumber()]);
   },
 
   advanceBlock: async (): Promise<void> => {
