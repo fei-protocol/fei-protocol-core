@@ -25,15 +25,22 @@ jobs:
           paths: 
             - node_modules
             - .npm
+      - run: # generate a checksum of all of the source solidity files to see if they have changed, which we use as the key for caching
+          name: Generate solidity source checksum
+          command: ./checksum.sh /tmp/checksum.txt
       - restore_cache: # Restore the solidity files cache the same way we do node_modules (by the checksum of the .json file)
-          key: solcache-{{ checksum "cache/solidity-files-cache.json" }}
+          key: solcache-{{ checksum "/tmp/checksum.txt" }}
       - run:
           name: Compile contracts
           command: npm run compile:hardhat
+      - run: # generate a checksum of all of the source solidity files to see if they have changed, which we use as the key for caching
+          name: Generate solidity source checksum (again)
+          command: ./checksum.sh /tmp/checksum.txt
       - save_cache: # Save the solidity files cache, the compiled artifacts, and the generated types
-          key: solcache-{{ checksum "cache/solidity-files-cache.json" }}
+          key: solcache-{{ checksum "/tmp/checksum.txt" }}
           paths:
             - artifacts
+            - cache/solidity-files-cache.json
             - types/contracts
       - restore_cache: # Restore the hardhat network fork cache if the hardhad-config hasn't changed
           key: hardhat-config-{{ checksum "hardhat.config.ts" }}
