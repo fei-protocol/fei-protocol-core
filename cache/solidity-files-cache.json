@@ -2,7 +2,7 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "/home/caleb/fei-protocol-core/contracts/Constants.sol": {
-      "lastModificationDate": 1651060617410,
+      "lastModificationDate": 1651196504860,
       "contentHash": "dc72118c07af9d44022a6f0f5bd24f42",
       "sourceName": "contracts/Constants.sol",
       "solcConfig": {
@@ -153,7 +153,7 @@
       ]
     },
     "/home/caleb/fei-protocol-core/contracts/utils/RateLimited.sol": {
-      "lastModificationDate": 1651060617410,
+      "lastModificationDate": 1651196504870,
       "contentHash": "93017779d0e8264477127ec3e25b6bd0",
       "sourceName": "contracts/utils/RateLimited.sol",
       "solcConfig": {
@@ -298,7 +298,7 @@
       ]
     },
     "/home/caleb/fei-protocol-core/contracts/refs/CoreRef.sol": {
-      "lastModificationDate": 1651119315480,
+      "lastModificationDate": 1651196504870,
       "contentHash": "8c102f50cd75f1dfe43d81e53d66b2e2",
       "sourceName": "contracts/refs/CoreRef.sol",
       "solcConfig": {
@@ -1078,7 +1078,7 @@
       ]
     },
     "/home/caleb/fei-protocol-core/contracts/test/unit/Fei.t.sol": {
-      "lastModificationDate": 1651119315500,
+      "lastModificationDate": 1651196504870,
       "contentHash": "c45de6b4102572580216108108eeb0ce",
       "sourceName": "contracts/test/unit/Fei.t.sol",
       "solcConfig": {
@@ -1237,7 +1237,7 @@
       ]
     },
     "/home/caleb/fei-protocol-core/contracts/test/utils/DSTest.sol": {
-      "lastModificationDate": 1651060617410,
+      "lastModificationDate": 1651196504870,
       "contentHash": "4beb4825e39f21061d27f31bae54e973",
       "sourceName": "contracts/test/utils/DSTest.sol",
       "solcConfig": {
@@ -1274,7 +1274,7 @@
       ]
     },
     "/home/caleb/fei-protocol-core/contracts/test/utils/Fixtures.sol": {
-      "lastModificationDate": 1651119315480,
+      "lastModificationDate": 1651196504870,
       "contentHash": "600411255ddc192aa9bea1cabad137c3",
       "sourceName": "contracts/test/utils/Fixtures.sol",
       "solcConfig": {
@@ -1717,7 +1717,7 @@
       ]
     },
     "/home/caleb/fei-protocol-core/contracts/utils/Deviation.sol": {
-      "lastModificationDate": 1651060617410,
+      "lastModificationDate": 1651196504870,
       "contentHash": "d077d44afc92da26d5541629ab320e61",
       "sourceName": "contracts/utils/Deviation.sol",
       "solcConfig": {
@@ -1790,7 +1790,7 @@
       ]
     },
     "/home/caleb/fei-protocol-core/contracts/test/unit/NonCustodialPSM.t.sol": {
-      "lastModificationDate": 1651119290200,
+      "lastModificationDate": 1651196504870,
       "contentHash": "9e5e7987fe7ae9f56f14dc91a149f2aa",
       "sourceName": "contracts/test/unit/NonCustodialPSM.t.sol",
       "solcConfig": {
@@ -1991,7 +1991,7 @@
       ]
     },
     "/home/caleb/fei-protocol-core/contracts/peg/NonCustodialPSM.sol": {
-      "lastModificationDate": 1651060617410,
+      "lastModificationDate": 1651196504870,
       "contentHash": "416f1b33858261f89f96cd03755a4cec",
       "sourceName": "contracts/peg/NonCustodialPSM.sol",
       "solcConfig": {
@@ -2224,8 +2224,8 @@
       ]
     },
     "/home/caleb/fei-protocol-core/contracts/core/TribeRoles.sol": {
-      "lastModificationDate": 1651119315480,
-      "contentHash": "61c6dad7bbb084bfb888a01a9a7660c1",
+      "lastModificationDate": 1651742826860,
+      "contentHash": "ce99f75f5984832ca52ce856ac111002",
       "sourceName": "contracts/core/TribeRoles.sol",
       "solcConfig": {
         "version": "0.8.10",
@@ -2298,7 +2298,7 @@
       ]
     },
     "/home/caleb/fei-protocol-core/contracts/peg/INonCustodialPSM.sol": {
-      "lastModificationDate": 1651060617410,
+      "lastModificationDate": 1651196504870,
       "contentHash": "aba53704305659abe65d0f77b1c972e2",
       "sourceName": "contracts/peg/INonCustodialPSM.sol",
       "solcConfig": {
@@ -2337,7 +2337,7 @@
       ]
     },
     "/home/caleb/fei-protocol-core/contracts/utils/GlobalRateLimitedMinter.sol": {
-      "lastModificationDate": 1651060617410,
+      "lastModificationDate": 1651196504870,
       "contentHash": "076e03fcc1ab67d45cec0039b4b3fa60",
       "sourceName": "contracts/utils/GlobalRateLimitedMinter.sol",
       "solcConfig": {
@@ -2487,7 +2487,7 @@
       ]
     },
     "/home/caleb/fei-protocol-core/contracts/utils/MultiRateLimited.sol": {
-      "lastModificationDate": 1651060617410,
+      "lastModificationDate": 1651196504870,
       "contentHash": "e716ef5854017556a03e36e5d6b15cf8",
       "sourceName": "contracts/utils/MultiRateLimited.sol",
       "solcConfig": {
@@ -2529,7 +2529,7 @@
       ]
     },
     "/home/caleb/fei-protocol-core/contracts/utils/IGlobalRateLimitedMinter.sol": {
-      "lastModificationDate": 1651060617410,
+      "lastModificationDate": 1651196504870,
       "contentHash": "11eae3af65a80a0381428a71edcde945",
       "sourceName": "contracts/utils/IGlobalRateLimitedMinter.sol",
       "solcConfig": {
@@ -2566,7 +2566,7 @@
       ]
     },
     "/home/caleb/fei-protocol-core/contracts/utils/IMultiRateLimited.sol": {
-      "lastModificationDate": 1651060617410,
+      "lastModificationDate": 1651196504870,
       "contentHash": "8b526da918254ff4285a8bae3fbc836b",
       "sourceName": "contracts/utils/IMultiRateLimited.sol",
       "solcConfig": {
@@ -2601,7 +2601,7 @@
       ]
     },
     "/home/caleb/fei-protocol-core/contracts/test/unit/governance/PodExecutor.t.sol": {
-      "lastModificationDate": 1651119315480,
+      "lastModificationDate": 1651196504870,
       "contentHash": "030312bc27cbd2f808b9f88807cb9c99",
       "sourceName": "contracts/test/unit/governance/PodExecutor.t.sol",
       "solcConfig": {
@@ -2643,7 +2643,7 @@
       ]
     },
     "/home/caleb/fei-protocol-core/contracts/pods/PodExecutor.sol": {
-      "lastModificationDate": 1651119315480,
+      "lastModificationDate": 1651196504870,
       "contentHash": "1ab8c6396ede9e5beb62c69b560ffd69",
       "sourceName": "contracts/pods/PodExecutor.sol",
       "solcConfig": {
@@ -2681,7 +2681,7 @@
       ]
     },
     "/home/caleb/fei-protocol-core/contracts/dao/timelock/ITimelock.sol": {
-      "lastModificationDate": 1651119315480,
+      "lastModificationDate": 1651196504860,
       "contentHash": "c9384352f04382f5b416b26a0b2092c4",
       "sourceName": "contracts/dao/timelock/ITimelock.sol",
       "solcConfig": {
@@ -2716,7 +2716,7 @@
       ]
     },
     "/home/caleb/fei-protocol-core/contracts/test/unit/governance/NopeDAO.t.sol": {
-      "lastModificationDate": 1651119315480,
+      "lastModificationDate": 1651196504870,
       "contentHash": "ebbe3c3514d8cd8303eee14790e86be8",
       "sourceName": "contracts/test/unit/governance/NopeDAO.t.sol",
       "solcConfig": {
@@ -2798,7 +2798,7 @@
       ]
     },
     "/home/caleb/fei-protocol-core/contracts/dao/nopeDAO/NopeDAO.sol": {
-      "lastModificationDate": 1651119315480,
+      "lastModificationDate": 1651196504860,
       "contentHash": "6199e223bf5d5affa816ea891adb4d86",
       "sourceName": "contracts/dao/nopeDAO/NopeDAO.sol",
       "solcConfig": {
@@ -3262,7 +3262,7 @@
       ]
     },
     "/home/caleb/fei-protocol-core/contracts/dao/nopeDAO/GovernorQuickReaction.sol": {
-      "lastModificationDate": 1651119315480,
+      "lastModificationDate": 1651196504860,
       "contentHash": "443d64ee874f19a9c61c6f4e111ded17",
       "sourceName": "contracts/dao/nopeDAO/GovernorQuickReaction.sol",
       "solcConfig": {
@@ -3480,7 +3480,7 @@
       ]
     },
     "/home/caleb/fei-protocol-core/contracts/test/integration/governance/RoleBastion.t.sol": {
-      "lastModificationDate": 1651119315480,
+      "lastModificationDate": 1651196504870,
       "contentHash": "cad320e749896cfaaba91d8c77e46c51",
       "sourceName": "contracts/test/integration/governance/RoleBastion.t.sol",
       "solcConfig": {
@@ -3522,7 +3522,7 @@
       ]
     },
     "/home/caleb/fei-protocol-core/contracts/pods/RoleBastion.sol": {
-      "lastModificationDate": 1651119315480,
+      "lastModificationDate": 1651196504870,
       "contentHash": "86e4a1a68d46d3b8d29af2ca09987525",
       "sourceName": "contracts/pods/RoleBastion.sol",
       "solcConfig": {
@@ -3969,7 +3969,7 @@
       ]
     },
     "/home/caleb/fei-protocol-core/contracts/peg/PegStabilityModule.sol": {
-      "lastModificationDate": 1651060617410,
+      "lastModificationDate": 1651196504870,
       "contentHash": "37bb502c41dad0a9ab9be9e9185cd6a8",
       "sourceName": "contracts/peg/PegStabilityModule.sol",
       "solcConfig": {
@@ -5690,7 +5690,7 @@
       ]
     },
     "/home/caleb/fei-protocol-core/contracts/test/integration/fixtures/MainnetAddresses.sol": {
-      "lastModificationDate": 1651119315480,
+      "lastModificationDate": 1651196504870,
       "contentHash": "95aa7a961a0a304647090ba8b48164b4",
       "sourceName": "contracts/test/integration/fixtures/MainnetAddresses.sol",
       "solcConfig": {
@@ -5764,7 +5764,7 @@
       ]
     },
     "/home/caleb/fei-protocol-core/contracts/test/integration/IntegrationTest.t.sol": {
-      "lastModificationDate": 1651119315480,
+      "lastModificationDate": 1651196504870,
       "contentHash": "a40b35331d6189fc754e3244c2e0791c",
       "sourceName": "contracts/test/integration/IntegrationTest.t.sol",
       "solcConfig": {
@@ -5802,7 +5802,7 @@
       ]
     },
     "/home/caleb/fei-protocol-core/contracts/test/integration/governance/GovernanceMetadataRegistry.t.sol": {
-      "lastModificationDate": 1651119315480,
+      "lastModificationDate": 1651196504870,
       "contentHash": "d3d04b304057de4d69eb783766b2e198",
       "sourceName": "contracts/test/integration/governance/GovernanceMetadataRegistry.t.sol",
       "solcConfig": {
@@ -5844,7 +5844,7 @@
       ]
     },
     "/home/caleb/fei-protocol-core/contracts/pods/GovernanceMetadataRegistry.sol": {
-      "lastModificationDate": 1651119315480,
+      "lastModificationDate": 1651196504870,
       "contentHash": "1019b82919bec2855ff0648a899515d7",
       "sourceName": "contracts/pods/GovernanceMetadataRegistry.sol",
       "solcConfig": {
@@ -5882,7 +5882,7 @@
       ]
     },
     "/home/caleb/fei-protocol-core/contracts/test/integration/fixtures/Gnosis.sol": {
-      "lastModificationDate": 1651119315480,
+      "lastModificationDate": 1651196504870,
       "contentHash": "2c0a8c8995699c9711368cbdcc568d25",
       "sourceName": "contracts/test/integration/fixtures/Gnosis.sol",
       "solcConfig": {
@@ -5918,7 +5918,7 @@
       "artifacts": []
     },
     "/home/caleb/fei-protocol-core/contracts/pods/interfaces/IGnosisSafe.sol": {
-      "lastModificationDate": 1651119315480,
+      "lastModificationDate": 1651196504870,
       "contentHash": "5b94f980c874f387e96e7f72636527d8",
       "sourceName": "contracts/pods/interfaces/IGnosisSafe.sol",
       "solcConfig": {
@@ -6928,7 +6928,7 @@
       ]
     },
     "/home/caleb/fei-protocol-core/contracts/dao/governor/FeiDAO.sol": {
-      "lastModificationDate": 1651119315480,
+      "lastModificationDate": 1651196504860,
       "contentHash": "29ef01e2ea8bbaa0a75e927d6e10b5bd",
       "sourceName": "contracts/dao/governor/FeiDAO.sol",
       "solcConfig": {
@@ -7006,8 +7006,8 @@
       ]
     },
     "/home/caleb/fei-protocol-core/contracts/pcv/PCVGuardian.sol": {
-      "lastModificationDate": 1651053026300,
-      "contentHash": "e1ef5be19bba715c0f39d9fe05532458",
+      "lastModificationDate": 1651742826860,
+      "contentHash": "1703365b2d728ca1ca8e4b5c1dd4caee",
       "sourceName": "contracts/pcv/PCVGuardian.sol",
       "solcConfig": {
         "version": "0.8.10",
@@ -7037,7 +7037,8 @@
         "../refs/CoreRef.sol",
         "./IPCVGuardian.sol",
         "./IPCVDeposit.sol",
-        "../libs/CoreRefPauseableLib.sol"
+        "../libs/CoreRefPauseableLib.sol",
+        "../core/TribeRoles.sol"
       ],
       "versionPragmas": [
         "^0.8.4"
@@ -7318,7 +7319,7 @@
       ]
     },
     "/home/caleb/fei-protocol-core/contracts/mock/MockMinter.sol": {
-      "lastModificationDate": 1651060617410,
+      "lastModificationDate": 1651196504870,
       "contentHash": "5e8ed487b5a99ac6d8df6784642025df",
       "sourceName": "contracts/mock/MockMinter.sol",
       "solcConfig": {
@@ -10557,7 +10558,7 @@
       ]
     },
     "/home/caleb/fei-protocol-core/contracts/pods/interfaces/IPodAdminGateway.sol": {
-      "lastModificationDate": 1651119315480,
+      "lastModificationDate": 1651196504870,
       "contentHash": "66e8b4b87928d5633ad223069baea43e",
       "sourceName": "contracts/pods/interfaces/IPodAdminGateway.sol",
       "solcConfig": {
@@ -12033,7 +12034,7 @@
       ]
     },
     "/home/caleb/fei-protocol-core/contracts/peg/PriceBoundPSM.sol": {
-      "lastModificationDate": 1651060617410,
+      "lastModificationDate": 1651196504870,
       "contentHash": "2c724c3f59c4a134c4801f9701f7a52f",
       "sourceName": "contracts/peg/PriceBoundPSM.sol",
       "solcConfig": {

@@ -34,7 +34,6 @@ jobs:
           key: solcache-{{ checksum "cache/solidity-files-cache.json" }}
           paths:
             - artifacts
-            - cache/solidity-files-cache.json
             - types/contracts
       - restore_cache: # Restore the hardhat network fork cache if the hardhad-config hasn't changed
           key: hardhat-config-{{ checksum "hardhat.config.ts" }}
