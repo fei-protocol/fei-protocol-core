@@ -15,6 +15,9 @@ jobs:
       - restore_cache:
           key: package-cache-{{ checksum "package-lock.json" }}
       - run:
+          name: Set npm cache
+          command: npm set cache .npm
+      - run:
           name: Install dependencies
           command: npm ci
       - save_cache:
@@ -22,6 +25,7 @@ jobs:
           paths: 
             - package-lock.json
             - node_modules
+            - .npm
       - restore_cache:
           key: solcache-{{ checksum "cache/solidity-files-cache.json" }}
       - run:
