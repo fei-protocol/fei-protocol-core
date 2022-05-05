@@ -12,19 +12,16 @@ interface MainnetContractsJSON {
 }
 
 export async function getAllContracts(): Promise<MainnetContracts> {
-  const contracts: MainnetContracts = {} as MainnetContracts;
   const addresses = mainnetAddresses as MainnetContractsJSON;
+  const contracts = await Promise.all(
+    Object.entries(addresses)
+      .filter((entry) => entry[1].artifactName != 'unknown')
+      .map(async (entry) => {
+        return [entry[0], await ethers.getContractAt(entry[1].artifactName, entry[1].address)];
+      })
+  );
 
-  for (const mainnetAddressEntryName in addresses) {
-    const mainnetAddressEntry = addresses[mainnetAddressEntryName];
-    const artifactName = mainnetAddressEntry.artifactName;
-    const address = mainnetAddressEntry.address;
-    if (artifactName == 'unknown') continue;
-    const contract = await ethers.getContractAt(artifactName, address);
-    contracts[mainnetAddressEntryName] = contract;
-  }
-
-  return contracts;
+  return contracts as unknown as MainnetContracts;
 }
 
 export function getAllContractAddresses(): NamedAddresses {
