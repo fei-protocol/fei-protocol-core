@@ -97,7 +97,7 @@ describe('e2e-dao', function () {
 
       // advance to end of voting period
       const endBlock = (await feiDAO.proposals(pid)).endBlock;
-      await time.advanceBlockTo(endBlock.toString());
+      await time.advanceBlockTo(endBlock.toNumber());
 
       // queue
       await feiDAO['queue(address[],uint256[],bytes[],bytes32)'](

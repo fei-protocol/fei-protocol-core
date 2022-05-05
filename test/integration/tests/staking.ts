@@ -15,6 +15,7 @@ import { expectApprox, getImpersonatedSigner, resetFork, time } from '@test/help
 import proposals from '@test/integration/proposals_config';
 import { TestEndtoEndCoordinator } from '../setup';
 import { forceEth } from '@test/integration/setup/utils';
+import { BN } from 'ethereumjs-util';
 
 const toBN = ethers.BigNumber.from;
 
@@ -215,9 +216,9 @@ describe('e2e-staking', function () {
         const startingTribeBalance = await tribe.balanceOf(rariRewardsDistributorDelegator);
 
         const blocksToAdvance = 10;
-        for (let i = 0; i < blocksToAdvance; i++) {
-          await time.advanceBlock();
-        }
+        await hre.network.provider.send('hardhat_mine', [
+          ethers.utils.hexStripZeros(BigNumber.from(blocksToAdvance).toHexString())
+        ]);
 
         /// add 1 as calling the harvest is another block where rewards are received
         const pendingTribe = toBN(blocksToAdvance + 1)
