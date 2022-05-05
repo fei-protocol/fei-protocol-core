@@ -244,7 +244,7 @@ const time = {
       throw Error(`Target block #(${target}) is lower than current block #(${currentBlock})`);
 
     const diff = target.sub(currentBlock);
-    await hre.network.provider.send('hardhat_mine', [diff.toString()]);
+    await hre.network.provider.send('hardhat_mine', [diff.toHexString()]);
   },
 
   advanceBlock: async (): Promise<void> => {
