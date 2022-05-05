@@ -6,6 +6,7 @@ import { BigNumber, BigNumberish, Contract, Signer } from 'ethers';
 import { NamedAddresses } from '@custom-types/types';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import EthersAdapter from '@gnosis.pm/safe-ethers-lib';
+import { BN } from 'ethereumjs-util';
 import Safe from '@gnosis.pm/safe-core-sdk';
 
 // use default BigNumber
@@ -244,7 +245,7 @@ const time = {
       throw Error(`Target block #(${target}) is lower than current block #(${currentBlock})`);
 
     const diff = target.sub(currentBlock);
-    await hre.network.provider.send('hardhat_mine', [diff.toHexString()]);
+    await hre.network.provider.send('hardhat_mine', [new BN(diff.toNumber())]);
   },
 
   advanceBlock: async (): Promise<void> => {
