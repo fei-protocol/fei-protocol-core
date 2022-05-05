@@ -1,6 +1,4 @@
 version: 2.1
-orbs:
-  discord: antonioned/discord@0.1.0
 
 jobs:
   build:
@@ -10,37 +8,34 @@ jobs:
     resource_class: xlarge
     steps:
       - checkout 
-      - run:
-          name: 'Update NPM'
-          command: sudo npm install -g npm@8.5.3
-      - run:
-          name: 'Set caching variables'
-          command: |
-            LAST_SUCCESSFUL_BUILD_URL="https://circleci.com/api/v1.1/project/github/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/tree/master?filter=successful&limit=1"
-            LAST_SUCCESSFUL_COMMIT=`curl -Ss -u "$CIRCLE_TOKEN:" $LAST_SUCCESSFUL_BUILD_URL | jq -r '.[0]["vcs_revision"]'`
-            echo $LAST_SUCCESSFUL_COMMIT > /tmp/last-successful-commit
-            echo $CIRCLE_SHA1 > /tmp/current-commit
       - restore_cache:
-          keys:
-            - build-cache-{{ .Branch }}-{{ checksum "/tmp/last-successful-commit" }}
+          key: package-cache-{{ checksum "package-lock.json" }}
       - run:
           name: Install dependencies
-          command: npm install
+          command: npm ci
+      - save_cache:
+          key: package-cache-{{ checksum "package-lock.json" }}
+          paths: 
+            - package-lock.json
+            - node_modules
+      - restore_cache:
+          key: solcache-{{ checksum "cache/solidity-files-cache.json" }}
+          paths:
+            - artifacts 
+            - cache/solidity-files-cache.json
       - run:
           name: Compile contracts
           command: npm run compile:hardhat
       - save_cache:
-          key: repo-{{ .Environment.CIRCLE_SHA1 }}
+          key: solcache-{{ checksum "cache/solidity-files-cache.json" }}
           paths:
-            - ~/repo
+            - artifacts
+            - cache/solidity-files-cache.json
   lint:
     working_directory: ~/repo
     docker:
       - image: cimg/node:16.14
     steps:
-      - restore_cache:
-          keys:
-            - repo-{{ .Environment.CIRCLE_SHA1 }}
       - run:
           name: Run linter
           command: npm run lint
@@ -51,9 +46,6 @@ jobs:
     parallelism: 16
     resource_class: large
     steps:
-      - restore_cache:
-          keys:
-            - repo-{{ .Environment.CIRCLE_SHA1 }}
       - run:
           name: Run tests
           command: |
@@ -66,14 +58,7 @@ jobs:
 
   test-forge:
     working_directory: ~/repo
-    docker:
-      - image: cimg/node:16.14
-    resource_class: xlarge
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - repo-{{ .Environment.CIRCLE_SHA1 }}
+    docker: - image: cimg/node:16.14 resource_class: xlarge steps: - checkout - restore_cache: keys: - repo-{{ .Environment.CIRCLE_SHA1 }}
       - run:
           name: Setup env
           command: echo "export PATH=$PATH:$(pwd)/.circleci" >> /home/circleci/.bashrc
