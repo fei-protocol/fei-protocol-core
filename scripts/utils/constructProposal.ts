@@ -10,12 +10,25 @@ import { InternalProposalState } from '@idle-finance/hardhat-proposals-plugin/di
 import { HardhatPluginError } from 'hardhat/plugins';
 import { PACKAGE_NAME, errors } from '@idle-finance/hardhat-proposals-plugin/dist/src/constants';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
+import { time } from '@test/helpers';
 
 export class SigmaProposal extends AlphaProposal {
   protected async mineBlocks(blocks: any) {
     const blocksToMine = BigNumber.from(blocks);
     await hre.network.provider.send('hardhat_mine', [utils.hexStripZeros(blocksToMine.toHexString())]);
-    console.log('Mined ' + blocksToMine + ' blocks via SigmaProposalBuilder.');
+    console.log(
+      `Mined ${blocksToMine.toString()} blocks via SigmaProposalBuilder. (kryptoklob just saved you ${
+        blocksToMine.toNumber() / 10
+      } seconds of your life.)`
+    );
+  }
+
+  protected async mineBlock(timestamp?: number) {
+    if (timestamp) {
+      await time.increaseTo(timestamp);
+    } else {
+      await hre.network.provider.send('evm_mine');
+    }
   }
 
   async simulate(fullSimulation = false, force?: boolean) {
