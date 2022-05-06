@@ -52,8 +52,17 @@ const proposals: ProposalsConfigMap = {
     totalValue: 0, // amount of ETH to send to DAO execution
     proposal: oa_cr_fix, // full proposal file, imported from '@proposals/description/fip_xx.ts'
     proposalId: '',
-    affectedContractSignoff: [],
-    deprecatedContractSignoff: [],
+    affectedContractSignoff: ['collateralizationOracle', 'balancerLensBpt30Fei70WethFixed'],
+    deprecatedContractSignoff: [
+      'balancerLensBpt30Fei70Weth',
+      'rariPool8FeiPCVDepositWrapper',
+      'rariPool8DaiPCVDeposit',
+      'rariPool8LusdPCVDeposit',
+      'rariPool18FeiPCVDepositWrapper',
+      'rariPool27FeiPCVDepositWrapper',
+      'rariPool146EthPCVDeposit',
+      'convexPoolPCVDepositWrapper'
+    ],
     category: ProposalCategory.OA
   }
 };

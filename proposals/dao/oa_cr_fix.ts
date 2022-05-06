@@ -41,11 +41,12 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
   console.log(`Setup of ${fipNumber} : reading CR oracle...`);
 
-  // make sure oracle of B.AMM is fresh
-  // set Chainlink ETHUSD to a fixed 3,000$ value
+  // make sure ETH oracle is fresh (for B.AMM not to revert, etc)
+  // Read Chainlink ETHUSD price & override chainlink storage to make it a fresh value
   const ethPrice = (await contracts.chainlinkEthUsdOracleWrapper.read())[0].toString() / 1e10;
   await overwriteChainlinkAggregator(addresses.chainlinkEthUsdOracle, Math.round(ethPrice), '8');
 
+  // read pcvStats
   pcvStatsBefore = await contracts.collateralizationOracle.pcvStats();
 };
 
@@ -101,7 +102,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(resistantFei).to.be.at.least(17e6);
   expect(resistantFei).to.be.at.most(20e6);
 
-  // Check pcvStats
+  // display pcvStats
   console.log('----------------------------------------------------');
   console.log(' pcvStatsBefore.protocolControlledValue [M]e18 ', pcvStatsBefore.protocolControlledValue / 1e24);
   console.log(' pcvStatsBefore.userCirculatingFei      [M]e18 ', pcvStatsBefore.userCirculatingFei / 1e24);

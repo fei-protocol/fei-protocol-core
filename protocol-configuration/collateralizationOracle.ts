@@ -1,13 +1,10 @@
 const collateralizationAddresses = {
   fei: [
     'feiOATimelockWrapper',
-    'rariPool8FeiPCVDepositWrapper',
     'rariPool6FeiPCVDepositWrapper',
     'rariPool19FeiPCVDepositWrapper',
     'rariPool24FeiPCVDepositWrapper',
     'rariPool25FeiPCVDepositWrapper',
-    'rariPool27FeiPCVDepositWrapper',
-    'rariPool18FeiPCVDepositWrapper',
     'rariPool90FeiPCVDepositWrapper',
     'aaveFeiPCVDepositWrapper',
     'rariPool79FeiPCVDepositWrapper',
@@ -16,18 +13,11 @@ const collateralizationAddresses = {
     'rariPool128FeiPCVDepositWrapper',
     'rariPool22FeiPCVDepositWrapper',
     'feiBuybackLensNoFee',
-    'convexPoolPCVDepositWrapper',
     'compoundPCVDepositWrapper',
     'turboFusePCVDeposit'
   ],
-  lusd: [
-    'liquityFusePoolLusdPCVDeposit',
-    'rariPool7LusdPCVDeposit',
-    'bammDeposit',
-    'lusdPSM',
-    'rariPool8LusdPCVDeposit'
-  ],
-  dai: ['compoundDaiPCVDepositWrapper', 'daiFixedPricePSM', 'rariPool8DaiPCVDeposit'],
+  lusd: ['liquityFusePoolLusdPCVDeposit', 'rariPool7LusdPCVDeposit', 'bammDeposit', 'lusdPSM'],
+  dai: ['compoundDaiPCVDepositWrapper', 'daiFixedPricePSM'],
   usd: ['namedStaticPCVDepositWrapper', 'd3poolCurvePCVDeposit', 'd3poolConvexPCVDeposit'],
   bal: ['balancerDepositBalWeth', 'balancerLensVeBalBal'],
   cream: ['creamDepositWrapper'],
@@ -38,7 +28,6 @@ const collateralizationAddresses = {
     'uniswapPCVDeposit',
     'ethTokemakPCVDeposit',
     'ethPSM',
-    'rariPool146EthPCVDeposit',
     'wethDepositWrapper',
     'balancerDepositFeiWeth',
     'balancerLensBpt30Fei70WethFixed',
