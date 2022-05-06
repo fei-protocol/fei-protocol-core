@@ -1,15 +1,19 @@
 import hre, { proposals } from 'hardhat';
 import { MainnetContracts, NamedAddresses, ProposalDescription } from '@custom-types/types';
 import format from 'string-template';
-import { AlphaProposal } from '@idle-finance/hardhat-proposals-plugin/dist/src/proposals/compound-alpha';
+import {
+  AlphaProposal,
+  AlphaProposalBuilder
+} from '@idle-finance/hardhat-proposals-plugin/dist/src/proposals/compound-alpha';
 import { BigNumber } from 'ethers';
 import { InternalProposalState } from '@idle-finance/hardhat-proposals-plugin/dist/src/proposals/proposal';
 import { HardhatPluginError } from 'hardhat/plugins';
 import { PACKAGE_NAME, errors } from '@idle-finance/hardhat-proposals-plugin/dist/src/constants';
 import { BN } from 'ethereumjs-util';
+import { HardhatRuntimeEnvironment } from 'hardhat/types';
 
 export class SigmaProposal extends AlphaProposal {
-  async mineBlocks(blocks: any) {
+  protected async mineBlocks(blocks: any) {
     const blocksToMine = BigNumber.from(blocks).toNumber();
     await hre.network.provider.send('hardhat_mine', [new BN(blocksToMine)]);
     console.log('Mined ' + blocksToMine + ' blocks via SigmaProposalBuilder.');
@@ -27,8 +31,20 @@ export class SigmaProposal extends AlphaProposal {
   }
 }
 
-proposals.proposals.alpha.prototype.mineBlocks = SigmaProposal.prototype.mineBlocks;
-proposals.proposals.alpha.prototype.simulate = SigmaProposal.prototype.simulate;
+export class SigmaProposalBuilder extends AlphaProposalBuilder {
+  proposal: SigmaProposal;
+
+  constructor(hre: HardhatRuntimeEnvironment, governor?: any, votingToken?: any, maxActions = 50) {
+    super(hre);
+
+    this.maxActions = maxActions;
+    this.proposal = new SigmaProposal(hre, governor, votingToken);
+  }
+
+  build() {
+    return this.proposal;
+  }
+}
 
 /**
  * Constucts a hardhat proposal object
@@ -40,12 +56,16 @@ export default async function constructProposal(
   contracts: MainnetContracts,
   contractAddresses: NamedAddresses,
   logging = false
-): Promise<AlphaProposal> {
+): Promise<SigmaProposal> {
   logging && console.log(`Constructing proposal...`);
 
   const proposalDescription = proposalInfo.description;
 
-  const proposalBuilder = proposals.builders.alpha();
+  const proposalBuilder = new SigmaProposalBuilder(
+    hre,
+    hre.config.proposals.governor,
+    hre.config.proposals.votingToken
+  );
   proposalBuilder.maxActions = 50;
 
   for (let i = 0; i < proposalInfo.commands.length; i += 1) {
@@ -60,7 +80,6 @@ export default async function constructProposal(
 
   proposalBuilder.setDescription(`${proposalInfo.title}\n${proposalDescription.toString()}`); // Set proposal description
   const proposal = proposalBuilder.build();
-  proposal.simulate = new SigmaProposal(hre).simulate;
   logging && console.log(await proposal.printProposalInfo());
   return proposal;
 }
