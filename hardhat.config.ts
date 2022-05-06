@@ -115,6 +115,8 @@ export default {
   },
 
   mocha: {
+    parallel: true,
+    jobs: 16,
     timeout: 1000000,
     reporter: useJSONTestReporter ? 'mocha-multi-reporters' : undefined,
     reporterOptions: useJSONTestReporter
