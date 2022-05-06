@@ -5,17 +5,16 @@ import {
   AlphaProposal,
   AlphaProposalBuilder
 } from '@idle-finance/hardhat-proposals-plugin/dist/src/proposals/compound-alpha';
-import { BigNumber } from 'ethers';
+import { BigNumber, utils } from 'ethers';
 import { InternalProposalState } from '@idle-finance/hardhat-proposals-plugin/dist/src/proposals/proposal';
 import { HardhatPluginError } from 'hardhat/plugins';
 import { PACKAGE_NAME, errors } from '@idle-finance/hardhat-proposals-plugin/dist/src/constants';
-import { BN } from 'ethereumjs-util';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 
 export class SigmaProposal extends AlphaProposal {
   protected async mineBlocks(blocks: any) {
-    const blocksToMine = BigNumber.from(blocks).toNumber();
-    await hre.network.provider.send('hardhat_mine', [new BN(blocksToMine)]);
+    const blocksToMine = BigNumber.from(blocks);
+    await hre.network.provider.send('hardhat_mine', [utils.hexStripZeros(blocksToMine.toHexString())]);
     console.log('Mined ' + blocksToMine + ' blocks via SigmaProposalBuilder.');
   }
 
