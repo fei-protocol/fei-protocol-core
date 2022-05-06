@@ -109,7 +109,7 @@ async function latestTime(): Promise<number> {
 
 async function mine(): Promise<void> {
   await hre.network.provider.request({
-    method: 'evm_mine'
+    method: 'hardhat_mine'
   });
 }
 
