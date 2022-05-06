@@ -98,7 +98,6 @@ jobs:
   e2e-test:
     working_directory: ~/repo
     executor: nodeimage
-    parallelism: 20
     steps:
       - attach_workspace:
           at: ./
@@ -107,8 +106,7 @@ jobs:
       - run:
           name: Run end-to-end tests
           command: |
-            circleci tests glob "test/integration/tests/*.ts" | circleci tests split --split-by=filesize > /tmp/tests-to-run
-            npm run test:e2e $(cat /tmp/tests-to-run)
+            npm run test:e2e
       - store_test_results:
           path: test-results
       - store_artifacts:
