@@ -1,17 +1,34 @@
 import hre, { proposals } from 'hardhat';
 import { MainnetContracts, NamedAddresses, ProposalDescription } from '@custom-types/types';
 import format from 'string-template';
-import { AlphaProposal } from '@idle-finance/hardhat-proposals-plugin/dist/src/proposals/compound-alpha';
-import { BigNumber } from 'ethers';
+import {
+  AlphaProposal,
+  AlphaProposalBuilder
+} from '@idle-finance/hardhat-proposals-plugin/dist/src/proposals/compound-alpha';
+import { BigNumber, utils } from 'ethers';
 import { InternalProposalState } from '@idle-finance/hardhat-proposals-plugin/dist/src/proposals/proposal';
 import { HardhatPluginError } from 'hardhat/plugins';
 import { PACKAGE_NAME, errors } from '@idle-finance/hardhat-proposals-plugin/dist/src/constants';
-import { BN } from 'ethereumjs-util';
+import { HardhatRuntimeEnvironment } from 'hardhat/types';
+import { time } from '@test/helpers';
 
 export class SigmaProposal extends AlphaProposal {
   protected async mineBlocks(blocks: any) {
-    const blocksToMine = BigNumber.from(blocks).toNumber();
-    await hre.network.provider.send('hardhat_mine', [new BN(blocksToMine)]);
+    const blocksToMine = BigNumber.from(blocks);
+    await hre.network.provider.send('hardhat_mine', [utils.hexStripZeros(blocksToMine.toHexString())]);
+    console.log(
+      `Mined ${blocksToMine.toString()} blocks via SigmaProposalBuilder. (kryptoklob just saved you ${
+        blocksToMine.toNumber() / 10
+      } seconds of your life.)`
+    );
+  }
+
+  protected async mineBlock(timestamp?: number) {
+    if (timestamp) {
+      await time.increaseTo(timestamp);
+    } else {
+      await hre.network.provider.send('evm_mine');
+    }
   }
 
   async simulate(fullSimulation = false, force?: boolean) {
@@ -26,6 +43,21 @@ export class SigmaProposal extends AlphaProposal {
   }
 }
 
+export class SigmaProposalBuilder extends AlphaProposalBuilder {
+  proposal: SigmaProposal;
+
+  constructor(hre: HardhatRuntimeEnvironment, governor?: any, votingToken?: any, maxActions = 50) {
+    super(hre);
+
+    this.maxActions = maxActions;
+    this.proposal = new SigmaProposal(hre, governor, votingToken);
+  }
+
+  build() {
+    return this.proposal;
+  }
+}
+
 /**
  * Constucts a hardhat proposal object
  * https://github.com/Idle-Finance/hardhat-proposals-plugin/blob/main/src/proposals/proposal.ts
@@ -36,12 +68,16 @@ export default async function constructProposal(
   contracts: MainnetContracts,
   contractAddresses: NamedAddresses,
   logging = false
-): Promise<AlphaProposal> {
+): Promise<SigmaProposal> {
   logging && console.log(`Constructing proposal...`);
 
   const proposalDescription = proposalInfo.description;
 
-  const proposalBuilder = proposals.builders.alpha();
+  const proposalBuilder = new SigmaProposalBuilder(
+    hre,
+    hre.config.proposals.governor,
+    hre.config.proposals.votingToken
+  );
   proposalBuilder.maxActions = 50;
 
   for (let i = 0; i < proposalInfo.commands.length; i += 1) {
@@ -55,9 +91,7 @@ export default async function constructProposal(
   }
 
   proposalBuilder.setDescription(`${proposalInfo.title}\n${proposalDescription.toString()}`); // Set proposal description
-
   const proposal = proposalBuilder.build();
-  proposal.simulate = new SigmaProposal(hre).simulate;
   logging && console.log(await proposal.printProposalInfo());
   return proposal;
 }

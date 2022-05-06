@@ -20,7 +20,6 @@ describe('e2e-dao', function () {
   before(async () => {
     chai.use(CBN(ethers.BigNumber));
     chai.use(solidity);
-    await resetFork();
   });
 
   before(async function () {

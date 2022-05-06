@@ -21,7 +21,6 @@ describe('e2e-backstop', function () {
   before(async () => {
     chai.use(CBN(ethers.BigNumber));
     chai.use(solidity);
-    await resetFork();
   });
 
   before(async function () {

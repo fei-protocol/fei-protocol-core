@@ -21,7 +21,7 @@ const proposals: ProposalsConfigMap = {
     deploy: false, // deploy flag for whether to run deploy action during e2e tests or use mainnet state
     totalValue: 0, // amount of ETH to send to DAO execution
     proposal: fip_82b,
-    proposalId: '',
+    proposalId: '100114570810112501972314307970004446869175784368342294400079771147860837319881',
     affectedContractSignoff: [
       'core',
       'fuseGuardian',
