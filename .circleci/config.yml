@@ -38,7 +38,7 @@ jobs:
             - artifacts
             - types/contracts
             - cache/solidity-files-cache.json
-      - restore_cache: # Restore the hardhat network fork cache if the hardhad-config hasn't changed
+      - restore_cache: # Restore the hardhat network fork cache if the hardhat-config hasn't changed
           key: hardhat-config-{{ checksum "hardhat.config.ts" }}
       - persist_to_workspace:
           root: ~/repo
@@ -66,9 +66,9 @@ jobs:
             circleci tests glob "test/unit/**/*.ts" | circleci tests split --split-by=filesize > /tmp/tests-to-run
             npm run test:hardhat $(cat /tmp/tests-to-run)
       - store_test_results:
-            path: test-results
+          path: test-results
       - store_artifacts:
-            path: test-results
+          path: test-results
 
   test-forge:
     working_directory: ~/repo
@@ -102,15 +102,17 @@ jobs:
     steps:
       - attach_workspace:
           at: ./
+      - restore_cache:
+          key: fork-cache-{{ checksum "hardhat.config.ts" }}
       - run:
           name: Run end-to-end tests
           command: |
             circleci tests glob "test/integration/tests/*.ts" | circleci tests split --split-by=timings --timings-type=filename > /tmp/tests-to-run
             npm run test:e2e $(cat /tmp/tests-to-run)
       - store_test_results:
-            path: test-results
+          path: test-results
       - store_artifacts:
-            path: test-results
+          path: test-results
       - persist_to_workspace:
           root: ~/repo
           paths:
