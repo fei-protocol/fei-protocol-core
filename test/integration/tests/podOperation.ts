@@ -42,7 +42,7 @@ describe('Pod operation and veto', function () {
     chai.use(solidity);
   });
 
-  beforeEach(async function () {
+  before(async function () {
     // Setup test environment and get contracts
     const version = 1;
     // Set deploy address to Tom's address. This has Orca SHIP
