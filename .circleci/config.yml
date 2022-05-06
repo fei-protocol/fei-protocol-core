@@ -110,7 +110,7 @@ jobs:
             path: test-results
       - store_artifacts:
             path: test-results
-			- persist_to_worksapce:
+      - persist_to_workspace:
           root: ~/repo
           paths:
             - ./cache/hardhat-network-fork
@@ -120,7 +120,7 @@ jobs:
     executor: nodeimage
     steps:
       - attach_workspace:
-        at: ./
+          at: ./
       - save_cache: # Save the solidity files cache, the compiled artifacts, and the generated types
           key: fork-cache-{{ checksum "hardhat.config.ts" }}
           paths:
@@ -143,5 +143,5 @@ workflows:
           requires:
             - build
       - save-network-fork-cache:
-          require:
+          requires:
             - e2e-test
