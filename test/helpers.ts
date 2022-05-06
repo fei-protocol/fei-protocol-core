@@ -222,9 +222,7 @@ const time = {
 
     if (durationBN.lt(ethers.constants.Zero)) throw Error(`Cannot increase time by a negative amount (${duration})`);
 
-    await hre.network.provider.send('evm_increaseTime', [durationBN.toNumber()]);
-
-    await hre.network.provider.send('evm_mine');
+    await hre.network.provider.send('hardhat_mine', ['0x1', ethers.utils.hexStripZeros(durationBN.toHexString())]);
   },
 
   increaseTo: async (target: number | string | BigNumberish): Promise<void> => {
@@ -249,7 +247,7 @@ const time = {
   },
 
   advanceBlock: async (): Promise<void> => {
-    await hre.network.provider.send('evm_mine');
+    await hre.network.provider.send('hardhat_mine');
   }
 };
 
