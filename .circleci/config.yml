@@ -56,15 +56,13 @@ jobs:
   test:
     working_directory: ~/repo
     executor: nodeimage
-    parallelism: 16
     steps:
       - attach_workspace:
           at: ./
       - run:
           name: Run tests
           command: |
-            circleci tests glob "test/unit/**/*.ts" | circleci tests split --split-by=filesize > /tmp/tests-to-run
-            npm run test:hardhat $(cat /tmp/tests-to-run)
+            npm run test:hardhat
       - store_test_results:
           path: test-results
       - store_artifacts:
