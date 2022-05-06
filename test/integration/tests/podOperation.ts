@@ -172,9 +172,10 @@ describe('Pod operation and veto', function () {
   });
 
   it('should allow the nopeDAO to veto a proposal through the pod', async () => {
+    const proposalId2 = '4321';
     const registryTxData2 = contracts.governanceMetadataRegistry.interface.encodeFunctionData('registerProposal', [
       podId,
-      proposalId,
+      proposalId2,
       proposalMetadata
     ]);
     const txArgs2 = createSafeTxArgs(podTimelock, 'schedule', [
