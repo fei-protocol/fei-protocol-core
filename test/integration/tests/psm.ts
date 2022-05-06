@@ -382,7 +382,7 @@ describe('e2e-peg-stability-module', function () {
 
   describe('rai_psm', async () => {
     describe('redeem', function () {
-      const redeemAmount = 10_000_000;
+      const redeemAmount = 1000;
       beforeEach(async () => {
         await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, redeemAmount);
         await fei.connect(impersonatedSigners[userAddress]).approve(rai.address, redeemAmount);
@@ -405,7 +405,7 @@ describe('e2e-peg-stability-module', function () {
         expect(expectedraiAmount).to.be.gt(0);
       });
 
-      it('exchanges 5,000,000 FEI for rai', async () => {
+      it('exchanges 1000 FEI for rai', async () => {
         const startingFEIBalance = await fei.balanceOf(userAddress);
         const startingraiBalance = await rai.balanceOf(userAddress);
         const expectedraiAmount = await raiPriceBoundPSM.getRedeemAmountOut(redeemAmount / 2);
