@@ -11,8 +11,5 @@ contract MockVoteEscrowTokenManager is VoteEscrowTokenManager, MockCoreRef {
         address liquidToken,
         address veToken,
         uint256 maxTime
-    )
-        MockCoreRef(core)
-        VoteEscrowTokenManager(IERC20(liquidToken), IVeToken(veToken), maxTime)
-    {}
+    ) MockCoreRef(core) VoteEscrowTokenManager(IERC20(liquidToken), IVeToken(veToken), maxTime) {}
 }

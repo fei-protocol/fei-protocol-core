@@ -7,6 +7,7 @@ const fip_85: ProposalDescription = {
       target: 'rariGovernanceProxyAdmin',
       values: '0',
       method: 'upgrade(address,address)',
+
       arguments: ['{rariGovernanceTokenSushiSwapDistributor}', '0x7A2bbAe82bd08196d64Ff01c53788d942CF5F7b2'],
       description:
         'Upgrade the RariGovernanceTokenUniswapDistributor to the new implementation (cuts off rewards at block 14671500)'

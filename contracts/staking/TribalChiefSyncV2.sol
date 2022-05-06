@@ -98,8 +98,7 @@ contract TribalChiefSyncV2 {
     }
 
     function isRewardDecreaseAvailable() public view returns (bool) {
-        return
-            rewardsArray.length > 0 && nextRewardTimestamp() < block.timestamp;
+        return rewardsArray.length > 0 && nextRewardTimestamp() < block.timestamp;
     }
 
     function nextRewardTimestamp() public view returns (uint256) {
@@ -111,14 +110,8 @@ contract TribalChiefSyncV2 {
     }
 
     /// @notice Sync a rewards rate change
-    function decreaseRewards(uint256 tribePerBlock, bytes32 salt)
-        external
-        update
-    {
-        bytes memory data = abi.encodeWithSelector(
-            tribalChief.updateBlockReward.selector,
-            tribePerBlock
-        );
+    function decreaseRewards(uint256 tribePerBlock, bytes32 salt) external update {
+        bytes memory data = abi.encodeWithSelector(tribalChief.updateBlockReward.selector, tribePerBlock);
         timelock.execute(address(tribalChief), 0, data, bytes32(0), salt);
     }
 
@@ -148,22 +141,13 @@ contract TribalChiefSyncV2 {
         bool overwrite,
         bytes32 salt
     ) external update {
-        bytes memory data = abi.encodeWithSelector(
-            tribalChief.set.selector,
-            pid,
-            allocPoint,
-            rewarder,
-            overwrite
-        );
+        bytes memory data = abi.encodeWithSelector(tribalChief.set.selector, pid, allocPoint, rewarder, overwrite);
         timelock.execute(address(tribalChief), 0, data, bytes32(0), salt);
     }
 
     /// @notice Sync a pool reset rewards action
     function resetPool(uint256 pid, bytes32 salt) external update {
-        bytes memory data = abi.encodeWithSelector(
-            tribalChief.resetRewards.selector,
-            pid
-        );
+        bytes memory data = abi.encodeWithSelector(tribalChief.resetRewards.selector, pid);
         timelock.execute(address(tribalChief), 0, data, bytes32(0), salt);
     }
 }

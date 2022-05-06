@@ -16,20 +16,11 @@ abstract contract BalancerPCVDepositBase is PCVDeposit {
     event UpdateMaximumSlippage(uint256 maximumSlippageBasisPoints);
 
     /// @notice event generated when rewards are claimed
-    event ClaimRewards(
-        address indexed _caller,
-        address indexed _token,
-        address indexed _to,
-        uint256 _amount
-    );
+    event ClaimRewards(address indexed _caller, address indexed _token, address indexed _to, uint256 _amount);
 
     // @notice event generated when pool position is exited (LP tokens redeemed
     // for tokens in proportion to the pool's weights.
-    event ExitPool(
-        bytes32 indexed _poodId,
-        address indexed _to,
-        uint256 _bptAmount
-    );
+    event ExitPool(bytes32 indexed _poodId, address indexed _to, uint256 _bptAmount);
 
     // Maximum tolerated slippage for deposits
     uint256 public maximumSlippageBasisPoints;
@@ -95,9 +86,7 @@ abstract contract BalancerPCVDepositBase is PCVDeposit {
     /// sending to another PCVDeposit that needs pure ETH.
     /// Balancer uses WETH in its pools, and not ETH.
     function unwrapETH() external onlyPCVController {
-        uint256 wethBalance = IERC20(address(Constants.WETH)).balanceOf(
-            address(this)
-        );
+        uint256 wethBalance = IERC20(address(Constants.WETH)).balanceOf(address(this));
         if (wethBalance != 0) {
             Constants.WETH.withdraw(wethBalance);
         }
@@ -105,10 +94,7 @@ abstract contract BalancerPCVDepositBase is PCVDeposit {
 
     /// @notice Sets the maximum slippage vs 1:1 price accepted during withdraw.
     /// @param _maximumSlippageBasisPoints the maximum slippage expressed in basis points (1/10_000)
-    function setMaximumSlippage(uint256 _maximumSlippageBasisPoints)
-        external
-        onlyGovernorOrAdmin
-    {
+    function setMaximumSlippage(uint256 _maximumSlippageBasisPoints) external onlyGovernorOrAdmin {
         require(
             _maximumSlippageBasisPoints <= Constants.BASIS_POINTS_GRANULARITY,
             "BalancerPCVDepositBase: Exceeds bp granularity."
@@ -120,28 +106,18 @@ abstract contract BalancerPCVDepositBase is PCVDeposit {
     /// @notice redeeem all assets from LP pool
     /// @param _to address to send underlying tokens to
     function exitPool(address _to) external whenNotPaused onlyPCVController {
-        uint256 bptBalance = IWeightedPool(poolAddress).balanceOf(
-            address(this)
-        );
+        uint256 bptBalance = IWeightedPool(poolAddress).balanceOf(address(this));
         if (bptBalance != 0) {
             IVault.ExitPoolRequest memory request;
 
             // Uses encoding for exact BPT IN withdrawal using all held BPT
-            bytes memory userData = abi.encode(
-                IWeightedPool.ExitKind.EXACT_BPT_IN_FOR_TOKENS_OUT,
-                bptBalance
-            );
+            bytes memory userData = abi.encode(IWeightedPool.ExitKind.EXACT_BPT_IN_FOR_TOKENS_OUT, bptBalance);
             request.assets = poolAssets;
             request.minAmountsOut = new uint256[](poolAssets.length); // 0 minimums
             request.userData = userData;
             request.toInternalBalance = false; // use external balances to be able to transfer out tokenReceived
 
-            vault.exitPool(
-                poolId,
-                address(this),
-                payable(address(_to)),
-                request
-            );
+            vault.exitPool(poolId, address(this), payable(address(_to)), request);
 
             if (_to == address(this)) {
                 _burnFeiHeld();
@@ -164,12 +140,8 @@ abstract contract BalancerPCVDepositBase is PCVDeposit {
         uint256 amount,
         bytes32[] memory merkleProof
     ) external whenNotPaused {
-        address BAL_TOKEN_ADDRESS = address(
-            0xba100000625a3754423978a60c9317c58a424e3D
-        );
-        address BAL_TOKEN_DISTRIBUTOR = address(
-            0x35ED000468f397AA943009bD60cc6d2d9a7d32fF
-        );
+        address BAL_TOKEN_ADDRESS = address(0xba100000625a3754423978a60c9317c58a424e3D);
+        address BAL_TOKEN_DISTRIBUTOR = address(0x35ED000468f397AA943009bD60cc6d2d9a7d32fF);
 
         IERC20[] memory tokens = new IERC20[](1);
         tokens[0] = IERC20(BAL_TOKEN_ADDRESS);
@@ -184,17 +156,8 @@ abstract contract BalancerPCVDepositBase is PCVDeposit {
         IMerkleOrchard.Claim[] memory claims = new IMerkleOrchard.Claim[](1);
         claims[0] = claim;
 
-        IMerkleOrchard(rewards).claimDistributions(
-            address(this),
-            claims,
-            tokens
-        );
+        IMerkleOrchard(rewards).claimDistributions(address(this), claims, tokens);
 
-        emit ClaimRewards(
-            msg.sender,
-            address(BAL_TOKEN_ADDRESS),
-            address(this),
-            amount
-        );
+        emit ClaimRewards(msg.sender, address(BAL_TOKEN_ADDRESS), address(this), amount);
     }
 }

@@ -13,18 +13,9 @@ interface ITribe is IERC20 {
 /// @author Fei Protocol
 interface ITribeMinter {
     // ----------- Events -----------
-    event AnnualMaxInflationUpdate(
-        uint256 oldAnnualMaxInflationBasisPoints,
-        uint256 newAnnualMaxInflationBasisPoints
-    );
-    event TribeTreasuryUpdate(
-        address indexed oldTribeTreasury,
-        address indexed newTribeTreasury
-    );
-    event TribeRewardsDripperUpdate(
-        address indexed oldTribeRewardsDripper,
-        address indexed newTribeRewardsDripper
-    );
+    event AnnualMaxInflationUpdate(uint256 oldAnnualMaxInflationBasisPoints, uint256 newAnnualMaxInflationBasisPoints);
+    event TribeTreasuryUpdate(address indexed oldTribeTreasury, address indexed newTribeTreasury);
+    event TribeRewardsDripperUpdate(address indexed oldTribeRewardsDripper, address indexed newTribeRewardsDripper);
 
     // ----------- Public state changing api -----------
 
@@ -42,9 +33,7 @@ interface ITribeMinter {
 
     function setTribeRewardsDripper(address newTribeRewardsDripper) external;
 
-    function setAnnualMaxInflationBasisPoints(
-        uint256 newAnnualMaxInflationBasisPoints
-    ) external;
+    function setAnnualMaxInflationBasisPoints(uint256 newAnnualMaxInflationBasisPoints) external;
 
     // ----------- Getters -----------
 

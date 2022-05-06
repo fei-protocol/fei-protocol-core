@@ -7,8 +7,7 @@ import "./Vm.sol";
 abstract contract StdLib {
     // we use a custom name that is unlikely to cause collisions so this contract
     // can be inherited easily
-    Vm constant vm_std_cheats =
-        Vm(address(uint160(uint256(keccak256("hevm cheat code")))));
+    Vm constant vm_std_cheats = Vm(address(uint160(uint256(keccak256("hevm cheat code")))));
 
     // Skip forward or rewind time by the specified number of seconds
     function skip(uint256 time) public {
@@ -73,14 +72,8 @@ abstract contract StdLib {
 
     // Deploys a contract by fetching the contract bytecode from
     // the artifacts directory
-    function deployCode(string memory what, bytes memory args)
-        public
-        returns (address addr)
-    {
-        bytes memory bytecode = abi.encodePacked(
-            vm_std_cheats.getCode(what),
-            args
-        );
+    function deployCode(string memory what, bytes memory args) public returns (address addr) {
+        bytes memory bytecode = abi.encodePacked(vm_std_cheats.getCode(what), args);
         assembly {
             addr := create(0, add(bytecode, 0x20), mload(bytecode))
         }
@@ -95,24 +88,15 @@ abstract contract StdLib {
 }
 
 library stdError {
-    bytes public constant assertionError =
-        abi.encodeWithSignature("Panic(uint256)", 0x01);
-    bytes public constant arithmeticError =
-        abi.encodeWithSignature("Panic(uint256)", 0x11);
-    bytes public constant divisionError =
-        abi.encodeWithSignature("Panic(uint256)", 0x12);
-    bytes public constant enumConversionError =
-        abi.encodeWithSignature("Panic(uint256)", 0x21);
-    bytes public constant encodeStorageError =
-        abi.encodeWithSignature("Panic(uint256)", 0x22);
-    bytes public constant popError =
-        abi.encodeWithSignature("Panic(uint256)", 0x31);
-    bytes public constant indexOOBError =
-        abi.encodeWithSignature("Panic(uint256)", 0x32);
-    bytes public constant memOverflowError =
-        abi.encodeWithSignature("Panic(uint256)", 0x41);
-    bytes public constant zeroVarError =
-        abi.encodeWithSignature("Panic(uint256)", 0x51);
+    bytes public constant assertionError = abi.encodeWithSignature("Panic(uint256)", 0x01);
+    bytes public constant arithmeticError = abi.encodeWithSignature("Panic(uint256)", 0x11);
+    bytes public constant divisionError = abi.encodeWithSignature("Panic(uint256)", 0x12);
+    bytes public constant enumConversionError = abi.encodeWithSignature("Panic(uint256)", 0x21);
+    bytes public constant encodeStorageError = abi.encodeWithSignature("Panic(uint256)", 0x22);
+    bytes public constant popError = abi.encodeWithSignature("Panic(uint256)", 0x31);
+    bytes public constant indexOOBError = abi.encodeWithSignature("Panic(uint256)", 0x32);
+    bytes public constant memOverflowError = abi.encodeWithSignature("Panic(uint256)", 0x41);
+    bytes public constant zeroVarError = abi.encodeWithSignature("Panic(uint256)", 0x51);
 }
 
 struct StdStorage {
@@ -133,8 +117,7 @@ library stdStorage {
     event SlotFound(address who, bytes4 fsig, bytes32 keysHash, uint256 slot);
     event WARNING_UninitedSlot(address who, uint256 slot);
 
-    Vm constant stdstore_vm =
-        Vm(address(uint160(uint256(keccak256("hevm cheat code")))));
+    Vm constant stdstore_vm = Vm(address(uint160(uint256(keccak256("hevm cheat code")))));
 
     function sigs(string memory sigStr) internal pure returns (bytes4) {
         return bytes4(keccak256(bytes(sigStr)));
@@ -153,13 +136,8 @@ library stdStorage {
         bytes32[] memory ins = self._keys;
 
         // calldata to test against
-        if (
-            self.finds[who][fsig][keccak256(abi.encodePacked(ins, field_depth))]
-        ) {
-            return
-                self.slots[who][fsig][
-                    keccak256(abi.encodePacked(ins, field_depth))
-                ];
+        if (self.finds[who][fsig][keccak256(abi.encodePacked(ins, field_depth))]) {
+            return self.slots[who][fsig][keccak256(abi.encodePacked(ins, field_depth))];
         }
         bytes memory cald = abi.encodePacked(fsig, flatten(ins));
         stdstore_vm.record();
@@ -178,18 +156,9 @@ library stdStorage {
             if (fdat != curr) {
                 revert PackedSlot(reads[0]);
             }
-            emit SlotFound(
-                who,
-                fsig,
-                keccak256(abi.encodePacked(ins, field_depth)),
-                uint256(reads[0])
-            );
-            self.slots[who][fsig][
-                keccak256(abi.encodePacked(ins, field_depth))
-            ] = uint256(reads[0]);
-            self.finds[who][fsig][
-                keccak256(abi.encodePacked(ins, field_depth))
-            ] = true;
+            emit SlotFound(who, fsig, keccak256(abi.encodePacked(ins, field_depth)), uint256(reads[0]));
+            self.slots[who][fsig][keccak256(abi.encodePacked(ins, field_depth))] = uint256(reads[0]);
+            self.finds[who][fsig][keccak256(abi.encodePacked(ins, field_depth))] = true;
         } else if (reads.length > 1) {
             for (uint256 i = 0; i < reads.length; i++) {
                 bytes32 prev = stdstore_vm.load(who, reads[i]);
@@ -205,18 +174,9 @@ library stdStorage {
 
                 if (fdat == bytes32(hex"1337")) {
                     // we found which of the slots is the actual one
-                    emit SlotFound(
-                        who,
-                        fsig,
-                        keccak256(abi.encodePacked(ins, field_depth)),
-                        uint256(reads[i])
-                    );
-                    self.slots[who][fsig][
-                        keccak256(abi.encodePacked(ins, field_depth))
-                    ] = uint256(reads[i]);
-                    self.finds[who][fsig][
-                        keccak256(abi.encodePacked(ins, field_depth))
-                    ] = true;
+                    emit SlotFound(who, fsig, keccak256(abi.encodePacked(ins, field_depth)), uint256(reads[i]));
+                    self.slots[who][fsig][keccak256(abi.encodePacked(ins, field_depth))] = uint256(reads[i]);
+                    self.finds[who][fsig][keccak256(abi.encodePacked(ins, field_depth))] = true;
                     stdstore_vm.store(who, reads[i], prev);
                     break;
                 }
@@ -226,75 +186,47 @@ library stdStorage {
             revert NotStorage(fsig);
         }
 
-        if (
-            !self.finds[who][fsig][
-                keccak256(abi.encodePacked(ins, field_depth))
-            ]
-        ) revert NotFound(fsig);
+        if (!self.finds[who][fsig][keccak256(abi.encodePacked(ins, field_depth))]) revert NotFound(fsig);
 
         delete self._target;
         delete self._sig;
         delete self._keys;
         delete self._depth;
 
-        return
-            self.slots[who][fsig][
-                keccak256(abi.encodePacked(ins, field_depth))
-            ];
+        return self.slots[who][fsig][keccak256(abi.encodePacked(ins, field_depth))];
     }
 
-    function target(StdStorage storage self, address _target)
-        internal
-        returns (StdStorage storage)
-    {
+    function target(StdStorage storage self, address _target) internal returns (StdStorage storage) {
         self._target = _target;
         return self;
     }
 
-    function sig(StdStorage storage self, bytes4 _sig)
-        internal
-        returns (StdStorage storage)
-    {
+    function sig(StdStorage storage self, bytes4 _sig) internal returns (StdStorage storage) {
         self._sig = _sig;
         return self;
     }
 
-    function sig(StdStorage storage self, string memory _sig)
-        internal
-        returns (StdStorage storage)
-    {
+    function sig(StdStorage storage self, string memory _sig) internal returns (StdStorage storage) {
         self._sig = sigs(_sig);
         return self;
     }
 
-    function with_key(StdStorage storage self, address who)
-        internal
-        returns (StdStorage storage)
-    {
+    function with_key(StdStorage storage self, address who) internal returns (StdStorage storage) {
         self._keys.push(bytes32(uint256(uint160(who))));
         return self;
     }
 
-    function with_key(StdStorage storage self, uint256 amt)
-        internal
-        returns (StdStorage storage)
-    {
+    function with_key(StdStorage storage self, uint256 amt) internal returns (StdStorage storage) {
         self._keys.push(bytes32(amt));
         return self;
     }
 
-    function with_key(StdStorage storage self, bytes32 key)
-        internal
-        returns (StdStorage storage)
-    {
+    function with_key(StdStorage storage self, bytes32 key) internal returns (StdStorage storage) {
         self._keys.push(key);
         return self;
     }
 
-    function depth(StdStorage storage self, uint256 _depth)
-        internal
-        returns (StdStorage storage)
-    {
+    function depth(StdStorage storage self, uint256 _depth) internal returns (StdStorage storage) {
         self._depth = _depth;
         return self;
     }
@@ -314,16 +246,10 @@ library stdStorage {
         bytes32[] memory ins = self._keys;
 
         bytes memory cald = abi.encodePacked(fsig, flatten(ins));
-        if (
-            !self.finds[who][fsig][
-                keccak256(abi.encodePacked(ins, field_depth))
-            ]
-        ) {
+        if (!self.finds[who][fsig][keccak256(abi.encodePacked(ins, field_depth))]) {
             find(self);
         }
-        bytes32 slot = bytes32(
-            self.slots[who][fsig][keccak256(abi.encodePacked(ins, field_depth))]
-        );
+        bytes32 slot = bytes32(self.slots[who][fsig][keccak256(abi.encodePacked(ins, field_depth))]);
 
         bytes32 fdat;
         {
@@ -342,11 +268,7 @@ library stdStorage {
         delete self._depth;
     }
 
-    function bytesToBytes32(bytes memory b, uint256 offset)
-        public
-        pure
-        returns (bytes32)
-    {
+    function bytesToBytes32(bytes memory b, uint256 offset) public pure returns (bytes32) {
         bytes32 out;
 
         for (uint256 i = 0; i < 32; i++) {

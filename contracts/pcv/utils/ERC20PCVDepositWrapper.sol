@@ -39,12 +39,7 @@ contract ERC20PCVDepositWrapper is IPCVDepositBalances {
     }
 
     /// @notice returns the resistant balance and FEI in the deposit
-    function resistantBalanceAndFei()
-        public
-        view
-        override
-        returns (uint256, uint256)
-    {
+    function resistantBalanceAndFei() public view override returns (uint256, uint256) {
         uint256 resistantBalance = balance();
         uint256 reistantFei = isProtocolFeiDeposit ? resistantBalance : 0;
         return (resistantBalance, reistantFei);

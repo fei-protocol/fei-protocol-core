@@ -41,12 +41,7 @@ contract AngleGaugeLens is IPCVDepositBalances {
     /// underlying amounts of XYZ and FEI tokens held within the LP tokens.
     /// This lens can be coupled with another lens in order to compute the
     /// underlying amounts of FEI and XYZ held inside the LP tokens.
-    function resistantBalanceAndFei()
-        public
-        view
-        override
-        returns (uint256, uint256)
-    {
+    function resistantBalanceAndFei() public view override returns (uint256, uint256) {
         uint256 stakedBalance = balance();
         if (balanceReportedIn == FEI) {
             return (stakedBalance, stakedBalance);

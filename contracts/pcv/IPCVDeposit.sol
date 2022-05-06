@@ -9,24 +9,11 @@ interface IPCVDeposit is IPCVDepositBalances {
     // ----------- Events -----------
     event Deposit(address indexed _from, uint256 _amount);
 
-    event Withdrawal(
-        address indexed _caller,
-        address indexed _to,
-        uint256 _amount
-    );
+    event Withdrawal(address indexed _caller, address indexed _to, uint256 _amount);
 
-    event WithdrawERC20(
-        address indexed _caller,
-        address indexed _token,
-        address indexed _to,
-        uint256 _amount
-    );
+    event WithdrawERC20(address indexed _caller, address indexed _token, address indexed _to, uint256 _amount);
 
-    event WithdrawETH(
-        address indexed _caller,
-        address indexed _to,
-        uint256 _amount
-    );
+    event WithdrawETH(address indexed _caller, address indexed _to, uint256 _amount);
 
     // ----------- State changing api -----------
 

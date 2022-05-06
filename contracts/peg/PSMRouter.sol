@@ -22,10 +22,7 @@ contract PSMRouter is IPSMRouter {
     constructor(IPegStabilityModule _psm, IFei _fei) {
         psm = _psm;
         fei = _fei;
-        IERC20(address(Constants.WETH)).approve(
-            address(_psm),
-            type(uint256).max
-        );
+        IERC20(address(Constants.WETH)).approve(address(_psm), type(uint256).max);
         _fei.approve(address(_psm), type(uint256).max);
     }
 
@@ -37,22 +34,12 @@ contract PSMRouter is IPSMRouter {
     // ----------- Public View-Only API ----------
 
     /// @notice view only pass through function to get amount of FEI out with given amount of ETH in
-    function getMintAmountOut(uint256 amountIn)
-        public
-        view
-        override
-        returns (uint256 amountFeiOut)
-    {
+    function getMintAmountOut(uint256 amountIn) public view override returns (uint256 amountFeiOut) {
         amountFeiOut = psm.getMintAmountOut(amountIn);
     }
 
     /// @notice view only pass through function to get amount of ETH out with given amount of FEI in
-    function getRedeemAmountOut(uint256 amountFeiIn)
-        public
-        view
-        override
-        returns (uint256 amountTokenOut)
-    {
+    function getRedeemAmountOut(uint256 amountFeiIn) public view override returns (uint256 amountTokenOut) {
         amountTokenOut = psm.getRedeemAmountOut(amountFeiIn);
     }
 
@@ -131,10 +118,7 @@ contract PSMRouter is IPSMRouter {
     /// @notice function to receive ether from the weth contract when the redeem function is called
     /// will not accept eth unless there is an active redemption.
     fallback() external payable {
-        require(
-            msg.sender == address(Constants.WETH),
-            "PSMRouter: fallback sender must be WETH contract"
-        );
+        require(msg.sender == address(Constants.WETH), "PSMRouter: fallback sender must be WETH contract");
     }
 
     // ---------- Internal Methods ----------
@@ -145,10 +129,7 @@ contract PSMRouter is IPSMRouter {
         uint256 _minAmountOut,
         uint256 _ethAmountIn
     ) internal returns (uint256) {
-        require(
-            _ethAmountIn == msg.value,
-            "PSMRouter: ethAmountIn and msg.value mismatch"
-        );
+        require(_ethAmountIn == msg.value, "PSMRouter: ethAmountIn and msg.value mismatch");
         Constants.WETH.deposit{value: msg.value}();
         return psm.mint(_to, msg.value, _minAmountOut);
     }

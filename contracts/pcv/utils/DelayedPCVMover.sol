@@ -50,10 +50,7 @@ contract DelayedPCVMover is CoreRef {
     /// PCV_CONTROLLER_ROLE role after a successful call.
     function withdrawRatio() public whenNotPaused {
         // Check that deadline has been reached
-        require(
-            block.timestamp >= deadline,
-            "DelayedPCVMover: deadline not reached"
-        );
+        require(block.timestamp >= deadline, "DelayedPCVMover: deadline not reached");
 
         // Perform PCV movement
         controller.withdrawRatio(deposit, target, basisPoints);

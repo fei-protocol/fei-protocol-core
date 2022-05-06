@@ -18,9 +18,7 @@ contract ERC20CompoundPCVDeposit is CompoundPCVDepositBase {
     /// @notice Compound ERC20 PCV Deposit constructor
     /// @param _core Fei Core for reference
     /// @param _cToken Compound cToken to deposit
-    constructor(address _core, address _cToken)
-        CompoundPCVDepositBase(_core, _cToken)
-    {
+    constructor(address _core, address _cToken) CompoundPCVDepositBase(_core, _cToken) {
         token = IERC20(CErc20(_cToken).underlying());
     }
 
@@ -31,10 +29,7 @@ contract ERC20CompoundPCVDeposit is CompoundPCVDepositBase {
         token.approve(address(cToken), amount);
 
         // Compound returns non-zero when there is an error
-        require(
-            CErc20(address(cToken)).mint(amount) == 0,
-            "ERC20CompoundPCVDeposit: deposit error"
-        );
+        require(CErc20(address(cToken)).mint(amount) == 0, "ERC20CompoundPCVDeposit: deposit error");
 
         emit Deposit(msg.sender, amount);
     }

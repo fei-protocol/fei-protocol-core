@@ -13,6 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import {Deviation} from "../../utils/Deviation.sol";
+
 pragma solidity >=0.4.23;
 
 contract DSTest {
@@ -38,8 +40,7 @@ contract DSTest {
     bool public IS_TEST = true;
     bool public failed;
 
-    address constant HEVM_ADDRESS =
-        address(bytes20(uint160(uint256(keccak256("hevm cheat code")))));
+    address constant HEVM_ADDRESS = address(bytes20(uint160(uint256(keccak256("hevm cheat code")))));
 
     modifier mayRevert() {
         _;
@@ -57,6 +58,24 @@ contract DSTest {
         _;
         uint256 endGas = gasleft();
         emit log_named_uint("gas", startGas - endGas);
+    }
+
+    function assertApproxEq(
+        int256 a,
+        int256 b,
+        uint8 allowableDeviation
+    ) internal {
+        if (a != b) {
+            uint256 deviation = Deviation.calculateDeviationThresholdBasisPoints(a, b);
+            if (deviation > allowableDeviation) {
+                emit log("Error: a == b not satisfied, deviation exceeded [int]");
+                emit log_named_int("  Expected", b);
+                emit log_named_int("    Actual", a);
+                emit log_named_int("   Max Dev", int8(allowableDeviation));
+                emit log_named_int("actual Dev", int256(deviation));
+                fail();
+            }
+        }
     }
 
     function assertTrue(bool condition) internal {
@@ -611,11 +630,7 @@ contract DSTest {
         }
     }
 
-    function checkEq0(bytes memory a, bytes memory b)
-        internal
-        pure
-        returns (bool ok)
-    {
+    function checkEq0(bytes memory a, bytes memory b) internal pure returns (bool ok) {
         ok = true;
         if (a.length == b.length) {
             for (uint256 i = 0; i < a.length; i++) {

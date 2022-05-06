@@ -27,11 +27,7 @@ contract MockERC20UniswapPCVDeposit is IPCVDeposit {
         emit WithdrawERC20(msg.sender, to, token, amount);
     }
 
-    function withdrawETH(address payable to, uint256 amountOut)
-        external
-        virtual
-        override
-    {
+    function withdrawETH(address payable to, uint256 amountOut) external virtual override {
         Address.sendValue(to, amountOut);
         emit WithdrawETH(msg.sender, to, amountOut);
     }
@@ -45,13 +41,7 @@ contract MockERC20UniswapPCVDeposit is IPCVDeposit {
         return address(token);
     }
 
-    function resistantBalanceAndFei()
-        public
-        view
-        virtual
-        override
-        returns (uint256, uint256)
-    {
+    function resistantBalanceAndFei() public view virtual override returns (uint256, uint256) {
         return (balance(), 0);
     }
 }
