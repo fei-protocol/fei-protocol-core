@@ -14,7 +14,6 @@ import { FixedPricePSM } from '@custom-types/contracts';
 before(async () => {
   chai.use(CBN(ethers.BigNumber));
   chai.use(solidity);
-  await resetFork();
 });
 
 describe('e2e-peg-stability-module', function () {

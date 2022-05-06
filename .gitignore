@@ -8,7 +8,7 @@ coverage.json
 coverage/
 tenderly.yaml
 artifacts
-cache/hardhat-network-fork
+cache
 types/contracts
 .eslintcache
 .xml

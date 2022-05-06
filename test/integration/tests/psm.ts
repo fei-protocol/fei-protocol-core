@@ -38,7 +38,6 @@ describe('e2e-peg-stability-module', function () {
   before(async () => {
     chai.use(CBN(ethers.BigNumber));
     chai.use(solidity);
-    await resetFork();
   });
 
   before(async function () {
