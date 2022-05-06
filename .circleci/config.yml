@@ -23,17 +23,17 @@ jobs:
             - node_modules
       - run: # generate a checksum of all of the source solidity files to see if they have changed, which we use as the key for caching
           name: Generate solidity source checksum
-          command: ./checksum.sh /tmp/checksum.txt
+          command: ./sol-checksum.sh /tmp/sol-checksum.txt
       - restore_cache: # Restore the solidity files cache the same way we do node_modules (by the checksum of the .json file)
-          key: solcache-{{ checksum "/tmp/checksum.txt" }}
+          key: solcache-{{ checksum "/tmp/sol-checksum.txt" }}
       - run:
           name: Compile contracts
           command: npm run compile:hardhat
       - run: # generate a checksum of all of the source solidity files to see if they have changed, which we use as the key for caching
           name: Generate solidity source checksum (again)
-          command: ./checksum.sh /tmp/checksum.txt
+          command: ./sol-checksum.sh /tmp/sol-checksum.txt
       - save_cache: # Save the solidity files cache, the compiled artifacts, and the generated types
-          key: solcache-{{ checksum "/tmp/checksum.txt" }}
+          key: solcache-{{ checksum "/tmp/sol-checksum.txt" }}
           paths:
             - artifacts
             - types/contracts
@@ -104,15 +104,26 @@ jobs:
       - run:
           name: Run end-to-end tests
           command: |
-            circleci tests glob "test/integration/**/*.ts" | circleci tests split --split-by=filesize > /tmp/tests-to-run
+            circleci tests glob "test/integration/**/*.ts" | circleci tests split --split-by=timings > /tmp/tests-to-run
             npm run test:e2e $(cat /tmp/tests-to-run)
       - store_test_results:
             path: test-results
       - store_artifacts:
             path: test-results
-      - save_cache:
-          key: hardhat-config-{{ checksum "hardhat.config.ts" }}
-          paths: # Save the hardhat-network-fork cache
+			- persist_to_worksapce:
+          root: ~/repo
+          paths:
+            - ./cache/hardhat-network-fork
+
+  save-network-fork-cache:
+    working_directory: ~/repo
+    executor: nodeimage
+    steps:
+      - attach_workspace:
+        at: ./
+      - save_cache: # Save the solidity files cache, the compiled artifacts, and the generated types
+          key: fork-cache-{{ checksum "hardhat.config.ts" }}
+          paths:
             - cache/hardhat-network-fork
 
 workflows:
@@ -131,3 +142,6 @@ workflows:
       - e2e-test:
           requires:
             - build
+      - save-network-fork-cache:
+          require:
+            - e2e-test
