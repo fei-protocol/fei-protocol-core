@@ -9,9 +9,10 @@ import { PACKAGE_NAME, errors } from '@idle-finance/hardhat-proposals-plugin/dis
 import { BN } from 'ethereumjs-util';
 
 export class SigmaProposal extends AlphaProposal {
-  protected async mineBlocks(blocks: any) {
+  async mineBlocks(blocks: any) {
     const blocksToMine = BigNumber.from(blocks).toNumber();
     await hre.network.provider.send('hardhat_mine', [new BN(blocksToMine)]);
+    console.log('Mined ' + blocksToMine + ' blocks via SigmaProposalBuilder.');
   }
 
   async simulate(fullSimulation = false, force?: boolean) {
@@ -25,6 +26,9 @@ export class SigmaProposal extends AlphaProposal {
     this.internalState = InternalProposalState.SIMULATED;
   }
 }
+
+proposals.proposals.alpha.prototype.mineBlocks = SigmaProposal.prototype.mineBlocks;
+proposals.proposals.alpha.prototype.simulate = SigmaProposal.prototype.simulate;
 
 /**
  * Constucts a hardhat proposal object
@@ -55,7 +59,6 @@ export default async function constructProposal(
   }
 
   proposalBuilder.setDescription(`${proposalInfo.title}\n${proposalDescription.toString()}`); // Set proposal description
-
   const proposal = proposalBuilder.build();
   proposal.simulate = new SigmaProposal(hre).simulate;
   logging && console.log(await proposal.printProposalInfo());
