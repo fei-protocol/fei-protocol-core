@@ -289,7 +289,7 @@ describe('e2e-peg-stability-module', function () {
       );
       await contracts.compoundDaiPCVDeposit.deposit();
       await contracts.dai.connect(signer).transfer(
-        contracts.daiPSM.address,
+        daiPSM.address,
         '5500000000000000000000000' // 5.5M
       );
     });
@@ -385,7 +385,7 @@ describe('e2e-peg-stability-module', function () {
       const redeemAmount = 1000;
       beforeEach(async () => {
         await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, redeemAmount);
-        await fei.connect(impersonatedSigners[userAddress]).approve(rai.address, redeemAmount);
+        await fei.connect(impersonatedSigners[userAddress]).approve(raiPriceBoundPSM.address, redeemAmount);
       });
 
       it('exchanges 1000 FEI for rai', async () => {
@@ -405,7 +405,7 @@ describe('e2e-peg-stability-module', function () {
         expect(expectedraiAmount).to.be.gt(0);
       });
 
-      it('exchanges 1000 FEI for rai', async () => {
+      it('exchanges 500 FEI for rai', async () => {
         const startingFEIBalance = await fei.balanceOf(userAddress);
         const startingraiBalance = await rai.balanceOf(userAddress);
         const expectedraiAmount = await raiPriceBoundPSM.getRedeemAmountOut(redeemAmount / 2);
