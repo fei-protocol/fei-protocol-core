@@ -42,9 +42,11 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
   console.log(`Setup of ${fipNumber} : reading CR oracle...`);
   pcvStatsBefore = await contracts.collateralizationOracle.pcvStats();
 
+  const ethPrice = (await contracts.chainlinkEthUsdOracleWrapper.read())[0].toString() / 1e10;
+
   // make sure oracle of B.AMM is fresh
   // set Chainlink ETHUSD to a fixed 3,000$ value
-  await overwriteChainlinkAggregator(addresses.chainlinkEthUsdOracle, '300000000000', '8');
+  await overwriteChainlinkAggregator(addresses.chainlinkEthUsdOracle, Math.round(ethPrice), '8');
 };
 
 // Tears down any changes made in setup() that need to be
@@ -101,100 +103,22 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 
   // Check pcvStats
   console.log('----------------------------------------------------');
-  console.log('pcvStatsBefore.protocolControlledValue [M]e18 ', pcvStatsBefore.protocolControlledValue / 1e24);
-  console.log('pcvStatsBefore.userCirculatingFei [M]e18      ', pcvStatsBefore.userCirculatingFei / 1e24);
-  console.log('pcvStatsBefore.protocolEquity [M]e18          ', pcvStatsBefore.protocolEquity / 1e24);
+  console.log(' pcvStatsBefore.protocolControlledValue [M]e18 ', pcvStatsBefore.protocolControlledValue / 1e24);
+  console.log(' pcvStatsBefore.userCirculatingFei      [M]e18 ', pcvStatsBefore.userCirculatingFei / 1e24);
+  console.log(' pcvStatsBefore.protocolEquity          [M]e18 ', pcvStatsBefore.protocolEquity / 1e24);
   const pcvStatsAfter = await contracts.collateralizationOracle.pcvStats();
   console.log('----------------------------------------------------');
-  console.log('pcvStatsAfter.protocolControlledValue [M]e18  ', pcvStatsAfter.protocolControlledValue / 1e24);
-  console.log('pcvStatsAfter.userCirculatingFei [M]e18       ', pcvStatsAfter.userCirculatingFei / 1e24);
-  console.log('pcvStatsAfter.protocolEquity [M]e18           ', pcvStatsAfter.protocolEquity / 1e24);
+  console.log(' pcvStatsAfter.protocolControlledValue  [M]e18 ', pcvStatsAfter.protocolControlledValue / 1e24);
+  console.log(' pcvStatsAfter.userCirculatingFei       [M]e18 ', pcvStatsAfter.userCirculatingFei / 1e24);
+  console.log(' pcvStatsAfter.protocolEquity           [M]e18 ', pcvStatsAfter.protocolEquity / 1e24);
   console.log('----------------------------------------------------');
-  console.log(
-    'PCV diff [M]e18      ',
-    pcvStatsAfter.protocolControlledValue.sub(pcvStatsBefore.protocolControlledValue) / 1e24
-  );
-  console.log('Circ FEI diff [M]e18 ', pcvStatsAfter.userCirculatingFei.sub(pcvStatsBefore.userCirculatingFei) / 1e24);
-  console.log('Equity diff [M]e18   ', pcvStatsAfter.protocolEquity.sub(pcvStatsBefore.protocolEquity) / 1e24);
+  const pcvDiff = pcvStatsAfter.protocolControlledValue.sub(pcvStatsBefore.protocolControlledValue);
+  const cFeiDiff = pcvStatsAfter.userCirculatingFei.sub(pcvStatsBefore.userCirculatingFei);
+  const eqDiff = pcvStatsAfter.protocolEquity.sub(pcvStatsBefore.protocolEquity);
+  console.log(' PCV diff                               [M]e18 ', pcvDiff / 1e24);
+  console.log(' Circ FEI diff                          [M]e18 ', cFeiDiff / 1e24);
+  console.log(' Equity diff                            [M]e18 ', eqDiff / 1e24);
   console.log('----------------------------------------------------');
-  console.log('Removed PCV Deposit resistant balance :');
-  console.log(
-    'rariPool8FeiPCVDepositWrapper [M]e18  ',
-    (await contracts.rariPool8FeiPCVDepositWrapper.resistantBalanceAndFei())[0] / 1e24
-  );
-  console.log(
-    'rariPool8DaiPCVDeposit [M]e18         ',
-    (await contracts.rariPool8DaiPCVDeposit.resistantBalanceAndFei())[0] / 1e24
-  );
-  console.log(
-    'rariPool8LusdPCVDeposit [M]e18        ',
-    (await contracts.rariPool8LusdPCVDeposit.resistantBalanceAndFei())[0] / 1e24
-  );
-  console.log(
-    'rariPool18FeiPCVDepositWrapper [M]e18 ',
-    (await contracts.rariPool18FeiPCVDepositWrapper.resistantBalanceAndFei())[0] / 1e24
-  );
-  console.log(
-    'rariPool27FeiPCVDepositWrapper [M]e18 ',
-    (await contracts.rariPool27FeiPCVDepositWrapper.resistantBalanceAndFei())[0] / 1e24
-  );
-  console.log(
-    'rariPool146EthPCVDeposit [M]e18       ',
-    ((await contracts.rariPool146EthPCVDeposit.resistantBalanceAndFei())[0] * 3000) / 1e24
-  );
-  console.log(
-    'convexPoolPCVDepositWrapper [M]e18    ',
-    (await contracts.convexPoolPCVDepositWrapper.resistantBalanceAndFei())[0] / 1e24
-  );
-  console.log('----------------------------------------------------');
-  console.log('Removed PCV Deposit resistant fei :');
-  console.log(
-    'rariPool8FeiPCVDepositWrapper [M]e18  ',
-    (await contracts.rariPool8FeiPCVDepositWrapper.resistantBalanceAndFei())[1] / 1e24
-  );
-  console.log(
-    'rariPool8DaiPCVDeposit [M]e18         ',
-    (await contracts.rariPool8DaiPCVDeposit.resistantBalanceAndFei())[1] / 1e24
-  );
-  console.log(
-    'rariPool8LusdPCVDeposit [M]e18        ',
-    (await contracts.rariPool8LusdPCVDeposit.resistantBalanceAndFei())[1] / 1e24
-  );
-  console.log(
-    'rariPool18FeiPCVDepositWrapper [M]e18 ',
-    (await contracts.rariPool18FeiPCVDepositWrapper.resistantBalanceAndFei())[1] / 1e24
-  );
-  console.log(
-    'rariPool27FeiPCVDepositWrapper [M]e18 ',
-    (await contracts.rariPool27FeiPCVDepositWrapper.resistantBalanceAndFei())[1] / 1e24
-  );
-  console.log(
-    'rariPool146EthPCVDeposit [M]e18       ',
-    (await contracts.rariPool146EthPCVDeposit.resistantBalanceAndFei())[1] / 1e24
-  );
-  console.log(
-    'convexPoolPCVDepositWrapper [M]e18    ',
-    (await contracts.convexPoolPCVDepositWrapper.resistantBalanceAndFei())[1] / 1e24
-  );
-  console.log('----------------------------------------------------');
-  console.log(
-    'old lens balance [M]e18  ',
-    ((await contracts.balancerLensBpt30Fei70Weth.resistantBalanceAndFei())[0] * 3000) / 1e24
-  );
-  console.log(
-    'old lens fei     [M]e18  ',
-    (await contracts.balancerLensBpt30Fei70Weth.resistantBalanceAndFei())[1] / 1e24
-  );
-  console.log(
-    'new lens balance [M]e18  ',
-    ((await contracts.balancerLensBpt30Fei70WethFixed.resistantBalanceAndFei())[0] * 3000) / 1e24
-  );
-  console.log(
-    'new lens fei     [M]e18  ',
-    (await contracts.balancerLensBpt30Fei70WethFixed.resistantBalanceAndFei())[1] / 1e24
-  );
-
-  // Check the lens swap
 };
 
 export { deploy, setup, teardown, validate };

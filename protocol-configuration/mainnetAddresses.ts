@@ -394,6 +394,11 @@ const MainnetAddresses: MainnetAddresses = {
   balancerLensBpt30Fei70Weth: {
     artifactName: 'BalancerPool2Lens',
     address: '0xb31F75550e97A2C4c7AC8d4355032B8AE8b9584D',
+    category: AddressCategory.Deprecated
+  },
+  balancerLensBpt30Fei70WethFixed: {
+    artifactName: 'BalancerPool2Lens',
+    address: '0x673f7DFA863b611dE657759aEDE629b260F4E682',
     category: AddressCategory.PCV
   },
   balancerLensVeBalBal: {

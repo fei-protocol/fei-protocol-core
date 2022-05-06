@@ -41,7 +41,7 @@ const collateralizationAddresses = {
     'rariPool146EthPCVDeposit',
     'wethDepositWrapper',
     'balancerDepositFeiWeth',
-    'balancerLensBpt30Fei70Weth',
+    'balancerLensBpt30Fei70WethFixed',
     'balancerLensVeBalWeth'
   ],
   dpi: ['rariPool19DpiPCVDepositWrapper', 'dpiDepositWrapper'],
