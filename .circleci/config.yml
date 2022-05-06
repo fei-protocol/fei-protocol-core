@@ -37,6 +37,7 @@ jobs:
           paths:
             - artifacts
             - types/contracts
+            - cache/solidity-files-cache.json
       - restore_cache: # Restore the hardhat network fork cache if the hardhad-config hasn't changed
           key: hardhat-config-{{ checksum "hardhat.config.ts" }}
       - persist_to_workspace:
