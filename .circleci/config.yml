@@ -6,7 +6,7 @@ executors:
       - image: cimg/node:16.14
     working_directory: ~/repo
     resource_class: xlarge
-    
+
 jobs:
   build:
     executor: nodeimage
@@ -19,7 +19,7 @@ jobs:
           command: npm install
       - save_cache: # Save the node_modules and .npm directories into the cache by the checksum of package-lock.json
           key: package-cache-{{ checksum "package-lock.json" }}
-          paths: 
+          paths:
             - node_modules
       - run: # generate a checksum of all of the source solidity files to see if they have changed, which we use as the key for caching
           name: Generate solidity source checksum
@@ -36,7 +36,6 @@ jobs:
           key: solcache-{{ checksum "/tmp/checksum.txt" }}
           paths:
             - artifacts
-            - cache/solidity-files-cache.json
             - types/contracts
       - restore_cache: # Restore the hardhat network fork cache if the hardhad-config hasn't changed
           key: hardhat-config-{{ checksum "hardhat.config.ts" }}
@@ -76,9 +75,9 @@ jobs:
     steps:
       - attach_workspace:
           at: ./
-      - checkout 
-      - restore_cache: 
-          keys: 
+      - checkout
+      - restore_cache:
+          keys:
             - repo-{{ .Environment.CIRCLE_SHA1 }}
       - run:
           name: Setup env
@@ -86,7 +85,7 @@ jobs:
       - run:
           name: Finish setting up env
           command: echo "export PATH=$PATH:$(pwd)/.foundry/bin" >> /home/circleci/.bashrc
-      - run: 
+      - run:
           name: Install Foundry
           command: curl -L https://foundry.paradigm.xyz | bash; source /home/circleci/.bashrc; $HOME/.foundry/bin/foundryup
       - run:
@@ -120,12 +119,12 @@ workflows:
   main:
     jobs:
       - build
-      - lint: 
+      - lint:
           requires:
             - build
       - test-forge:
           requires:
-            - build          
+            - build
       - test:
           requires:
             - build
