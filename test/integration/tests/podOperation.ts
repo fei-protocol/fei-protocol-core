@@ -34,6 +34,7 @@ describe('Pod operation and veto', function () {
   let podTimelock: Contract;
   let registryTxData: string;
   let registryTxData2: string;
+  let safeSDK: any;
 
   const proposalId = '1234';
   const proposalMetadata = 'FIP_XX: This tests that the governance upgrade flow works';
@@ -109,7 +110,7 @@ describe('Pod operation and veto', function () {
 
     // 2.0 Instantiate Gnosis SDK
     podTimelock = new ethers.Contract(timelockAddress, timelockABI, podMemberSigner);
-    const safeSDK = await initialiseGnosisSDK(podMemberSigner, safeAddress);
+    safeSDK = await initialiseGnosisSDK(podMemberSigner, safeAddress);
 
     // 3. TribalCouncil authorises pod with POD_METADATA_REGISTER_ROLE role
     await contracts.core
@@ -120,12 +121,6 @@ describe('Pod operation and veto', function () {
     //     - create a proposal that targets the Safe's timelock
     //     - include in the proposal tx data that will then target a part of the protocol
     registryTxData = contracts.governanceMetadataRegistry.interface.encodeFunctionData('registerProposal', [
-      podId,
-      proposalId,
-      proposalMetadata
-    ]);
-
-    registryTxData2 = contracts.governanceMetadataRegistry.interface.encodeFunctionData('registerProposal', [
       podId,
       proposalId,
       proposalMetadata
@@ -144,24 +139,11 @@ describe('Pod operation and veto', function () {
       podConfig.minDelay
     ]);
 
-    const txArgs2 = createSafeTxArgs(podTimelock, 'schedule', [
-      contractAddresses.governanceMetadataRegistry,
-      0,
-      registryTxData2,
-      '0x0000000000000000000000000000000000000000000000000000000000000000',
-      '0x0000000000000000000000000000000000000000000000000000000000000001',
-      podConfig.minDelay
-    ]);
-
     const safeTransaction = await safeSDK.createTransaction(txArgs);
-    const safeTransaction2 = await safeSDK.createTransaction(txArgs2);
 
     // 3.0 Execute transaction on Safe
     const executeTxResponse = await safeSDK.executeTransaction(safeTransaction);
     await executeTxResponse.transactionResponse?.wait();
-
-    const executeTxResponse2 = await safeSDK.executeTransaction(safeTransaction2);
-    await executeTxResponse2.transactionResponse?.wait();
   });
 
   it('should allow a proposal to be proposed and executed', async () => {
@@ -190,6 +172,23 @@ describe('Pod operation and veto', function () {
   });
 
   it('should allow the nopeDAO to veto a proposal through the pod', async () => {
+    const registryTxData2 = contracts.governanceMetadataRegistry.interface.encodeFunctionData('registerProposal', [
+      podId,
+      proposalId,
+      proposalMetadata
+    ]);
+    const txArgs2 = createSafeTxArgs(podTimelock, 'schedule', [
+      contractAddresses.governanceMetadataRegistry,
+      0,
+      registryTxData2,
+      '0x0000000000000000000000000000000000000000000000000000000000000000',
+      '0x0000000000000000000000000000000000000000000000000000000000000001',
+      podConfig.minDelay
+    ]);
+    const safeTransaction2 = await safeSDK.createTransaction(txArgs2);
+    const executeTxResponse2 = await safeSDK.executeTransaction(safeTransaction2);
+    await executeTxResponse2.transactionResponse?.wait();
+
     // 1. Create proposal on the NopeDAO to veto. This proposal needs to
     //    call the podAdminGateway.veto() method with the proposalId that is in the timelock
     // 2. Have a member with >quorum TRIBE vote for proposal
