@@ -388,7 +388,7 @@ describe('e2e-peg-stability-module', function () {
         await fei.connect(impersonatedSigners[userAddress]).approve(rai.address, redeemAmount);
       });
 
-      it('exchanges 10,000,000 FEI for rai', async () => {
+      it('exchanges 1000 FEI for rai', async () => {
         const startingFEIBalance = await fei.balanceOf(userAddress);
         const startingraiBalance = await rai.balanceOf(userAddress);
         const expectedraiAmount = await raiPriceBoundPSM.getRedeemAmountOut(redeemAmount);
@@ -436,7 +436,7 @@ describe('e2e-peg-stability-module', function () {
         const raiSigner = await getImpersonatedSigner(raiAccount);
         await forceEth(raiAccount);
         await rai.connect(raiSigner).transfer(userAddress, mintAmount);
-        await rai.connect(impersonatedSigners[userAddress]).approve(raiPriceBoundPSM.address, mintAmount);
+        await rai.connect(impersonatedSigners[userAddress]).approve(raiPriceBoundPSM.address, mintAmount * 2);
       });
 
       it('cannot mint because the rai psm is paused', async () => {
