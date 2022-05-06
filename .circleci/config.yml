@@ -105,7 +105,7 @@ jobs:
       - run:
           name: Run end-to-end tests
           command: |
-            circleci tests glob "test/integration/tests/*.ts" | circleci tests split --split-by=timings > /tmp/tests-to-run
+            circleci tests glob "test/integration/tests/*.ts" | circleci tests split --split-by=timings --timings-type=filename > /tmp/tests-to-run
             npm run test:e2e $(cat /tmp/tests-to-run)
       - store_test_results:
             path: test-results
