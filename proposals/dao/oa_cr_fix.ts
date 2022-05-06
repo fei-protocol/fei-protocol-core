@@ -40,13 +40,13 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 // ensuring contracts have a specific state, etc.
 const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
   console.log(`Setup of ${fipNumber} : reading CR oracle...`);
-  pcvStatsBefore = await contracts.collateralizationOracle.pcvStats();
-
-  const ethPrice = (await contracts.chainlinkEthUsdOracleWrapper.read())[0].toString() / 1e10;
 
   // make sure oracle of B.AMM is fresh
   // set Chainlink ETHUSD to a fixed 3,000$ value
+  const ethPrice = (await contracts.chainlinkEthUsdOracleWrapper.read())[0].toString() / 1e10;
   await overwriteChainlinkAggregator(addresses.chainlinkEthUsdOracle, Math.round(ethPrice), '8');
+
+  pcvStatsBefore = await contracts.collateralizationOracle.pcvStats();
 };
 
 // Tears down any changes made in setup() that need to be
