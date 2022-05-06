@@ -39,7 +39,7 @@ library TribeRoles {
     /// @notice capable of granting and revoking other TribeRoles from having veto power over a pod
     bytes32 internal constant POD_VETO_ADMIN = keccak256("POD_VETO_ADMIN");
 
-    /// @notice can manage the majority of Tribe protocol parameters. Sets boundaries for MINOR_PARAM_ROLE.
+    /// @notice can manage the majority of Tribe protocol parameters
     bytes32 internal constant PARAMETER_ADMIN = keccak256("PARAMETER_ADMIN");
 
     /// @notice manages the Collateralization Oracle as well as other protocol oracles.
@@ -48,23 +48,23 @@ library TribeRoles {
     /// @notice manages TribalChief incentives and related functionality.
     bytes32 internal constant TRIBAL_CHIEF_ADMIN = keccak256("TRIBAL_CHIEF_ADMIN_ROLE");
 
+    /// @notice admin of the Tokemak PCV deposits
+    bytes32 internal constant TOKEMAK_DEPOSIT_ADMIN_ROLE = keccak256("TOKEMAK_DEPOSIT_ADMIN_ROLE");
+
     /// @notice admin of PCVGuardian
     bytes32 internal constant PCV_GUARDIAN_ADMIN = keccak256("PCV_GUARDIAN_ADMIN_ROLE");
-
-    /// @notice admin of all Minor Roles
-    bytes32 internal constant MINOR_ROLE_ADMIN = keccak256("MINOR_ROLE_ADMIN");
 
     /// @notice admin of the Fuse protocol
     bytes32 internal constant FUSE_ADMIN = keccak256("FUSE_ADMIN");
 
-    /// @notice capable of vetoing DAO votes or optimistic timelocks
-    bytes32 internal constant VETO_ADMIN = keccak256("VETO_ADMIN");
+    /// @notice admin of minting Fei for specific scoped contracts
+    bytes32 internal constant FEI_MINT_ADMIN = keccak256("FEI_MINT_ADMIN");
+
+    /// @notice capable of admin functionality on PCVDeposits
+    bytes32 internal constant PCV_MINOR_PARAM_ROLE = keccak256("PCV_MINOR_PARAM_ROLE");
 
     /// @notice capable of setting FEI Minters within global rate limits and caps
-    bytes32 internal constant MINTER_ADMIN = keccak256("MINTER_ADMIN");
-
-    /// @notice manages the constituents of Optimistic Timelocks, including Proposers and Executors
-    bytes32 internal constant OPTIMISTIC_ADMIN = keccak256("OPTIMISTIC_ADMIN");
+    bytes32 internal constant RATE_LIMITED_MINTER_ADMIN = keccak256("RATE_LIMITED_MINTER_ADMIN");
 
     /// @notice manages meta-governance actions, like voting & delegating.
     /// Also used to vote for gauge weights & similar liquid governance things.
@@ -78,13 +78,16 @@ library TribeRoles {
     /// @notice manages whitelisting of gauges where the protocol's tokens can be staked
     bytes32 internal constant METAGOVERNANCE_GAUGE_ADMIN = keccak256("METAGOVERNANCE_GAUGE_ADMIN");
 
+    /// @notice capable of performing swaps on Balancer LBP Swapper
+    bytes32 internal constant SWAP_ADMIN_ROLE = keccak256("SWAP_ADMIN_ROLE");
+
+    /// @notice capable of setting properties on Balancer BasePool utility wrapper
+    bytes32 internal constant BALANCER_MANAGER_ADMIN_ROLE = keccak256("BALANCER_MANAGER_ADMIN_ROLE");
+
     /*///////////////////////////////////////////////////////////////
                                  Minor Roles
     //////////////////////////////////////////////////////////////*/
     bytes32 internal constant POD_METADATA_REGISTER_ROLE = keccak256("POD_METADATA_REGISTER_ROLE");
-
-    /// @notice capable of poking existing LBP auctions to exchange tokens.
-    bytes32 internal constant LBP_SWAP_ROLE = keccak256("SWAP_ADMIN_ROLE");
 
     /// @notice capable of engaging with Votium for voting incentives.
     bytes32 internal constant VOTIUM_ROLE = keccak256("VOTIUM_ADMIN_ROLE");
@@ -92,9 +95,9 @@ library TribeRoles {
     /// @notice capable of adding an address to multi rate limited
     bytes32 internal constant ADD_MINTER_ROLE = keccak256("ADD_MINTER_ROLE");
 
-    /// @notice capable of changing parameters within non-critical ranges
-    bytes32 internal constant MINOR_PARAM_ROLE = keccak256("MINOR_PARAM_ROLE");
-
     /// @notice capable of changing PCV Deposit and Global Rate Limited Minter in the PSM
     bytes32 internal constant PSM_ADMIN_ROLE = keccak256("PSM_ADMIN_ROLE");
+
+    /// @notice capable of moving PCV between safe addresses on the PCVGuardian
+    bytes32 internal constant PCV_SAFE_MOVER_ROLE = keccak256("PCV_SAFE_MOVER_ROLE");
 }

@@ -6,6 +6,7 @@ import { BigNumber, BigNumberish, Contract, Signer } from 'ethers';
 import { NamedAddresses } from '@custom-types/types';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import EthersAdapter from '@gnosis.pm/safe-ethers-lib';
+import { BN } from 'ethereumjs-util';
 import Safe from '@gnosis.pm/safe-core-sdk';
 
 // use default BigNumber
@@ -134,6 +135,11 @@ async function getCore(): Promise<Core> {
   return core;
 }
 
+const validateArraysEqual = (arrayA: string[], arrayB: string[]) => {
+  expect(arrayA.length).to.equal(arrayB.length);
+  arrayA.every((a) => expect(arrayB.map((b) => b.toLowerCase()).includes(a.toLowerCase())));
+};
+
 async function expectApprox(
   actual: string | number | BigNumberish,
   expected: string | number | BigNumberish,
@@ -235,17 +241,11 @@ const time = {
     target = ethers.BigNumber.from(target);
 
     const currentBlock = await time.latestBlock();
-    const start = Date.now();
-    let notified;
     if (target.lt(currentBlock))
       throw Error(`Target block #(${target}) is lower than current block #(${currentBlock})`);
-    while (ethers.BigNumber.from(await time.latestBlock()).lt(target)) {
-      if (!notified && Date.now() - start >= 5000) {
-        notified = true;
-        console.warn(`You're advancing many blocks; this test may be slow.`);
-      }
-      await time.advanceBlock();
-    }
+
+    const diff = target.sub(currentBlock);
+    await hre.network.provider.send('hardhat_mine', [ethers.utils.hexStripZeros(diff.toHexString())]);
   },
 
   advanceBlock: async (): Promise<void> => {
@@ -343,5 +343,6 @@ export {
   resetFork,
   overwriteChainlinkAggregator,
   performDAOAction,
-  initialiseGnosisSDK
+  initialiseGnosisSDK,
+  validateArraysEqual
 };
