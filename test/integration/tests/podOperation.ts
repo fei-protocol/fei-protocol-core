@@ -40,7 +40,6 @@ describe('Pod operation and veto', function () {
   before(async () => {
     chai.use(CBN(ethers.BigNumber));
     chai.use(solidity);
-    await resetFork();
   });
 
   beforeEach(async function () {

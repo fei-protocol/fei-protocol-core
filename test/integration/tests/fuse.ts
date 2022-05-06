@@ -11,7 +11,6 @@ import { forceEth } from '../setup/utils';
 before(async () => {
   chai.use(CBN(ethers.BigNumber));
   chai.use(solidity);
-  await resetFork();
 });
 
 describe('e2e-fuse', function () {
