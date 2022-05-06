@@ -33,6 +33,7 @@ describe('Pod operation and veto', function () {
   let timelockAddress: string;
   let podTimelock: Contract;
   let registryTxData: string;
+  let registryTxData2: string;
 
   const proposalId = '1234';
   const proposalMetadata = 'FIP_XX: This tests that the governance upgrade flow works';
@@ -124,6 +125,12 @@ describe('Pod operation and veto', function () {
       proposalMetadata
     ]);
 
+    registryTxData2 = contracts.governanceMetadataRegistry.interface.encodeFunctionData('registerProposal', [
+      podId,
+      proposalId,
+      proposalMetadata
+    ]);
+
     // Grant the Pod Safe and timelock eth
     await forceEth(safeAddress);
     await forceEth(timelockAddress);
@@ -136,11 +143,25 @@ describe('Pod operation and veto', function () {
       '0x0000000000000000000000000000000000000000000000000000000000000001',
       podConfig.minDelay
     ]);
+
+    const txArgs2 = createSafeTxArgs(podTimelock, 'schedule', [
+      contractAddresses.governanceMetadataRegistry,
+      0,
+      registryTxData2,
+      '0x0000000000000000000000000000000000000000000000000000000000000000',
+      '0x0000000000000000000000000000000000000000000000000000000000000001',
+      podConfig.minDelay
+    ]);
+
     const safeTransaction = await safeSDK.createTransaction(txArgs);
+    const safeTransaction2 = await safeSDK.createTransaction(txArgs2);
 
     // 3.0 Execute transaction on Safe
     const executeTxResponse = await safeSDK.executeTransaction(safeTransaction);
     await executeTxResponse.transactionResponse?.wait();
+
+    const executeTxResponse2 = await safeSDK.executeTransaction(safeTransaction2);
+    await executeTxResponse2.transactionResponse?.wait();
   });
 
   it('should allow a proposal to be proposed and executed', async () => {
@@ -177,9 +198,9 @@ describe('Pod operation and veto', function () {
     const timelockProposalId = await podTimelock.hashOperation(
       contractAddresses.governanceMetadataRegistry,
       0,
-      registryTxData,
+      registryTxData2,
       '0x0000000000000000000000000000000000000000000000000000000000000000',
-      '0x0000000000000000000000000000000000000000000000000000000000000002'
+      '0x0000000000000000000000000000000000000000000000000000000000000001'
     );
 
     // User proposes on NopeDAO
