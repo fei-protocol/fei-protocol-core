@@ -264,7 +264,6 @@ describe('Pod operation and veto', function () {
       '0x0000000000000000000000000000000000000000000000000000000000000001'
     );
     await executeTx.wait();
-    console.log('pod executor has executed');
 
     // 6.0 Validate that the expected role was created in core, should have a ROLE_ADMIN admin
     const dummyRoleAdmin = await contracts.core.getRoleAdmin(dummyRole);
