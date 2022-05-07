@@ -107,4 +107,96 @@ contract PodOperationIntegrationTest is DSTest {
         assertTrue(timelockContract.isOperationDone(txHash));
         assertEq(dummyContract.getVariable(), newDummyContractVar);
     }
+
+    /// @notice Validate that can batch execute transactions from a pod
+    function testBatchExecutePodTransactions() public {
+        // Schedule a transaction from the Pod's safe address to timelock. Transaction sets a variable on a dummy contract
+        uint256 newDummyContractVarA = 10;
+        bytes memory timelockExecutionTxDataA = abi.encodePacked(
+            bytes4(keccak256(bytes("setVariable(uint256)"))),
+            newDummyContractVarA
+        );
+
+        vm.prank(safe);
+        timelockContract.schedule(
+            address(dummyContract),
+            0,
+            timelockExecutionTxDataA,
+            bytes32(0),
+            bytes32("1"),
+            podConfig.minDelay
+        );
+
+        uint256 newDummyContractVarB = 20;
+        bytes memory timelockExecutionTxDataB = abi.encodePacked(
+            bytes4(keccak256(bytes("setVariable(uint256)"))),
+            newDummyContractVarB
+        );
+
+        vm.prank(safe);
+        timelockContract.schedule(
+            address(dummyContract),
+            0,
+            timelockExecutionTxDataB,
+            bytes32(0),
+            bytes32("1"),
+            podConfig.minDelay
+        );
+
+        // 4. Validate that transaction is in timelock
+        bytes32 txHashA = timelockContract.hashOperation(
+            address(dummyContract),
+            0,
+            timelockExecutionTxDataA,
+            bytes32(0),
+            bytes32("1")
+        );
+        assertTrue(timelockContract.isOperationPending(txHashA));
+
+        bytes32 txHashB = timelockContract.hashOperation(
+            address(dummyContract),
+            0,
+            timelockExecutionTxDataB,
+            bytes32(0),
+            bytes32("1")
+        );
+        assertTrue(timelockContract.isOperationPending(txHashB));
+
+        // 5. Fast forward to execution time in timelock
+        vm.warp(podConfig.minDelay + 10);
+        vm.roll(podConfig.minDelay + 10);
+
+        // 6. Execute transaction and validate state is updated
+        address[] memory timelocks = new address[](2);
+        timelocks[0] = podTimelock;
+        timelocks[1] = podTimelock;
+
+        address[] memory targets = new address[](2);
+        targets[0] = address(dummyContract);
+        targets[1] = address(dummyContract);
+
+        uint256[] memory values = new uint256[](2);
+        values[0] = 0;
+        values[1] = 0;
+
+        bytes[] memory txDatas = new bytes[](2);
+        txDatas[0] = timelockExecutionTxDataA;
+        txDatas[1] = timelockExecutionTxDataB;
+
+        bytes32[] memory predecessors = new bytes32[](2);
+        predecessors[0] = bytes32(0);
+        predecessors[1] = bytes32(0);
+
+        bytes32[] memory salts = new bytes32[](2);
+        salts[0] = bytes32("1");
+        salts[1] = bytes32("1");
+
+        podExecutor.executeBatch(timelocks, targets, values, txDatas, predecessors, salts);
+
+        assertTrue(timelockContract.isOperationDone(txHashA));
+        assertTrue(timelockContract.isOperationDone(txHashB));
+
+        // Final updated value should be dummy value B
+        assertEq(dummyContract.getVariable(), newDummyContractVarB);
+    }
 }
