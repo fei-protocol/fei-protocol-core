@@ -1070,9 +1070,6 @@ const dependencies: DependencyMap = {
   },
   balancerLensBpt30Fei70Weth: {
     contractDependencies: ['oneConstantOracle', 'chainlinkEthUsdOracleWrapper']
-  },
-  pcvGuardian: {
-    contractDependencies: []
   }
 };
 
