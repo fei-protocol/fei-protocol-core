@@ -5,15 +5,37 @@ import { OptimisticTimelock } from '@custom-types/contracts';
 import { getImpersonatedSigner, time } from '@test/helpers';
 import { Contract } from '@ethersproject/contracts';
 
-export default async function simulateOAProposal(
+export async function simulateOAProposal(
   proposalInfo: ProposalDescription,
   contracts: MainnetContracts,
   contractAddresses: NamedAddresses,
   logging = false
 ) {
-  const timelock: OptimisticTimelock = contracts.optimisticTimelock as OptimisticTimelock;
-  const signer = await getImpersonatedSigner(contractAddresses.optimisticMultisig);
+  const timelockOA = contracts.optimisticTimelock as OptimisticTimelock;
+  const multisigAddressOA = contractAddresses.optimisticMultisig as string;
+  await simulateTimelockProposal(timelockOA, multisigAddressOA, proposalInfo, contracts, contractAddresses, logging);
+}
 
+export async function simulateTCProposal(
+  proposalInfo: ProposalDescription,
+  contracts: MainnetContracts,
+  contractAddresses: NamedAddresses,
+  logging = false
+) {
+  const timelockTC = contracts.tribalCouncilTimelock as OptimisticTimelock;
+  const multisigAddressTC = contractAddresses.tribalCouncilSafe as string;
+  await simulateTimelockProposal(timelockTC, multisigAddressTC, proposalInfo, contracts, contractAddresses, logging);
+}
+
+export async function simulateTimelockProposal(
+  timelock: OptimisticTimelock,
+  multisigAddress: string,
+  proposalInfo: ProposalDescription,
+  contracts: MainnetContracts,
+  contractAddresses: NamedAddresses,
+  logging = false
+) {
+  const signer = await getImpersonatedSigner(multisigAddress);
   logging && console.log(`Constructing proposal ${proposalInfo.title}`);
 
   const salt = ethers.utils.id(proposalInfo.title);
