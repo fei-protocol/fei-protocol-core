@@ -285,7 +285,7 @@ describe('e2e-peg-stability-module', function () {
       );
       await contracts.compoundDaiPCVDeposit.deposit();
       await contracts.dai.connect(signer).transfer(
-        contracts.daiFixedPricePSM.address,
+        daiFixedPricePSM.address,
         '5500000000000000000000000' // 5.5M
       );
     });
@@ -386,7 +386,7 @@ describe('e2e-peg-stability-module', function () {
 
   describe('rai_psm', async () => {
     describe('redeem', function () {
-      const redeemAmount = 10_000_000;
+      const redeemAmount = 1000;
       beforeEach(async () => {
         await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, redeemAmount);
         await fei.connect(impersonatedSigners[userAddress]).approve(raiPriceBoundPSM.address, redeemAmount);
@@ -398,7 +398,7 @@ describe('e2e-peg-stability-module', function () {
         await rai.connect(raiWhaleSigner).transfer(raiPriceBoundPSM.address, redeemAmount);
       });
 
-      it('exchanges 10,000,000 FEI for rai', async () => {
+      it('exchanges 1000 FEI for rai', async () => {
         const startingFEIBalance = await fei.balanceOf(userAddress);
         const startingraiBalance = await rai.balanceOf(userAddress);
         const expectedraiAmount = await raiPriceBoundPSM.getRedeemAmountOut(redeemAmount);
@@ -415,7 +415,7 @@ describe('e2e-peg-stability-module', function () {
         expect(expectedraiAmount).to.be.gt(0);
       });
 
-      it('exchanges 5,000,000 FEI for rai', async () => {
+      it('exchanges 500 FEI for rai', async () => {
         const startingFEIBalance = await fei.balanceOf(userAddress);
         const startingraiBalance = await rai.balanceOf(userAddress);
         const expectedraiAmount = await raiPriceBoundPSM.getRedeemAmountOut(redeemAmount / 2);
@@ -446,7 +446,7 @@ describe('e2e-peg-stability-module', function () {
         const raiSigner = await getImpersonatedSigner(raiAccount);
         await forceEth(raiAccount);
         await rai.connect(raiSigner).transfer(userAddress, mintAmount);
-        await rai.connect(impersonatedSigners[userAddress]).approve(raiPriceBoundPSM.address, mintAmount);
+        await rai.connect(impersonatedSigners[userAddress]).approve(raiPriceBoundPSM.address, mintAmount * 2);
       });
 
       it('cannot mint because the rai psm is paused', async () => {
