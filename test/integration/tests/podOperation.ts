@@ -70,6 +70,8 @@ describe('Pod operation and veto', function () {
 
     await forceEth(contractAddresses.tribalCouncilTimelock);
     await forceEth(contractAddresses.feiDAOTimelock);
+    await forceEth(contractAddresses.tribalCouncilTimelock);
+    await forceEth(contractAddresses.feiDAOTimelock);
 
     podConfig = {
       members: [
