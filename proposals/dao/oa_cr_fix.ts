@@ -21,7 +21,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   const balancerLensBpt30Fei70WethFixed = await balancerPool2LensFactory.deploy(
     addresses.gaugeLensBpt30Fei70WethGauge, // address _depositAddress
     addresses.wethERC20, // address _token
-    '0x90291319f1d4ea3ad4db0dd8fe9e12baf749e845', // IWeightedPool _pool
+    addresses.balancerFeiWethPool, // IWeightedPool _pool
     addresses.chainlinkEthUsdOracleWrapper, // IOracle _reportedOracle
     addresses.oneConstantOracle, // IOracle _otherOracle
     false, // bool _feiIsReportedIn
