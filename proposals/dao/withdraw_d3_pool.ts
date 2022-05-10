@@ -7,31 +7,20 @@ import {
   TeardownUpgradeFunc,
   ValidateUpgradeFunc
 } from '@custom-types/types';
+import { forceEth } from '@test/integration/setup/utils';
 
 const fipNumber = 'withdraw_from_d3Pool';
 
-let convexResistantBalanceBefore: ethers.BigNumber;
-let convexFeiBalanceBefore: ethers.BigNumber;
-let curveResistantBalanceBefore: ethers.BigNumber;
-let curveFeiBalanceBefore: ethers.BigNumber;
-let daiInitialPSMFeiBalance: ethers.BigNumber;
+let convexResistantBalanceBefore: any;
+let convexFeiBalanceBefore: any;
+let curveResistantBalanceBefore: any;
+let curveFeiBalanceBefore: any;
+let daiInitialPSMFeiBalance: any;
 
 // Do any deployments
 // This should exclusively include new contract deployments
 const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: NamedAddresses, logging: boolean) => {
-  const skimThreshold = ethers.constants.WeiPerEther.mul(10_000_000);
-  // 1. Deploy a Fei Skimmer for the DAI PSM
-  const daiPSMFeiSkimmerFactory = await ethers.getContractFactory('FeiSkimmer');
-  const daiPSMFeiSkimmer = await daiPSMFeiSkimmerFactory.deploy(
-    addresses.core,
-    addresses.daiFixedPricePSM,
-    skimThreshold
-  );
-  await daiPSMFeiSkimmer.deployed();
-  logging && console.log('DAI PSM Fei Skimmer deployed at', daiPSMFeiSkimmer.address);
-  return {
-    daiPSMFeiSkimmer
-  };
+  return {};
 };
 
 // Do any setup necessary for running the test.
@@ -46,6 +35,9 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
   [curveResistantBalanceBefore, curveFeiBalanceBefore] = await curvePCVdeposit.resistantBalanceAndFei();
 
   daiInitialPSMFeiBalance = await daiFixedPricePSM.feiBalance();
+
+  await forceEth(addresses.tribalCouncilTimelock);
+  await forceEth(addresses.tribalCouncilSafe);
 };
 
 // Tears down any changes made in setup() that need to be
@@ -59,30 +51,37 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
   const convexPCVDeposit = contracts.d3poolConvexPCVDeposit;
   const curvePCVDeposit = contracts.d3poolCurvePCVDeposit;
-  const core = contracts.core;
-  const daiPSMFeiSkimmer = contracts.daiPSMFeiSkimmer;
+  const daiFixedPricePSM = contracts.daiFixedPricePSM;
 
+  const LPWithdrawAmount = ethers.constants.WeiPerEther.mul(30_000_000);
   const feiWithdrawAmount = ethers.constants.WeiPerEther.mul(10_000_000);
-
-  // 1. Validate DAI PSM FEI skimmer
-  expect(await daiPSMFeiSkimmer.threshold()).to.be.equal(feiWithdrawAmount);
-  expect(await daiPSMFeiSkimmer.source()).to.be.equal(addresses.daiFixedPricePSM);
-  // TODO: Need DAO vote to give out PCV_CONTROLLER role
-  // expect(await core.hasRole(ethers.utils.id('PCV_CONTROLLER_ROLE'), daiPSMFeiSkimmer.address)).to.be.true;
 
   // 2. Validate withdraw convexPCVDeposit
   const [convexResistantBalanceAfter, convexFeiBalanceAfter] = await convexPCVDeposit.resistantBalanceAndFei();
+  expect(convexFeiBalanceAfter).to.bignumber.equal(convexFeiBalanceBefore); // Fei balance shouldn't have changed
+
+  // Might need calculating
+  // expect(convexResistantBalanceAfter).to.bignumber.equal(convexResistantBalanceBefore.sub(LPWithdrawAmount));
+
+  // 3. Validate curvePCVDeposit
   const [curveResistantBalanceAfter, curveFeiBalanceAfter] = await curvePCVDeposit.resistantBalanceAndFei();
+  expect(curveFeiBalanceAfter).to.bignumber.equal(curveFeiBalanceBefore.sub(feiWithdrawAmount));
+
+  // Might need calculating
+  // expect(curveResistantBalanceAfter).to.bignumber.equal(curveResistantBalanceBefore.sub(feiWithdrawAmount));
 
   console.log(
+    'convex balance before',
     convexResistantBalanceBefore.toString(),
+    'convex balance afer',
     convexResistantBalanceAfter.toString(),
+    'convex fei before',
     convexFeiBalanceBefore.toString(),
+    'convex fei after',
     convexFeiBalanceAfter.toString()
   );
 
-  // 3. Validate withdraw of Fei from D3 Pool
-  const daiPSMFeiBalance = await daiPSMFeiSkimmer.feiBalance();
+  const daiPSMFeiBalance = await daiFixedPricePSM.feiBalance();
   expect(daiPSMFeiBalance).to.be.equal(daiInitialPSMFeiBalance.add(feiWithdrawAmount));
 };
 

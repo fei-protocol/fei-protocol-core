@@ -5,38 +5,18 @@ const fip_x: ProposalDescription = {
   title: 'Withdraw from the D3Pool',
   commands: [
     {
-      target: 'core',
-      values: '0',
-      method: 'grantPCVController(address)',
-      arguments: ['{daiFixedPriceFeiSkimmer}'],
-      description: 'Grant PCV Controller to daiFixedPriceFeiSkimmer'
-    },
-    {
       target: 'pcvGuardianNew',
       values: '0',
       method: 'withdrawToSafeAddress(address,address,uint256,bool,bool)',
-      arguments: [
-        '{d3poolConvexPCVDeposit}',
-        '{d3poolCurvePCVDeposit}',
-        '30000000000000000000000000',
-        'false',
-        'false'
-      ],
+      arguments: ['{d3poolConvexPCVDeposit}', '{d3poolCurvePCVDeposit}', '30000000000000000000000000', false, false],
       description: 'Withdraw 30M USD worth of LP tokens to the d3PoolCurvePCVDeposit'
     },
     {
       target: 'pcvGuardianNew',
       values: '0',
       method: 'withdrawToSafeAddress(address,address,uint256,bool,bool)',
-      arguments: ['{d3poolCurvePCVDeposit}', '{daiFixedPricePSM}', '10000000000000000000000000', 'false', 'false'],
+      arguments: ['{d3poolCurvePCVDeposit}', '{daiFixedPricePSM}', '10000000000000000000000000', false, false],
       description: 'Withdraw 10M worth of Fei from the Curve D3 pool to the DAI PSM'
-    },
-    {
-      target: 'daiPSMSkimmer',
-      values: '0',
-      method: 'skim()',
-      arguments: [],
-      description: 'Skim all the Fei on the DAI PSM - burn it'
     }
   ],
   description: `
