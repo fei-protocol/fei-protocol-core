@@ -21,7 +21,8 @@ import { sudo } from '@scripts/utils/sudo';
 import constructProposal from '@scripts/utils/constructProposal';
 import '@nomiclabs/hardhat-ethers';
 import { resetFork } from '@test/helpers';
-import simulateOAProposal from '@scripts/utils/simulateOAProposal';
+import { simulateOAProposal } from '@scripts/utils/simulateTimelockProposal';
+import { simulateTCProposal } from '@scripts/utils/simulateTimelockProposal';
 import { forceEth } from '@test/integration/setup/utils';
 import { getImpersonatedSigner } from '@test/helpers';
 
@@ -159,6 +160,26 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
       await proposal.simulate();
     }
 
+    if (config.category === ProposalCategory.TC) {
+      this.config.logging && console.log(`Simulating Tribal Council proposal...`);
+      await simulateTCProposal(
+        config.proposal,
+        contracts as unknown as MainnetContracts,
+        contractAddresses,
+        this.config.logging
+      );
+    }
+
+    if (config.category === ProposalCategory.OA) {
+      this.config.logging && console.log(`Simulating OA proposal...`);
+      await simulateOAProposal(
+        config.proposal,
+        contracts as unknown as MainnetContracts,
+        contractAddresses,
+        this.config.logging
+      );
+    }
+
     if (config.category === ProposalCategory.DEBUG) {
       console.log('Simulating DAO proposal in DEBUG mode (step by step)...');
       console.log('  Title: ', config.proposal.title);
@@ -204,16 +225,6 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
         totalGasUsed += Number(d.cumulativeGasUsed.toString());
       }
       console.log('  Done. Used', totalGasUsed, 'gas in total.');
-    }
-
-    if (config.category === ProposalCategory.OA) {
-      this.config.logging && console.log(`Simulating OA proposal...`);
-      await simulateOAProposal(
-        config.proposal,
-        contracts as unknown as MainnetContracts,
-        contractAddresses,
-        this.config.logging
-      );
     }
 
     // teardown the DAO proposal

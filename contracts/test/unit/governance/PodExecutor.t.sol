@@ -26,7 +26,7 @@ contract PodExecutorTest is DSTest {
         vm.stopPrank();
     }
 
-    /// @notice Validate initial state of roleCreator
+    /// @notice Validate can pause execution
     function testCanPause() public {
         vm.prank(addresses.governorAddress);
         podExecutor.pause();

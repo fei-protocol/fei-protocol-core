@@ -1,4 +1,4 @@
-import { Contract, ethers } from 'ethers';
+import { ethers } from 'ethers';
 import {
   AavePCVDeposit,
   AutoRewardsDistributor,
@@ -29,6 +29,7 @@ import {
   RewardsDistributorAdmin,
   StakingTokenWrapper,
   Timelock,
+  TimelockController,
   TribalChief,
   Tribe,
   TribeReserveStabilizer,
@@ -64,6 +65,7 @@ export enum ProposalCategory {
   DAO,
   DEBUG,
   OA,
+  TC, // Tribal Council
   None
 }
 
@@ -236,6 +238,7 @@ export interface MainnetContracts {
   autoRewardsDistributor: AutoRewardsDistributor;
   rewardsDistributorAdmin: RewardsDistributorAdmin;
   restrictedPermissions: RestrictedPermissions;
+  tribalCouncilTimelock: TimelockController;
 }
 
 export interface MainnetContractAddresses {
@@ -270,6 +273,7 @@ export interface MainnetContractAddresses {
   stakingTokenWrapperRari: string;
   rariRewardsDistributorDelegator: string;
   restrictedPermissions: string;
+  tribalCouncilTimelock: string;
 }
 
 export type ContractAccessRights = {
