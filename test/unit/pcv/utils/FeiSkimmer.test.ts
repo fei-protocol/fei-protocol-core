@@ -81,4 +81,21 @@ describe('FeiSkimmer', function () {
       );
     });
   });
+
+  describe('Set Source', function () {
+    it('from governor succeeds', async function () {
+      expect(await skimmer.source()).to.be.equal(source.address);
+
+      await skimmer.connect(impersonatedSigners[governorAddress]).setSource(userAddress);
+
+      expect(await skimmer.source()).to.be.equal(userAddress);
+    });
+
+    it('not from governor succeeds', async function () {
+      await expectRevert(
+        skimmer.connect(impersonatedSigners[userAddress]).setSource(userAddress),
+        'CoreRef: Caller is not a governor or contract admin'
+      );
+    });
+  });
 });

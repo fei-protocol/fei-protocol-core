@@ -8,9 +8,10 @@ import "../../refs/CoreRef.sol";
 /// @author Fei Protocol
 contract FeiSkimmer is CoreRef {
     event ThresholdUpdate(uint256 newThreshold);
+    event SourceUpdate(address newSource);
 
     /// @notice source PCV deposit to skim excess FEI from
-    IPCVDeposit public immutable source;
+    IPCVDeposit public source;
 
     /// @notice the threshold of FEI above which to skim
     uint256 public threshold;
@@ -52,5 +53,12 @@ contract FeiSkimmer is CoreRef {
     function setThreshold(uint256 newThreshold) external onlyGovernorOrAdmin {
         threshold = newThreshold;
         emit ThresholdUpdate(newThreshold);
+    }
+
+    /// @notice Set the target to skim from. Only Governor or Admin
+    /// @param newSource the new source to skim from
+    function setSource(address newSource) external onlyGovernorOrAdmin {
+        source = IPCVDeposit(newSource);
+        emit SourceUpdate(newSource);
     }
 }
