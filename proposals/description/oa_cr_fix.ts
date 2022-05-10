@@ -7,7 +7,7 @@ const fip_x: ProposalDescription = {
       target: 'collateralizationOracle',
       values: '0',
       method: 'swapDeposit(address,address)',
-      arguments: ['{balancerLensBpt30Fei70Weth}', '{balancerLensBpt30Fei70WethFixed}'],
+      arguments: ['{balancerLensBpt30Fei70WethOld}', '{balancerLensBpt30Fei70Weth}'],
       description: 'Update B-70WETH-30FEI Lens'
     },
     {
