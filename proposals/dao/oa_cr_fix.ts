@@ -18,7 +18,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   // Deploy lens to report B-30FEI-70WETH as WETH and protocol-owned FEI
   // (The new contract contains a fix)
   const balancerPool2LensFactory = await ethers.getContractFactory('BalancerPool2Lens');
-  const balancerLensBpt30Fei70WethFixed = await balancerPool2LensFactory.deploy(
+  const balancerLensBpt30Fei70Weth = await balancerPool2LensFactory.deploy(
     addresses.gaugeLensBpt30Fei70WethGauge, // address _depositAddress
     addresses.wethERC20, // address _token
     addresses.balancerFeiWethPool, // IWeightedPool _pool
@@ -27,11 +27,11 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     false, // bool _feiIsReportedIn
     true // bool _feiIsOther
   );
-  await balancerLensBpt30Fei70WethFixed.deployTransaction.wait();
-  logging && console.log('balancerLensBpt30Fei70WethFixed: ', balancerLensBpt30Fei70WethFixed.address);
+  await balancerLensBpt30Fei70Weth.deployTransaction.wait();
+  logging && console.log('balancerLensBpt30Fei70Weth: ', balancerLensBpt30Fei70Weth.address);
 
   return {
-    balancerLensBpt30Fei70WethFixed
+    balancerLensBpt30Fei70Weth
   };
 };
 
@@ -86,16 +86,16 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   );
 
   // Check the lens swap
-  expect(await contracts.collateralizationOracle.depositToToken(addresses.balancerLensBpt30Fei70Weth)).to.be.equal(
+  expect(await contracts.collateralizationOracle.depositToToken(addresses.balancerLensBpt30Fei70WethOld)).to.be.equal(
     ZERO_ADDRESS
   );
-  expect(await contracts.collateralizationOracle.depositToToken(addresses.balancerLensBpt30Fei70WethFixed)).to.be.equal(
+  expect(await contracts.collateralizationOracle.depositToToken(addresses.balancerLensBpt30Fei70Weth)).to.be.equal(
     addresses.weth
   );
 
   // Check the new lens returned values
-  const balance = (await contracts.balancerLensBpt30Fei70WethFixed.balance()) / 1e18;
-  const resistantBalanceAndFei = await contracts.balancerLensBpt30Fei70WethFixed.resistantBalanceAndFei();
+  const balance = (await contracts.balancerLensBpt30Fei70Weth.balance()) / 1e18;
+  const resistantBalanceAndFei = await contracts.balancerLensBpt30Fei70Weth.resistantBalanceAndFei();
   const resistantBalance = resistantBalanceAndFei[0] / 1e18;
   const resistantFei = resistantBalanceAndFei[1] / 1e18;
   expect(balance).to.be.at.least(14000);

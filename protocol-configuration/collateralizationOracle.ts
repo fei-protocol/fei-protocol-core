@@ -29,7 +29,7 @@ const collateralizationAddresses = {
     'ethPSM',
     'wethDepositWrapper',
     'balancerDepositFeiWeth',
-    'balancerLensBpt30Fei70WethFixed',
+    'balancerLensBpt30Fei70Weth',
     'balancerLensVeBalWeth'
   ],
   dpi: ['rariPool19DpiPCVDepositWrapper', 'dpiDepositWrapper'],

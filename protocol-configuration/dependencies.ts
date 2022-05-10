@@ -657,7 +657,7 @@ const dependencies: DependencyMap = {
       'uniswapPCVDeposit',
       'balancerDepositBalWeth',
       'balancerDepositFeiWeth',
-      'balancerLensBpt30Fei70WethFixed',
+      'balancerLensBpt30Fei70Weth',
       'balancerLensVeBalBal',
       'balancerLensVeBalWeth'
     ]
@@ -698,12 +698,7 @@ const dependencies: DependencyMap = {
     contractDependencies: ['core', 'chainlinkEthUsdOracleWrapper', 'chainlinkCREAMEthOracle', 'collateralizationOracle']
   },
   oneConstantOracle: {
-    contractDependencies: [
-      'core',
-      'collateralizationOracle',
-      'balancerDepositFeiWeth',
-      'balancerLensBpt30Fei70WethFixed'
-    ]
+    contractDependencies: ['core', 'collateralizationOracle', 'balancerDepositFeiWeth', 'balancerLensBpt30Fei70Weth']
   },
   tribeUsdCompositeOracle: {
     contractDependencies: [
@@ -1040,7 +1035,7 @@ const dependencies: DependencyMap = {
   balancerLensVeBalWeth: {
     contractDependencies: ['balUsdCompositeOracle', 'chainlinkEthUsdOracleWrapper']
   },
-  balancerLensBpt30Fei70WethFixed: {
+  balancerLensBpt30Fei70Weth: {
     contractDependencies: ['oneConstantOracle', 'chainlinkEthUsdOracleWrapper']
   },
   pcvGuardian: {

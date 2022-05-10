@@ -396,12 +396,12 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0xa8E388a1f19f2b33Be8bf2cCeC43641C10b4D1e5',
     category: AddressCategory.External // not really External, but not PCV
   },
-  balancerLensBpt30Fei70Weth: {
+  balancerLensBpt30Fei70WethOld: {
     artifactName: 'BalancerPool2Lens',
     address: '0xb31F75550e97A2C4c7AC8d4355032B8AE8b9584D',
     category: AddressCategory.Deprecated
   },
-  balancerLensBpt30Fei70WethFixed: {
+  balancerLensBpt30Fei70Weth: {
     artifactName: 'BalancerPool2Lens',
     address: '0x673f7DFA863b611dE657759aEDE629b260F4E682',
     category: AddressCategory.PCV
