@@ -8,14 +8,15 @@ import {
   ValidateUpgradeFunc
 } from '@custom-types/types';
 import { forceEth } from '@test/integration/setup/utils';
+import { BigNumber } from 'ethers';
 
 const fipNumber = 'withdraw_from_d3Pool';
 
-let convexResistantBalanceBefore: any;
-let convexFeiBalanceBefore: any;
-let curveResistantBalanceBefore: any;
-let curveFeiBalanceBefore: any;
-let daiInitialPSMFeiBalance: any;
+let convexResistantBalanceBefore: BigNumber;
+let convexFeiBalanceBefore: BigNumber;
+let curveResistantBalanceBefore: BigNumber;
+let curveFeiBalanceBefore: BigNumber;
+let daiInitialPSMFeiBalance: BigNumber;
 
 // Do any deployments
 // This should exclusively include new contract deployments

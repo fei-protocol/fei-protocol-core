@@ -1679,7 +1679,7 @@ const MainnetAddresses: MainnetAddresses = {
   daiFixedPriceFeiSkimmer: {
     artifactName: 'FeiSkimmer',
     address: '',
-    category: AddressCategory.PCV
+    category: AddressCategory.Peg
   },
   daiPSMFeiSkimmer: {
     artifactName: 'FeiSkimmer',

@@ -10,7 +10,7 @@ const proposals: ProposalsConfigMap = {
     proposal: fip_105, // full proposal file, imported from '@proposals/description/fip_xx.ts'
     proposalId: '',
     affectedContractSignoff: ['daiFixedPricePSMFeiSkimmer'],
-    deprecatedContractSignoff: [''],
+    deprecatedContractSignoff: [],
     category: ProposalCategory.DAO
   },
   withdraw_d3_pool: {
@@ -19,7 +19,7 @@ const proposals: ProposalsConfigMap = {
     proposal: withdrawD3Pool, // full proposal file, imported from '@proposals/description/fip_xx.ts'
     proposalId: '',
     affectedContractSignoff: ['pcvGuardianNew', 'd3poolCurvePCVDeposit', 'd3poolConvexPCVDeposit', 'daiFixedPricePSM'],
-    deprecatedContractSignoff: [''],
+    deprecatedContractSignoff: [],
     category: ProposalCategory.TC
   }
 };
