@@ -74,7 +74,7 @@ describe('FeiSkimmer', function () {
       expect(await skimmer.threshold()).to.be.equal(0);
     });
 
-    it('not from governor succeeds', async function () {
+    it('not from governor fails', async function () {
       await expectRevert(
         skimmer.connect(impersonatedSigners[userAddress]).setThreshold(0),
         'CoreRef: Caller is not a governor or contract admin'
@@ -91,7 +91,7 @@ describe('FeiSkimmer', function () {
       expect(await skimmer.source()).to.be.equal(userAddress);
     });
 
-    it('not from governor succeeds', async function () {
+    it('not from governor fails', async function () {
       await expectRevert(
         skimmer.connect(impersonatedSigners[userAddress]).setSource(userAddress),
         'CoreRef: Caller is not a governor or contract admin'
