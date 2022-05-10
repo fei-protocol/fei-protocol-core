@@ -98,12 +98,13 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const resistantBalanceAndFei = await contracts.balancerLensBpt30Fei70Weth.resistantBalanceAndFei();
   const resistantBalance = resistantBalanceAndFei[0] / 1e18;
   const resistantFei = resistantBalanceAndFei[1] / 1e18;
+  // 15.86k ETH, 16.3M FEI on 2022-05-10
   expect(balance).to.be.at.least(14000);
-  expect(balance).to.be.at.most(16000);
+  expect(balance).to.be.at.most(18000);
   expect(resistantBalance).to.be.at.least(14000);
-  expect(resistantBalance).to.be.at.most(16000);
-  expect(resistantFei).to.be.at.least(17e6);
-  expect(resistantFei).to.be.at.most(20e6);
+  expect(resistantBalance).to.be.at.most(18000);
+  expect(resistantFei).to.be.at.least(10e6);
+  expect(resistantFei).to.be.at.most(25e6);
 
   // display pcvStats
   console.log('----------------------------------------------------');
