@@ -1676,7 +1676,7 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0xFf419Bc27483edb94b7Ad5c97b7FaB5DB323c7E0',
     category: AddressCategory.Deprecated
   },
-  daiFixedPriceFeiSkimmer: {
+  daiFixedPricePSMFeiSkimmer: {
     artifactName: 'FeiSkimmer',
     address: '0x03dF86Dbe97e31d18864978baAAc6D697Ed6df36',
     category: AddressCategory.Peg
