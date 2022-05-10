@@ -1676,6 +1676,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0xFf419Bc27483edb94b7Ad5c97b7FaB5DB323c7E0',
     category: AddressCategory.Deprecated
   },
+  daiFixedPriceFeiSkimmer: {
+    artifactName: 'FeiSkimmer',
+    address: '',
+    category: AddressCategory.PCV
+  },
   daiPSMFeiSkimmer: {
     artifactName: 'FeiSkimmer',
     address: '0xf8Ca6c10a794C867497541F5b7A7f96ca2bCd1E8',
