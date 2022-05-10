@@ -21,6 +21,7 @@ const fip_x: ProposalDescription = {
           '{rariPool8LusdPCVDeposit}', // Fuse Pool 8 LUSD
           '{rariPool18FeiPCVDepositWrapper}', // Fuse Pool 18 FEI
           '{rariPool27FeiPCVDepositWrapper}', // Fuse Pool 27 FEI
+          '{rariPool90FeiPCVDepositWrapper}', // Fuse Pool 90 FEI
           '{rariPool146EthPCVDeposit}', // Fuse Pool 146 ETH
           '{convexPoolPCVDepositWrapper}' // Fuse Pool 156 FEI
         ]

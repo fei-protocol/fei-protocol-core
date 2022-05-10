@@ -75,6 +75,9 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await contracts.collateralizationOracle.depositToToken(addresses.rariPool27FeiPCVDepositWrapper)).to.be.equal(
     ZERO_ADDRESS
   );
+  expect(await contracts.collateralizationOracle.depositToToken(addresses.rariPool90FeiPCVDepositWrapper)).to.be.equal(
+    ZERO_ADDRESS
+  );
   expect(await contracts.collateralizationOracle.depositToToken(addresses.rariPool146EthPCVDeposit)).to.be.equal(
     ZERO_ADDRESS
   );

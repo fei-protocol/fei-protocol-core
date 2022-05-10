@@ -5,7 +5,6 @@ const collateralizationAddresses = {
     'rariPool19FeiPCVDepositWrapper',
     'rariPool24FeiPCVDepositWrapper',
     'rariPool25FeiPCVDepositWrapper',
-    'rariPool90FeiPCVDepositWrapper',
     'aaveFeiPCVDepositWrapper',
     'rariPool79FeiPCVDepositWrapper',
     'rariPool31FeiPCVDepositWrapper',
