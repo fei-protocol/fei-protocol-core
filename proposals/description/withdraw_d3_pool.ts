@@ -23,8 +23,6 @@ const fip_x: ProposalDescription = {
   Withdraw 30M USD worth of LP tokens from the d3 pool on Curve. 
   
   Send the LP tokens to the d3PoolCurvePCVDeposit and then withdraw 10M FEI from the pool to the DAI PSM. 
-
-  Then skim all the FEI on the DAI PSM and burn it.
   `
 };
 

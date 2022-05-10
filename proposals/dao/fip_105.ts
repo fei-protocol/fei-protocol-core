@@ -16,7 +16,6 @@ Description: Deploy a Fei skimmer for the DAI PSM
 */
 
 const fipNumber = '105';
-
 const skimThreshold = ethers.constants.WeiPerEther.mul(10_000_000);
 
 const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: NamedAddresses, logging: boolean) => {
@@ -30,7 +29,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   await daiFixedPricePSMFeiSkimmer.deployed();
   logging && console.log('DAI PSM Fei Skimmer deployed at', daiFixedPricePSMFeiSkimmer.address);
   return {
-    daiPSMFeiSkimmer: daiFixedPricePSMFeiSkimmer
+    daiFixedPricePSMFeiSkimmer
   };
 };
 

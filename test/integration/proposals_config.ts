@@ -9,7 +9,7 @@ const proposals: ProposalsConfigMap = {
     totalValue: 0, // amount of ETH to send to DAO execution
     proposal: fip_105, // full proposal file, imported from '@proposals/description/fip_xx.ts'
     proposalId: '',
-    affectedContractSignoff: ['daiPSMFeiSkimmer'],
+    affectedContractSignoff: ['daiFixedPricePSMFeiSkimmer'],
     deprecatedContractSignoff: [''],
     category: ProposalCategory.DAO
   },
@@ -18,7 +18,7 @@ const proposals: ProposalsConfigMap = {
     totalValue: 0, // amount of ETH to send to DAO execution
     proposal: withdrawD3Pool, // full proposal file, imported from '@proposals/description/fip_xx.ts'
     proposalId: '',
-    affectedContractSignoff: ['d3poolCurvePCVDeposit', 'd3poolConvexPCVDeposit'],
+    affectedContractSignoff: ['pcvGuardianNew', 'd3poolCurvePCVDeposit', 'd3poolConvexPCVDeposit', 'daiFixedPricePSM'],
     deprecatedContractSignoff: [''],
     category: ProposalCategory.TC
   }
