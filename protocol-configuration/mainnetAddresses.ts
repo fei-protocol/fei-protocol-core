@@ -1976,10 +1976,15 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x1370CA8655C255948d6c6110066d78680601B7c2',
     category: AddressCategory.PCV
   },
-  compoundPCVDepositWrapper: {
+  compoundFeiPCVDepositWrapper: {
     artifactName: 'PCVDepositWrapper',
     address: '0xB80B3dc4F8B30589477b2bA0e4EF2b8224bDf0a5',
     category: AddressCategory.PCV
+  },
+  compoundFeiPCVDeposit: {
+    artifactName: 'PCVDeposit',
+    address: '0xe1f2a7342459b54fbfea9f40695cdd46efadeeee',
+    category: AddressCategory.PCV_V1
   },
   turboFusePCVDeposit: {
     artifactName: 'ERC20CompoundPCVDeposit',
