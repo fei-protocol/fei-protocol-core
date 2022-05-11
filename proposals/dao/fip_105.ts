@@ -55,6 +55,9 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await daiFixedPricePSMFeiSkimmer.threshold()).to.be.equal(skimThreshold);
   expect(await daiFixedPricePSMFeiSkimmer.source()).to.be.equal(addresses.daiFixedPricePSM);
   expect(await core.hasRole(ethers.utils.id('PCV_CONTROLLER_ROLE'), daiFixedPricePSMFeiSkimmer.address)).to.be.true;
+
+  // Validate skimmer contract admin role is set to PCV_MINOR_PARAM_ROLE
+  expect(await daiFixedPricePSMFeiSkimmer.CONTRACT_ADMIN_ROLE(), ethers.utils.id('PCV_MINOR_PARAM_ROLE')).to.be.true;
 };
 
 export { deploy, setup, teardown, validate };

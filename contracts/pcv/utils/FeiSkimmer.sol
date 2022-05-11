@@ -27,6 +27,7 @@ contract FeiSkimmer is CoreRef {
     ) CoreRef(_core) {
         source = _source;
         threshold = _threshold;
+        _setContractAdminRole(keccak256("PCV_MINOR_PARAM_ROLE"));
         emit ThresholdUpdate(threshold);
     }
 
@@ -55,9 +56,9 @@ contract FeiSkimmer is CoreRef {
         emit ThresholdUpdate(newThreshold);
     }
 
-    /// @notice Set the target to skim from. Only Governor or Admin
+    /// @notice Set the target to skim from. Only Governor
     /// @param newSource the new source to skim from
-    function setSource(address newSource) external onlyGovernorOrAdmin {
+    function setSource(address newSource) external onlyGovernor {
         source = IPCVDeposit(newSource);
         emit SourceUpdate(newSource);
     }
