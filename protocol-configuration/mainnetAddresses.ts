@@ -1676,11 +1676,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0xFf419Bc27483edb94b7Ad5c97b7FaB5DB323c7E0',
     category: AddressCategory.Deprecated
   },
-  daiFixedPricePSMFeiSkimmer: {
-    artifactName: 'FeiSkimmer',
-    address: '0x03dF86Dbe97e31d18864978baAAc6D697Ed6df36',
-    category: AddressCategory.Peg
-  },
+  // daiFixedPricePSMFeiSkimmer: {
+  //   artifactName: 'FeiSkimmer',
+  //   address: '',
+  //   category: AddressCategory.Peg
+  // },
   daiPSMFeiSkimmer: {
     artifactName: 'FeiSkimmer',
     address: '0xf8Ca6c10a794C867497541F5b7A7f96ca2bCd1E8',
@@ -1981,10 +1981,15 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x1370CA8655C255948d6c6110066d78680601B7c2',
     category: AddressCategory.PCV
   },
-  compoundPCVDepositWrapper: {
+  compoundFeiPCVDepositWrapper: {
     artifactName: 'PCVDepositWrapper',
     address: '0xB80B3dc4F8B30589477b2bA0e4EF2b8224bDf0a5',
     category: AddressCategory.PCV
+  },
+  compoundFeiPCVDeposit: {
+    artifactName: 'PCVDeposit',
+    address: '0xe1f2a7342459b54fbfea9f40695cdd46efadeeee',
+    category: AddressCategory.PCV_V1
   },
   turboFusePCVDeposit: {
     artifactName: 'ERC20CompoundPCVDeposit',
