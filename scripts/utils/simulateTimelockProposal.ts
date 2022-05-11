@@ -85,7 +85,7 @@ export async function simulateTimelockProposal(
 }
 
 // Recursively interpolate strings in the argument array
-const replaceArgs = (args: any[], contractNames: NamedAddresses) => {
+export function replaceArgs(args: any[], contractNames: NamedAddresses) {
   const result = [];
   for (let i = 0; i < args.length; i++) {
     const element = args[i];
@@ -99,4 +99,4 @@ const replaceArgs = (args: any[], contractNames: NamedAddresses) => {
     }
   }
   return result;
-};
+}
