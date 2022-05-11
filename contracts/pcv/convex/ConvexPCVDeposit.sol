@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.4;
 
-import "../../Constants.sol";
 import "./IConvexBooster.sol";
 import "./IConvexBaseRewardPool.sol";
 import "../curve/ICurvePool.sol";
@@ -59,9 +58,9 @@ contract ConvexPCVDeposit is PCVDeposit {
         feiIndexInPool = feiFoundAtIndex;
     }
 
-    /// @notice Curve/Convex deposits report their balance in USD
-    function balanceReportedIn() public pure override returns (address) {
-        return Constants.USD;
+    /// @notice Curve/Convex deposits report their balance in LP tokens
+    function balanceReportedIn() public view override returns (address) {
+        return address(curvePool);
     }
 
     /// @notice deposit Curve LP tokens on Convex and stake deposit tokens in the
@@ -89,39 +88,11 @@ contract ConvexPCVDeposit is PCVDeposit {
 
     /// @notice returns the balance in USD
     function balance() public view override returns (uint256) {
-        uint256 lpTokensStaked = convexRewards.balanceOf(address(this));
-        uint256 virtualPrice = curvePool.get_virtual_price();
-        uint256 usdBalance = (lpTokensStaked * virtualPrice) / 1e18;
-
-        // if FEI is in the pool, remove the FEI part of the liquidity, e.g. if
-        // FEI is filling 40% of the pool, reduce the balance by 40%.
-        if (feiInPool) {
-            uint256[N_COINS] memory balances;
-            uint256 totalBalances = 0;
-            for (uint256 i = 0; i < N_COINS; i++) {
-                IERC20 poolToken = IERC20(curvePool.coins(i));
-                balances[i] = poolToken.balanceOf(address(curvePool));
-                totalBalances += balances[i];
-            }
-            usdBalance -= (usdBalance * balances[feiIndexInPool]) / totalBalances;
-        }
-
-        return usdBalance;
+        return convexRewards.balanceOf(address(this));
     }
 
-    /// @notice returns the resistant balance in USD and FEI held by the contract
-    function resistantBalanceAndFei() public view override returns (uint256 resistantBalance, uint256 resistantFei) {
-        uint256 lpTokensStaked = convexRewards.balanceOf(address(this));
-        uint256 virtualPrice = curvePool.get_virtual_price();
-        resistantBalance = (lpTokensStaked * virtualPrice) / 1e18;
-
-        // to have a resistant balance, we assume the pool is balanced, e.g. if
-        // the pool holds 3 tokens, we assume FEI is 33.3% of the pool.
-        if (feiInPool) {
-            resistantFei = resistantBalance / N_COINS;
-            resistantBalance -= resistantFei;
-        }
-
-        return (resistantBalance, resistantFei);
+    /// @notice returns the resistant balance in LP tokens held by the contract
+    function resistantBalanceAndFei() public view override returns (uint256, uint256) {
+        return (convexRewards.balanceOf(address(this)), 0);
     }
 }
