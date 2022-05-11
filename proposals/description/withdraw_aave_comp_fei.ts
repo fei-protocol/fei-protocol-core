@@ -14,7 +14,7 @@ const fip_x: ProposalDescription = {
       target: 'pcvGuardianNew',
       values: '0',
       method: 'withdrawToSafeAddress(address,address,uint256,bool,bool)',
-      arguments: ['{compoundUnderlyingPCVDepost}', '{daiFixedPricePSM}', '3000000000000000000000000', false, false],
+      arguments: ['{compoundFeiPCVDeposit}', '{daiFixedPricePSM}', '3000000000000000000000000', false, false],
       description: 'Withdraw 3M Fei from Compound to the DAI PSM'
     }
   ],

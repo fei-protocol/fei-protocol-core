@@ -34,7 +34,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
   console.log(`No actions to complete in setup for fip${fipNumber}`);
   aavePCVBalanceBefore = await contracts.aaveFeiPCVDeposit.balance();
-  compoundPCVBalanceBefore = await contracts.compoundPCVDepositWrapper.balance();
+  compoundPCVBalanceBefore = await contracts.compoundFeiPCVDepositWrapper.balance();
   daiInitialPSMFeiBalance = await contracts.daiFixedPricePSM.feiBalance();
 
   await forceEth(addresses.tribalCouncilTimelock);
@@ -61,7 +61,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   );
 
   // 2. Validate Compound PCV deposit
-  const compoundPCVBalanceAfter = await contracts.compoundPCVDepositWrapper.balance();
+  const compoundPCVBalanceAfter = await contracts.compoundFeiPCVDepositWrapper.balance();
   expect(compoundPCVBalanceAfter).to.bignumber.at.least(
     compoundPCVBalanceBefore.sub(ethers.constants.WeiPerEther.mul(3_100_000))
   );
