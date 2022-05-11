@@ -1981,6 +1981,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0xB80B3dc4F8B30589477b2bA0e4EF2b8224bDf0a5',
     category: AddressCategory.PCV
   },
+  compoundUnderlyingPCVDepost: {
+    artifactName: 'PCVDeposit',
+    address: '0xe1f2a7342459b54fbfea9f40695cdd46efadeeee',
+    category: AddressCategory.PCV_V1
+  },
   turboFusePCVDeposit: {
     artifactName: 'ERC20CompoundPCVDeposit',
     address: '0x2c47Fef515d2C70F2427706999E158533F7cF090',
