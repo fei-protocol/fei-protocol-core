@@ -35,7 +35,7 @@ const collateralizationAddresses = {
     'balancerLensBpt30Fei70Weth',
     'balancerLensVeBalWeth'
   ],
-  dpi: ['dpiDepositWrapper', 'dpiToDaiLensDpi'],
+  dpi: ['dpiToDaiLensDpi'],
   rai: ['raiPriceBoundPSM'],
   agEUR: ['agEurDepositWrapper', 'uniswapLensAgEurUniswapGauge', 'agEurUniswapPCVDeposit'],
   volt: ['voltDepositWrapper']

@@ -6,14 +6,7 @@ const proposals: ProposalsConfigMap = {
   swap_dpi_to_dai: {
     deploy: true,
     proposalId: null,
-    affectedContractSignoff: [
-      'dpi',
-      'compoundDaiPCVDeposit',
-      'dpiToDaiSwapper',
-      'dpiToDaiLensDai',
-      'dpiToDaiLensDpi',
-      ''
-    ],
+    affectedContractSignoff: ['dpi', 'compoundDaiPCVDeposit', 'dpiToDaiSwapper', 'dpiToDaiLensDai', 'dpiToDaiLensDpi'],
     deprecatedContractSignoff: [
       'rariPool31FeiPCVDepositWrapper',
       'rariPool25FeiPCVDepositWrapper',
@@ -22,7 +15,14 @@ const proposals: ProposalsConfigMap = {
       'rariPool19DpiPCVDepositWrapper',
       'liquityFusePoolLusdPCVDeposit',
       'rariPool72FeiPCVDepositWrapper',
-      'raiDepositWrapper'
+      'raiDepositWrapper',
+      'rariPool31FeiPCVDeposit',
+      'rariPool25FeiPCVDeposit',
+      'rariPool9RaiPCVDeposit',
+      'aaveRaiPCVDeposit',
+      'rariPool19DpiPCVDeposit',
+      'rariPool72FeiPCVDeposit',
+      'dpiDepositWrapper'
     ],
     category: ProposalCategory.DAO,
     totalValue: 0,

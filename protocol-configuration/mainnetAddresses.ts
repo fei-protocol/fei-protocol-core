@@ -189,7 +189,7 @@ const MainnetAddresses: MainnetAddresses = {
   aaveRaiPCVDeposit: {
     artifactName: 'AavePCVDeposit',
     address: '0xd2174d78637a40448112aa6B30F9B19e6CF9d1F9',
-    category: AddressCategory.PCV_V1
+    category: AddressCategory.Deprecated
   },
   compoundDaiPCVDeposit: {
     artifactName: 'ERC20CompoundPCVDeposit',
@@ -239,7 +239,7 @@ const MainnetAddresses: MainnetAddresses = {
   rariPool25FeiPCVDeposit: {
     artifactName: 'ERC20CompoundPCVDeposit',
     address: '0xe1662531aA5de1DAD8ab5B5756b8F6c8F3C759Ca',
-    category: AddressCategory.PCV_V1
+    category: AddressCategory.Deprecated
   },
   rariPool26FeiPCVDeposit: {
     artifactName: 'ERC20CompoundPCVDeposit',
@@ -259,7 +259,7 @@ const MainnetAddresses: MainnetAddresses = {
   rariPool19DpiPCVDeposit: {
     artifactName: 'ERC20CompoundPCVDeposit',
     address: '0x3dD3d945C4253bAc5B4Cc326a001B7d3f9C4DD66',
-    category: AddressCategory.PCV_V1
+    category: AddressCategory.Deprecated
   },
   rariPool19FeiPCVDeposit: {
     artifactName: 'ERC20CompoundPCVDeposit',
@@ -289,7 +289,7 @@ const MainnetAddresses: MainnetAddresses = {
   rariPool9RaiPCVDeposit: {
     artifactName: 'ERC20CompoundPCVDeposit',
     address: '0x9aAdFfe00eAe6d8e59bB4F7787C6b99388A6960D',
-    category: AddressCategory.PCV_V1
+    category: AddressCategory.Deprecated
   },
   rariPool28FeiPCVDeposit: {
     artifactName: 'ERC20CompoundPCVDeposit',
@@ -299,12 +299,12 @@ const MainnetAddresses: MainnetAddresses = {
   rariPool31FeiPCVDeposit: {
     artifactName: 'ERC20CompoundPCVDeposit',
     address: '0x81DCB06eA4db474D1506Ca6275Ff7D870bA3A1Be',
-    category: AddressCategory.PCV_V1
+    category: AddressCategory.Deprecated
   },
   rariPool72FeiPCVDeposit: {
     artifactName: 'ERC20CompoundPCVDeposit',
     address: '0x4A5Af5A124E672C156241b76CAd4E41D09dd4883',
-    category: AddressCategory.PCV_V1
+    category: AddressCategory.Deprecated
   },
   rariPool79FeiPCVDeposit: {
     artifactName: 'ERC20CompoundPCVDeposit',
@@ -619,7 +619,7 @@ const MainnetAddresses: MainnetAddresses = {
   dpiDepositWrapper: {
     artifactName: 'ERC20PCVDepositWrapper',
     address: '0xB250926E75b1CC6c53E77bb9426Baac14aB1e24c',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
   raiDepositWrapper: {
     artifactName: 'ERC20PCVDepositWrapper',
