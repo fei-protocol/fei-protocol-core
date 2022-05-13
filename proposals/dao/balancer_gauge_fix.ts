@@ -36,9 +36,37 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   const balancerGaugeStaker = await ethers.getContractAt('BalancerGaugeStaker', balancerGaugeStakerProxy.address);
   logging && console.log('balancerGaugeStaker: ', balancerGaugeStaker.address);
 
+  // initialize proxy state
+  await balancerGaugeStaker.initialize(addresses.core);
+
+  // Deploy lens to report the B-30FEI-70WETH staked in gauge
+  const gaugeLensFactory = await ethers.getContractFactory('CurveGaugeLens');
+  const gaugeLensBpt30Fei70WethGauge = await gaugeLensFactory.deploy(
+    addresses.balancerGaugeBpt30Fei70Weth,
+    balancerGaugeStaker.address
+  );
+  await gaugeLensBpt30Fei70WethGauge.deployTransaction.wait();
+  logging && console.log('gaugeLensBpt30Fei70WethGauge:', gaugeLensBpt30Fei70WethGauge.address);
+
+  // Deploy lens to report B-30FEI-70WETH as WETH and protocol-owned FEI
+  const balancerPool2LensFactory = await ethers.getContractFactory('BalancerPool2Lens');
+  const balancerLensBpt30Fei70Weth = await balancerPool2LensFactory.deploy(
+    gaugeLensBpt30Fei70WethGauge.address, // address _depositAddress
+    addresses.wethERC20, // address _token
+    '0x90291319f1d4ea3ad4db0dd8fe9e12baf749e845', // IWeightedPool _pool
+    addresses.chainlinkEthUsdOracleWrapper, // IOracle _reportedOracle
+    addresses.oneConstantOracle, // IOracle _otherOracle
+    false, // bool _feiIsReportedIn
+    true // bool _feiIsOther
+  );
+  await balancerLensBpt30Fei70Weth.deployTransaction.wait();
+  logging && console.log('balancerLensBpt30Fei70Weth: ', balancerLensBpt30Fei70Weth.address);
+
   return {
     balancerGaugeStakerImplementation,
-    balancerGaugeStaker
+    balancerGaugeStaker,
+    gaugeLensBpt30Fei70WethGauge,
+    balancerLensBpt30Fei70Weth
   };
 };
 
@@ -80,18 +108,66 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
   // check the new staking contract has staked in gauge
+  console.log('---------------------------------------------------------------');
+  console.log(
+    'BPTs staked in the gauge by the new contract',
+    (await contracts.balancerGaugeBpt30Fei70Weth.balanceOf(addresses.balancerGaugeStaker)) / 1e18
+  );
 
   // check rewards can be claimed
-  await time.increase('3600');
+  console.log('---------------------------------------------------------------');
+  console.log('claim rewards...');
+  await time.increase('86400');
   console.log('BAL balance before claim', (await contracts.bal.balanceOf(addresses.balancerGaugeStaker)) / 1e18);
   await contracts.balancerGaugeStaker.mint(addresses.balancerFeiWethPool);
   console.log('BAL balance after claim ', (await contracts.bal.balanceOf(addresses.balancerGaugeStaker)) / 1e18);
+  console.log('balancerGaugeStaker.balance() ', (await contracts.balancerGaugeStaker.balance()) / 1e18);
 
   // check collateralization oracle reports the LP tokens staked
+  console.log('---------------------------------------------------------------');
+  console.log('checking presence in CR oracle');
+  expect(await contracts.collateralizationOracle.depositToToken(addresses.balancerLensBpt30Fei70Weth)).to.be.equal(
+    addresses.weth
+  );
+  expect(await contracts.collateralizationOracle.depositToToken(addresses.balancerLensBpt30Fei70WethOld)).to.be.equal(
+    ethers.constants.AddressZero
+  );
+  console.log('checking resistant balance and fei');
+  const resistantBalanceAndFei = await contracts.balancerLensBpt30Fei70Weth.resistantBalanceAndFei();
+  console.log('resistantBalanceAndFei[0]', resistantBalanceAndFei[0] / 1e18);
+  console.log('resistantBalanceAndFei[1]', resistantBalanceAndFei[1] / 1e18);
 
   // check withdraw() can move BAL
+  console.log('---------------------------------------------------------------');
+  console.log('withdraw(feiDAOTimelock, 1e18)');
+  const withdrawAmount = '1000000000000000000';
+  const sourceBalanceBefore = await contracts.bal.balanceOf(addresses.balancerGaugeStaker);
+  const targetBalanceBefore = await contracts.bal.balanceOf(addresses.feiDAOTimelock);
+  console.log('BAL balance before withdraw [source]', sourceBalanceBefore / 1e18);
+  console.log('BAL balance before withdraw [target]', targetBalanceBefore / 1e18);
+  await contracts.balancerGaugeStaker.withdraw(addresses.feiDAOTimelock, withdrawAmount);
+  const sourceBalanceAfter = await contracts.bal.balanceOf(addresses.balancerGaugeStaker);
+  const targetBalanceAfter = await contracts.bal.balanceOf(addresses.feiDAOTimelock);
+  console.log('BAL balance after  withdraw [source]', sourceBalanceAfter / 1e18);
+  console.log('BAL balance after  withdraw [target]', targetBalanceAfter / 1e18);
 
   // check withdrawERC20() can unstake gauge & move LP tokens
+  console.log('---------------------------------------------------------------');
+  console.log('withdrawERC20(bpt30Fei70Weth, feiDAOTimelock, 1e18)');
+  const lpWithdrawAmount = '1000000000000000000';
+  const sourceLpBalanceBefore = await contracts.balancerGaugeBpt30Fei70Weth.balanceOf(addresses.balancerGaugeStaker);
+  const targetLpBalanceBefore = await contracts.bpt30Fei70Weth.balanceOf(addresses.feiDAOTimelock);
+  console.log('LP balance before withdraw [source]', sourceLpBalanceBefore / 1e18);
+  console.log('LP balance before withdraw [target]', targetLpBalanceBefore / 1e18);
+  await contracts.balancerGaugeStaker.withdrawERC20(
+    addresses.bpt30Fei70Weth,
+    addresses.feiDAOTimelock,
+    lpWithdrawAmount
+  );
+  const sourceLpBalanceAfter = await contracts.balancerGaugeBpt30Fei70Weth.balanceOf(addresses.balancerGaugeStaker);
+  const targetLpBalanceAfter = await contracts.bpt30Fei70Weth.balanceOf(addresses.feiDAOTimelock);
+  console.log('LP balance after  withdraw [source]', sourceLpBalanceAfter / 1e18);
+  console.log('LP balance after  withdraw [target]', targetLpBalanceAfter / 1e18);
 
   // display pcvStats
   console.log('----------------------------------------------------');

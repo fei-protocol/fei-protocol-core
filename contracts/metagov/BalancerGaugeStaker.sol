@@ -4,10 +4,13 @@ pragma solidity ^0.8.0;
 import "../pcv/PCVDeposit.sol";
 import "./utils/LiquidityGaugeManager.sol";
 import "../external/balancer/IBalancerMinter.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 /// @title Deposit that can stake in Balancer gauges
 /// @author Fei Protocol
 contract BalancerGaugeStaker is PCVDeposit, LiquidityGaugeManager {
+    using SafeERC20 for IERC20;
+
     address public constant BALANCER_GAUGE_CONTROLLER = 0xC128468b7Ce63eA702C1f104D55A2566b13D3ABD;
     address public constant BALANCER_MINTER = 0x239e55F427D44C3cc793f49bFB507ebe76638a2b;
     address public constant BAL = 0xba100000625a3754423978a60c9317c58a424e3D;
@@ -15,6 +18,12 @@ contract BalancerGaugeStaker is PCVDeposit, LiquidityGaugeManager {
     /// @notice Balancer gauge staker
     /// @param _core Fei Core for reference
     constructor(address _core) CoreRef(_core) LiquidityGaugeManager(BALANCER_GAUGE_CONTROLLER) {}
+
+    function initialize(address _core) external {
+        require(gaugeController == address(0), "BalancerGaugeStaker: initialized");
+        CoreRef._initialize(_core);
+        gaugeController = BALANCER_GAUGE_CONTROLLER;
+    }
 
     /// @notice returns total balance of PCV in the Deposit
     function balance() public view override returns (uint256) {
@@ -37,7 +46,8 @@ contract BalancerGaugeStaker is PCVDeposit, LiquidityGaugeManager {
     /// @notice withdraw BAL held to another address
     /// the BAL rewards accrue on this PCVDeposit when Gauge rewards are claimed.
     function withdraw(address to, uint256 amount) external override onlyPCVController whenNotPaused {
-        IERC20(BAL).transfer(to, amount);
+        IERC20(BAL).safeTransfer(to, amount);
+        emit Withdrawal(msg.sender, to, amount);
     }
 
     /// @notice withdraw ERC20 from the contract
@@ -48,7 +58,7 @@ contract BalancerGaugeStaker is PCVDeposit, LiquidityGaugeManager {
         address token,
         address to,
         uint256 amount
-    ) public virtual override onlyPCVController {
+    ) public virtual override onlyPCVController whenNotPaused {
         // if the token has a gauge, we unstake it from the gauge before transfer
         // @dev : note that this gauge unstaking normally is access controlled to
         // onlyTribeRole(TribeRoles.METAGOVERNANCE_GAUGE_ADMIN), but since
