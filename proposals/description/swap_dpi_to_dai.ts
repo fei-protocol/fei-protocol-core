@@ -44,7 +44,7 @@ const swap_dpi_to_dai: ProposalDescription = {
           '{aaveRaiPCVDepositWrapper}',
           '{rariPool19DpiPCVDepositWrapper}',
           '{liquityFusePoolLusdPCVDeposit}',
-          '{rariPool72FeiPCVDepositWrapper',
+          '{rariPool72FeiPCVDepositWrapper}',
           '{raiDepositWrapper}'
         ]
       ],
