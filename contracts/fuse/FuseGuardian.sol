@@ -15,7 +15,7 @@ contract FuseGuardian is CoreRef {
         comptroller = _comptroller;
         /// @notice The reason we are reusing the tribal chief admin role is it consolidates control in the OA,
         /// and means we don't have to do another governance action to create this role in core
-        _setContractAdminRole(keccak256("TRIBAL_CHIEF_ADMIN_ROLE"));
+        _setContractAdminRole(keccak256("FUSE_ADMIN"));
     }
 
     // ************ BORROW GUARDIAN FUNCTIONS ************
