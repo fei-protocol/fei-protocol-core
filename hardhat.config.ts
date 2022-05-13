@@ -23,6 +23,7 @@ const runAllTests = process.env.RUN_ALL_TESTS;
 const useJSONTestReporter = process.env.REPORT_TEST_RESULTS_AS_JSON;
 const etherscanKey = process.env.ETHERSCAN_API_KEY;
 const forkBlock = process.env.FORK_BLOCK;
+const logging = process.env.LOGGING;
 
 if (!(process.env.NODE_OPTIONS && process.env.NODE_OPTIONS.includes('max-old-space-size'))) {
   throw new Error(
@@ -35,9 +36,9 @@ if (enableMainnetForking) {
     throw new Error('Cannot fork mainnet without mainnet alchemy api key.');
   }
 
-  console.log('Mainnet forking enabled.');
+  logging && console.log('Mainnet forking enabled.');
 } else {
-  console.log('Mainnet forking disabled.');
+  logging && console.log('Mainnet forking disabled.');
 }
 
 if (useJSONTestReporter) {
@@ -58,7 +59,7 @@ export default {
       forking: enableMainnetForking
         ? {
             url: `https://eth-mainnet.alchemyapi.io/v2/${mainnetAlchemyApiKey}`,
-            blockNumber: parseInt(forkBlock)
+            blockNumber: forkBlock ? parseInt(forkBlock) : undefined
           }
         : undefined
     },
