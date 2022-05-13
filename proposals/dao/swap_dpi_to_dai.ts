@@ -21,7 +21,7 @@ const fipNumber = 'swap_dpi_to_dai';
 
 // LBP Swapper config
 const LBP_FREQUENCY = 86400 * 30; // 1 month in seconds
-const MIN_LBP_SIZE = ethers.constants.WeiPerEther.mul(1_000_000); // 1M
+const MIN_LBP_SIZE = ethers.constants.WeiPerEther.mul(10_000); // 10k
 let poolId; // auction pool id
 
 const daiSeedAmount = toBN('187947000000000000000000');
