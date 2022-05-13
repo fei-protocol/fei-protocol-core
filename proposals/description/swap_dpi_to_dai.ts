@@ -2,9 +2,6 @@ import { ProposalDescription } from '@custom-types/types';
 
 const swap_dpi_to_dai: ProposalDescription = {
   title: 'Swap DPI to DAI',
-  // Pull DPI from the DAO timelock
-  // Send it to the Pool along with DAI
-  // Trigger the LBP
   commands: [
     {
       target: 'dpi',
@@ -17,7 +14,7 @@ const swap_dpi_to_dai: ProposalDescription = {
       target: 'compoundDaiPCVDeposit',
       values: '0',
       method: 'withdraw(address,uint256)',
-      arguments: ['{dpiToDaiSwapper}', ''],
+      arguments: ['{dpiToDaiSwapper}', '187947000000000000000000'],
       description: 'Withdraw Use the PCVGuardian to transfer DAI from the CompoundPCVDeposit to the LBP pool'
     },
     {

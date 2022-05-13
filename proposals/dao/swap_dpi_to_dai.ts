@@ -1,4 +1,4 @@
-import hre, { ethers, artifacts } from 'hardhat';
+import { ethers } from 'hardhat';
 import { expect } from 'chai';
 import { TransactionResponse } from '@ethersproject/providers';
 import {
@@ -9,10 +9,10 @@ import {
   ValidateUpgradeFunc
 } from '@custom-types/types';
 import { getImpersonatedSigner, overwriteChainlinkAggregator, time } from '@test/helpers';
-import { forceEth } from '@test/integration/setup/utils';
+
+const toBN = ethers.BigNumber.from;
 
 /*
-
 Swap DPI for DAI using an LBP Swapper
 */
 
@@ -23,11 +23,14 @@ const LBP_FREQUENCY = 86400 * 30; // 1 month in seconds
 const MIN_LBP_SIZE = ethers.constants.WeiPerEther.mul(1_000_000); // 1M
 let poolId; // auction pool id
 
-const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: NamedAddresses, logging: boolean) => {
-  // DPI: 37888449801955370645659 (95%)
-  // DAI: 147,712
+const daiSeedAmount = toBN('187947000000000000000000');
+const dpiSeedAmount = toBN('37888449801955370645659');
 
-  // Total: 3,607,244
+const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: NamedAddresses, logging: boolean) => {
+  // Amounts:
+  // DPI: 37888449801955370645659 (95%), 37k DPI, $3,758,957.86
+  // DAI: 187947000000000000000000 (5%), 187k DAI, $187,947.89
+
   // 1. Deploy the Balancer LBP swapper
   const BalancerLBPSwapperFactory = await ethers.getContractFactory('BalancerLBPSwapper');
   const dpiToDaiSwapper = await BalancerLBPSwapperFactory.deploy(
@@ -39,8 +42,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
       _decimalsNormalizer: 0
     },
     LBP_FREQUENCY,
-    '30000000000000000', // small weight 4%
-    '950000000000000000', // large weight 96%
+    '50000000000000000', // small weight 5%
+    '950000000000000000', // large weight 95%
     addresses.dpi,
     addresses.dai,
     addresses.compoundDaiPCVDeposit, // send DAI to Compound DAI deposit, where it can then be dripped to PSM
@@ -125,6 +128,18 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
   expect(poolTokens.tokens[0]).to.be.equal(addresses.dpi);
   expect(poolTokens.tokens[1]).to.be.equal(addresses.dai);
 
+  // LBP swapper should be empty
+  expect(poolTokens.balances[0]).to.be.equal('0');
+  expect(poolTokens.balances[1]).to.be.equal('0');
+
+  // Lenses should report 0 because LBP is empty
+  expect(await contracts.dpiToDaiLensDai.balance()).to.be.equal('0');
+  expect(await contracts.dpiToDaiLensDpi.balance()).to.be.equal('0');
+
+  // Swapper should hold no tokens
+  expect(await contracts.dpi.balanceOf(contracts.dpiToDaiSwapper.address)).to.be.equal('0');
+  expect(await contracts.dai.balanceOf(contracts.dpiToDaiSwapper.address)).to.be.equal('0');
+
   console.log('Starting DAI PSM dai balance [M]', (await contracts.compoundDaiPCVDeposit.balance()) / 1e24);
 };
 
@@ -137,68 +152,16 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // Run any validations required on the fip using mocha or console logging
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
+  // By this point, the DAO has moved funds to the LBP swapper and the auction should be active
   console.log('Final DAI PSM dai balance [M]', (await contracts.compoundDaiPCVDeposit.balance()) / 1e24);
 
-  // LBP swapper should be empty
-  const poolTokens = await contracts.balancerVault.getPoolTokens(poolId);
-  expect(poolTokens.balances[0]).to.be.equal('0');
-  expect(poolTokens.balances[1]).to.be.equal('0');
+  expect(await contracts.dpi.balanceOf(contracts.dpiToDaiSwapper.address)).to.be.equal(dpiSeedAmount);
+  expect(await contracts.dai.balanceOf(contracts.dpiToDaiSwapper.address)).to.be.equal(daiSeedAmount);
 
-  // Lenses should report 0 because LBP is empty
-  expect(await contracts.dpiToDaiLensDai.balance()).to.be.equal('0');
-  expect(await contracts.dpiToDaiLensDpi.balance()).to.be.equal('0');
-
-  // Swapper should hold no tokens
-  expect(await contracts.dpi.balanceOf(contracts.dpiToDaiSwapper.address)).to.be.equal('0');
-  expect(await contracts.dai.balanceOf(contracts.dpiToDaiSwapper.address)).to.be.equal('0');
-
-  // End-to-end test : use the guardian to start a LUSD->DAI auction
-  const signer = await getImpersonatedSigner(addresses.multisig); // guardian
-
-  // Want to transfer all DPI from the dpiDepositWrapper and rariPool19DpiPCVDepositWrapper
-  // dpiDepositWrapper = $3.2m
-  // rariPool19DpiPCVDepositWrapper = $0.2m
-
-  // Move 3.4M DPI to the Swapper
-  const dpiDepositWrapperAmount = await contracts.dpiDepositWrapper.balance();
-  logging && console.log('DPI deposit amount: ', dpiDepositWrapperAmount.toString());
-  await contracts.pcvGuardianNew.connect(signer).withdrawToSafeAddress(
-    contracts.dpiDepositWrapper.address, // address pcvDeposit,
-    contracts.dpiToDaiSwapper.address, // address safeAddress,
-    dpiDepositWrapperAmount, // uint256 amount - 35,231 DPI
-    false, // bool pauseAfter,
-    false // bool depositAfter
-  );
-
-  const dpiRariDepositAmount = await contracts.rariPool19DpiPCVDepositWrapper.balance();
-  logging && console.log('Rari DPI amount: ', dpiRariDepositAmount.toString());
-  await contracts.pcvGuardianNew.connect(signer).withdrawToSafeAddress(
-    contracts.dpiDepositWrapper.address, // address pcvDeposit,
-    contracts.dpiToDaiSwapper.address, // address safeAddress,
-    dpiRariDepositAmount, // uint256 amount - - 2,657 DPI
-    false, // bool pauseAfter,
-    false // bool depositAfter
-  );
-
-  // Move ~147k DAI to the Swapper
-  const compoundDAIDepositAmount = await contracts.compoundDAIDepositWrapper.balance();
-  logging && console.log('Compound DAI amount: ', compoundDAIDepositAmount.toString());
-  await contracts.pcvGuardianNew.connect(signer).withdrawToSafeAddress(
-    contracts.compoundDaiPCVDeposit.address, // address pcvDeposit,
-    contracts.dpiToDaiSwapper.address, // address safeAddress,
-    compoundDAIDepositAmount, // uint256 amount
-    false, // bool pauseAfter,
-    false // bool depositAfter
-  );
-  expect(await contracts.dpi.balanceOf(contracts.dpiToDaiSwapper.address)).to.be.equal(
-    ethers.constants.WeiPerEther.mul(dpiDepositWrapperAmount.add(dpiRariDepositAmount))
-  );
-  expect(await contracts.dai.balanceOf(contracts.dpiToDaiSwapper.address)).to.be.equal(
-    ethers.constants.WeiPerEther.mul(compoundDAIDepositAmount)
-  );
-  //
   await time.increase(await contracts.dpiToDaiSwapper.remainingTime());
   expect(await contracts.dpiToDaiSwapper.isTimeEnded()).to.be.true;
+
+  const signer = await getImpersonatedSigner(addresses.multisig); // guardian
   await contracts.dpiToDaiSwapper.connect(signer).swap();
   expect(await contracts.dpiToDaiSwapper.isTimeEnded()).to.be.false;
 };
