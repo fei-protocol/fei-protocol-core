@@ -10,6 +10,7 @@ import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IWETH.sol";
+import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 
 /// @title implementation for PCV Swapper that swaps ERC20 tokens on Uniswap
 /// @author eswak
@@ -35,6 +36,9 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
     uint256 public maximumSlippageBasisPoints;
     uint256 public constant BASIS_POINTS_GRANULARITY = 10_000;
 
+    /// @notice UniswapV2 router
+    IUniswapV2Router02 public router;
+
     event UpdateTokenSpent(address _tokenFrom);
     event UpdateTokenReceived(address _tokenTo);
     event UpdateReceivingAddress(address _tokenReceivingAddress);
@@ -56,7 +60,7 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
         uint256 _maximumSlippageBasisPoints,
         bool _invertOraclePrice,
         uint256 _swapIncentiveAmount
-    ) public UniRef(_core, _pair, _router, _oracle) Timed(_swapFrequency) {
+    ) public UniRef(_core, _pair, _oracle, address(0x0)) Timed(_swapFrequency) {
         tokenSpent = _tokenSpent;
         tokenReceived = _tokenReceived;
         tokenReceivingAddress = _tokenReceivingAddress;
@@ -64,6 +68,7 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
         maximumSlippageBasisPoints = _maximumSlippageBasisPoints;
         invertOraclePrice = _invertOraclePrice;
         swapIncentiveAmount = _swapIncentiveAmount;
+        router = IUniswapV2Router02(_router);
 
         emit UpdateTokenSpent(_tokenSpent);
         emit UpdateTokenReceived(_tokenReceived);
