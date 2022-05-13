@@ -23,6 +23,7 @@ describe('e2e-peg-stability-module', function () {
   let ethPSMRouter: Contract;
   let userAddress;
   let minterAddress;
+  let governorAddress;
   let weth: Contract;
   let dai: Contract;
   let raiPriceBoundPSM: Contract;
@@ -88,7 +89,7 @@ describe('e2e-peg-stability-module', function () {
       contracts.feiDAOTimelock.address
     ];
 
-    ({ userAddress, minterAddress, beneficiaryAddress1, guardianAddress } = addresses);
+    ({ userAddress, minterAddress, beneficiaryAddress1, guardianAddress, governorAddress } = addresses);
 
     await core.grantMinter(minterAddress);
 
@@ -325,6 +326,11 @@ describe('e2e-peg-stability-module', function () {
       beforeEach(async () => {
         await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, redeemAmount);
         await fei.connect(impersonatedSigners[userAddress]).approve(daiFixedPricePSM.address, redeemAmount);
+
+        const isPaused = await daiFixedPricePSM.paused();
+        if (isPaused) {
+          await daiFixedPricePSM.connect(impersonatedSigners[governorAddress]).unpause();
+        }
       });
 
       it('exchanges 500,000 FEI for DAI', async () => {

@@ -25,6 +25,7 @@ describe('e2e-peg-stability-module', function () {
   let doLogging: boolean;
   let userAddress;
   let minterAddress;
+  let governorAddress;
   let dai: Contract;
   let daiPSM: Contract;
   let fei: Contract;
@@ -122,6 +123,11 @@ describe('e2e-peg-stability-module', function () {
       beforeEach(async () => {
         await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, redeemAmount);
         await fei.connect(impersonatedSigners[userAddress]).approve(daiPSM.address, redeemAmount);
+
+        const isPaused = await daiPSM.paused();
+        if (isPaused) {
+          await daiPSM.connect(impersonatedSigners[governorAddress]).unpause();
+        }
       });
 
       it('exchanges 10,000,000 FEI for DAI', async () => {
