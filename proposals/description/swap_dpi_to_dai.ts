@@ -22,14 +22,21 @@ const swap_dpi_to_dai: ProposalDescription = {
       values: '0',
       method: 'addDeposit(address)',
       arguments: ['{dpiToDaiLensDai}'],
-      description: 'Add DAI lens on swapper to CR oracle'
+      description: 'Add DAI swapper lens to the CR oracle'
     },
     {
       target: 'collateralizationOracle',
       values: '0',
       method: 'addDeposit(address)',
       arguments: ['{dpiToDaiLensDpi}'],
-      description: 'Add DPI lens on swapper to CR oracle'
+      description: 'Add DPI swapper lens to the CR oracle'
+    },
+    {
+      target: 'collateralizationOracle',
+      values: '0',
+      method: 'removeDeposit(address)',
+      arguments: ['{dpiDepositWrapper}'],
+      description: 'Remove DPI Deposit wrapper from CR oracle, as now empty'
     }
   ],
   description: `

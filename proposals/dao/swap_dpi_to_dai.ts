@@ -9,6 +9,7 @@ import {
   ValidateUpgradeFunc
 } from '@custom-types/types';
 import { getImpersonatedSigner, overwriteChainlinkAggregator, time } from '@test/helpers';
+import { forceEth } from '@test/integration/setup/utils';
 
 const toBN = ethers.BigNumber.from;
 
@@ -141,6 +142,8 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
   expect(await contracts.dai.balanceOf(contracts.dpiToDaiSwapper.address)).to.be.equal('0');
 
   console.log('Starting DAI PSM dai balance [M]', (await contracts.compoundDaiPCVDeposit.balance()) / 1e24);
+
+  await forceEth(addresses.optimisticTimelock);
 };
 
 // Tears down any changes made in setup() that need to be
@@ -161,7 +164,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   await time.increase(await contracts.dpiToDaiSwapper.remainingTime());
   expect(await contracts.dpiToDaiSwapper.isTimeEnded()).to.be.true;
 
-  const signer = await getImpersonatedSigner(addresses.multisig); // guardian
+  const signer = await getImpersonatedSigner(addresses.optimisticTimelock); // TODO: TribalCouncil should grant itself SWAP_ADMIN_ROLE
   await contracts.dpiToDaiSwapper.connect(signer).swap();
   expect(await contracts.dpiToDaiSwapper.isTimeEnded()).to.be.false;
 };
