@@ -112,7 +112,10 @@ describe('e2e-dependencies', function () {
             // addresses[deposit] may be undefined if a deposit is added to the
             // dependencies and permissions/collateralizationOracle files, but
             // is not yet deployed on the mainnet (i.e. in mainnetAddresses.ts).
-            expect(addresses[deposit].category).to.not.be.equal('Deprecated');
+            expect(addresses[deposit].category).to.not.be.equal(
+              'Deprecated',
+              'Deposit [' + deposit + '] is in collateralizationoracle.ts and has AddressCategory.Deprecated'
+            );
           }
         }
       }
