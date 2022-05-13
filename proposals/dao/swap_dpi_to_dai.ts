@@ -13,19 +13,18 @@ import { forceEth } from '@test/integration/setup/utils';
 
 /*
 
-Swap DPI for DAI
-
+Swap DPI for DAI using an LBP Swapper
 */
 
-const fipNumber = 'swap_dpi';
+const fipNumber = 'swap_dpi_to_dai';
 
 // LBP Swapper config
-const LBP_FREQUENCY = '86400'; // 24 hours
+const LBP_FREQUENCY = 86400 * 30; // 1 month in seconds
 const MIN_LBP_SIZE = ethers.constants.WeiPerEther.mul(1_000_000); // 1M
 let poolId; // auction pool id
 
 const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: NamedAddresses, logging: boolean) => {
-  // DPI: 3,459,532
+  // DPI: 37888449801955370645659 (95%)
   // DAI: 147,712
 
   // Total: 3,607,244
@@ -40,11 +39,11 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
       _decimalsNormalizer: 0
     },
     LBP_FREQUENCY,
-    '40000000000000000', // small weight 4%
-    '960000000000000000', // large weight 96%
+    '30000000000000000', // small weight 4%
+    '950000000000000000', // large weight 96%
     addresses.dpi,
     addresses.dai,
-    addresses.daiFixedPricePSM, // send DAI to DAI PSM
+    addresses.compoundDaiPCVDeposit, // send DAI to Compound DAI deposit, where it can then be dripped to PSM
     MIN_LBP_SIZE // minimum size of a pool which the swapper is used against
   );
 
@@ -61,13 +60,11 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     'DPI->DAI Auction Pool', // pool name
     'apDPI-DAI', // lbp token symbol
     [addresses.dpi, addresses.dai], // pool contains [DPI, DAI]
-    [ethers.constants.WeiPerEther.mul(90).div(100), ethers.constants.WeiPerEther.mul(10).div(100)], // initial weights 10%/90%
+    [ethers.constants.WeiPerEther.mul(95).div(100), ethers.constants.WeiPerEther.mul(5).div(100)], // initial weights 5%/95%
     ethers.constants.WeiPerEther.mul(30).div(10_000), // 0.3% swap fees
     dpiToDaiSwapper.address, // pool owner = fei protocol swapper
     true
   );
-
-  // Where does the initial liquidity come from?
 
   const txReceipt = await tx.wait();
   const { logs: rawLogs } = txReceipt;
@@ -81,7 +78,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   const tx2 = await dpiToDaiSwapper.init(noFeeDpiDaiLBPAddress);
   await tx2.wait();
 
-  // 4. Deploy a lens to report the swapper value - possibly don't need these. Small position
+  // 4. Deploy a lens to report the swapper value
   const BPTLensFactory = await ethers.getContractFactory('BPTLens');
   const dpiToDaiLensDai = await BPTLensFactory.deploy(
     addresses.dai, // token reported in
@@ -123,12 +120,12 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
   // invariant checks
   expect(await contracts.dpiToDaiSwapper.tokenSpent()).to.be.equal(addresses.dpi);
   expect(await contracts.dpiToDaiSwapper.tokenReceived()).to.be.equal(addresses.dai);
-  expect(await contracts.dpiToDaiSwapper.tokenReceivingAddress()).to.be.equal(addresses.daiFixedPricePSM);
+  expect(await contracts.dpiToDaiSwapper.tokenReceivingAddress()).to.be.equal(addresses.compoundDaiPCVDeposit);
   const poolTokens = await contracts.balancerVault.getPoolTokens(poolId);
   expect(poolTokens.tokens[0]).to.be.equal(addresses.dpi);
   expect(poolTokens.tokens[1]).to.be.equal(addresses.dai);
 
-  console.log('Starting DAI PSM dai balance [M]', (await contracts.daiFixedPricePSM.balance()) / 1e24);
+  console.log('Starting DAI PSM dai balance [M]', (await contracts.compoundDaiPCVDeposit.balance()) / 1e24);
 };
 
 // Tears down any changes made in setup() that need to be
@@ -140,7 +137,7 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // Run any validations required on the fip using mocha or console logging
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  console.log('Final DAI PSM dai balance [M]', (await contracts.daiFixedPricePSM.balance()) / 1e24);
+  console.log('Final DAI PSM dai balance [M]', (await contracts.compoundDaiPCVDeposit.balance()) / 1e24);
 
   // LBP swapper should be empty
   const poolTokens = await contracts.balancerVault.getPoolTokens(poolId);
