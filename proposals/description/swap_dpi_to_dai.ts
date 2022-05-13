@@ -34,8 +34,20 @@ const swap_dpi_to_dai: ProposalDescription = {
     {
       target: 'collateralizationOracle',
       values: '0',
-      method: 'removeDeposit(address)',
-      arguments: ['{dpiDepositWrapper}'],
+      method: 'removeDeposits(address[])',
+      arguments: [
+        [
+          '{dpiDepositWrapper}',
+          '{rariPool31FeiPCVDepositWrapper}',
+          '{rariPool25FeiPCVDepositWrapper}',
+          '{rariPool9RaiPCVDepositWrapper}',
+          '{aaveRaiPCVDepositWrapper}',
+          '{rariPool19DpiPCVDepositWrapper}',
+          '{liquityFusePoolLusdPCVDeposit}',
+          '{rariPool72FeiPCVDepositWrapper',
+          '{raiDepositWrapper}'
+        ]
+      ],
       description: 'Remove DPI Deposit wrapper from CR oracle, as now empty'
     }
   ],
