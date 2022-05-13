@@ -90,7 +90,7 @@ library TribeRoles {
     bytes32 internal constant POD_METADATA_REGISTER_ROLE = keccak256("POD_METADATA_REGISTER_ROLE");
 
     /// @notice capable of engaging with Votium for voting incentives.
-    bytes32 internal constant VOTIUM_ROLE = keccak256("VOTIUM_ADMIN_ROLE");
+    bytes32 internal constant VOTIUM_ADMIN_ROLE = keccak256("VOTIUM_ADMIN_ROLE");
 
     /// @notice capable of adding an address to multi rate limited
     bytes32 internal constant ADD_MINTER_ROLE = keccak256("ADD_MINTER_ROLE");

@@ -14,7 +14,7 @@ const collateralizationAddresses = {
     'rariPool22FeiPCVDepositWrapper',
     'feiBuybackLensNoFee',
     'convexPoolPCVDepositWrapper',
-    'compoundPCVDepositWrapper',
+    'compoundFeiPCVDepositWrapper',
     'turboFusePCVDeposit'
   ],
   lusd: ['rariPool7LusdPCVDeposit', 'bammDeposit', 'lusdPSM', 'rariPool8LusdPCVDeposit'],
