@@ -126,7 +126,12 @@ describe('e2e-peg-stability-module', function () {
 
         const isPaused = await daiPSM.paused();
         if (isPaused) {
-          await daiPSM.connect(impersonatedSigners[governorAddress]).unpause();
+          await daiPSM.unpause();
+        }
+
+        const isRedeemPaused = await daiPSM.redeemPaused();
+        if (isRedeemPaused) {
+          await daiPSM.unpauseRedeem();
         }
       });
 

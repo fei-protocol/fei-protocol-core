@@ -329,7 +329,12 @@ describe('e2e-peg-stability-module', function () {
 
         const isPaused = await daiFixedPricePSM.paused();
         if (isPaused) {
-          await daiFixedPricePSM.connect(impersonatedSigners[governorAddress]).unpause();
+          await daiFixedPricePSM.unpause();
+        }
+
+        const isRedeemPaused = await daiFixedPricePSM.redeemPaused();
+        if (isRedeemPaused) {
+          await daiFixedPricePSM.unpauseRedeem();
         }
       });
 
