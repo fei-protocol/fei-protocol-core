@@ -60,7 +60,7 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
         uint256 _maximumSlippageBasisPoints,
         bool _invertOraclePrice,
         uint256 _swapIncentiveAmount
-    ) public UniRef(_core, _pair, _oracle, address(0x0)) Timed(_swapFrequency) {
+    ) public UniRef(_core, _pair, _oracle, address(0x0), _invertOraclePrice) Timed(_swapFrequency) {
         tokenSpent = _tokenSpent;
         tokenReceived = _tokenReceived;
         tokenReceivingAddress = _tokenReceivingAddress;
@@ -90,7 +90,7 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
     /// @notice withdraw ETH from the contract
     /// @param to address to send ETH
     /// @param amountOut amount of ETH to send
-    function withdrawETH(address payable to, uint256 amountOut) external override onlyPCVController {
+    function withdrawETH(address payable to, uint256 amountOut) external onlyPCVController {
         Address.sendValue(to, amountOut);
         emit WithdrawETH(msg.sender, to, amountOut);
     }
@@ -103,21 +103,21 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
         address to,
         address token,
         uint256 amount
-    ) external override onlyPCVController {
+    ) external onlyPCVController {
         ERC20(token).safeTransfer(to, amount);
         emit WithdrawERC20(msg.sender, to, token, amount);
     }
 
     /// @notice Sets the token to spend
     /// @param _tokenSpent the address of the token to spend
-    function setTokenSpent(address _tokenSpent) external override onlyGovernor {
+    function setTokenSpent(address _tokenSpent) external onlyGovernor {
         tokenSpent = _tokenSpent;
         emit UpdateTokenSpent(_tokenSpent);
     }
 
     /// @notice Sets the token to receive
     /// @param _tokenReceived the address of the token to receive
-    function setTokenReceived(address _tokenReceived) external override onlyGovernor {
+    function setTokenReceived(address _tokenReceived) external onlyGovernor {
         tokenReceived = _tokenReceived;
         emit UpdateTokenReceived(_tokenReceived);
     }
@@ -169,19 +169,19 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
 
     /// @notice Get the token to spend
     /// @return The address of the token to spend
-    function getTokenSpent() external view override returns (address) {
+    function getTokenSpent() external view returns (address) {
         return tokenSpent;
     }
 
     /// @notice Get the token to receive
     /// @return The address of the token to receive
-    function getTokenReceived() external view override returns (address) {
+    function getTokenReceived() external view returns (address) {
         return tokenReceived;
     }
 
     /// @notice Get the address receiving the inbound swapped tokens
     /// @return The address receiving tokens
-    function getReceivingAddress() external view override returns (address) {
+    function getReceivingAddress() external view returns (address) {
         return tokenReceivingAddress;
     }
 
@@ -297,10 +297,7 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
 
     /// @notice see external function getNextAmountReceivedThreshold()
     function _getMinimumAcceptableAmountOut(uint256 amountIn) internal view returns (uint256) {
-        Decimal.D256 memory twap = peg();
-        if (invertOraclePrice) {
-            twap = invert(twap);
-        }
+        Decimal.D256 memory twap = readOracle();
         Decimal.D256 memory oracleAmountOut = twap.mul(amountIn);
         Decimal.D256 memory maxSlippage = Decimal.ratio(
             BASIS_POINTS_GRANULARITY - maximumSlippageBasisPoints,
