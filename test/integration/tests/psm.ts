@@ -23,6 +23,7 @@ describe('e2e-peg-stability-module', function () {
   let ethPSMRouter: Contract;
   let userAddress;
   let minterAddress;
+  let governorAddress;
   let weth: Contract;
   let dai: Contract;
   let raiPriceBoundPSM: Contract;
@@ -88,7 +89,7 @@ describe('e2e-peg-stability-module', function () {
       contracts.feiDAOTimelock.address
     ];
 
-    ({ userAddress, minterAddress, beneficiaryAddress1, guardianAddress } = addresses);
+    ({ userAddress, minterAddress, beneficiaryAddress1, guardianAddress, governorAddress } = addresses);
 
     await core.grantMinter(minterAddress);
 

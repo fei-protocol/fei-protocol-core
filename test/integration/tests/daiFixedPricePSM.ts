@@ -25,6 +25,7 @@ describe('e2e-peg-stability-module', function () {
   let doLogging: boolean;
   let userAddress;
   let minterAddress;
+  let governorAddress;
   let dai: Contract;
   let daiPSM: Contract;
   let fei: Contract;
