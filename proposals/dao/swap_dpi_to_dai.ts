@@ -143,7 +143,7 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
 
   console.log('Starting DAI PSM dai balance [M]', (await contracts.compoundDaiPCVDeposit.balance()) / 1e24);
 
-  await forceEth(addresses.optimisticTimelock);
+  await forceEth(addresses.tribalCouncilTimelock);
 };
 
 // Tears down any changes made in setup() that need to be
