@@ -1,12 +1,9 @@
 import hre from 'hardhat';
-import { CTokenFuse } from '@custom-types/contracts';
 import { forceEth } from '@test/integration/setup/utils';
 import { getAddress } from 'ethers/lib/utils';
-import { BigNumber } from 'ethers';
+import { BigNumber, constants } from 'ethers';
 
 const debtorContractAddress = '0x32075bad9050d4767018084f0cb87b3182d36c45';
-
-const affectedPoolIds = [8, 18, 27, 127, 144, 146, 156];
 
 const underlyings = {
   '0x0000000000000000000000000000000000000000': 'ETH',
@@ -76,10 +73,10 @@ async function getFuseBadDebt() {
     DAI: BigNumber.from(0),
     USDC: BigNumber.from(0),
     LUSD: BigNumber.from(0),
-    wstETH: BigNumber.from(0),
     USTw: BigNumber.from(0),
+    USDT: BigNumber.from(0),
     WETH: BigNumber.from(0),
-    USDT: BigNumber.from(0)
+    wstETH: BigNumber.from(0)
   };
 
   const signer = (await hre.ethers.getSigners())[0];
@@ -89,17 +86,29 @@ async function getFuseBadDebt() {
     const ctoken = await hre.ethers.getContractAt('CTokenFuse', ctokenAddress, signer);
     const underlyingAddress = (await ctoken.underlying()).toLowerCase();
     const debtAmount = await ctoken.callStatic.borrowBalanceCurrent(getAddress(debtorContractAddress));
-    const collateralName = underlyings[underlyingAddress];
-    debt[collateralName] = debt[collateralName].add(debtAmount);
     if (!debtAmount.isZero()) {
+      const collateralName = underlyings[underlyingAddress];
+      debt[collateralName] = debt[collateralName].add(debtAmount);
       console.log(`Added ${collateralName} debt of ${debtAmount} from ${ctokens[ctokenAddress]}`);
     }
   }
 
+  debt.ETH = debt.ETH.div(constants.WeiPerEther);
+  debt.FEI = debt.FEI.div(constants.WeiPerEther);
+  debt.FRAX = debt.FRAX.div(constants.WeiPerEther);
+  debt.RAI = debt.RAI.div(constants.WeiPerEther);
+  debt.DAI = debt.DAI.div(constants.WeiPerEther);
+  debt.USDC = debt.USDC.div(1e6);
+  debt.LUSD = debt.LUSD.div(constants.WeiPerEther);
+  debt.USTw = debt.USTw.div(1e6);
+  debt.USDT = debt.USDT.div(1e6);
+
   console.log(`\nTotal debt as of block ${hre.ethers.provider.blockNumber} for address ${debtorContractAddress}`);
   console.log(`--------------------------`);
   for (const key of Object.keys(debt)) {
-    console.log(`${key}: ${debt[key].toString()}`);
+    if (!debt[key].isZero()) {
+      console.log(`${key}: ${Number(debt[key].toString()).toLocaleString()}`);
+    }
   }
 }
 
