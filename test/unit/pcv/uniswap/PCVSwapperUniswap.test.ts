@@ -1,5 +1,5 @@
 import { time, expectRevert, expectEvent, getCore, getAddresses, getImpersonatedSigner } from '@test/helpers';
-import { Core, Tribe, TribeMinter } from '@custom-types/contracts';
+import { Core } from '@custom-types/contracts';
 import { expect } from 'chai';
 import { ethers } from 'hardhat';
 import { Signer } from 'ethers';
@@ -7,7 +7,7 @@ import { Signer } from 'ethers';
 const e18 = '000000000000000000';
 const toBN = ethers.BigNumber.from;
 
-describe('PCVSwapperUniswap', function () {
+describe.only('PCVSwapperUniswap', function () {
   let userAddress: string;
   let minterAddress: string;
   let secondUserAddress: string;
@@ -15,8 +15,7 @@ describe('PCVSwapperUniswap', function () {
   let governorAddress: string;
   let guardianAddress: string;
   let core: Core;
-  let tribe: Tribe;
-  let tribeMinter: TribeMinter;
+  let signer: Signer;
 
   const impersonatedSigners: { [key: string]: Signer } = {};
 
@@ -29,22 +28,29 @@ describe('PCVSwapperUniswap', function () {
     for (const address of impersonatedAddresses) {
       impersonatedSigners[address] = await getImpersonatedSigner(address);
     }
+    signer = impersonatedSigners[addresses.userAddress];
   });
 
   beforeEach(async function () {
     ({ userAddress, governorAddress } = await getAddresses());
     core = await getCore();
 
-    this.weth = await MockWeth.new();
-    this.fei = await Fei.at(await this.core.fei());
-    this.pair = await MockPair.new(this.fei.address, this.weth.address);
-    this.pair.setReserves('62500000' + e18, '25000' + e18);
-    //await web3.eth.sendTransaction({from: userAddress, to: this.pair.address, value: '25000'+e18});
-    await this.fei.mint(this.pair.address, '62500000' + e18, { from: minterAddress });
-    this.router = await FeiRouter.new(this.pair.address, this.weth.address);
-    this.oracle = await MockOracle.new(2500); // 2500:1 oracle price
+    // Some of these contracts don't exist
+    this.weth = await (await ethers.getContractFactory('MockWeth')).deploy();
+    this.fei = await ethers.getContractAt('Fei', await this.core.fei());
 
-    this.swapper = await PCVSwapperUniswap.new(
+    this.pair = await (
+      await ethers.getContractFactory('MockPairLiquidity')
+    ).deploy(this.fei.address, this.weth.address);
+    this.pair.setReserves('62500000' + e18, '25000' + e18);
+    //await signer.sendTransaction({from: userAddress, to: this.pair.address, value: '25000'+e18});
+    await this.fei.mint(this.pair.address, '62500000' + e18, { from: minterAddress });
+    this.router = await (await ethers.getContractFactory('FeiRouter')).deploy(this.pair.address, this.weth.address);
+    this.oracle = await (await ethers.getContractFactory('MockOracle')).deploy(2500); // 2500:1 oracle price
+
+    this.swapper = await (
+      await ethers.getContractFactory('PCVSwapperUniswap')
+    ).deploy(
       this.core.address, // core
       this.pair.address, // pair
       this.router.address, // router
@@ -65,7 +71,7 @@ describe('PCVSwapperUniswap', function () {
   describe('Payable', function () {
     it('should mint WETH on ETH reception', async function () {
       // send 23 ETH
-      await web3.eth.sendTransaction({ from: userAddress, to: this.swapper.address, value: '23' + e18 });
+      await signer.sendTransaction({ from: userAddress, to: this.swapper.address, value: '23' + e18 });
       const wethBalance = await this.weth.balanceOf(this.swapper.address);
       expect(wethBalance).to.be.bignumber.equal('23' + e18);
     });
@@ -86,26 +92,29 @@ describe('PCVSwapperUniswap', function () {
     describe('Setters', function () {
       describe('As Governor', function () {
         it('setTokenSpent() emit UpdateTokenSpent', async function () {
-          await expectEvent(
+          expectEvent(
             await this.swapper.setTokenSpent('0x6B175474E89094C44Da98b954EedeAC495271d0F', { from: governorAddress }),
+            this.swappper,
             'UpdateTokenSpent',
-            { _tokenFrom: '0x6B175474E89094C44Da98b954EedeAC495271d0F' }
+            ['0x6B175474E89094C44Da98b954EedeAC495271d0F']
           );
         });
         it('setTokenReceived() emit UpdateTokenReceived', async function () {
-          await expectEvent(
+          expectEvent(
             await this.swapper.setTokenReceived('0x6B175474E89094C44Da98b954EedeAC495271d0F', {
               from: governorAddress
             }),
+            this.swapper,
             'UpdateTokenReceived',
-            { _tokenTo: '0x6B175474E89094C44Da98b954EedeAC495271d0F' }
+            ['0x6B175474E89094C44Da98b954EedeAC495271d0F']
           );
         });
         it('setReceivingAddress() emit UpdateReceivingAddress', async function () {
-          await expectEvent(
+          expectEvent(
             await this.swapper.setReceivingAddress(userAddress, { from: governorAddress }),
+            this.swapper,
             'UpdateReceivingAddress',
-            { _tokenReceivingAddress: userAddress }
+            [userAddress] // tokenReceivingAddress
           );
         });
       });
@@ -131,7 +140,7 @@ describe('PCVSwapperUniswap', function () {
       describe('As PCVController', function () {
         it('revert withdrawETH() insufficient balance (all ETH is wrapped)', async function () {
           // send 1 ETH, gets converted to 1 WETH
-          await web3.eth.sendTransaction({ from: userAddress, to: this.swapper.address, value: '1' + e18 });
+          await signer.sendTransaction({ from: userAddress, to: this.swapper.address, value: '1' + e18 });
           await expectRevert(
             this.swapper.withdrawETH(userAddress, 1, { from: pcvControllerAddress }),
             'Address: insufficient balance'
@@ -142,15 +151,11 @@ describe('PCVSwapperUniswap', function () {
           expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal('0');
           await this.fei.mint(this.swapper.address, '1' + e18, { from: minterAddress });
           expect(await this.fei.balanceOf(this.swapper.address)).to.be.bignumber.equal('1' + e18);
-          await expectEvent(
+          expectEvent(
             await this.swapper.withdrawERC20(userAddress, this.fei.address, '1' + e18, { from: pcvControllerAddress }),
+            this.swapper,
             'WithdrawERC20',
-            {
-              _caller: pcvControllerAddress,
-              _to: userAddress,
-              _token: this.fei.address,
-              _amount: '1' + e18
-            }
+            [pcvControllerAddress, userAddress, this.fei.address, '1' + e18]
           );
           expect(await this.fei.balanceOf(this.swapper.address)).to.be.bignumber.equal('0');
           expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal('1' + e18);
@@ -171,14 +176,14 @@ describe('PCVSwapperUniswap', function () {
     describe('Swap', function () {
       it('swap() emit Swap', async function () {
         await time.increase('1000');
-        await web3.eth.sendTransaction({ from: userAddress, to: this.swapper.address, value: '100' + e18 });
-        await expectEvent(await this.swapper.swap({ from: userAddress }), 'Swap', {
-          _caller: userAddress,
-          _tokenSpent: this.weth.address,
-          _tokenReceived: this.fei.address,
-          _amountSpent: '100' + e18,
-          _amountReceived: '248259939361825041733566' // not exactly 250000e18 because of slippage & fees
-        });
+        await signer.sendTransaction({ from: userAddress, to: this.swapper.address, value: '100' + e18 });
+        expectEvent(await this.swapper.swap({ from: userAddress }), this.swapper, 'Swap', [
+          userAddress,
+          this.weth.address,
+          this.fei.address,
+          '100' + e18,
+          '248259939361825041733566' // not exactly 250000e18 because of slippage & fees]
+        ]);
       });
     });
   });
@@ -188,15 +193,15 @@ describe('PCVSwapperUniswap', function () {
       expect(await this.swapper.getOraclePrice()).to.be.bignumber.equal('2500');
     });
     it('getNextAmountSpent()', async function () {
-      await web3.eth.sendTransaction({ from: userAddress, to: this.swapper.address, value: '100' + e18 });
+      await signer.sendTransaction({ from: userAddress, to: this.swapper.address, value: '100' + e18 });
       expect(await this.swapper.getNextAmountSpent()).to.be.bignumber.equal('100000000000000000000'); // 100e18
     });
     it('getNextAmountReceived()', async function () {
-      await web3.eth.sendTransaction({ from: userAddress, to: this.swapper.address, value: '100' + e18 });
+      await signer.sendTransaction({ from: userAddress, to: this.swapper.address, value: '100' + e18 });
       expect(await this.swapper.getNextAmountReceived()).to.be.bignumber.equal('248259939361825041733566');
     });
     it('getNextAmountReceivedThreshold()', async function () {
-      await web3.eth.sendTransaction({ from: userAddress, to: this.swapper.address, value: '100' + e18 });
+      await signer.sendTransaction({ from: userAddress, to: this.swapper.address, value: '100' + e18 });
       expect(await this.swapper.getNextAmountReceivedThreshold()).to.be.bignumber.equal('242500000000000000000000');
     });
     it('getDecimalNormalizer()', async function () {
@@ -277,7 +282,7 @@ describe('PCVSwapperUniswap', function () {
     });
     it('revert if buy limit is exceeded', async function () {
       await time.increase('1000');
-      await web3.eth.sendTransaction({ from: userAddress, to: this.swapper.address, value: '50' + e18 });
+      await signer.sendTransaction({ from: userAddress, to: this.swapper.address, value: '50' + e18 });
       await this.swapper.setTokenBuyLimit('1', { from: governorAddress });
       // first swap is successful but pushes the target's balance above limit
       await this.swapper.swap({ from: userAddress });
@@ -289,37 +294,37 @@ describe('PCVSwapperUniswap', function () {
     it('revert if oracle is invalid', async function () {
       await this.oracle.setValid(false);
       await time.increase('1000');
-      await web3.eth.sendTransaction({ from: userAddress, to: this.swapper.address, value: '100' + e18 });
+      await signer.sendTransaction({ from: userAddress, to: this.swapper.address, value: '100' + e18 });
       await expectRevert(this.swapper.swap(), 'OracleRef: oracle invalid.');
     });
     it('revert if slippage is too high', async function () {
       await time.increase('1000');
-      await web3.eth.sendTransaction({ from: userAddress, to: this.swapper.address, value: '1000' + e18 });
+      await signer.sendTransaction({ from: userAddress, to: this.swapper.address, value: '1000' + e18 });
       await this.swapper.setMaxSpentPerSwap('1000' + e18, { from: governorAddress });
       await expectRevert(this.swapper.swap(), 'PCVSwapperUniswap: slippage too high.');
     });
     it('send tokens to tokenReceivingAddress', async function () {
       await time.increase('1000');
-      await web3.eth.sendTransaction({ from: userAddress, to: this.swapper.address, value: '100' + e18 });
+      await signer.sendTransaction({ from: userAddress, to: this.swapper.address, value: '100' + e18 });
       await this.swapper.swap({ from: userAddress });
       expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal('248259939361825041733566');
     });
     it('swap remaining tokens if balance < maxSpentPerSwap', async function () {
       await time.increase('1000');
-      await web3.eth.sendTransaction({ from: userAddress, to: this.swapper.address, value: '50' + e18 });
+      await signer.sendTransaction({ from: userAddress, to: this.swapper.address, value: '50' + e18 });
       await this.swapper.swap({ from: userAddress });
       expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal('124376992277398866659880');
     });
     it('no FEI incentive to caller if swapper is not a Minter', async function () {
       await time.increase('1000');
-      await web3.eth.sendTransaction({ from: userAddress, to: this.swapper.address, value: '50' + e18 });
+      await signer.sendTransaction({ from: userAddress, to: this.swapper.address, value: '50' + e18 });
       expect((await this.fei.balanceOf(secondUserAddress)) / 1e18).to.be.equal(0);
       await this.swapper.swap({ from: secondUserAddress });
       expect((await this.fei.balanceOf(secondUserAddress)) / 1e18).to.be.equal(0);
     });
     it('send FEI incentive to caller if swapper is Minter', async function () {
       await time.increase('1000');
-      await web3.eth.sendTransaction({ from: userAddress, to: this.swapper.address, value: '50' + e18 });
+      await signer.sendTransaction({ from: userAddress, to: this.swapper.address, value: '50' + e18 });
       await this.core.grantMinter(this.swapper.address, { from: governorAddress });
       expect((await this.fei.balanceOf(secondUserAddress)) / 1e18).to.be.equal(0);
       await this.swapper.swap({ from: secondUserAddress });
