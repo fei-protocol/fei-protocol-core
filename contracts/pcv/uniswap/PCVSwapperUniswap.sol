@@ -41,7 +41,6 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
 
     event UpdateTokenSpent(address _tokenFrom);
     event UpdateTokenReceived(address _tokenTo);
-    event UpdateReceivingAddress(address _tokenReceivingAddress);
 
     event WithdrawETH(address indexed _caller, address indexed _to, uint256 _amount);
 
@@ -125,8 +124,8 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
     /// @notice Sets the address receiving swap's inbound tokens
     /// @param _tokenReceivingAddress the address that will receive tokens
     function setReceivingAddress(address _tokenReceivingAddress) external override onlyGovernor {
+        emit UpdateReceivingAddress(tokenReceivingAddress, _tokenReceivingAddress);
         tokenReceivingAddress = _tokenReceivingAddress;
-        emit UpdateReceivingAddress(_tokenReceivingAddress);
     }
 
     // =======================================================================
