@@ -21,15 +21,15 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   const feiRouterFactory = await ethers.getContractFactory('FeiRouter');
 
   // Sushiswap feiETH pair
-  const feiRouter = await feiRouterFactory.deploy(addresses.feiEthPair, addresses.weth);
-  await feiRouter.deployTransaction.wait();
-  logging && console.log('Fei Router deployed to: ', feiRouter.address);
+  const creamEthRouter = await feiRouterFactory.deploy(addresses.sushiswapCreamWethPair, addresses.weth);
+  await creamEthRouter.deployTransaction.wait();
+  logging && console.log('Fei Router deployed to: ', creamEthRouter.address);
 
   const pcvSwapperUniswapFactory = await ethers.getContractFactory('PCVSwapperUniswap');
   const pcvSwapperUniswap = await pcvSwapperUniswapFactory.deploy(
     addresses.core,
     addresses.sushiswapCreamWethPair,
-    feiRouter.address,
+    creamEthRouter.address,
     addresses.chainlinkCREAMEthOracle, // Oracle
     swapFrequency, // default minimum interval between swaps
     addresses.cream, // tokenSpent
@@ -38,7 +38,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     ethers.constants.WeiPerEther.mul('100'), // maxSpentPerSwap
     ethers.constants.WeiPerEther.mul('300'), // maximumSlippageBasisPoints, 3%
     false, // invertOraclePrice
-    ethers.constants.WeiPerEther.mul('200') // swap incentive = 200 FEI
+    ethers.constants.WeiPerEther.mul('200') // swap incentive = 200 FEI. Noop, not granting MINTER role
   );
   await pcvSwapperUniswap.deployTransaction.wait();
 
