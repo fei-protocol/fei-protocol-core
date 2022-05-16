@@ -1581,6 +1581,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0xd9e1cE17f2641f24aE83637ab66a2cca9C378B9F',
     category: AddressCategory.External
   },
+  sushiswapCreamWethPair: {
+    artifactName: 'unknown',
+    address: '0xf169CeA51EB51774cF107c88309717ddA20be167',
+    category: AddressCategory.External
+  },
   usd: {
     artifactName: 'unknown',
     address: '0x1111111111111111111111111111111111111111',
