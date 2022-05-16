@@ -1681,11 +1681,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0xFf419Bc27483edb94b7Ad5c97b7FaB5DB323c7E0',
     category: AddressCategory.Deprecated
   },
-  // daiFixedPricePSMFeiSkimmer: {
-  //   artifactName: 'FeiSkimmer',
-  //   address: '',
-  //   category: AddressCategory.Peg
-  // },
+  daiFixedPricePSMFeiSkimmer: {
+    artifactName: 'FeiSkimmer',
+    address: '0xe49B608663EeB89f1E3AbBe75744e5318F85029C',
+    category: AddressCategory.Peg
+  },
   daiPSMFeiSkimmer: {
     artifactName: 'FeiSkimmer',
     address: '0xf8Ca6c10a794C867497541F5b7A7f96ca2bCd1E8',
