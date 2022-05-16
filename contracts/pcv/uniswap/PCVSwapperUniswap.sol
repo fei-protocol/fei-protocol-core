@@ -18,6 +18,9 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
     using SafeERC20 for ERC20;
     using Decimal for Decimal.D256;
 
+    /// @notice WETH contract used as part of the Sushiswap CREAM-WETH pair
+    IWETH public constant WETH = IWETH(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
+
     /// @notice the token to spend on swap (outbound)
     address public tokenSpent;
     /// @notice the token to receive on swap (inbound)
@@ -36,9 +39,6 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
     uint256 public maximumSlippageBasisPoints;
     uint256 public constant BASIS_POINTS_GRANULARITY = 10_000;
 
-    /// @notice UniswapV2 router
-    IUniswapV2Router02 public router;
-
     event UpdateTokenSpent(address _tokenFrom);
     event UpdateTokenReceived(address _tokenTo);
 
@@ -49,7 +49,6 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
     constructor(
         address _core,
         address _pair,
-        address _router,
         address _oracle,
         uint256 _swapFrequency,
         address _tokenSpent,
@@ -67,7 +66,6 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
         maximumSlippageBasisPoints = _maximumSlippageBasisPoints;
         invertOraclePrice = _invertOraclePrice;
         swapIncentiveAmount = _swapIncentiveAmount;
-        router = IUniswapV2Router02(_router);
 
         emit UpdateTokenSpent(_tokenSpent);
         emit UpdateTokenReceived(_tokenReceived);
@@ -78,8 +76,7 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
 
     /// @notice All received ETH is wrapped to WETH
     receive() external payable {
-        IWETH weth = IWETH(router.WETH());
-        weth.deposit{value: msg.value}();
+        WETH.deposit{value: msg.value}();
     }
 
     // =======================================================================

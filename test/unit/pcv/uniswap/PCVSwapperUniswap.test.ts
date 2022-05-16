@@ -54,7 +54,6 @@ describe('PCVSwapperUniswap', function () {
     ).deploy(this.fei.address, this.weth.address);
     this.pair.setReserves('62500000' + e18, '25000' + e18);
     await this.fei.connect(minterSigner).mint(this.pair.address, '62500000' + e18);
-    this.router = await (await ethers.getContractFactory('FeiRouter')).deploy(this.pair.address, this.weth.address);
     this.oracle = await (await ethers.getContractFactory('MockOracle')).deploy(2500); // 2500:1 oracle price
 
     this.swapper = await (
@@ -62,7 +61,6 @@ describe('PCVSwapperUniswap', function () {
     ).deploy(
       this.core.address, // core
       this.pair.address, // pair
-      this.router.address, // router
       this.oracle.address, // oracle
       '1000', // default minimum interval between swaps
       this.weth.address, // tokenSpent

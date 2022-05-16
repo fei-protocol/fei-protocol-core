@@ -18,18 +18,10 @@ Description: Sell all CREAM for ETH by slowly selling it over a period of time o
 const swapFrequency = 1000;
 
 const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: NamedAddresses, logging: boolean) => {
-  const feiRouterFactory = await ethers.getContractFactory('FeiRouter');
-
-  // Sushiswap feiETH pair
-  const creamEthRouter = await feiRouterFactory.deploy(addresses.sushiswapCreamWethPair, addresses.weth);
-  await creamEthRouter.deployTransaction.wait();
-  logging && console.log('Fei Router deployed to: ', creamEthRouter.address);
-
   const pcvSwapperUniswapFactory = await ethers.getContractFactory('PCVSwapperUniswap');
   const pcvSwapperUniswap = await pcvSwapperUniswapFactory.deploy(
     addresses.core,
     addresses.sushiswapCreamWethPair,
-    creamEthRouter.address,
     addresses.chainlinkCREAMEthOracle, // Oracle
     swapFrequency, // default minimum interval between swaps
     addresses.cream, // tokenSpent
