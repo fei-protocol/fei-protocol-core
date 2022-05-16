@@ -14,7 +14,6 @@ const collateralizationAddresses = {
   ],
   lusd: ['rariPool7LusdPCVDeposit', 'bammDeposit', 'lusdPSM'],
   dai: ['compoundDaiPCVDepositWrapper', 'daiFixedPricePSM', 'dpiToDaiLensDai'],
-
   usd: ['namedStaticPCVDepositWrapper', 'd3poolCurvePCVDeposit', 'd3poolConvexPCVDeposit'],
   bal: ['balancerDepositBalWeth', 'balancerLensVeBalBal'],
   cream: ['creamDepositWrapper'],

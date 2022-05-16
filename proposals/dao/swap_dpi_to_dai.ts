@@ -155,6 +155,8 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // Run any validations required on the fip using mocha or console logging
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
+  const core = contracts.core;
+
   // By this point, the DAO has moved funds to the LBP swapper and the auction should be active
   console.log('Final DAI PSM dai balance [M]', (await contracts.compoundDaiPCVDeposit.balance()) / 1e24);
 
@@ -164,7 +166,11 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   await time.increase(await contracts.dpiToDaiSwapper.remainingTime());
   expect(await contracts.dpiToDaiSwapper.isTimeEnded()).to.be.true;
 
-  const signer = await getImpersonatedSigner(addresses.optimisticTimelock); // TODO: TribalCouncil should grant itself SWAP_ADMIN_ROLE
+  // Validate SWAP_ADMIN_ROLE is under ROLE_ADMIN and that TribalCouncilTimelock has the role
+  expect(await core.hasRole(ethers.utils.id('SWAP_ADMIN_ROLE'), addresses.tribalCouncilTimelock)).to.be.true;
+  expect(await core.getRoleAdmin(ethers.utils.id('SWAP_ADMIN_ROLE'))).to.be.equal(ethers.utils.id('ROLE_ADMIN'));
+
+  const signer = await getImpersonatedSigner(addresses.tribalCouncilTimelock); // TODO: TribalCouncil should grant itself SWAP_ADMIN_ROLE
   await contracts.dpiToDaiSwapper.connect(signer).swap();
   expect(await contracts.dpiToDaiSwapper.isTimeEnded()).to.be.false;
 };

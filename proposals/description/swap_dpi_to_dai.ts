@@ -49,6 +49,33 @@ const swap_dpi_to_dai: ProposalDescription = {
         ]
       ],
       description: 'Remove DPI Deposit wrapper from CR oracle, as now empty'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'createRole(bytes32,bytes32)',
+      arguments: [
+        '0x471cfe1a44bf1b786db7d7104d51e6728ed7b90a35394ad7cc424adf8ed16816', // SWAP_ADMIN_ROLE
+        '0x899bd46557473cb80307a9dabc297131ced39608330a2d29b2d52b660c03923e' // GOVERN_ROLE
+      ],
+      description: 'Transfer admin of SWAP_ADMIN_ROLE to GOVERNOR, so it can be granted to the TribalCouncil'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'grantRole(bytes32,address)',
+      arguments: ['0x471cfe1a44bf1b786db7d7104d51e6728ed7b90a35394ad7cc424adf8ed16816', '{tribalCouncilTimelock}'],
+      description: 'Grant TribalCouncilTimelock SWAP_ADMIN_ROLE so it can initiate the LBP swap'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'createRole(bytes32,bytes32)',
+      arguments: [
+        '0x471cfe1a44bf1b786db7d7104d51e6728ed7b90a35394ad7cc424adf8ed16816',
+        '0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096'
+      ],
+      description: 'Transfer admin of SWAP_ADMIN_ROLE back to ROLE_ADMIN, so TribalCouncil can control'
     }
   ],
   description: `
