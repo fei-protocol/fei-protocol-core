@@ -19,11 +19,11 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
     using Decimal for Decimal.D256;
 
     /// @notice the token to spend on swap (outbound)
-    address private tokenSpent;
+    address public tokenSpent;
     /// @notice the token to receive on swap (inbound)
-    address private tokenReceived;
+    address public tokenReceived;
     /// @notice the address that will receive the inbound tokens
-    address private tokenReceivingAddress;
+    address public tokenReceivingAddress;
     /// @notice the maximum amount of tokens to buy (0 = unlimited)
     uint256 public tokenBuyLimit = 0;
     /// @notice the maximum amount of tokens to spend on every swap
@@ -60,7 +60,7 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
         uint256 _maximumSlippageBasisPoints,
         bool _invertOraclePrice,
         uint256 _swapIncentiveAmount
-    ) public UniRef(_core, _pair, _oracle, address(0x0), _invertOraclePrice) Timed(_swapFrequency) {
+    ) public UniRef(_core, _pair, _oracle, address(0x0)) Timed(_swapFrequency) {
         tokenSpent = _tokenSpent;
         tokenReceived = _tokenReceived;
         tokenReceivingAddress = _tokenReceivingAddress;
@@ -166,24 +166,6 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
     // =======================================================================
     // Getters
     // =======================================================================
-
-    /// @notice Get the token to spend
-    /// @return The address of the token to spend
-    function getTokenSpent() external view returns (address) {
-        return tokenSpent;
-    }
-
-    /// @notice Get the token to receive
-    /// @return The address of the token to receive
-    function getTokenReceived() external view returns (address) {
-        return tokenReceived;
-    }
-
-    /// @notice Get the address receiving the inbound swapped tokens
-    /// @return The address receiving tokens
-    function getReceivingAddress() external view returns (address) {
-        return tokenReceivingAddress;
-    }
 
     /// @notice Get the minimum time between swaps
     /// @return the time between swaps

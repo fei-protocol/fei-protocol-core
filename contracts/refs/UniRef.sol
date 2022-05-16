@@ -20,14 +20,12 @@ abstract contract UniRef is IUniRef, OracleRef {
     /// @param _pair Uniswap pair to reference
     /// @param _oracle oracle to reference
     /// @param _backupOracle backup oracle to reference
-    /// @param _invertOraclePrice backup oracle to reference
     constructor(
         address _core,
         address _pair,
         address _oracle,
-        address _backupOracle,
-        bool _invertOraclePrice
-    ) OracleRef(_core, _oracle, _backupOracle, 0, _invertOraclePrice) {
+        address _backupOracle
+    ) OracleRef(_core, _oracle, _backupOracle, 0, false) {
         _setupPair(_pair);
         _setDecimalsNormalizerFromToken(_token());
     }
