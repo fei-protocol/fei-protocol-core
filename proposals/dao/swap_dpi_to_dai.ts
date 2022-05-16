@@ -20,7 +20,7 @@ Swap DPI for DAI using an LBP Swapper
 const fipNumber = 'swap_dpi_to_dai';
 
 // LBP Swapper config
-const LBP_FREQUENCY = 86400 * 30; // 1 month in seconds
+const LBP_FREQUENCY = 86400 * 14; // 2 weeks in seconds
 const MIN_LBP_SIZE = ethers.constants.WeiPerEther.mul(10_000); // 10k
 let poolId; // auction pool id
 
