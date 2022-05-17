@@ -1,15 +1,5 @@
 import { ProposalDescription } from '@custom-types/types';
 
-// TODO:
-// put here the amout of B-70WETH-30FEI BPTs to move that
-// are on the balancerDepositFeiWeth and that should be
-// staked in the gauge.
-// As of 13/05, the BPTs are still staked in the gauge, but
-// there is a transaction for unstaking that is pending in
-// the OA Timelock, and the Guardian will move these BPTs
-// to the balancerDepositFeiWeth, where part of them will
-// possibly be redeemed to reduce the amount of liquidity.
-
 const fip_x: ProposalDescription = {
   title: 'Balancer Gauge Staker',
   commands: [
