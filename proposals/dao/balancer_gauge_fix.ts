@@ -20,7 +20,9 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   // Deploy balancer gauge staker implementation
   const balancerGaugeStakerFactory = await ethers.getContractFactory('BalancerGaugeStaker');
   const balancerGaugeStakerImplementation = await balancerGaugeStakerFactory.deploy(
-    addresses.core // address _core
+    addresses.core, // address _core
+    addresses.balancerGaugeController, // address _gaugeController
+    addresses.balancerMinter // address _balancerMinter
   );
   await balancerGaugeStakerImplementation.deployTransaction.wait();
   logging && console.log('balancerGaugeStakerImplementation: ', balancerGaugeStakerImplementation.address);
@@ -37,7 +39,11 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   logging && console.log('balancerGaugeStaker: ', balancerGaugeStaker.address);
 
   // initialize proxy state
-  await balancerGaugeStaker.initialize(addresses.core);
+  await balancerGaugeStaker.initialize(
+    addresses.core, // address _core
+    addresses.balancerGaugeController, // address _gaugeController
+    addresses.balancerMinter // address _balancerMinter
+  );
 
   // Deploy lens to report the B-30FEI-70WETH staked in gauge
   const gaugeLensFactory = await ethers.getContractFactory('CurveGaugeLens');
@@ -119,7 +125,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   console.log('claim rewards...');
   await time.increase('86400');
   console.log('BAL balance before claim', (await contracts.bal.balanceOf(addresses.balancerGaugeStaker)) / 1e18);
-  await contracts.balancerGaugeStaker.mint(addresses.balancerFeiWethPool);
+  await contracts.balancerGaugeStaker.mintGaugeRewards(addresses.balancerFeiWethPool);
   console.log('BAL balance after claim ', (await contracts.bal.balanceOf(addresses.balancerGaugeStaker)) / 1e18);
   console.log('balancerGaugeStaker.balance() ', (await contracts.balancerGaugeStaker.balance()) / 1e18);
 

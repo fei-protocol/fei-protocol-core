@@ -11,18 +11,41 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 contract BalancerGaugeStaker is PCVDeposit, LiquidityGaugeManager {
     using SafeERC20 for IERC20;
 
-    address public constant BALANCER_GAUGE_CONTROLLER = 0xC128468b7Ce63eA702C1f104D55A2566b13D3ABD;
-    address public constant BALANCER_MINTER = 0x239e55F427D44C3cc793f49bFB507ebe76638a2b;
-    address public constant BAL = 0xba100000625a3754423978a60c9317c58a424e3D;
+    event BalancerMinterChanged(address indexed oldMinter, address indexed newMinter);
+
+    address private constant BAL = 0xba100000625a3754423978a60c9317c58a424e3D;
+
+    address public balancerMinter;
 
     /// @notice Balancer gauge staker
     /// @param _core Fei Core for reference
-    constructor(address _core) CoreRef(_core) LiquidityGaugeManager(BALANCER_GAUGE_CONTROLLER) {}
+    constructor(
+        address _core,
+        address _gaugeController,
+        address _balancerMinter
+    ) CoreRef(_core) LiquidityGaugeManager(_gaugeController) {
+        balancerMinter = _balancerMinter;
+    }
 
-    function initialize(address _core) external {
+    function initialize(
+        address _core,
+        address _gaugeController,
+        address _balancerMinter
+    ) external {
         require(gaugeController == address(0), "BalancerGaugeStaker: initialized");
         CoreRef._initialize(_core);
-        gaugeController = BALANCER_GAUGE_CONTROLLER;
+        gaugeController = _gaugeController;
+        balancerMinter = _balancerMinter;
+    }
+
+    /// @notice Set the balancer minter used to mint BAL
+    /// @param newMinter the new minter address
+    function setBalancerMinter(address newMinter) public onlyTribeRole(TribeRoles.METAGOVERNANCE_GAUGE_ADMIN) {
+        address currentMinter = balancerMinter; // cache to save 1 sload
+        require(currentMinter != newMinter, "BalancerGaugeStaker: same minter");
+
+        emit BalancerMinterChanged(currentMinter, newMinter);
+        balancerMinter = newMinter;
     }
 
     /// @notice returns total balance of PCV in the Deposit
@@ -76,15 +99,16 @@ contract BalancerGaugeStaker is PCVDeposit, LiquidityGaugeManager {
 
     /// @notice Mint everything which belongs to this contract in the given gauge
     /// @param token whose gauge should be claimed
-    function mint(address token) external whenNotPaused returns (uint256) {
+    function mintGaugeRewards(address token) external whenNotPaused returns (uint256) {
         // fetch gauge address from internal mapping to avoid this permissionless
         // call to mint on any arbitrary gauge.
         address gaugeAddress = tokenToGauge[token];
         require(gaugeAddress != address(0), "BalancerGaugeStaker: token has no gauge configured");
 
-        // emit the same event as Gauge rewards claiming for offline indexing
-        uint256 minted = IBalancerMinter(BALANCER_MINTER).mint(gaugeAddress);
-        emit GaugeRewardsClaimed(gaugeAddress, BAL, minted);
+        // emit the Deposit event because accounting is performed in BAL
+        // and that is what is claimed from the minter.
+        uint256 minted = IBalancerMinter(balancerMinter).mint(gaugeAddress);
+        emit Deposit(msg.sender, minted);
 
         return minted;
     }

@@ -376,6 +376,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x90291319F1D4eA3ad4dB0Dd8fe9E12BAF749E845',
     category: AddressCategory.External
   },
+  balancerMinter: {
+    artifactName: 'IBalancerMinter',
+    address: '0x239e55F427D44C3cc793f49bFB507ebe76638a2b',
+    category: AddressCategory.External
+  },
   balancerGaugeController: {
     artifactName: 'ILiquidityGaugeController',
     address: '0xC128468b7Ce63eA702C1f104D55A2566b13D3ABD',
