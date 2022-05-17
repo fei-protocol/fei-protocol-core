@@ -11,20 +11,20 @@ import {TribeRoles} from "../core/TribeRoles.sol";
 contract FuseFixer is PCVDeposit {
     address constant DEBTOR = address(0x32075bAd9050d4767018084F0Cb87b3182D36C45);
 
-    /* Addresses for reference only.
-    address constant FEI = address(0x956F47F50A910163D8BF957Cf5846D573E7f87CA);
-    address constant FRAX = address(0x853d955aCEf822Db058eb8505911ED77F175b99e);
-    address constant RAI = address(0x03ab458634910AaD20eF5f1C8ee96F1D6ac54919);
-    address constant DAI = address(0x6B175474E89094C44Da98b954EedeAC495271d0F);
-    address constant USDC = address(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48);
-    address constant LUSD = address(0x5f98805A4E8be255a32880FDeC7F6728C6568bA0);
-    address constant wstETH = address(0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0);
-    address constant USTw = address(0xa693B19d2931d498c5B318dF961919BB4aee87a5);
-    address constant WETH = address(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
-    address constant USDT = address(0xdAC17F958D2ee523a2206206994597C13D831ec7);
-    */
+    address[] internal UNDERLYINGS = [
+        address(0x0000000000000000000000000000000000000000), // ETH
+        address(0x956F47F50A910163D8BF957Cf5846D573E7f87CA), // FEI
+        address(0x853d955aCEf822Db058eb8505911ED77F175b99e), // FRAX
+        address(0x03ab458634910AaD20eF5f1C8ee96F1D6ac54919), // RAI
+        address(0x6B175474E89094C44Da98b954EedeAC495271d0F), // DAI
+        address(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48), // USDC
+        address(0x5f98805A4E8be255a32880FDeC7F6728C6568bA0), // LUSD
+        address(0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0), // wstETH
+        address(0xa693B19d2931d498c5B318dF961919BB4aee87a5), // USTw
+        address(0xdAC17F958D2ee523a2206206994597C13D831ec7) // USDT
+    ];
 
-    address[] CTOKENS = [
+    address[] internal CTOKENS = [
         address(0xd8553552f8868C1Ef160eEdf031cF0BCf9686945), // Pool 8: FEI
         address(0xbB025D470162CC5eA24daF7d4566064EE7f5F111), // Pool 8: ETH
         address(0x7e9cE3CAa9910cc048590801e64174957Ed41d43), // Pool 8: DAI
@@ -62,7 +62,23 @@ contract FuseFixer is PCVDeposit {
         address(0xe92a3db67e4b6AC86114149F522644b34264f858) // Pool 156: ETH
     ];
 
-    constructor(address core) CoreRef(core) {}
+    mapping(address => address[]) internal underlyingsToCTokens;
+
+    constructor(address core) CoreRef(core) {
+        _buildCTokenMapping();
+
+        // @todo add some asserts here to check ctoken mappings
+    }
+
+    /// @dev Repay all debt
+    function repayAll() public onlyGovernor {
+        _repayETH();
+
+        // we skip index 0 because that's ETH
+        for (uint256 i = 1; i < UNDERLYINGS.length; i++) {
+            _repayERC20(UNDERLYINGS[i]);
+        }
+    }
 
     /// @dev Repay the underlying asset on all ctokens up to the maximum provide
     /// @notice reverts if the total bad debt is beyond the provided maximum
@@ -72,7 +88,7 @@ contract FuseFixer is PCVDeposit {
         require(getTotalDebt(underlying) < maximum, "Total debt is greater than maximum");
 
         if (underlying == address(0)) {
-            _repayETH(underlying);
+            _repayETH();
         } else {
             _repayERC20(underlying);
         }
@@ -80,23 +96,31 @@ contract FuseFixer is PCVDeposit {
 
     /* Helper Functions */
 
-    function _repayETH(address underlying) internal {
+    function _buildCTokenMapping() internal {
         for (uint256 i = 0; i < CTOKENS.length; i++) {
-            CEtherFuse token = CEtherFuse(CTOKENS[i]);
-            if (token.underlying() == underlying) {
-                uint256 debtAmount = token.borrowBalanceCurrent(DEBTOR);
-                token.repayBorrowBehalf{value: debtAmount}(DEBTOR);
-            }
+            address token = CTOKENS[i];
+            address underlying = CTokenFuse(token).underlying();
+            underlyingsToCTokens[underlying].push(token);
+        }
+    }
+
+    function _repayETH() internal {
+        address[] memory cEtherTokens = underlyingsToCTokens[address(0)];
+
+        for (uint256 i = 0; i < cEtherTokens.length; i++) {
+            CEtherFuse token = CEtherFuse(cEtherTokens[i]);
+            uint256 debtAmount = token.borrowBalanceCurrent(DEBTOR);
+            token.repayBorrowBehalf{value: debtAmount}(DEBTOR);
         }
     }
 
     function _repayERC20(address underlying) internal {
-        for (uint256 i = 0; i < CTOKENS.length; i++) {
-            CTokenFuse token = CTokenFuse(CTOKENS[i]);
-            if (token.underlying() == underlying) {
-                uint256 debtAmount = token.borrowBalanceCurrent(DEBTOR);
-                token.repayBorrowBehalf(DEBTOR, debtAmount);
-            }
+        address[] memory cERC20Tokens = underlyingsToCTokens[underlying];
+
+        for (uint256 i = 0; i < cERC20Tokens.length; i++) {
+            CTokenFuse token = CTokenFuse(cERC20Tokens[i]);
+            uint256 debtAmount = token.borrowBalanceCurrent(DEBTOR);
+            token.repayBorrowBehalf(DEBTOR, debtAmount);
         }
     }
 
