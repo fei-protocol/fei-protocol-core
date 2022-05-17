@@ -68,7 +68,7 @@ contract BalancerGaugeStaker is PCVDeposit, LiquidityGaugeManager {
 
     /// @notice withdraw BAL held to another address
     /// the BAL rewards accrue on this PCVDeposit when Gauge rewards are claimed.
-    function withdraw(address to, uint256 amount) external override onlyPCVController whenNotPaused {
+    function withdraw(address to, uint256 amount) public override onlyPCVController whenNotPaused {
         IERC20(BAL).safeTransfer(to, amount);
         emit Withdrawal(msg.sender, to, amount);
     }
@@ -94,7 +94,13 @@ contract BalancerGaugeStaker is PCVDeposit, LiquidityGaugeManager {
             ILiquidityGauge(gaugeAddress).withdraw(amount, false);
         }
 
-        _withdrawERC20(token, to, amount);
+        // emit the right event if the withdrawn token
+        // is the one used in accounting.
+        if (token == BAL) {
+            withdraw(to, amount);
+        } else {
+            _withdrawERC20(token, to, amount);
+        }
     }
 
     /// @notice Mint everything which belongs to this contract in the given gauge
