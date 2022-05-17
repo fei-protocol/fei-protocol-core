@@ -2,6 +2,7 @@ import { ProposalCategory, ProposalsConfigMap } from '@custom-types/types';
 
 import fip_105 from '@proposals/description/fip_105';
 import swap_dpi_to_dai from '@proposals/description/swap_dpi_to_dai';
+import liquidate_cream from '@proposals/description/liquidate_cream';
 // import fip_xx_proposal from '@proposals/description/fip_xx';
 
 const proposals: ProposalsConfigMap = {
@@ -38,6 +39,15 @@ const proposals: ProposalsConfigMap = {
     category: ProposalCategory.DAO,
     totalValue: 0,
     proposal: swap_dpi_to_dai
+  },
+  liquidate_cream: {
+    deploy: true,
+    totalValue: 0,
+    proposal: liquidate_cream,
+    proposalId: '',
+    affectedContractSignoff: ['creamSushiswapSwapper', 'feiDAOTimelock', 'cream'],
+    deprecatedContractSignoff: [],
+    category: ProposalCategory.DAO
   }
 };
 
