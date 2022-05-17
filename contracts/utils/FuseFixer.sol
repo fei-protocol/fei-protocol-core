@@ -11,6 +11,7 @@ import {TribeRoles} from "../core/TribeRoles.sol";
 contract FuseFixer is PCVDeposit {
     address constant DEBTOR = address(0x32075bAd9050d4767018084F0Cb87b3182D36C45);
 
+    /* Addresses for reference only.
     address constant FEI = address(0x956F47F50A910163D8BF957Cf5846D573E7f87CA);
     address constant FRAX = address(0x853d955aCEf822Db058eb8505911ED77F175b99e);
     address constant RAI = address(0x03ab458634910AaD20eF5f1C8ee96F1D6ac54919);
@@ -21,6 +22,7 @@ contract FuseFixer is PCVDeposit {
     address constant USTw = address(0xa693B19d2931d498c5B318dF961919BB4aee87a5);
     address constant WETH = address(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
     address constant USDT = address(0xdAC17F958D2ee523a2206206994597C13D831ec7);
+    */
 
     address[] CTOKENS = [
         address(0xd8553552f8868C1Ef160eEdf031cF0BCf9686945), // Pool 8: FEI
