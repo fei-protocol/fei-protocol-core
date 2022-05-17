@@ -3,12 +3,22 @@ import { ProposalDescription } from '@custom-types/types';
 const fip_105: ProposalDescription = {
   title: 'FIP-105: Reinforce PCV by consolidating assets and performing technical maintenance',
   commands: [
+    /////////  DAI PSM Skimmer   //////////////
     {
       target: 'core',
       values: '0',
       method: 'grantRole(bytes32,address)',
       arguments: ['0x0866eae1216ed05a11636a648003f3f62921eb97ccb05acc30636f62958a8bd6', '{daiFixedPricePSMFeiSkimmer}'],
       description: 'Grant the new DAI PSM Skimmer the PCV_CONTROLLER_ROLE'
+    },
+
+    ////////    DPI LBP    ////////
+    {
+      target: 'dpiToDaiSwapper',
+      values: '0',
+      method: 'setDoInvert(bool)',
+      arguments: [false],
+      description: 'Correctly disable inversion in the Swapper DPI to Usd oracle'
     },
     {
       target: 'dpi',
@@ -68,13 +78,18 @@ const fip_105: ProposalDescription = {
   description: `
   FIP-105: Reinforce PCV by consolidating assets and performing technical maintenance
 
-  
-  Transfer DPI and DAI to the LBP swapper. This will be used over the course of a month
-  to swap DPI for DAI. 
-  
-  The DAI received will be sent to the Compound DAI deposit, where it can then be dripped to PSM.
+  This FIP implements part of the PCV reinforcement proposal that was approved in this snapshot:
+  https://snapshot.fei.money/#/proposal/0x2fd5bdda0067098f6c0520fe309dfe90ca403758f0ce98c1854a00bf38999674 
+  and discussed in this forum post: https://tribe.fei.money/t/fip-104-fei-pcv-reinforcement-proposal/4162?page=2 
 
-  Configure a new Fei Skimmer to burn excess DAI from the DAI PSM
+  It liquidates the protocol's DPI holdings to DAI using a Balancer LBP. 
+
+  In addition, the FIP introduces several technical maintenance tasks:
+  - Add and remove the relevant PCV deposits from the Collaterization Oracle
+  - Grant the TribalCouncil the role required to initiate the LBP auction
+  - Grant a new skimmer contract the role necessary to skim excess Fei from the DAI PSM
+  - Fix a bug in the NopeDAO configuration that previously set the voting period to 22 months rather than the
+    expected 4 days
   `
 };
 

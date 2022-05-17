@@ -47,12 +47,15 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   // DPI: 37888449801955370645659 (95%), 37k DPI, $3,758,957.86
   // DAI: 187947000000000000000000 (5%), 187k DAI, $187,947.89
   const BalancerLBPSwapperFactory = await ethers.getContractFactory('BalancerLBPSwapper');
+
+  // Oracle reports DPI price in terms of USD, so should not be inverted
+  // Specifically reports: 101258471470000000000, which is $101. As expected
   const dpiToDaiSwapper = await BalancerLBPSwapperFactory.deploy(
     addresses.core,
     {
       _oracle: addresses.chainlinkDpiUsdOracleWrapper,
       _backupOracle: ethers.constants.AddressZero,
-      _invertOraclePrice: true,
+      _invertOraclePrice: false,
       _decimalsNormalizer: 0
     },
     LBP_FREQUENCY,
@@ -107,7 +110,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   );
   await dpiToDaiLensDai.deployTransaction.wait();
 
-  logging && console.log('BPTLens for DPI in swapper pool: ', dpiToDaiLensDai.address);
+  logging && console.log('BPTLens for DAI in swapper pool: ', dpiToDaiLensDai.address);
 
   const dpiToDaiLensDpi = await BPTLensFactory.deploy(
     addresses.dpi, // token reported in
@@ -118,7 +121,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     false // feiIsOther
   );
 
-  logging && console.log('BPTLens for DAI in swapper pool: ', dpiToDaiLensDpi.address);
+  logging && console.log('BPTLens for DPI in swapper pool: ', dpiToDaiLensDpi.address);
   return {
     daiFixedPricePSMFeiSkimmer,
     dpiToDaiSwapper,
@@ -180,6 +183,9 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await daiFixedPricePSMFeiSkimmer.CONTRACT_ADMIN_ROLE()).to.be.equal(ethers.utils.id('PCV_MINOR_PARAM_ROLE'));
 
   /////////////  2.    DPI LBP  ////////////////
+  // Verify that Oracle inversion was correctly set
+  expect(await contracts.dpiToDaiSwapper.doInvert()).to.be.equal(false);
+
   // By this point, the DAO has moved funds to the LBP swapper and the auction should be active
   console.log('Final DAI PSM dai balance [M]', (await contracts.compoundDaiPCVDeposit.balance()) / 1e24);
 
