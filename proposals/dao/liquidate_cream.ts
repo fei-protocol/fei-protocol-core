@@ -18,16 +18,17 @@ Liquidate CREAM
 
 Description: Liquidate all CREAM for ETH by slowly selling it over a period of time on Sushiswap
 
-Sushiswap is the DEX with most CREAM liquidity. The CREAM-WETH pair has 24hr volume of ~$50k.
+Sushiswap is the DEX with most CREAM liquidity. The CREAM-WETH pair has 24hr volume that ranges from ~$20k - $700k.
+It is more often on the low side.
 
-This proposal will sell ~$5k of CREAM (~250 tokens at $20 per token) every 30minutes.
-This will incur slippage of ~2% on each sale. 
+This proposal will sell ~$8k of CREAM (~400 tokens at $20 per token) every 8hrs.
+This will incur slippage of ~3% on each sale. 
 
-The protocol has ~$600k CREAM to liquidate. At a rate of $5k per 30mins ($24k per day), this will take ~25 days. 
+The protocol has ~$600k CREAM to liquidate. At a rate of $8k per 8hrs (~$24k per day), this will take ~25 days. 
 */
-const swapFrequency = (60 * 30).toString(); // 1800 seconds, 30mins
-const maxSpentPerSwap = ethers.constants.WeiPerEther.mul('250'); // 250 tokens
-const maxSlippageBasisPoints = '300'; // 3%
+const swapFrequency = (60 * 60 * 8).toString(); // 28,800 seconds, 8hrs
+const maxSpentPerSwap = ethers.constants.WeiPerEther.mul('400'); // 400 tokens
+const maxSlippageBasisPoints = '1000'; // 10%
 const protocolCreamBalance = toBN('31780370000000000000000'); // Total num CREAM tokens: 31,780
 
 const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: NamedAddresses, logging: boolean) => {
@@ -104,10 +105,10 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   // Sanity check the amount of ETH received in the trade
   // 1 CREAM token ~= $20
   // 1 ETH ~= $2000
-  // For 250 CREAM tokens ($5000), expect ~2 eth
+  // For 400 CREAM tokens ($10000), expect ~4 eth
   const amountReceived = newWethBalance - initialPCVDepositWethBalance;
-  expect(amountReceived.toString()).to.be.at.most(ethers.utils.parseEther('2.5'));
-  expect(amountReceived.toString()).to.be.at.least(ethers.utils.parseEther('1.5'));
+  expect(amountReceived.toString()).to.be.at.most(ethers.utils.parseEther('4.5'));
+  expect(amountReceived.toString()).to.be.at.least(ethers.utils.parseEther('3.5'));
 
   // Validate a second swap can occur
   await time.increase(swapFrequency);
