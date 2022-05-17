@@ -22,7 +22,8 @@ export const permissions = {
     'lusdPCVDripController',
     'ethPSMFeiSkimmer',
     'lusdPSMFeiSkimmer',
-    'raiPCVDripController'
+    'raiPCVDripController',
+    'daiFixedPricePSMFeiSkimmer'
   ],
   GUARDIAN_ROLE: ['multisig', 'pcvGuardianNew', 'pcvSentinel'],
   ORACLE_ADMIN_ROLE: [
@@ -31,7 +32,7 @@ export const permissions = {
     'opsOptimisticTimelock',
     'tribalCouncilTimelock'
   ],
-  SWAP_ADMIN_ROLE: ['pcvEquityMinter', 'optimisticTimelock'],
+  SWAP_ADMIN_ROLE: ['pcvEquityMinter', 'optimisticTimelock', 'tribalCouncilTimelock'],
   BALANCER_MANAGER_ADMIN_ROLE: [],
   RATE_LIMITED_MINTER_ADMIN: [],
   PARAMETER_ADMIN: [],
