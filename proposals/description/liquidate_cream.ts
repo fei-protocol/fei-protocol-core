@@ -7,7 +7,7 @@ const liquidate_cre: ProposalDescription = {
       target: 'cream',
       values: '0',
       method: 'transfer(address,uint256)',
-      arguments: ['{feiDAOTimelock}', '31780370000000000000000'],
+      arguments: ['{creamSushiswapSwapper}', '31780370000000000000000'],
       description: 'Transfer CREAM from FEI DAO Timelock to the Cream swapper'
     }
   ],
