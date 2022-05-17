@@ -77,6 +77,7 @@ contract FuseFixer is PCVDeposit {
     }
 
     /* Helper Functions */
+
     function _repayETH(address underlying) internal {
         for (uint256 i = 0; i < CTOKENS.length; i++) {
             CEtherFuse token = CEtherFuse(CTOKENS[i]);
@@ -97,7 +98,8 @@ contract FuseFixer is PCVDeposit {
         }
     }
 
-    function getTotalDebt(address underlying) public returns (uint256 debt) {
+    // Must be non-view since this updates a state var
+    function getTotalDebt(address underlying) internal returns (uint256 debt) {
         for (uint256 i = 0; i < CTOKENS.length; i++) {
             CTokenFuse token = CTokenFuse(CTOKENS[i]);
             if (token.underlying() == underlying) {
