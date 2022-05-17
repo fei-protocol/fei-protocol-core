@@ -15,4 +15,6 @@ abstract contract CTokenFuse {
     function underlying() external view virtual returns (address);
 
     function borrowBalanceCurrent(address debtor) external virtual returns (uint256);
+
+    function repayBorrowBehalf(address borrower, uint256 repayAmount) external payable virtual returns (uint256);
 }
