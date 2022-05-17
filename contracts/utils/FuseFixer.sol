@@ -62,6 +62,10 @@ contract FuseFixer is PCVDeposit {
 
     constructor(address core) CoreRef(core) {}
 
+    /// @dev Repay the underlying asset on all ctokens up to the maximum provide
+    /// @notice reverts if the total bad debt is beyond the provided maximum
+    /// @param underlying the asset to repay in
+    /// @param maximum the maximum amount of underlying asset to repay
     function repay(address underlying, uint256 maximum) public onlyGovernor {
         require(getTotalDebt(underlying) < maximum, "Total debt is greater than maximum");
 
