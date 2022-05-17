@@ -17,7 +17,9 @@ const toBN = ethers.BigNumber.from;
 
 DAO Proposal #105
 
-Description: Deploy a Fei skimmer for the DAI PSM
+1. Deploy Fei Skimmer and grant it PCV_CONTROLLER
+2. Deploy Balancer LBP and initialise auction of DPI for DAI
+3. Fix NopeDAO voting period
 */
 
 // LBP Swapper config
@@ -55,7 +57,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     {
       _oracle: addresses.chainlinkDpiUsdOracleWrapper,
       _backupOracle: ethers.constants.AddressZero,
-      _invertOraclePrice: false,
+      _invertOraclePrice: true,
       _decimalsNormalizer: 0
     },
     LBP_FREQUENCY,
@@ -100,7 +102,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 
   // 4. Deploy a lens to report the swapper value
   const BPTLensFactory = await ethers.getContractFactory('BPTLens');
-  const dpiToDaiLensDai = await BPTLensFactory.deploy(
+  const daiBPTLens = await BPTLensFactory.deploy(
     addresses.dai, // token reported in
     noFeeDpiDaiLBPAddress, // pool address
     addresses.chainlinkDaiUsdOracleWrapper, // reportedOracle - DAI
@@ -108,11 +110,11 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     false, // feiIsReportedIn
     false // feiIsOther
   );
-  await dpiToDaiLensDai.deployTransaction.wait();
+  await daiBPTLens.deployTransaction.wait();
 
-  logging && console.log('BPTLens for DAI in swapper pool: ', dpiToDaiLensDai.address);
+  logging && console.log('BPTLens for DAI in swapper pool: ', daiBPTLens.address);
 
-  const dpiToDaiLensDpi = await BPTLensFactory.deploy(
+  const dpiBPTLens = await BPTLensFactory.deploy(
     addresses.dpi, // token reported in
     noFeeDpiDaiLBPAddress, // pool address
     addresses.chainlinkDpiUsdOracleWrapper, // reportedOracle - DPI
@@ -120,13 +122,14 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     false, // feiIsReportedIn
     false // feiIsOther
   );
+  await dpiBPTLens.deployTransaction.wait();
 
-  logging && console.log('BPTLens for DPI in swapper pool: ', dpiToDaiLensDpi.address);
+  logging && console.log('BPTLens for DPI in swapper pool: ', dpiBPTLens.address);
   return {
     daiFixedPricePSMFeiSkimmer,
     dpiToDaiSwapper,
-    dpiToDaiLensDai,
-    dpiToDaiLensDpi
+    daiBPTLens,
+    dpiBPTLens
   };
 };
 
@@ -134,13 +137,16 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 // This could include setting up Hardhat to impersonate accounts,
 // ensuring contracts have a specific state, etc.
 const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
+  poolId = '0xd10386804959a121a8a487e49f45aa9f5a2eb2a00002000000000000000001f1';
   // overwrite chainlink ETH/USD oracle
+  const dpiToDaiLBPSwapper = contracts.dpiToDaiLBPSwapper;
   await overwriteChainlinkAggregator(addresses.chainlinkEthUsdOracle, '250000000000', '8');
 
   // invariant checks
-  expect(await contracts.dpiToDaiSwapper.tokenSpent()).to.be.equal(addresses.dpi);
-  expect(await contracts.dpiToDaiSwapper.tokenReceived()).to.be.equal(addresses.dai);
-  expect(await contracts.dpiToDaiSwapper.tokenReceivingAddress()).to.be.equal(addresses.compoundDaiPCVDeposit);
+  expect(await dpiToDaiLBPSwapper.tokenSpent()).to.be.equal(addresses.dpi);
+  expect(await dpiToDaiLBPSwapper.tokenReceived()).to.be.equal(addresses.dai);
+  expect(await dpiToDaiLBPSwapper.tokenReceivingAddress()).to.be.equal(addresses.compoundDaiPCVDeposit);
+
   const poolTokens = await contracts.balancerVault.getPoolTokens(poolId);
   expect(poolTokens.tokens[0]).to.be.equal(addresses.dpi);
   expect(poolTokens.tokens[1]).to.be.equal(addresses.dai);
@@ -150,12 +156,12 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
   expect(poolTokens.balances[1]).to.be.equal('0');
 
   // Lenses should report 0 because LBP is empty
-  expect(await contracts.dpiToDaiLensDai.balance()).to.be.equal('0');
-  expect(await contracts.dpiToDaiLensDpi.balance()).to.be.equal('0');
+  expect(await contracts.daiBPTLens.balance()).to.be.equal('0');
+  expect(await contracts.dpiBPTLens.balance()).to.be.equal('0');
 
   // Swapper should hold no tokens
-  expect(await contracts.dpi.balanceOf(contracts.dpiToDaiSwapper.address)).to.be.equal('0');
-  expect(await contracts.dai.balanceOf(contracts.dpiToDaiSwapper.address)).to.be.equal('0');
+  expect(await contracts.dpi.balanceOf(dpiToDaiLBPSwapper.address)).to.be.equal('0');
+  expect(await contracts.dai.balanceOf(dpiToDaiLBPSwapper.address)).to.be.equal('0');
 
   console.log('Starting DAI PSM dai balance [M]', (await contracts.compoundDaiPCVDeposit.balance()) / 1e24);
 
@@ -171,8 +177,10 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // Run any validations required on the fip using mocha or console logging
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
+  poolId = '0xd10386804959a121a8a487e49f45aa9f5a2eb2a00002000000000000000001f1';
   ////////////    1. DAI FEI SKIMMER   //////////////
   const daiFixedPricePSMFeiSkimmer = contracts.daiFixedPricePSMFeiSkimmer;
+  const dpiToDaiLBPSwapper = contracts.dpiToDaiLBPSwapper;
   const core = contracts.core;
 
   expect(await daiFixedPricePSMFeiSkimmer.threshold()).to.be.equal(skimThreshold);
@@ -183,25 +191,27 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await daiFixedPricePSMFeiSkimmer.CONTRACT_ADMIN_ROLE()).to.be.equal(ethers.utils.id('PCV_MINOR_PARAM_ROLE'));
 
   /////////////  2.    DPI LBP  ////////////////
-  // Verify that Oracle inversion was correctly set
-  expect(await contracts.dpiToDaiSwapper.doInvert()).to.be.equal(false);
+  expect(await dpiToDaiLBPSwapper.doInvert()).to.be.equal(true);
 
   // By this point, the DAO has moved funds to the LBP swapper and the auction should be active
   console.log('Final DAI PSM dai balance [M]', (await contracts.compoundDaiPCVDeposit.balance()) / 1e24);
 
-  expect(await contracts.dpi.balanceOf(contracts.dpiToDaiSwapper.address)).to.be.equal(dpiSeedAmount);
-  expect(await contracts.dai.balanceOf(contracts.dpiToDaiSwapper.address)).to.be.equal(daiSeedAmount);
+  expect(await contracts.dpi.balanceOf(dpiToDaiLBPSwapper.address)).to.be.equal(dpiSeedAmount);
+  expect(await contracts.dai.balanceOf(dpiToDaiLBPSwapper.address)).to.be.equal(daiSeedAmount);
 
-  await time.increase(await contracts.dpiToDaiSwapper.remainingTime());
-  expect(await contracts.dpiToDaiSwapper.isTimeEnded()).to.be.true;
+  await time.increase(await dpiToDaiLBPSwapper.remainingTime());
+  expect(await dpiToDaiLBPSwapper.isTimeEnded()).to.be.true;
 
   // Validate SWAP_ADMIN_ROLE is under ROLE_ADMIN and that TribalCouncilTimelock has the role
   expect(await core.hasRole(ethers.utils.id('SWAP_ADMIN_ROLE'), addresses.tribalCouncilTimelock)).to.be.true;
   expect(await core.getRoleAdmin(ethers.utils.id('SWAP_ADMIN_ROLE'))).to.be.equal(ethers.utils.id('ROLE_ADMIN'));
 
   const signer = await getImpersonatedSigner(addresses.tribalCouncilTimelock); // TODO: TribalCouncil should grant itself SWAP_ADMIN_ROLE
-  await contracts.dpiToDaiSwapper.connect(signer).swap();
-  expect(await contracts.dpiToDaiSwapper.isTimeEnded()).to.be.false;
+  await dpiToDaiLBPSwapper.connect(signer).swap();
+  expect(await dpiToDaiLBPSwapper.isTimeEnded()).to.be.false;
+
+  ////////  3. Nope DAO Voting Period fix  /////////////
+  expect(await contracts.nopeDAO.votingPeriod()).to.be.equal(26585);
 };
 
 export { deploy, setup, teardown, validate };

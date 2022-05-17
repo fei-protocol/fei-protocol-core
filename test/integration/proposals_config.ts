@@ -14,9 +14,9 @@ const proposals: ProposalsConfigMap = {
       'core',
       'dpi',
       'compoundDaiPCVDeposit',
-      'dpiToDaiSwapper',
-      'dpiToDaiLensDai',
-      'dpiToDaiLensDpi'
+      'dpiToDaiLBPSwapper',
+      'daiBPTLens',
+      'dpiBPTLens'
     ],
     deprecatedContractSignoff: [
       'rariPool31FeiPCVDepositWrapper',

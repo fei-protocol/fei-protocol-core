@@ -14,38 +14,31 @@ const fip_105: ProposalDescription = {
 
     ////////    DPI LBP    ////////
     {
-      target: 'dpiToDaiSwapper',
-      values: '0',
-      method: 'setDoInvert(bool)',
-      arguments: [false],
-      description: 'Correctly disable inversion in the Swapper DPI to Usd oracle'
-    },
-    {
       target: 'dpi',
       values: '0',
       method: 'transfer(address,uint256)',
-      arguments: ['{dpiToDaiSwapper}', '37888449801955370645659'],
+      arguments: ['{dpiToDaiLBPSwapper}', '37888449801955370645659'],
       description: 'Transfer DPI from DAO timelock to the LBP pool'
     },
     {
       target: 'compoundDaiPCVDeposit',
       values: '0',
       method: 'withdraw(address,uint256)',
-      arguments: ['{dpiToDaiSwapper}', '187947000000000000000000'],
+      arguments: ['{dpiToDaiLBPSwapper}', '187947000000000000000000'],
       description: 'Withdraw Use the PCVGuardian to transfer DAI from the CompoundPCVDeposit to the LBP pool'
     },
     {
       target: 'collateralizationOracle',
       values: '0',
       method: 'addDeposit(address)',
-      arguments: ['{dpiToDaiLensDai}'],
+      arguments: ['{daiBPTLens}'],
       description: 'Add DAI swapper lens to the CR oracle'
     },
     {
       target: 'collateralizationOracle',
       values: '0',
       method: 'addDeposit(address)',
-      arguments: ['{dpiToDaiLensDpi}'],
+      arguments: ['{dpiBPTLens}'],
       description: 'Add DPI swapper lens to the CR oracle'
     },
     {
@@ -54,7 +47,6 @@ const fip_105: ProposalDescription = {
       method: 'removeDeposits(address[])',
       arguments: [
         [
-          '{dpiDepositWrapper}',
           '{rariPool31FeiPCVDepositWrapper}',
           '{rariPool25FeiPCVDepositWrapper}',
           '{rariPool9RaiPCVDepositWrapper}',
@@ -62,7 +54,8 @@ const fip_105: ProposalDescription = {
           '{rariPool19DpiPCVDepositWrapper}',
           '{liquityFusePoolLusdPCVDeposit}',
           '{rariPool72FeiPCVDepositWrapper}',
-          '{raiDepositWrapper}'
+          '{raiDepositWrapper}',
+          '{dpiDepositWrapper}'
         ]
       ],
       description: 'Remove DPI Deposit wrapper from CR oracle, as now empty'
@@ -73,6 +66,14 @@ const fip_105: ProposalDescription = {
       method: 'grantRole(bytes32,address)',
       arguments: ['0x471cfe1a44bf1b786db7d7104d51e6728ed7b90a35394ad7cc424adf8ed16816', '{tribalCouncilTimelock}'],
       description: 'Grant TribalCouncilTimelock SWAP_ADMIN_ROLE so it can initiate the LBP swap'
+    },
+    /////////// Nope DAO /////////
+    {
+      target: 'nopeDAO',
+      values: '0',
+      method: 'setVotingPeriod(uint256)',
+      arguments: ['26585'], // (86400 * 4) / 13 seconds (assumed 13s block time)
+      description: 'Set the voting period for the NopeDAO to 4 days'
     }
   ],
   description: `

@@ -186,7 +186,7 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x3AA57FAf7114a9ebEbda73a997A35eAE06008A7B',
     category: AddressCategory.PCV
   },
-  dpiBptLens: {
+  dpiBPTLens: {
     artifactName: 'BPTLens',
     address: '0xaDdB7eBdCA3fa3b72D2e57c8e660C90ec00af7Cc',
     category: AddressCategory.PCV
