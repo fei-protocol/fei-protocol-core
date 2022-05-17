@@ -16,6 +16,7 @@ describe('PCVSwapperUniswap', function () {
   let minterSigner: Signer;
   let pcvControllerSigner: Signer;
   let secondUserSigner: Signer;
+  let pcvMinorParamSigner: Signer;
 
   const impersonatedSigners: { [key: string]: Signer } = {};
 
@@ -74,6 +75,14 @@ describe('PCVSwapperUniswap', function () {
     );
 
     await this.core.connect(governorSigner).grantPCVController(pcvControllerAddress);
+
+    // Create the PCV_MINOR_PARAM_ROLE and grant it to a calling address
+    await this.core
+      .connect(governorSigner)
+      .createRole(ethers.utils.id('PCV_MINOR_PARAM_ROLE'), ethers.utils.id('GOVERN_ROLE'));
+
+    await this.core.connect(governorSigner).grantRole(ethers.utils.id('PCV_MINOR_PARAM_ROLE'), secondUserAddress);
+    pcvMinorParamSigner = await getImpersonatedSigner(secondUserAddress);
   });
 
   describe('Payable', function () {
@@ -101,7 +110,7 @@ describe('PCVSwapperUniswap', function () {
       describe('As Governor', function () {
         it('setTokenSpent() emit UpdateTokenSpent', async function () {
           expectEvent(
-            await this.swapper.connect(governorSigner).setTokenSpent('0x6B175474E89094C44Da98b954EedeAC495271d0F'),
+            await this.swapper.connect(pcvMinorParamSigner).setTokenSpent('0x6B175474E89094C44Da98b954EedeAC495271d0F'),
             this.swappper,
             'UpdateTokenSpent',
             ['0x6B175474E89094C44Da98b954EedeAC495271d0F']
@@ -109,7 +118,9 @@ describe('PCVSwapperUniswap', function () {
         });
         it('setTokenReceived() emit UpdateTokenReceived', async function () {
           expectEvent(
-            await this.swapper.connect(governorSigner).setTokenReceived('0x6B175474E89094C44Da98b954EedeAC495271d0F'),
+            await this.swapper
+              .connect(pcvMinorParamSigner)
+              .setTokenReceived('0x6B175474E89094C44Da98b954EedeAC495271d0F'),
             this.swapper,
             'UpdateTokenReceived',
             ['0x6B175474E89094C44Da98b954EedeAC495271d0F']
@@ -117,7 +128,7 @@ describe('PCVSwapperUniswap', function () {
         });
         it('setReceivingAddress() emit UpdateReceivingAddress', async function () {
           expectEvent(
-            await this.swapper.connect(governorSigner).setReceivingAddress(userAddress),
+            await this.swapper.connect(pcvMinorParamSigner).setReceivingAddress(userAddress),
             this.swapper,
             'UpdateReceivingAddress',
             [userAddress] // tokenReceivingAddress
@@ -125,20 +136,17 @@ describe('PCVSwapperUniswap', function () {
         });
       });
       describe('As Anyone', function () {
-        it('revert setTokenSpent() onlyGovernor', async function () {
-          await expectRevert(
-            this.swapper.setTokenSpent('0x6B175474E89094C44Da98b954EedeAC495271d0F'),
-            'CoreRef: Caller is not a governor'
-          );
+        it('revert setTokenSpent() PCV_MINOR_ADMIN_ROLE', async function () {
+          await expectRevert(this.swapper.setTokenSpent('0x6B175474E89094C44Da98b954EedeAC495271d0F'), 'UNAUTHORIZED');
         });
-        it('revert setTokenReceived() onlyGovernor', async function () {
+        it('revert setTokenReceived() PCV_MINOR_ADMIN_ROLE', async function () {
           await expectRevert(
             this.swapper.setTokenReceived('0x6B175474E89094C44Da98b954EedeAC495271d0F'),
-            'CoreRef: Caller is not a governor'
+            'UNAUTHORIZED'
           );
         });
-        it('revert setReceivingAddress() onlyGovernor', async function () {
-          await expectRevert(this.swapper.setReceivingAddress(userAddress), 'CoreRef: Caller is not a governor');
+        it('revert setReceivingAddress() PCV_MINOR_ADMIN_ROLE', async function () {
+          await expectRevert(this.swapper.setReceivingAddress(userAddress), 'UNAUTHORIZED');
         });
       });
     });
@@ -220,63 +228,57 @@ describe('PCVSwapperUniswap', function () {
   });
 
   describe('Setters', function () {
-    it('setMaximumSlippage() revert if not governor', async function () {
-      const newLocal = 'CoreRef: Caller is not a governor';
+    it('setMaximumSlippage() revert if not PCV_MINOR_PARAM_ROLE', async function () {
+      const newLocal = 'UNAUTHORIZED';
       await expectRevert(this.swapper.setMaximumSlippage(toBN('500')), newLocal);
     });
     it('setMaximumSlippage() revert on invalid value', async function () {
       await expectRevert(
-        this.swapper.connect(governorSigner).setMaximumSlippage(toBN('10001')),
+        this.swapper.connect(pcvMinorParamSigner).setMaximumSlippage(toBN('10001')),
         'PCVSwapperUniswap: Exceeds bp granularity.'
       );
     });
     it('setMaximumSlippage()', async function () {
       expect(await this.swapper.maximumSlippageBasisPoints()).to.be.bignumber.equal(toBN('300'));
-      await this.swapper.connect(governorSigner).setMaximumSlippage(toBN('500'));
+      await this.swapper.connect(pcvMinorParamSigner).setMaximumSlippage(toBN('500'));
       expect(await this.swapper.maximumSlippageBasisPoints()).to.be.bignumber.equal(toBN('500'));
     });
-    it('setMaxSpentPerSwap() revert if not governor', async function () {
-      await expectRevert(this.swapper.setMaxSpentPerSwap(toBN('0')), 'CoreRef: Caller is not a governor');
+    it('setMaxSpentPerSwap() revert if not PCV_MINOR_ADMIN_ROLE', async function () {
+      await expectRevert(this.swapper.setMaxSpentPerSwap(toBN('0')), 'UNAUTHORIZED');
     });
     it('setMaxSpentPerSwap() revert on invalid value', async function () {
       await expectRevert(
-        this.swapper.connect(governorSigner).setMaxSpentPerSwap(toBN('0')),
+        this.swapper.connect(pcvMinorParamSigner).setMaxSpentPerSwap(toBN('0')),
         'PCVSwapperUniswap: Cannot swap 0.'
       );
     });
     it('setMaxSpentPerSwap()', async function () {
       expect(await this.swapper.maxSpentPerSwap()).to.be.bignumber.equal(ethers.constants.WeiPerEther.mul('100'));
-      await this.swapper.connect(governorSigner).setMaxSpentPerSwap('50' + e18);
+      await this.swapper.connect(pcvMinorParamSigner).setMaxSpentPerSwap('50' + e18);
       expect(await this.swapper.maxSpentPerSwap()).to.be.bignumber.equal(ethers.constants.WeiPerEther.mul('50'));
     });
-    it('setTokenBuyLimit() revert if not governor', async function () {
-      await expectRevert(
-        this.swapper.setTokenBuyLimit(ethers.constants.WeiPerEther.mul('500000')),
-        'CoreRef: Caller is not a governor'
-      );
+    it('setTokenBuyLimit() revert if not PCV_MINOR_ADMIN_ROLE', async function () {
+      await expectRevert(this.swapper.setTokenBuyLimit(ethers.constants.WeiPerEther.mul('500000')), 'UNAUTHORIZED');
     });
     it('setTokenBuyLimit()', async function () {
       expect(await this.swapper.tokenBuyLimit()).to.be.bignumber.equal(toBN('0'));
-      await this.swapper.connect(governorSigner).setTokenBuyLimit('500000' + e18);
+      await this.swapper.connect(pcvMinorParamSigner).setTokenBuyLimit('500000' + e18);
       expect(await this.swapper.tokenBuyLimit()).to.be.bignumber.equal(ethers.constants.WeiPerEther.mul('500000'));
     });
-    it('setSwapFrequency() revert if not governor', async function () {
-      await expectRevert(
-        this.swapper.setSwapFrequency(ethers.constants.WeiPerEther.mul('2000')),
-        'CoreRef: Caller is not a governor'
-      );
+    it('setSwapFrequency() revert if not PCV_MINOR_ADMIN_ROLE', async function () {
+      await expectRevert(this.swapper.setSwapFrequency(ethers.constants.WeiPerEther.mul('2000')), 'UNAUTHORIZED');
     });
     it('setSwapFrequency()', async function () {
       expect(await this.swapper.getSwapFrequency()).to.be.bignumber.equal(toBN('1000'));
-      await this.swapper.connect(governorSigner).setSwapFrequency('2000');
+      await this.swapper.connect(pcvMinorParamSigner).setSwapFrequency('2000');
       expect(await this.swapper.getSwapFrequency()).to.be.bignumber.equal(toBN('2000'));
     });
-    it('setInvertOraclePrice() revert if not governor', async function () {
-      await expectRevert(this.swapper.setInvertOraclePrice(true), 'CoreRef: Caller is not a governor');
+    it('setInvertOraclePrice() revert if not PCV_MINOR_ADMIN_ROLE', async function () {
+      await expectRevert(this.swapper.setInvertOraclePrice(true), 'UNAUTHORIZED');
     });
     it('setInvertOraclePrice()', async function () {
       expect(await this.swapper.invertOraclePrice()).to.be.equal(false);
-      await this.swapper.connect(governorSigner).setInvertOraclePrice(true);
+      await this.swapper.connect(pcvMinorParamSigner).setInvertOraclePrice(true);
       expect(await this.swapper.invertOraclePrice()).to.be.equal(true);
     });
   });
@@ -298,7 +300,7 @@ describe('PCVSwapperUniswap', function () {
     it('revert if buy limit is exceeded', async function () {
       await time.increase('1000');
       await userSigner.sendTransaction({ to: this.swapper.address, value: '50' + e18 });
-      await this.swapper.connect(governorSigner).setTokenBuyLimit('1');
+      await this.swapper.connect(pcvMinorParamSigner).setTokenBuyLimit('1');
       // first swap is successful but pushes the target's balance above limit
       await this.swapper.connect(userSigner).swap();
       expect(await this.fei.balanceOf(userAddress)).to.be.bignumber.equal(toBN('124376992277398866659880'));
@@ -315,7 +317,7 @@ describe('PCVSwapperUniswap', function () {
     it('revert if slippage is too high', async function () {
       await time.increase('1000');
       await userSigner.sendTransaction({ to: this.swapper.address, value: '1000' + e18 });
-      await this.swapper.connect(governorSigner).setMaxSpentPerSwap(ethers.constants.WeiPerEther.mul('1000'));
+      await this.swapper.connect(pcvMinorParamSigner).setMaxSpentPerSwap(ethers.constants.WeiPerEther.mul('1000'));
       await expectRevert(this.swapper.swap(), 'PCVSwapperUniswap: slippage too high.');
     });
     it('send tokens to tokenReceivingAddress', async function () {

@@ -1,16 +1,17 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
-import "../IPCVSwapper.sol";
-import "../../refs/UniRef.sol";
-import "../../utils/Timed.sol";
-import "../../external/uniswap/UniswapV2Library.sol";
-import "@openzeppelin/contracts/utils/math/Math.sol";
-import "@openzeppelin/contracts/utils/Address.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@uniswap/v2-periphery/contracts/interfaces/IWETH.sol";
-import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
+import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
+import {Address} from "@openzeppelin/contracts/utils/Address.sol";
+import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {IWETH} from "@uniswap/v2-periphery/contracts/interfaces/IWETH.sol";
+import {IUniswapV2Router02} from "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
+import {IPCVSwapper} from "../IPCVSwapper.sol";
+import {UniRef, Decimal} from "../../refs/UniRef.sol";
+import {Timed} from "../../utils/Timed.sol";
+import {UniswapV2Library} from "../../external/uniswap/UniswapV2Library.sol";
+import {TribeRoles} from "../../core/TribeRoles.sol";
 
 /// @title implementation for PCV Swapper that swaps ERC20 tokens on Uniswap
 /// @author eswak
@@ -108,21 +109,25 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
 
     /// @notice Sets the token to spend
     /// @param _tokenSpent the address of the token to spend
-    function setTokenSpent(address _tokenSpent) external onlyGovernor {
+    function setTokenSpent(address _tokenSpent) external onlyTribeRole(TribeRoles.PCV_MINOR_PARAM_ROLE) {
         tokenSpent = _tokenSpent;
         emit UpdateTokenSpent(_tokenSpent);
     }
 
     /// @notice Sets the token to receive
     /// @param _tokenReceived the address of the token to receive
-    function setTokenReceived(address _tokenReceived) external onlyGovernor {
+    function setTokenReceived(address _tokenReceived) external onlyTribeRole(TribeRoles.PCV_MINOR_PARAM_ROLE) {
         tokenReceived = _tokenReceived;
         emit UpdateTokenReceived(_tokenReceived);
     }
 
     /// @notice Sets the address receiving swap's inbound tokens
     /// @param _tokenReceivingAddress the address that will receive tokens
-    function setReceivingAddress(address _tokenReceivingAddress) external override onlyGovernor {
+    function setReceivingAddress(address _tokenReceivingAddress)
+        external
+        override
+        onlyTribeRole(TribeRoles.PCV_MINOR_PARAM_ROLE)
+    {
         emit UpdateReceivingAddress(tokenReceivingAddress, _tokenReceivingAddress);
         tokenReceivingAddress = _tokenReceivingAddress;
     }
@@ -133,31 +138,34 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
 
     /// @notice Sets the maximum slippage vs Oracle price accepted during swaps
     /// @param _maximumSlippageBasisPoints the maximum slippage expressed in basis points (1/10_000)
-    function setMaximumSlippage(uint256 _maximumSlippageBasisPoints) external onlyGovernor {
+    function setMaximumSlippage(uint256 _maximumSlippageBasisPoints)
+        external
+        onlyTribeRole(TribeRoles.PCV_MINOR_PARAM_ROLE)
+    {
         require(_maximumSlippageBasisPoints <= BASIS_POINTS_GRANULARITY, "PCVSwapperUniswap: Exceeds bp granularity.");
         maximumSlippageBasisPoints = _maximumSlippageBasisPoints;
     }
 
     /// @notice Sets the maximum tokens spent on each swap
     /// @param _maxSpentPerSwap the maximum number of tokens to be swapped on each call
-    function setMaxSpentPerSwap(uint256 _maxSpentPerSwap) external onlyGovernor {
+    function setMaxSpentPerSwap(uint256 _maxSpentPerSwap) external onlyTribeRole(TribeRoles.PCV_MINOR_PARAM_ROLE) {
         require(_maxSpentPerSwap != 0, "PCVSwapperUniswap: Cannot swap 0.");
         maxSpentPerSwap = _maxSpentPerSwap;
     }
 
     /// @notice Sets the maximum amount of tokens to buy
     /// @param _tokenBuyLimit the amount of tokens above which swaps will revert
-    function setTokenBuyLimit(uint256 _tokenBuyLimit) external onlyGovernor {
+    function setTokenBuyLimit(uint256 _tokenBuyLimit) external onlyTribeRole(TribeRoles.PCV_MINOR_PARAM_ROLE) {
         tokenBuyLimit = _tokenBuyLimit;
     }
 
     /// @notice sets the minimum time between swaps
-    function setSwapFrequency(uint256 _duration) external onlyGovernor {
+    function setSwapFrequency(uint256 _duration) external onlyTribeRole(TribeRoles.PCV_MINOR_PARAM_ROLE) {
         _setDuration(_duration);
     }
 
     /// @notice sets invertOraclePrice : use (1 / oraclePrice) if true
-    function setInvertOraclePrice(bool _invertOraclePrice) external onlyGovernor {
+    function setInvertOraclePrice(bool _invertOraclePrice) external onlyTribeRole(TribeRoles.PCV_MINOR_PARAM_ROLE) {
         invertOraclePrice = _invertOraclePrice;
     }
 

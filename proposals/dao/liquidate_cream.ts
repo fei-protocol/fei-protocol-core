@@ -18,7 +18,7 @@ Liquidate CREAM
 
 Description: Liquidate all CREAM for ETH by slowly selling it over a period of time on Sushiswap
 
-Sushiswap is the DEX with most CREAM liquidity. The CREAM-WETH pair has 24hr volume of ~$1.3M.
+Sushiswap is the DEX with most CREAM liquidity. The CREAM-WETH pair has 24hr volume of ~$50k.
 
 This proposal will sell ~$5k of CREAM (~250 tokens at $20 per token) every 30minutes.
 This will incur slippage of ~2% on each sale. 
