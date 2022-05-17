@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 import {PCVDeposit} from "../pcv/PCVDeposit.sol";
 import {CTokenFuse, CEtherFuse} from "../external/fuse/CToken.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {CoreRef} from "../refs/CoreRef.sol";
 import {TribeRoles} from "../core/TribeRoles.sol";
 
@@ -67,7 +68,20 @@ contract FuseFixer is PCVDeposit {
     constructor(address core) CoreRef(core) {
         _buildCTokenMapping();
 
-        // @todo add some asserts here to check ctoken mappings
+        // check mappings lengths - hand calculated
+        assert(underlyingsToCTokens[UNDERLYINGS[0]].length == 7);
+        assert(underlyingsToCTokens[UNDERLYINGS[1]].length == 5);
+        assert(underlyingsToCTokens[UNDERLYINGS[2]].length == 5);
+        assert(underlyingsToCTokens[UNDERLYINGS[3]].length == 1);
+        assert(underlyingsToCTokens[UNDERLYINGS[4]].length == 5);
+        assert(underlyingsToCTokens[UNDERLYINGS[5]].length == 3);
+        assert(underlyingsToCTokens[UNDERLYINGS[6]].length == 2);
+        assert(underlyingsToCTokens[UNDERLYINGS[7]].length == 2);
+        assert(underlyingsToCTokens[UNDERLYINGS[8]].length == 4);
+        assert(underlyingsToCTokens[UNDERLYINGS[9]].length == 1);
+
+        // send out token approvals
+        _approveCTokens();
     }
 
     /// @dev Repay all debt
@@ -101,6 +115,19 @@ contract FuseFixer is PCVDeposit {
             address token = CTOKENS[i];
             address underlying = CTokenFuse(token).underlying();
             underlyingsToCTokens[underlying].push(token);
+        }
+    }
+
+    function _approveCTokens() internal {
+        // UNDERLYINGS[0] == ETH, so we skip that one
+        for (uint256 i = 1; i < UNDERLYINGS.length; i++) {
+            address underlying = UNDERLYINGS[i];
+            address[] memory ctokens = underlyingsToCTokens[underlying];
+
+            for (uint256 j = 0; j < ctokens.length; j++) {
+                address ctoken = ctokens[j];
+                IERC20(underlying).approve(ctoken, type(uint256).max);
+            }
         }
     }
 
