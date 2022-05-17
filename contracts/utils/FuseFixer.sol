@@ -82,7 +82,7 @@ contract FuseFixer is PCVDeposit {
             CTokenFuse token = CTokenFuse(CTOKENS[i]);
             if (token.underlying() == underlying) {
                 uint256 debtAmount = token.borrowBalanceCurrent(DEBTOR);
-                token.repayBorrowBehalf{value: debtAmount}(DEBTOR, debtAmount);
+                token.repayBorrowBehalf{value: debtAmount}(DEBTOR);
             }
         }
     }
