@@ -19,7 +19,7 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
     using Decimal for Decimal.D256;
 
     /// @notice WETH contract used as part of the Sushiswap CREAM-WETH pair
-    IWETH public constant WETH = IWETH(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
+    IWETH public immutable weth;
 
     /// @notice the token to spend on swap (outbound)
     address public tokenSpent;
@@ -50,6 +50,7 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
         address _core,
         address _pair,
         address _oracle,
+        address _weth,
         uint256 _swapFrequency,
         address _tokenSpent,
         address _tokenReceived,
@@ -61,6 +62,7 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
     ) public UniRef(_core, _pair, _oracle, address(0x0)) Timed(_swapFrequency) {
         tokenSpent = _tokenSpent;
         tokenReceived = _tokenReceived;
+        weth = IWETH(_weth);
         tokenReceivingAddress = _tokenReceivingAddress;
         maxSpentPerSwap = _maxSpentPerSwap;
         maximumSlippageBasisPoints = _maximumSlippageBasisPoints;
@@ -76,7 +78,7 @@ contract PCVSwapperUniswap is IPCVSwapper, UniRef, Timed {
 
     /// @notice All received ETH is wrapped to WETH
     receive() external payable {
-        WETH.deposit{value: msg.value}();
+        weth.deposit{value: msg.value}();
     }
 
     // =======================================================================
