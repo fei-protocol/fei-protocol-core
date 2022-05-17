@@ -91,15 +91,6 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
   const ethPrice = (await contracts.chainlinkEthUsdOracleWrapper.read())[0].toString() / 1e10;
   await overwriteChainlinkAggregator(addresses.chainlinkEthUsdOracle, Math.round(ethPrice), '8');
 
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  // assume non-zero B-70WETH-30FEI were unstaked & moved to the PCVDeposit
-  // before this proposal's execution.
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  const lpTokenHolder = '0x4f9463405f5bc7b4c1304222c1df76efbd81a407';
-  const lpTokenSigner = await getImpersonatedSigner(lpTokenHolder);
-  await forceEth(lpTokenHolder);
-  await contracts.balancerFeiWethPool.connect(lpTokenSigner).transfer(addresses.balancerDepositFeiWeth, `1000${e18}`);
-
   // read pcvStats before proposal execution
   pcvStatsBefore = await contracts.collateralizationOracle.pcvStats();
 };
@@ -114,57 +105,44 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
   // check the new staking contract has staked in gauge
-  console.log('---------------------------------------------------------------');
-  console.log(
-    'BPTs staked in the gauge by the new contract',
-    (await contracts.balancerGaugeBpt30Fei70Weth.balanceOf(addresses.balancerGaugeStaker)) / 1e18
+  expect(await contracts.balancerGaugeBpt30Fei70Weth.balanceOf(addresses.balancerGaugeStaker)).to.be.equal(
+    '252865858892972812879565'
   );
 
   // check rewards can be claimed
-  console.log('---------------------------------------------------------------');
-  console.log('claim rewards...');
   await time.increase('86400');
-  console.log('BAL balance before claim', (await contracts.bal.balanceOf(addresses.balancerGaugeStaker)) / 1e18);
+  const balBalanceBefore = await contracts.bal.balanceOf(addresses.balancerGaugeStaker);
   await contracts.balancerGaugeStaker.mintGaugeRewards(addresses.balancerFeiWethPool);
-  console.log('BAL balance after claim ', (await contracts.bal.balanceOf(addresses.balancerGaugeStaker)) / 1e18);
-  console.log('balancerGaugeStaker.balance() ', (await contracts.balancerGaugeStaker.balance()) / 1e18);
+  const balBalanceAfter = await contracts.bal.balanceOf(addresses.balancerGaugeStaker);
+  expect(balBalanceAfter.sub(balBalanceBefore)).to.be.at.least(`1${e18}`);
 
   // check collateralization oracle reports the LP tokens staked
-  console.log('---------------------------------------------------------------');
-  console.log('checking presence in CR oracle');
   expect(await contracts.collateralizationOracle.depositToToken(addresses.balancerLensBpt30Fei70Weth)).to.be.equal(
     addresses.weth
   );
   expect(await contracts.collateralizationOracle.depositToToken(addresses.balancerLensBpt30Fei70WethOld)).to.be.equal(
     ethers.constants.AddressZero
   );
-  console.log('checking resistant balance and fei');
   const resistantBalanceAndFei = await contracts.balancerLensBpt30Fei70Weth.resistantBalanceAndFei();
-  console.log('resistantBalanceAndFei[0]', resistantBalanceAndFei[0] / 1e18);
-  console.log('resistantBalanceAndFei[1]', resistantBalanceAndFei[1] / 1e18);
+  expect(resistantBalanceAndFei[0]).to.be.at.least(`14000${e18}`);
+  expect(resistantBalanceAndFei[0]).to.be.at.most(`18000${e18}`);
+  expect(resistantBalanceAndFei[1]).to.be.at.least(`13000000${e18}`);
+  expect(resistantBalanceAndFei[1]).to.be.at.most(`19000000${e18}`);
 
   // check withdraw() can move BAL
-  console.log('---------------------------------------------------------------');
-  console.log('withdraw(feiDAOTimelock, 1e18)');
-  const withdrawAmount = '1000000000000000000';
+  const withdrawAmount = `1${e18}`;
   const sourceBalanceBefore = await contracts.bal.balanceOf(addresses.balancerGaugeStaker);
   const targetBalanceBefore = await contracts.bal.balanceOf(addresses.feiDAOTimelock);
-  console.log('BAL balance before withdraw [source]', sourceBalanceBefore / 1e18);
-  console.log('BAL balance before withdraw [target]', targetBalanceBefore / 1e18);
   await contracts.balancerGaugeStaker.withdraw(addresses.feiDAOTimelock, withdrawAmount);
   const sourceBalanceAfter = await contracts.bal.balanceOf(addresses.balancerGaugeStaker);
   const targetBalanceAfter = await contracts.bal.balanceOf(addresses.feiDAOTimelock);
-  console.log('BAL balance after  withdraw [source]', sourceBalanceAfter / 1e18);
-  console.log('BAL balance after  withdraw [target]', targetBalanceAfter / 1e18);
+  expect(sourceBalanceBefore.sub(sourceBalanceAfter)).to.be.equal(withdrawAmount);
+  expect(targetBalanceAfter.sub(targetBalanceBefore)).to.be.equal(withdrawAmount);
 
   // check withdrawERC20() can unstake gauge & move LP tokens
-  console.log('---------------------------------------------------------------');
-  console.log('withdrawERC20(bpt30Fei70Weth, feiDAOTimelock, 1e18)');
-  const lpWithdrawAmount = '1000000000000000000';
+  const lpWithdrawAmount = `1${e18}`;
   const sourceLpBalanceBefore = await contracts.balancerGaugeBpt30Fei70Weth.balanceOf(addresses.balancerGaugeStaker);
   const targetLpBalanceBefore = await contracts.bpt30Fei70Weth.balanceOf(addresses.feiDAOTimelock);
-  console.log('LP balance before withdraw [source]', sourceLpBalanceBefore / 1e18);
-  console.log('LP balance before withdraw [target]', targetLpBalanceBefore / 1e18);
   await contracts.balancerGaugeStaker.withdrawERC20(
     addresses.bpt30Fei70Weth,
     addresses.feiDAOTimelock,
@@ -172,8 +150,8 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   );
   const sourceLpBalanceAfter = await contracts.balancerGaugeBpt30Fei70Weth.balanceOf(addresses.balancerGaugeStaker);
   const targetLpBalanceAfter = await contracts.bpt30Fei70Weth.balanceOf(addresses.feiDAOTimelock);
-  console.log('LP balance after  withdraw [source]', sourceLpBalanceAfter / 1e18);
-  console.log('LP balance after  withdraw [target]', targetLpBalanceAfter / 1e18);
+  expect(sourceLpBalanceBefore.sub(sourceLpBalanceAfter)).to.be.equal(lpWithdrawAmount);
+  expect(targetLpBalanceAfter.sub(targetLpBalanceBefore)).to.be.equal(lpWithdrawAmount);
 
   // display pcvStats
   console.log('----------------------------------------------------');

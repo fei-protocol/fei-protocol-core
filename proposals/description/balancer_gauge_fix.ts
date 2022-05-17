@@ -9,8 +9,6 @@ import { ProposalDescription } from '@custom-types/types';
 // the OA Timelock, and the Guardian will move these BPTs
 // to the balancerDepositFeiWeth, where part of them will
 // possibly be redeemed to reduce the amount of liquidity.
-const bpt30Fei70WethBalance = '1000000000000000000000';
-//const bpt30Fei70WethBalance = '252865858892972812879565';
 
 const fip_x: ProposalDescription = {
   title: 'Balancer Gauge Staker',
@@ -50,7 +48,7 @@ const fip_x: ProposalDescription = {
         '{balancerDepositFeiWeth}', // address pcvDeposit
         '{balancerGaugeStaker}', // address safeAddress
         '{bpt30Fei70Weth}', // address token
-        bpt30Fei70WethBalance, // uint256 amount
+        '252865858892972812879565', // uint256 amount
         false, // bool pauseAfter
         false // bool depositAfter
       ],
@@ -62,7 +60,7 @@ const fip_x: ProposalDescription = {
       method: 'stakeInGauge(address,uint256)',
       arguments: [
         '{bpt30Fei70Weth}', // token
-        bpt30Fei70WethBalance // amount
+        '252865858892972812879565' // amount
       ],
       description: 'Stake all B-30FEI-70WETH in gauge'
     },
@@ -72,14 +70,14 @@ const fip_x: ProposalDescription = {
       method: 'swapDeposit(address,address)',
       arguments: ['{balancerLensBpt30Fei70WethOld}', '{balancerLensBpt30Fei70Weth}'],
       description: 'Add new FEI/WETH Lens to CR oracle & swap out the old one'
-    } /*,
+    },
     {
       target: 'collateralizationOracle',
       values: '0',
       method: 'addDeposit(address)',
       arguments: ['{balancerGaugeStaker}'],
       description: 'Count farmed BAL in the CR Oracle'
-    }*/
+    }
   ],
   description: 'Migrate liquidity to a new Balancer Gauge Staker which is able to claim BAL rewards.'
 };
