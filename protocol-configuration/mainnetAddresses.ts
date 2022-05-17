@@ -176,6 +176,26 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x2A188F9EB761F70ECEa083bA6c2A40145078dfc2',
     category: AddressCategory.Peg
   },
+  dpiToDaiLBPSwapper: {
+    artifactName: 'BalancerLBPSwapper',
+    address: '0x05FD907528cf725C6F6d1D28E14619A313513Ba8',
+    category: AddressCategory.Core
+  },
+  dpiBPTLens: {
+    artifactName: 'BPTLens',
+    address: '0x3AA57FAf7114a9ebEbda73a997A35eAE06008A7B',
+    category: AddressCategory.PCV
+  },
+  daiBptLens: {
+    artifactName: 'BPTLens',
+    address: '0xaDdB7eBdCA3fa3b72D2e57c8e660C90ec00af7Cc',
+    category: AddressCategory.PCV
+  },
+  dpiToDaiLBPPool: {
+    artifactName: 'ILiquidityBootstrappingPoolFactory',
+    address: '0xd10386804959a121a8a487e49f45aa9f5a2eb2a0',
+    category: AddressCategory.PCV
+  },
   aaveEthPCVDeposit: {
     artifactName: 'AavePCVDeposit',
     address: '0x5B86887e171bAE0C2C826e87E34Df8D558C079B9',
