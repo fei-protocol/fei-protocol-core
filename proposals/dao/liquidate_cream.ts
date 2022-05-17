@@ -100,6 +100,18 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 
   const newWethBalance = await contracts.weth.balanceOf(addresses.aaveEthPCVDepositWrapper);
   expect(newWethBalance).to.be.bignumber.equal(initialPCVDepositWethBalance.add(expectedToReceive));
+
+  // Sanity check the amount of ETH received in the trade
+  // 1 CREAM token ~= $20
+  // 1 ETH ~= $2000
+  // For 250 CREAM tokens ($5000), expect ~2 eth
+  const amountReceived = newWethBalance - initialPCVDepositWethBalance;
+  expect(amountReceived.toString()).to.be.at.most(ethers.utils.parseEther('2.5'));
+  expect(amountReceived.toString()).to.be.at.least(ethers.utils.parseEther('1.5'));
+
+  // Validate a second swap can occur
+  await time.increase(swapFrequency);
+  await creamSwapper.swap();
 };
 
 export { deploy, setup, teardown, validate };
