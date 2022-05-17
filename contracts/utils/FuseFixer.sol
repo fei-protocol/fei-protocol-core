@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import {PCVDeposit} from "../pcv/PCVDeposit.sol";
-import {CTokenFuse} from "../external/fuse/CToken.sol";
+import {CTokenFuse, CEtherFuse} from "../external/fuse/CToken.sol";
 import {CoreRef} from "../refs/CoreRef.sol";
 import {TribeRoles} from "../core/TribeRoles.sol";
 
@@ -79,7 +79,7 @@ contract FuseFixer is PCVDeposit {
     /* Helper Functions */
     function _repayETH(address underlying) internal {
         for (uint256 i = 0; i < CTOKENS.length; i++) {
-            CTokenFuse token = CTokenFuse(CTOKENS[i]);
+            CEtherFuse token = CEtherFuse(CTOKENS[i]);
             if (token.underlying() == underlying) {
                 uint256 debtAmount = token.borrowBalanceCurrent(DEBTOR);
                 token.repayBorrowBehalf{value: debtAmount}(DEBTOR);
