@@ -132,7 +132,8 @@ const dependencies: DependencyMap = {
       'nopeDAO',
       'podAdminGateway',
       'podFactory',
-      'roleBastion'
+      'roleBastion',
+      'daiFixedPricePSMFeiSkimmer'
     ]
   },
   fei: {
@@ -1037,6 +1038,9 @@ const dependencies: DependencyMap = {
   },
   balancerLensBpt30Fei70Weth: {
     contractDependencies: ['oneConstantOracle', 'chainlinkEthUsdOracleWrapper']
+  },
+  daiFixedPricePSMFeiSkimmer: {
+    contractDependencies: ['core']
   }
 };
 
