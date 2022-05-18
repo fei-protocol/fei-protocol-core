@@ -53,8 +53,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 
   ///////////  2. Deploy the Balancer LBP swapper
   // // Amounts:
-  // DPI: 37888449801955370645659 (95%), 37k DPI, $3,758,957.86
-  // DAI: 187947000000000000000000 (5%), 187k DAI, $187,947.89
+  // DPI: 37888449801955370645659 (95%), 37k DPI, $3,587,445
+  // DAI: 187947000000000000000000 (5%), 187k DAI, $179,372.05, overfunding by ~$9k and transferring $187,947
   const BalancerLBPSwapperFactory = await ethers.getContractFactory('BalancerLBPSwapper');
 
   // Oracle reports DPI price in terms of USD, so should not be inverted
