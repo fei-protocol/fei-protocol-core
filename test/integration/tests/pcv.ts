@@ -54,7 +54,7 @@ describe('e2e-pcv', function () {
   });
 
   describe('BAMM', function () {
-    it.only('should be able to withdraw LUSD from B.AMM', async function () {
+    it('should be able to withdraw LUSD from B.AMM', async function () {
       // set Chainlink ETHUSD to a fixed 4,000$ value
       await overwriteChainlinkAggregator(contractAddresses.chainlinkEthUsdOracle, '400000000000', '8');
 

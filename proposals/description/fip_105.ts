@@ -74,6 +74,14 @@ const fip_105: ProposalDescription = {
       method: 'setVotingPeriod(uint256)',
       arguments: ['26585'], // (86400 * 4) / 13 seconds (assumed 13s block time)
       description: 'Set the voting period for the NopeDAO to 4 days'
+    },
+    ////////  Transfer CREAM to TribalCouncil Multisig  /////////
+    {
+      target: 'cream',
+      values: '0',
+      method: 'transfer(address,uint256)',
+      arguments: ['{tribalCouncilSafe}', '31780370000000000000000'],
+      description: 'Transfer CREAM to TribalCouncil multisig where it will then be swapped'
     }
   ],
   description: `
@@ -83,7 +91,8 @@ const fip_105: ProposalDescription = {
   https://snapshot.fei.money/#/proposal/0x2fd5bdda0067098f6c0520fe309dfe90ca403758f0ce98c1854a00bf38999674 
   and discussed in this forum post: https://tribe.fei.money/t/fip-104-fei-pcv-reinforcement-proposal/4162?page=2 
 
-  It liquidates the protocol's DPI holdings to DAI using a Balancer LBP. 
+  Specifically, it liquidates the protocol's DPI holdings to DAI using a Balancer LBP and it transfers the protocol's 
+  CREAM holdings to the TribalCouncil multisig. The TribalCouncil will then be able to liquidate the position on a DEX.
 
   In addition, the FIP introduces several technical maintenance tasks:
   - Add and remove the relevant PCV deposits from the Collaterization Oracle

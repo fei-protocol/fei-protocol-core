@@ -20,6 +20,7 @@ DAO Proposal #105
 1. Deploy Fei Skimmer and grant it PCV_CONTROLLER
 2. Deploy Balancer LBP and initialise auction of DPI for DAI
 3. Fix NopeDAO voting period
+4. Transfer CREAM to TribalCouncil multisig, where it will then be sold to ETH
 */
 
 // LBP Swapper config
@@ -212,6 +213,10 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 
   ////////  3. Nope DAO Voting Period fix  /////////////
   expect(await contracts.nopeDAO.votingPeriod()).to.be.equal(26585);
+
+  /////// 4. CREAM transferred to TribalCouncil multisig ////////
+  const creamAmount = '31780370000000000000000';
+  expect(await contracts.cream.balanceOf(addresses.tribalCouncilSafe)).to.be.equal(toBN(creamAmount));
 };
 
 export { deploy, setup, teardown, validate };
