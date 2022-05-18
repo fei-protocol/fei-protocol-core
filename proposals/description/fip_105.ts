@@ -3,15 +3,13 @@ import { ProposalDescription } from '@custom-types/types';
 const fip_105: ProposalDescription = {
   title: 'FIP-105: Reinforce PCV by consolidating assets and perform technical maintenance',
   commands: [
-    /////////  DAI PSM Skimmer   //////////////
     {
-      target: 'core',
+      target: 'pcvGuardianNew',
       values: '0',
-      method: 'grantRole(bytes32,address)',
-      arguments: ['0x0866eae1216ed05a11636a648003f3f62921eb97ccb05acc30636f62958a8bd6', '{daiFixedPricePSMFeiSkimmer}'],
-      description: 'Grant the new DAI PSM Skimmer the PCV_CONTROLLER_ROLE'
+      method: 'setSafeAddresses(address[])',
+      arguments: [['{uniswapPCVDeposit}', '{dpiToDaiLBPSwapper}']],
+      description: 'Set the uniswapPCVDeposit and dpiToDai LBP swapper to be guardian Safe addresses'
     },
-
     ////////    DPI LBP    ////////
     {
       target: 'dpi',
@@ -122,7 +120,7 @@ const fip_105: ProposalDescription = {
   In addition, the FIP performs several technical maintenance tasks:
   - Add and remove the relevant PCV deposits from the Collaterization Oracle
   - Grant the TribalCouncil the role required to initiate the DPI LBP auction
-  - Grant a new skimmer contract the role necessary to skim excess Fei from the DAI PSM
+  - Add the uniswapPCVDeposit and dpiToDai LBP swapper as Safe addresses so PCV can be moved there
   - Fix a bug in the NopeDAO configuration that previously set the voting period to 22 months rather than the
     expected 4 days
   - Fund the TribalCouncil with 10 Eth

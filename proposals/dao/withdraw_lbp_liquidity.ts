@@ -46,8 +46,8 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
   await time.increase(timeRemaining);
 
   // Drop DAI and DPI onto contract, so can test withdraw
-  const daiWhale = '0x5d3a536e4d6dbd6114cc1ead35777bab948e3643'
-  const dpiWhale = '0x6f634c6135d2ebd550000ac92f494f9cb8183dae'
+  const daiWhale = '0x5d3a536e4d6dbd6114cc1ead35777bab948e3643';
+  const dpiWhale = '0x6f634c6135d2ebd550000ac92f494f9cb8183dae';
   const daiWhaleSigner = await getImpersonatedSigner(daiWhale);
   const dpiWhaleSigner = await getImpersonatedSigner(dpiWhale);
 

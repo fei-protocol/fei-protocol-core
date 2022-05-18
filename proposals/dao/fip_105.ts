@@ -18,7 +18,7 @@ const toBN = ethers.BigNumber.from;
 
 DAO Proposal #105
 
-1. Deploy Fei Skimmer and grant it PCV_CONTROLLER
+1. Set uniswapPCVDeposit and dpiToDaiLBPSwapper to be guardian Safe addresses
 2. Deploy Balancer LBP and initialise auction of DPI for DAI
 3. Fix NopeDAO voting period
 4. Transfer CREAM to TribalCouncil multisig, where it will then be sold to ETH
@@ -53,8 +53,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 
   ///////////  2. Deploy the Balancer LBP swapper
   // // Amounts:
-  // DPI: 37888449801955370645659 (95%), 37k DPI, $3,758,957.86
-  // DAI: 187947000000000000000000 (5%), 187k DAI, $187,947.89
+  // DPI: 37888449801955370645659 (95%), 37k DPI, $3,587,445
+  // DAI: 187947000000000000000000 (5%), 187k DAI, $179,372.05, overfunding by ~$9k and transferring $187,947
   const BalancerLBPSwapperFactory = await ethers.getContractFactory('BalancerLBPSwapper');
 
   // Oracle reports DPI price in terms of USD, so should not be inverted
@@ -188,17 +188,11 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
   poolId = '0xd10386804959a121a8a487e49f45aa9f5a2eb2a00002000000000000000001f1';
-  ////////////    1. DAI FEI SKIMMER   //////////////
-  const daiFixedPricePSMFeiSkimmer = contracts.daiFixedPricePSMFeiSkimmer;
+  ////////////    1. New Safe adddresses   //////////////
   const dpiToDaiLBPSwapper = contracts.dpiToDaiLBPSwapper;
   const core = contracts.core;
-
-  expect(await daiFixedPricePSMFeiSkimmer.threshold()).to.be.equal(skimThreshold);
-  expect(await daiFixedPricePSMFeiSkimmer.source()).to.be.equal(addresses.daiFixedPricePSM);
-  expect(await core.hasRole(ethers.utils.id('PCV_CONTROLLER_ROLE'), daiFixedPricePSMFeiSkimmer.address)).to.be.true;
-
-  // Validate skimmer contract admin role is set to PCV_MINOR_PARAM_ROLE
-  expect(await daiFixedPricePSMFeiSkimmer.CONTRACT_ADMIN_ROLE()).to.be.equal(ethers.utils.id('PCV_MINOR_PARAM_ROLE'));
+  expect(await contracts.pcvGuardianNew.isSafeAddress(addresses.uniswapPCVDeposit)).to.be.true;
+  expect(await contracts.pcvGuardianNew.isSafeAddress(addresses.dpiToDaiLBPSwapper)).to.be.true;
 
   /////////////  2.    DPI LBP  ////////////////
   expect(await dpiToDaiLBPSwapper.doInvert()).to.be.equal(true);
@@ -219,6 +213,9 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const signer = await getImpersonatedSigner(addresses.tribalCouncilTimelock);
   await dpiToDaiLBPSwapper.connect(signer).swap();
   expect(await dpiToDaiLBPSwapper.isTimeEnded()).to.be.false;
+
+  // Validate time remaining resets
+  expect(await dpiToDaiLBPSwapper.remainingTime()).to.be.bignumber.equal(toBN(86400 * 14));
 
   ////////  3. Nope DAO Voting Period fix  /////////////
   expect(await contracts.nopeDAO.votingPeriod()).to.be.equal(26585);

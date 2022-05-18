@@ -22,7 +22,9 @@ const proposals: ProposalsConfigMap = {
       'tribalCouncilSafe',
       'nopeDAO',
       'compoundEthPCVDeposit',
-      'aaveEthPCVDeposit'
+      'aaveEthPCVDeposit',
+      'pcvGuardianNew',
+      'uniswapPCVDeposit'
     ],
     deprecatedContractSignoff: [
       'rariPool31FeiPCVDepositWrapper',
