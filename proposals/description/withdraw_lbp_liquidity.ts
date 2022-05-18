@@ -19,11 +19,18 @@ const withdraw_lbp_liquidity: ProposalDescription = {
         '{dpiToDaiLBPSwapper}',
         '{compoundDaiPCVDeposit}',
         '{dai}',
-        '3000000000000000000000000', // TODO, update with accurate figure
+        '300000000000000000000000', // TODO, update with accurate figure
         false,
         false
       ],
       description: 'Withdraw DAI from the LBP to the Compound PCV DAI deposit'
+    },
+    {
+      target: 'compoundDaiPCVDeposit',
+      values: '0',
+      method: 'deposit()',
+      arguments: [],
+      description: 'Deposit DAI on deposit into Compound PCV Deposit'
     },
     {
       target: 'pcvGuardianNew',

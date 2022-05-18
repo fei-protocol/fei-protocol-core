@@ -1,7 +1,7 @@
 import { ProposalCategory, ProposalsConfigMap } from '@custom-types/types';
 
 import fip_105 from '@proposals/description/fip_105';
-import withdraw_lbp_liquidity from '@proposals/description/lbp_withdraw';
+import withdraw_lbp_liquidity from '@proposals/description/withdraw_lbp_liquidity';
 // import fip_xx_proposal from '@proposals/description/fip_xx';
 
 const proposals: ProposalsConfigMap = {
