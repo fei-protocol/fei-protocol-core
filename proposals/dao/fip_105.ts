@@ -10,6 +10,7 @@ import {
 import { forceEth } from '@test/integration/setup/utils';
 import { TransactionResponse } from '@ethersproject/providers';
 import { getImpersonatedSigner, overwriteChainlinkAggregator, time } from '@test/helpers';
+import { BigNumber } from 'ethers';
 
 const toBN = ethers.BigNumber.from;
 
@@ -21,6 +22,8 @@ DAO Proposal #105
 2. Deploy Balancer LBP and initialise auction of DPI for DAI
 3. Fix NopeDAO voting period
 4. Transfer CREAM to TribalCouncil multisig, where it will then be sold to ETH
+5. Withdraw 15,000 WETH from DAO timelock to the aaveETHPCVDeposit
+6. Fund TC with 10 eth
 */
 
 // LBP Swapper config
@@ -33,6 +36,9 @@ const dpiSeedAmount = toBN('37888449801955370645659');
 
 const fipNumber = '105';
 const skimThreshold = ethers.constants.WeiPerEther.mul(20_000_000);
+
+let initialAavePCVBalance: BigNumber;
+const aaveWETHTransferAmount = '14999999999999999992057'; // almost 15,000 WETH
 
 const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: NamedAddresses, logging: boolean) => {
   /////////  1. Deploy a Fei Skimmer for the DAI PSM
@@ -167,6 +173,9 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
   console.log('Starting DAI PSM dai balance [M]', (await contracts.compoundDaiPCVDeposit.balance()) / 1e24);
 
   await forceEth(addresses.tribalCouncilTimelock);
+
+  initialAavePCVBalance = await contracts.aaveEthPCVDepositWrapper.balance();
+  logging && console.log('Initial Aave Eth PCV Balance: ', initialAavePCVBalance.toString());
 };
 
 // Tears down any changes made in setup() that need to be
@@ -223,6 +232,11 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await ethersSigner.provider.getBalance(addresses.tribalCouncilSafe)).to.be.equal(
     ethers.utils.parseEther('10')
   );
+
+  /////// 6. Transfer WETH to the aaveETHPCVDeposit //////
+  const finalAavePCVBalance = await contracts.aaveEthPCVDepositWrapper.balance();
+  expect(finalAavePCVBalance).to.be.bignumber.at.least(initialAavePCVBalance.add(aaveWETHTransferAmount));
+  logging && console.log('Final Aave Eth PCV Balance: ', finalAavePCVBalance.toString());
 };
 
 export { deploy, setup, teardown, validate };

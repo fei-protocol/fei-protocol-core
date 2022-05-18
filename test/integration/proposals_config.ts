@@ -20,7 +20,9 @@ const proposals: ProposalsConfigMap = {
       'tribalCouncilTimelock',
       'tribalCouncilSafe',
       'nopeDAO',
-      'compoundEthPCVDeposit'
+      'compoundEthPCVDeposit',
+      'weth',
+      'aaveEthPCVDeposit'
     ],
     deprecatedContractSignoff: [
       'rariPool31FeiPCVDepositWrapper',

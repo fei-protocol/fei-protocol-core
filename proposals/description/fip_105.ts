@@ -83,6 +83,21 @@ const fip_105: ProposalDescription = {
       arguments: ['{tribalCouncilSafe}', '31780370000000000000000'],
       description: 'Transfer CREAM to TribalCouncil multisig where it will then be swapped'
     },
+    ///////  Transfer WETH from feiDAOTimelock to aaveETHPCVDeposit and deposit ////////
+    {
+      target: 'weth',
+      values: '0',
+      method: 'transfer(address,uint256)',
+      arguments: ['{aaveEthPCVDeposit}', '14999999999999999992057'],
+      description: 'Transfer WETH from the DAO timelock to the aaveETHPCVDeposit'
+    },
+    {
+      target: 'aaveEthPCVDeposit',
+      values: '0',
+      method: 'deposit()',
+      arguments: [],
+      description: 'Deposit WETH transferred to aaveETHPCVDeposit into the deposit'
+    },
     //////// Fund Council //////////
     {
       target: 'compoundEthPCVDeposit',
@@ -93,14 +108,17 @@ const fip_105: ProposalDescription = {
     }
   ],
   description: `
-  FIP-105: Reinforce PCV by consolidating assets and performing technical maintenance.
+  FIP-105: Reinforce PCV by consolidating assets and perform technical maintenance.
 
   This FIP implements parts of the PCV reinforcement proposal that was approved in this snapshot:
   https://snapshot.fei.money/#/proposal/0x2fd5bdda0067098f6c0520fe309dfe90ca403758f0ce98c1854a00bf38999674 
   and discussed in this forum post: https://tribe.fei.money/t/fip-104-fei-pcv-reinforcement-proposal/4162?page=2 
 
-  Specifically, it liquidates the protocol's DPI holdings to DAI using a Balancer LBP and it transfers the protocol's 
-  CREAM holdings to the TribalCouncil multisig. The TribalCouncil will then be able to liquidate the position on a DEX.
+  Specifically, it:
+  - Liquidates the protocol's DPI holdings to DAI using a Balancer LBP
+  - Transfers the protocol's CREAM holdings from the DAO timelock to the TribalCouncil multisig. The TribalCouncil will 
+    then liquidate the position on a DEX before returning the funds to PCV reserves
+  - Transfer 15,000 WETH from the DAO timelock to the aaveETHPCVDeposit
 
   In addition, the FIP performs several technical maintenance tasks:
   - Add and remove the relevant PCV deposits from the Collaterization Oracle
