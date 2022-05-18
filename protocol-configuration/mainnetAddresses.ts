@@ -181,12 +181,12 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x05FD907528cf725C6F6d1D28E14619A313513Ba8',
     category: AddressCategory.Core
   },
-  daiBPTLens: {
+  dpiToDaiLensDai: {
     artifactName: 'BPTLens',
     address: '0x3AA57FAf7114a9ebEbda73a997A35eAE06008A7B',
     category: AddressCategory.PCV
   },
-  dpiBPTLens: {
+  dpiToDaiLensDpi: {
     artifactName: 'BPTLens',
     address: '0xaDdB7eBdCA3fa3b72D2e57c8e660C90ec00af7Cc',
     category: AddressCategory.PCV

@@ -31,14 +31,14 @@ const fip_105: ProposalDescription = {
       target: 'collateralizationOracle',
       values: '0',
       method: 'addDeposit(address)',
-      arguments: ['{daiBPTLens}'],
+      arguments: ['{dpiToDaiLensDai}'],
       description: 'Add DAI swapper lens to the CR oracle'
     },
     {
       target: 'collateralizationOracle',
       values: '0',
       method: 'addDeposit(address)',
-      arguments: ['{dpiBPTLens}'],
+      arguments: ['{dpiToDaiLensDpi}'],
       description: 'Add DPI swapper lens to the CR oracle'
     },
     {
@@ -82,24 +82,33 @@ const fip_105: ProposalDescription = {
       method: 'transfer(address,uint256)',
       arguments: ['{tribalCouncilSafe}', '31780370000000000000000'],
       description: 'Transfer CREAM to TribalCouncil multisig where it will then be swapped'
+    },
+    //////// Fund Council //////////
+    {
+      target: 'compoundEthPCVDepositWrapper',
+      values: '0',
+      method: 'withdraw(address,uint256)',
+      arguments: ['{tribalCouncilSafe}', '10000000000000000000'],
+      description: 'Fund TribalCouncil with 10 Eth'
     }
   ],
   description: `
-  FIP-105: Reinforce PCV by consolidating assets and performing technical maintenance
+  FIP-105: Reinforce PCV by consolidating assets and performing technical maintenance.
 
-  This FIP implements part of the PCV reinforcement proposal that was approved in this snapshot:
+  This FIP implements parts of the PCV reinforcement proposal that was approved in this snapshot:
   https://snapshot.fei.money/#/proposal/0x2fd5bdda0067098f6c0520fe309dfe90ca403758f0ce98c1854a00bf38999674 
   and discussed in this forum post: https://tribe.fei.money/t/fip-104-fei-pcv-reinforcement-proposal/4162?page=2 
 
   Specifically, it liquidates the protocol's DPI holdings to DAI using a Balancer LBP and it transfers the protocol's 
   CREAM holdings to the TribalCouncil multisig. The TribalCouncil will then be able to liquidate the position on a DEX.
 
-  In addition, the FIP introduces several technical maintenance tasks:
+  In addition, the FIP performs several technical maintenance tasks:
   - Add and remove the relevant PCV deposits from the Collaterization Oracle
-  - Grant the TribalCouncil the role required to initiate the LBP auction
+  - Grant the TribalCouncil the role required to initiate the DPI LBP auction
   - Grant a new skimmer contract the role necessary to skim excess Fei from the DAI PSM
   - Fix a bug in the NopeDAO configuration that previously set the voting period to 22 months rather than the
     expected 4 days
+  - Fund the TribalCouncil with 10 eth
   `
 };
 

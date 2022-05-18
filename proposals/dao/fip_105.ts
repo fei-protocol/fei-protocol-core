@@ -103,7 +103,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 
   // 4. Deploy a lens to report the swapper value
   const BPTLensFactory = await ethers.getContractFactory('BPTLens');
-  const daiBPTLens = await BPTLensFactory.deploy(
+  const dpiToDaiLensDai = await BPTLensFactory.deploy(
     addresses.dai, // token reported in
     noFeeDpiDaiLBPAddress, // pool address
     addresses.chainlinkDaiUsdOracleWrapper, // reportedOracle - DAI
@@ -111,11 +111,11 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     false, // feiIsReportedIn
     false // feiIsOther
   );
-  await daiBPTLens.deployTransaction.wait();
+  await dpiToDaiLensDai.deployTransaction.wait();
 
-  logging && console.log('BPTLens for DAI in swapper pool: ', daiBPTLens.address);
+  logging && console.log('BPTLens for DAI in swapper pool: ', dpiToDaiLensDai.address);
 
-  const dpiBPTLens = await BPTLensFactory.deploy(
+  const dpiToDaiLensDpi = await BPTLensFactory.deploy(
     addresses.dpi, // token reported in
     noFeeDpiDaiLBPAddress, // pool address
     addresses.chainlinkDpiUsdOracleWrapper, // reportedOracle - DPI
@@ -123,14 +123,14 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     false, // feiIsReportedIn
     false // feiIsOther
   );
-  await dpiBPTLens.deployTransaction.wait();
+  await dpiToDaiLensDpi.deployTransaction.wait();
 
-  logging && console.log('BPTLens for DPI in swapper pool: ', dpiBPTLens.address);
+  logging && console.log('BPTLens for DPI in swapper pool: ', dpiToDaiLensDpi.address);
   return {
     daiFixedPricePSMFeiSkimmer,
     dpiToDaiSwapper,
-    daiBPTLens,
-    dpiBPTLens
+    dpiToDaiLensDai,
+    dpiToDaiLensDpi
   };
 };
 
@@ -157,8 +157,8 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
   expect(poolTokens.balances[1]).to.be.equal('0');
 
   // Lenses should report 0 because LBP is empty
-  expect(await contracts.daiBPTLens.balance()).to.be.equal('0');
-  expect(await contracts.dpiBPTLens.balance()).to.be.equal('0');
+  expect(await contracts.dpiToDaiLensDai.balance()).to.be.equal('0');
+  expect(await contracts.dpiToDaiLensDpi.balance()).to.be.equal('0');
 
   // Swapper should hold no tokens
   expect(await contracts.dpi.balanceOf(dpiToDaiLBPSwapper.address)).to.be.equal('0');
@@ -217,6 +217,10 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   /////// 4. CREAM transferred to TribalCouncil multisig ////////
   const creamAmount = '31780370000000000000000';
   expect(await contracts.cream.balanceOf(addresses.tribalCouncilSafe)).to.be.equal(toBN(creamAmount));
+
+  ///////  5. Fund TribalCouncil with 10 Eth //////////
+  const provider = contracts.tribalCouncilSafe.provider;
+  expect(await provider.getBalance(addresses.tribalCouncilSafe)).to.be.equal(ethers.utils.parseEther('10'));
 };
 
 export { deploy, setup, teardown, validate };
