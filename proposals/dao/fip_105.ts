@@ -214,6 +214,9 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   await dpiToDaiLBPSwapper.connect(signer).swap();
   expect(await dpiToDaiLBPSwapper.isTimeEnded()).to.be.false;
 
+  // Validate time remaining resets
+  expect(await dpiToDaiLBPSwapper.remainingTime()).to.be.bignumber.equal(toBN(86400 * 14));
+
   ////////  3. Nope DAO Voting Period fix  /////////////
   expect(await contracts.nopeDAO.votingPeriod()).to.be.equal(26585);
 
