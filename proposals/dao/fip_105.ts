@@ -18,7 +18,7 @@ const toBN = ethers.BigNumber.from;
 
 DAO Proposal #105
 
-1. Deploy Fei Skimmer and grant it PCV_CONTROLLER
+1. Set uniswapPCVDeposit and dpiToDaiLBPSwapper to be guardian Safe addresses
 2. Deploy Balancer LBP and initialise auction of DPI for DAI
 3. Fix NopeDAO voting period
 4. Transfer CREAM to TribalCouncil multisig, where it will then be sold to ETH
@@ -188,10 +188,11 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
   poolId = '0xd10386804959a121a8a487e49f45aa9f5a2eb2a00002000000000000000001f1';
-  ////////////    1. DAI FEI SKIMMER   //////////////
+  ////////////    1. New Safe adddresses   //////////////
   const dpiToDaiLBPSwapper = contracts.dpiToDaiLBPSwapper;
   const core = contracts.core;
   expect(await contracts.pcvGuardianNew.isSafeAddress(addresses.uniswapPCVDeposit)).to.be.true;
+  expect(await contracts.pcvGuardianNew.isSafeAddress(addresses.dpiToDaiLBPSwapper)).to.be.true;
 
   /////////////  2.    DPI LBP  ////////////////
   expect(await dpiToDaiLBPSwapper.doInvert()).to.be.equal(true);

@@ -6,9 +6,9 @@ const fip_105: ProposalDescription = {
     {
       target: 'pcvGuardianNew',
       values: '0',
-      method: 'setSafeAddress(address)',
-      arguments: ['{uniswapPCVDeposit}'],
-      description: 'Set the uniswapPCVDeposit to a guardian Safe address. Fei will be withdrawn and burnt here'
+      method: 'setSafeAddresses(address[])',
+      arguments: [['{uniswapPCVDeposit}', '{dpiToDaiLBPSwapper}']],
+      description: 'Set the uniswapPCVDeposit and dpiToDai LBP swapper to be guardian Safe addresses'
     },
     ////////    DPI LBP    ////////
     {
@@ -120,7 +120,7 @@ const fip_105: ProposalDescription = {
   In addition, the FIP performs several technical maintenance tasks:
   - Add and remove the relevant PCV deposits from the Collaterization Oracle
   - Grant the TribalCouncil the role required to initiate the DPI LBP auction
-  - Grant a new skimmer contract the role necessary to skim excess Fei from the DAI PSM
+  - Add the uniswapPCVDeposit and dpiToDai LBP swapper as Safe addresses so PCV can be moved there
   - Fix a bug in the NopeDAO configuration that previously set the voting period to 22 months rather than the
     expected 4 days
   - Fund the TribalCouncil with 10 Eth
