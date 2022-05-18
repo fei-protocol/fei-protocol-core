@@ -1,7 +1,7 @@
 import { ProposalDescription } from '@custom-types/types';
 
 const fip_105: ProposalDescription = {
-  title: 'FIP-105: Reinforce PCV by consolidating assets and performing technical maintenance',
+  title: 'FIP-105: Reinforce PCV by consolidating assets and perform technical maintenance',
   commands: [
     /////////  DAI PSM Skimmer   //////////////
     {
@@ -18,14 +18,14 @@ const fip_105: ProposalDescription = {
       values: '0',
       method: 'transfer(address,uint256)',
       arguments: ['{dpiToDaiLBPSwapper}', '37888449801955370645659'],
-      description: 'Transfer DPI from DAO timelock to the LBP pool'
+      description: 'Transfer DPI from DAO timelock to the LBP swapper'
     },
     {
       target: 'compoundDaiPCVDeposit',
       values: '0',
       method: 'withdraw(address,uint256)',
       arguments: ['{dpiToDaiLBPSwapper}', '187947000000000000000000'],
-      description: 'Withdraw Use the PCVGuardian to transfer DAI from the CompoundPCVDeposit to the LBP pool'
+      description: 'Withdraw DAI from the CompoundPCVDeposit and transfer to the LBP pool'
     },
     {
       target: 'collateralizationOracle',
@@ -58,7 +58,7 @@ const fip_105: ProposalDescription = {
           '{dpiDepositWrapper}'
         ]
       ],
-      description: 'Remove DPI Deposit wrapper from CR oracle, as now empty'
+      description: 'Remove various empty PCV deposits from CR oracle'
     },
     {
       target: 'core',

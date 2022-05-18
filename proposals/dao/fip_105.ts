@@ -207,7 +207,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await core.hasRole(ethers.utils.id('SWAP_ADMIN_ROLE'), addresses.tribalCouncilTimelock)).to.be.true;
   expect(await core.getRoleAdmin(ethers.utils.id('SWAP_ADMIN_ROLE'))).to.be.equal(ethers.utils.id('ROLE_ADMIN'));
 
-  const signer = await getImpersonatedSigner(addresses.tribalCouncilTimelock); // TODO: TribalCouncil should grant itself SWAP_ADMIN_ROLE
+  const signer = await getImpersonatedSigner(addresses.tribalCouncilTimelock);
   await dpiToDaiLBPSwapper.connect(signer).swap();
   expect(await dpiToDaiLBPSwapper.isTimeEnded()).to.be.false;
 

@@ -77,7 +77,7 @@ contract NopeDAOTest is DSTest {
         assertEq(votingDelay, 0);
 
         uint256 votingPeriod = nopeDAO.votingPeriod();
-        uint256 fourDays = 26585;  // (86400 * 4) / 13
+        uint256 fourDays = 26585; // (86400 * 4) / 13
         assertEq(votingPeriod, fourDays);
 
         uint256 proposalThreshold = nopeDAO.proposalThreshold();
