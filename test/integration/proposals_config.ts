@@ -12,11 +12,15 @@ const proposals: ProposalsConfigMap = {
     affectedContractSignoff: [
       'daiFixedPricePSMFeiSkimmer',
       'core',
-      'dpi',
       'compoundDaiPCVDeposit',
       'dpiToDaiLBPSwapper',
       'dpiToDaiLensDai',
-      'dpiToDaiLensDpi'
+      'dpiToDaiLensDpi',
+      'collateralizationOracle',
+      'tribalCouncilTimelock',
+      'tribalCouncilSafe',
+      'nopeDAO',
+      'compoundEthPCVDeposit'
     ],
     deprecatedContractSignoff: [
       'rariPool31FeiPCVDepositWrapper',

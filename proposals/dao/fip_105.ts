@@ -219,8 +219,10 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await contracts.cream.balanceOf(addresses.tribalCouncilSafe)).to.be.equal(toBN(creamAmount));
 
   ///////  5. Fund TribalCouncil with 10 Eth //////////
-  const provider = contracts.tribalCouncilSafe.provider;
-  expect(await provider.getBalance(addresses.tribalCouncilSafe)).to.be.equal(ethers.utils.parseEther('10'));
+  const ethersSigner = (await ethers.getSigners())[0];
+  expect(await ethersSigner.provider.getBalance(addresses.tribalCouncilSafe)).to.be.equal(
+    ethers.utils.parseEther('10')
+  );
 };
 
 export { deploy, setup, teardown, validate };

@@ -85,7 +85,7 @@ const fip_105: ProposalDescription = {
     },
     //////// Fund Council //////////
     {
-      target: 'compoundEthPCVDepositWrapper',
+      target: 'compoundEthPCVDeposit',
       values: '0',
       method: 'withdraw(address,uint256)',
       arguments: ['{tribalCouncilSafe}', '10000000000000000000'],
