@@ -189,16 +189,9 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
   poolId = '0xd10386804959a121a8a487e49f45aa9f5a2eb2a00002000000000000000001f1';
   ////////////    1. DAI FEI SKIMMER   //////////////
-  const daiFixedPricePSMFeiSkimmer = contracts.daiFixedPricePSMFeiSkimmer;
   const dpiToDaiLBPSwapper = contracts.dpiToDaiLBPSwapper;
   const core = contracts.core;
-
-  expect(await daiFixedPricePSMFeiSkimmer.threshold()).to.be.equal(skimThreshold);
-  expect(await daiFixedPricePSMFeiSkimmer.source()).to.be.equal(addresses.daiFixedPricePSM);
-  expect(await core.hasRole(ethers.utils.id('PCV_CONTROLLER_ROLE'), daiFixedPricePSMFeiSkimmer.address)).to.be.true;
-
-  // Validate skimmer contract admin role is set to PCV_MINOR_PARAM_ROLE
-  expect(await daiFixedPricePSMFeiSkimmer.CONTRACT_ADMIN_ROLE()).to.be.equal(ethers.utils.id('PCV_MINOR_PARAM_ROLE'));
+  expect(await contracts.pcvGuardianNew.isSafeAddress(addresses.uniswapPCVDeposit)).to.be.true;
 
   /////////////  2.    DPI LBP  ////////////////
   expect(await dpiToDaiLBPSwapper.doInvert()).to.be.equal(true);

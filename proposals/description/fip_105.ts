@@ -3,15 +3,13 @@ import { ProposalDescription } from '@custom-types/types';
 const fip_105: ProposalDescription = {
   title: 'FIP-105: Reinforce PCV by consolidating assets and perform technical maintenance',
   commands: [
-    /////////  DAI PSM Skimmer   //////////////
     {
-      target: 'core',
+      target: 'pcvGuardianNew',
       values: '0',
-      method: 'grantRole(bytes32,address)',
-      arguments: ['0x0866eae1216ed05a11636a648003f3f62921eb97ccb05acc30636f62958a8bd6', '{daiFixedPricePSMFeiSkimmer}'],
-      description: 'Grant the new DAI PSM Skimmer the PCV_CONTROLLER_ROLE'
+      method: 'setSafeAddress(address)',
+      arguments: ['{uniswapPCVDeposit}'],
+      description: 'Set the uniswapPCVDeposit to a guardian Safe address. Fei will be withdrawn and burnt here'
     },
-
     ////////    DPI LBP    ////////
     {
       target: 'dpi',
