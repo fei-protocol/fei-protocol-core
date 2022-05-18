@@ -1,6 +1,7 @@
 import { ProposalCategory, ProposalsConfigMap } from '@custom-types/types';
 
 import fip_105 from '@proposals/description/fip_105';
+import withdraw_lbp_liquidity from '@proposals/description/lbp_withdraw';
 // import fip_xx_proposal from '@proposals/description/fip_xx';
 
 const proposals: ProposalsConfigMap = {
@@ -41,6 +42,21 @@ const proposals: ProposalsConfigMap = {
       'dpiDepositWrapper'
     ],
     category: ProposalCategory.DAO
+  },
+  withdraw_lbp_liquidity: {
+    deploy: false,
+    totalValue: 0,
+    proposal: withdraw_lbp_liquidity,
+    proposalId: '',
+    affectedContractSignoff: [
+      'dpiToDaiLBPSwapper',
+      'compoundDaiPCVDeposit',
+      'pcvGuardianNew',
+      'tribalCouncilSafe',
+      'tribalCouncilTimelock'
+    ],
+    deprecatedContractSignoff: [],
+    category: ProposalCategory.TC
   }
 };
 
