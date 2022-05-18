@@ -118,7 +118,6 @@ const fip_105: ProposalDescription = {
   - Liquidates the protocol's DPI holdings to DAI using a Balancer LBP
   - Transfers the protocol's CREAM holdings from the DAO timelock to the TribalCouncil multisig. The TribalCouncil will 
     then liquidate the position on a DEX before returning the funds to PCV reserves
-  - Transfer 15,000 WETH from the DAO timelock to the aaveETHPCVDeposit
 
   In addition, the FIP performs several technical maintenance tasks:
   - Add and remove the relevant PCV deposits from the Collaterization Oracle
@@ -126,7 +125,8 @@ const fip_105: ProposalDescription = {
   - Grant a new skimmer contract the role necessary to skim excess Fei from the DAI PSM
   - Fix a bug in the NopeDAO configuration that previously set the voting period to 22 months rather than the
     expected 4 days
-  - Fund the TribalCouncil with 10 eth
+  - Fund the TribalCouncil with 10 Eth
+  - Transfer 15,000 WETH from the DAO timelock to the aaveETHPCVDeposit
   `
 };
 

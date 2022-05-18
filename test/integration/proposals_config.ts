@@ -21,7 +21,6 @@ const proposals: ProposalsConfigMap = {
       'tribalCouncilSafe',
       'nopeDAO',
       'compoundEthPCVDeposit',
-      'weth',
       'aaveEthPCVDeposit'
     ],
     deprecatedContractSignoff: [
