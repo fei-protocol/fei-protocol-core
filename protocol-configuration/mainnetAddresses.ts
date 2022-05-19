@@ -192,7 +192,7 @@ const MainnetAddresses: MainnetAddresses = {
     category: AddressCategory.PCV
   },
   dpiToDaiLBPPool: {
-    artifactName: 'ILiquidityBootstrappingPoolFactory',
+    artifactName: 'IWeightedPool',
     address: '0xd10386804959a121a8a487e49f45aa9f5a2eb2a0',
     category: AddressCategory.External
   },

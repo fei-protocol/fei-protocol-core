@@ -9,7 +9,7 @@ import {
 } from '@custom-types/types';
 import { forceEth } from '@test/integration/setup/utils';
 import { TransactionResponse } from '@ethersproject/providers';
-import { getImpersonatedSigner, overwriteChainlinkAggregator, time } from '@test/helpers';
+import { expectApprox, getImpersonatedSigner, overwriteChainlinkAggregator, time } from '@test/helpers';
 import { BigNumber } from 'ethers';
 
 const toBN = ethers.BigNumber.from;
@@ -188,23 +188,45 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
   poolId = '0xd10386804959a121a8a487e49f45aa9f5a2eb2a00002000000000000000001f1';
-  ////////////    1. New Safe adddresses   //////////////
   const dpiToDaiLBPSwapper = contracts.dpiToDaiLBPSwapper;
+  const dpiToDaiLBPPool = contracts.dpiToDaiLBPPool;
   const core = contracts.core;
+
+  const retrievedPoolId = await dpiToDaiLBPPool.getPoolId();
+  expect(retrievedPoolId).to.equal(poolId);
+  console.log('Final DAI PSM dai balance [M]', (await contracts.compoundDaiPCVDeposit.balance()) / 1e24);
+
+  ////////////    1. New Safe adddresses   //////////////
   expect(await contracts.pcvGuardianNew.isSafeAddress(addresses.uniswapPCVDeposit)).to.be.true;
   expect(await contracts.pcvGuardianNew.isSafeAddress(addresses.dpiToDaiLBPSwapper)).to.be.true;
 
   /////////////  2.    DPI LBP  ////////////////
   expect(await dpiToDaiLBPSwapper.doInvert()).to.be.equal(true);
+  expect(await dpiToDaiLBPSwapper.isTimeStarted()).to.be.true;
+  expect(await dpiToDaiLBPPool.getSwapEnabled()).to.equal(true);
 
-  // By this point, the DAO has moved funds to the LBP swapper and the auction should be active
-  console.log('Final DAI PSM dai balance [M]', (await contracts.compoundDaiPCVDeposit.balance()) / 1e24);
+  // Check oracle
+  const price = (await dpiToDaiLBPSwapper.readOracle())[0];
+  // DPI price in USDC
+  expect(price).to.be.bignumber.at.least(ethers.constants.WeiPerEther.mul(85));
+  expect(price).to.be.bignumber.at.most(ethers.constants.WeiPerEther.mul(95));
+
+  // Check relative price in pool
+  const response = await dpiToDaiLBPSwapper.getTokensIn(100000);
+  const amounts = response[1];
+
+  // LUSD/FEI price * LUSD amount * 1% ~= amount
+  expect(amounts[1]).to.be.bignumber.equal(ethers.BigNumber.from(100000));
+  expectApprox(price.mul(100000).div(ethers.constants.WeiPerEther).div(100), amounts[0]);
+
+  // check pool weights
+  const weights = await dpiToDaiLBPPool.getNormalizedWeights();
 
   expect(await contracts.dpi.balanceOf(dpiToDaiLBPSwapper.address)).to.be.equal(dpiSeedAmount);
   expect(await contracts.dai.balanceOf(dpiToDaiLBPSwapper.address)).to.be.equal(daiSeedAmount);
 
-  await time.increase(await dpiToDaiLBPSwapper.remainingTime());
-  expect(await dpiToDaiLBPSwapper.isTimeEnded()).to.be.true;
+  // await time.increase(await dpiToDaiLBPSwapper.remainingTime());
+  // expect(await dpiToDaiLBPSwapper.isTimeEnded()).to.be.true;
 
   // Validate SWAP_ADMIN_ROLE is under ROLE_ADMIN and that TribalCouncilTimelock has the role
   expect(await core.hasRole(ethers.utils.id('SWAP_ADMIN_ROLE'), addresses.tribalCouncilTimelock)).to.be.true;

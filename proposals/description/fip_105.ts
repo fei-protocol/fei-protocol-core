@@ -26,6 +26,13 @@ const fip_105: ProposalDescription = {
       description: 'Withdraw DAI from the CompoundPCVDeposit and transfer to the LBP pool'
     },
     {
+      target: 'dpiToDaiLBPSwapper',
+      values: '0',
+      method: 'forceSwap()',
+      arguments: [],
+      description: 'Start the auction and override the current no-op auction'
+    },
+    {
       target: 'collateralizationOracle',
       values: '0',
       method: 'addDeposit(address)',
