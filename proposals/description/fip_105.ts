@@ -22,7 +22,7 @@ const fip_105: ProposalDescription = {
       target: 'compoundDaiPCVDeposit',
       values: '0',
       method: 'withdraw(address,uint256)',
-      arguments: ['{dpiToDaiLBPSwapper}', '187947000000000000000000'],
+      arguments: ['{dpiToDaiLBPSwapper}', '200000000000000000000000'],
       description: 'Withdraw DAI from the CompoundPCVDeposit and transfer to the LBP pool'
     },
     // Correcting the oracle needs to happen before forceSwap()

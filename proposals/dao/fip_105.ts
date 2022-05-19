@@ -225,8 +225,6 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 const validateLBPSetup = async (contracts: NamedContracts, addresses: NamedAddresses, poolId: string) => {
   const dpiToDaiLBPSwapper = contracts.dpiToDaiLBPSwapper;
   const dpiToDaiLBPPool = contracts.dpiToDaiLBPPool;
-  const govSigner = await getImpersonatedSigner(addresses.feiDAOTimelock);
-  // swap already happened, needs inverting before
 
   const retrievedPoolId = await dpiToDaiLBPPool.getPoolId();
   expect(retrievedPoolId).to.equal(poolId);
@@ -238,6 +236,8 @@ const validateLBPSetup = async (contracts: NamedContracts, addresses: NamedAddre
   expect(await dpiToDaiLBPPool.getSwapEnabled()).to.equal(true);
   // tokenSpent = DPI
   // tokenReceived = DAI
+  // On BalancerVault, token[0] = DPI, token[1] = DAI
+  // Therefore, on LBPSwapper, assets[0] = DPI, assets[1] = DAI
 
   // 2.1 Check oracle price
   const price = (await dpiToDaiLBPSwapper.readOracle())[0]; // DAI price in units of DPI
@@ -245,44 +245,37 @@ const validateLBPSetup = async (contracts: NamedContracts, addresses: NamedAddre
   expect(price).to.be.bignumber.at.least(ethers.constants.WeiPerEther.mul(90)); // 90e18
   expect(price).to.be.bignumber.at.most(ethers.constants.WeiPerEther.mul(100)); // 100e18
 
-  // On BalancerVault, token[0] = DPI, token[1] = DAI
-  // Therefore, on LBPSwapper, assets[0] = DPI, assets[1] = DAI
-
   // 2.2 Check relative price in pool
   // Putting in 100,000 tokens of DPI, getting an amount of DAI back
   const response = await dpiToDaiLBPSwapper.getTokensIn(100000); // input is spent token balance, 100,000 DPI tokens
   const amounts = response[1];
-
-  console.log('amounts 0: ', amounts[0].toString());
-  console.log('amounts 1: ', amounts[1].toString());
-
   expect(amounts[0]).to.be.bignumber.equal(ethers.BigNumber.from(100000)); // DPI
 
   // DAI/DPI price * DAI amount * 5% ~= amount
-  // Not sure this oracle price should be inverted?
   expectApprox(price.mul(100000).mul(5).div(ethers.constants.WeiPerEther).div(100), amounts[1]); // DAI
+  expect(amounts[1]).to.be.bignumber.at.least(toBN(1000)); // Make sure orcacle inversion is correct (i.e. not inverted)
 
   // 2.3 Check pool weights
   const weights = await dpiToDaiLBPPool.getNormalizedWeights();
-  console.log('weights: ', weights);
-  // DAI weight ~5%, or is this DPI weight? What order is it reported in?
-  // are these weights the correct way round? TODO: Verify this pool and check
   expectApprox(weights[0], ethers.constants.WeiPerEther.mul(5).div(100)); // 5% DAI
-  // DPI weight ~95%
   expectApprox(weights[1], ethers.constants.WeiPerEther.mul(95).div(100)); // 95% DPI
 
-  // Basically no DAI is being transferred????? Why????????
   // 2.4 Check pool info
   const poolTokens = await contracts.balancerVault.getPoolTokens(poolId);
-  console.log('DAI balance: ', poolTokens.balances[1]);
-  console.log('DPI balance: ', poolTokens.balances[0]);
-  // there should be 187k DAI in the pool
+  // there should be 188k DAI in the pool
   expect(poolTokens.tokens[1]).to.be.equal(contracts.dai.address); // this is DAI
-  // there is only 21 DAI in the pool. Why?????
-  expect(poolTokens.balances[1]).to.be.equal('187947000000000000000000');
+  expect(poolTokens.balances[1]).to.be.bignumber.at.least(ethers.constants.WeiPerEther.mul(185_000));
+  expect(poolTokens.balances[1]).to.be.bignumber.at.most(ethers.constants.WeiPerEther.mul(190_000));
   // there should be 37k DPI in the pool
   expect(poolTokens.tokens[0]).to.be.equal(contracts.dpi.address); // this is DPI
   expect(poolTokens.balances[0]).to.be.equal('37888449801955370645659');
+
+  // Pool balances Maths:
+  // Total value of pool = (188k DAI * $1) + (37k DPI * $93) = $3.63M
+  // DAI share = 5%
+  // DPI share = 95%
+  // Expected DAI amount = $3.63M * 0.05 = ~$181k
+  // Expected DPI amount = $3.63M * 0.95 = ~$3.5M -> ~ ($3500k / 93) 37k DPI
 
   // Swapping DPI for DAI. Will initially pay a
   // await balancerVault.swap(
