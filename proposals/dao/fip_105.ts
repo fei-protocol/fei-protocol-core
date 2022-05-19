@@ -319,6 +319,31 @@ const validateLBPSetup = async (contracts: NamedContracts, addresses: NamedAddre
   console.log('DAI spent: ', daiSpent);
   console.log('DPI gained: ', dpiGained);
 
+  await time.increase(86400 * 7);
+  // Perform second swap, check price goes down
+  await contracts.dai.connect(daiWhaleSigner).approve(addresses.balancerVault, amountIn);
+  await contracts.balancerVault.connect(daiWhaleSigner).swap(
+    {
+      poolId: poolId,
+      kind: 0,
+      assetIn: addresses.dai,
+      assetOut: addresses.dpi,
+      amount: amountIn,
+      userData: '0x'
+    },
+    {
+      sender: daiWhale,
+      fromInternalBalance: false,
+      recipient: daiWhale,
+      toInternalBalance: false
+    },
+    0,
+    '10000000000000000000000'
+  );
+  const secondSwapDPIAmount = (await contracts.dpi.balanceOf(daiWhale)).sub(postUserDpiBalance);
+  // If price has dropped, then for the same DAI the user gets more DPI
+  expect(secondSwapDPIAmount).to.be.bignumber.greaterThan(dpiGained);
+
   // Accelerate time and check ended
   await time.increase(LBP_FREQUENCY);
   expect(await dpiToDaiLBPSwapper.isTimeEnded()).to.be.true;
