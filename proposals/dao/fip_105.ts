@@ -263,7 +263,7 @@ const validateLBPSetup = async (contracts: NamedContracts, addresses: NamedAddre
   // there should be 188k DAI in the pool
   expect(poolTokens.tokens[1]).to.be.equal(contracts.dai.address); // this is DAI
   expect(poolTokens.balances[1]).to.be.bignumber.at.least(ethers.constants.WeiPerEther.mul(185_000));
-  expect(poolTokens.balances[1]).to.be.bignumber.at.most(ethers.constants.WeiPerEther.mul(190_000));
+  expect(poolTokens.balances[1]).to.be.bignumber.at.most(ethers.constants.WeiPerEther.mul(200_000));
   // there should be 37k DPI in the pool
   expect(poolTokens.tokens[0]).to.be.equal(contracts.dpi.address); // this is DPI
   expect(poolTokens.balances[0]).to.be.equal('37888449801955370645659');
@@ -274,6 +274,50 @@ const validateLBPSetup = async (contracts: NamedContracts, addresses: NamedAddre
   // DPI share = 95%
   // Expected DAI amount = $3.63M * 0.05 = ~$181k
   // Expected DPI amount = $3.63M * 0.95 = ~$3.5M -> ~ ($3500k / 93) 37k DPI
+
+  // Validate that a swap can occur
+  const daiWhale = '0x5d3a536e4d6dbd6114cc1ead35777bab948e3643';
+  const daiWhaleSigner = await getImpersonatedSigner(daiWhale);
+  await forceEth(daiWhale);
+
+  const initialUserDpiBalance = await contracts.dpi.balanceOf(daiWhale);
+  const initialUserDaiBalance = await contracts.dai.balanceOf(daiWhale);
+
+  const amountIn = ethers.constants.WeiPerEther.mul(10_000);
+  await contracts.dai.connect(daiWhaleSigner).approve(addresses.balancerVault, amountIn);
+  await contracts.balancerVault.connect(daiWhaleSigner).swap(
+    {
+      poolId: poolId,
+      kind: 0,
+      assetIn: addresses.dai,
+      assetOut: addresses.dpi,
+      amount: amountIn,
+      userData: '0x'
+    },
+    {
+      sender: daiWhale,
+      fromInternalBalance: false,
+      recipient: daiWhale,
+      toInternalBalance: false
+    },
+    0,
+    '10000000000000000000000'
+  );
+
+  const postUserDpiBalance = await contracts.dpi.balanceOf(daiWhale);
+  const postUserDaiBalance = await contracts.dai.balanceOf(daiWhale);
+
+  const daiSpent = initialUserDaiBalance.sub(postUserDaiBalance);
+  expect(daiSpent).to.be.bignumber.equal(amountIn);
+
+  const dpiGained = postUserDpiBalance.sub(initialUserDpiBalance);
+  expect(dpiGained).to.be.bignumber.at.least(ethers.constants.WeiPerEther.mul(100));
+  expect(dpiGained).to.be.bignumber.at.most(ethers.constants.WeiPerEther.mul(110));
+
+  // Put in 10k DAI, got out 101 DPI
+  // Implies price of $98.5 per DPI, compared to an oracle price of $95.6
+  console.log('DAI spent: ', daiSpent);
+  console.log('DPI gained: ', dpiGained);
 
   // Accelerate time and check ended
   await time.increase(LBP_FREQUENCY);
