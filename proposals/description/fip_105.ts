@@ -25,6 +25,14 @@ const fip_105: ProposalDescription = {
       arguments: ['{dpiToDaiLBPSwapper}', '187947000000000000000000'],
       description: 'Withdraw DAI from the CompoundPCVDeposit and transfer to the LBP pool'
     },
+    // Correcting the oracle needs to happen before forceSwap()
+    {
+      target: 'dpiToDaiLBPSwapper',
+      values: '0',
+      method: 'setDoInvert(bool)',
+      arguments: [false],
+      description: 'Set the dpiToDai LBP swapper to not invert'
+    },
     {
       target: 'dpiToDaiLBPSwapper',
       values: '0',
