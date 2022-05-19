@@ -140,6 +140,7 @@ const fip_105: ProposalDescription = {
     expected 4 days
   - Fund the TribalCouncil with 10 Eth
   - Transfer 15,000 WETH from the DAO timelock to the aaveETHPCVDeposit
+  - Invert oracle price on LBP swapper and initiate auction
   `
 };
 

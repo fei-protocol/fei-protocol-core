@@ -25,15 +25,13 @@ DAO Proposal #105
 4. Transfer CREAM to TribalCouncil multisig, where it will then be sold to ETH
 5. Withdraw 15,000 WETH from DAO timelock to the aaveETHPCVDeposit
 6. Fund TC with 10 eth
+7. Invert oracle price on LBP swapper and forceSwap()
 */
 
 // LBP Swapper config
 const LBP_FREQUENCY = 86400 * 14; // 2 weeks in seconds
 const MIN_LBP_SIZE = ethers.constants.WeiPerEther.mul(10_000); // 10k
 let poolId; // auction pool id
-
-const daiSeedAmount = toBN('187947000000000000000000');
-const dpiSeedAmount = toBN('37888449801955370645659');
 
 const fipNumber = '105';
 const skimThreshold = ethers.constants.WeiPerEther.mul(20_000_000);
@@ -276,26 +274,6 @@ const validateLBPSetup = async (contracts: NamedContracts, addresses: NamedAddre
   // DPI share = 95%
   // Expected DAI amount = $3.63M * 0.05 = ~$181k
   // Expected DPI amount = $3.63M * 0.95 = ~$3.5M -> ~ ($3500k / 93) 37k DPI
-
-  // Swapping DPI for DAI. Will initially pay a
-  // await balancerVault.swap(
-  //   {
-  //     poolId: poolId,
-  //     kind: 0,
-  //     assetIn: tribe.address,
-  //     assetOut: fei.address,
-  //     amount: `30${e18}`,
-  //     userData: '0x'
-  //   },
-  //   {
-  //     sender: accounts[0],
-  //     fromInternalBalance: false,
-  //     recipient: accounts[0],
-  //     toInternalBalance: false
-  //   },
-  //   0,
-  //   '10000000000000000000000'
-  // );
 
   // Accelerate time and check ended
   await time.increase(LBP_FREQUENCY);
