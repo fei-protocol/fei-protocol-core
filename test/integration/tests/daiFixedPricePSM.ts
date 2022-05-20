@@ -14,7 +14,6 @@ import { FixedPricePSM } from '@custom-types/contracts';
 before(async () => {
   chai.use(CBN(ethers.BigNumber));
   chai.use(solidity);
-  await resetFork();
 });
 
 describe('e2e-peg-stability-module', function () {
@@ -123,6 +122,16 @@ describe('e2e-peg-stability-module', function () {
       beforeEach(async () => {
         await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, redeemAmount);
         await fei.connect(impersonatedSigners[userAddress]).approve(daiPSM.address, redeemAmount);
+
+        const isPaused = await daiPSM.paused();
+        if (isPaused) {
+          await daiPSM.unpause();
+        }
+
+        const isRedeemPaused = await daiPSM.redeemPaused();
+        if (isRedeemPaused) {
+          await daiPSM.unpauseRedeem();
+        }
       });
 
       it('exchanges 10,000,000 FEI for DAI', async () => {

@@ -9,7 +9,7 @@ import proposals from '@test/integration/proposals_config';
 import { forceEth } from '@test/integration/setup/utils';
 import { Contract, Signer } from 'ethers';
 import { expectApprox } from '@test/helpers';
-import { FeiDAO, WETH9 } from '@custom-types/contracts';
+import { WETH9 } from '@custom-types/contracts';
 
 const toBN = ethers.BigNumber.from;
 
@@ -23,10 +23,8 @@ describe('e2e-peg-stability-module', function () {
   let ethPSMRouter: Contract;
   let userAddress;
   let minterAddress;
-  let governorAddress;
   let weth: Contract;
   let dai: Contract;
-  let daiPSM: Contract;
   let raiPriceBoundPSM: Contract;
   let ethPSM: Contract;
   let fei: Contract;
@@ -40,7 +38,6 @@ describe('e2e-peg-stability-module', function () {
   before(async () => {
     chai.use(CBN(ethers.BigNumber));
     chai.use(solidity);
-    await resetFork();
   });
 
   before(async function () {
@@ -77,7 +74,6 @@ describe('e2e-peg-stability-module', function () {
     } = contracts);
     doLogging && console.log(`Environment loaded.`);
     weth = contracts.weth as WETH9;
-    daiPSM = daiFixedPricePSM;
 
     // add any addresses you want to impersonate here
     const impersonatedAddresses = [
@@ -289,7 +285,7 @@ describe('e2e-peg-stability-module', function () {
       );
       await contracts.compoundDaiPCVDeposit.deposit();
       await contracts.dai.connect(signer).transfer(
-        daiPSM.address,
+        daiFixedPricePSM.address,
         '5500000000000000000000000' // 5.5M
       );
     });
@@ -306,16 +302,20 @@ describe('e2e-peg-stability-module', function () {
 
     it('does drip when the dai PSM is under the threshold', async () => {
       const timelock = await getImpersonatedSigner(feiDAOTimelock.address);
-      await daiPSM
+      await daiFixedPricePSM
         .connect(timelock)
-        .withdrawERC20(dai.address, contracts.compoundDaiPCVDeposit.address, await dai.balanceOf(daiPSM.address));
+        .withdrawERC20(
+          dai.address,
+          contracts.compoundDaiPCVDeposit.address,
+          await dai.balanceOf(daiFixedPricePSM.address)
+        );
       await contracts.compoundDaiPCVDeposit.deposit();
 
-      expect(await dai.balanceOf(daiPSM.address)).to.be.equal(0);
+      expect(await dai.balanceOf(daiFixedPricePSM.address)).to.be.equal(0);
 
       await daiPCVDripController.drip();
 
-      expect(await dai.balanceOf(daiPSM.address)).to.be.equal(await daiPCVDripController.dripAmount());
+      expect(await dai.balanceOf(daiFixedPricePSM.address)).to.be.equal(await daiPCVDripController.dripAmount());
     });
   });
 
@@ -324,15 +324,27 @@ describe('e2e-peg-stability-module', function () {
       const redeemAmount = 500_000;
       beforeEach(async () => {
         await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, redeemAmount);
-        await fei.connect(impersonatedSigners[userAddress]).approve(daiPSM.address, redeemAmount);
+        await fei.connect(impersonatedSigners[userAddress]).approve(daiFixedPricePSM.address, redeemAmount);
+
+        const isPaused = await daiFixedPricePSM.paused();
+        if (isPaused) {
+          await daiFixedPricePSM.unpause();
+        }
+
+        const isRedeemPaused = await daiFixedPricePSM.redeemPaused();
+        if (isRedeemPaused) {
+          await daiFixedPricePSM.unpauseRedeem();
+        }
       });
 
       it('exchanges 500,000 FEI for DAI', async () => {
         const startingFEIBalance = await fei.balanceOf(userAddress);
         const startingDAIBalance = await dai.balanceOf(userAddress);
-        const expectedDAIAmount = await daiPSM.getRedeemAmountOut(redeemAmount);
+        const expectedDAIAmount = await daiFixedPricePSM.getRedeemAmountOut(redeemAmount);
 
-        await daiPSM.connect(impersonatedSigners[userAddress]).redeem(userAddress, redeemAmount, expectedDAIAmount);
+        await daiFixedPricePSM
+          .connect(impersonatedSigners[userAddress])
+          .redeem(userAddress, redeemAmount, expectedDAIAmount);
 
         const endingFEIBalance = await fei.balanceOf(userAddress);
         const endingDAIBalance = await dai.balanceOf(userAddress);
@@ -343,7 +355,7 @@ describe('e2e-peg-stability-module', function () {
       });
 
       it('DAI price sanity check', async () => {
-        const actualDAIAmountOut = await daiPSM.getRedeemAmountOut(redeemAmount);
+        const actualDAIAmountOut = await daiFixedPricePSM.getRedeemAmountOut(redeemAmount);
         await expectApprox(actualDAIAmountOut, redeemAmount);
       });
     });
@@ -356,17 +368,19 @@ describe('e2e-peg-stability-module', function () {
         const daiSigner = await getImpersonatedSigner(daiAccount);
         await forceEth(daiAccount);
         await dai.connect(daiSigner).transfer(userAddress, mintAmount);
-        await dai.connect(impersonatedSigners[userAddress]).approve(daiPSM.address, mintAmount);
+        await dai.connect(impersonatedSigners[userAddress]).approve(daiFixedPricePSM.address, mintAmount);
       });
 
       it('mint succeeds with 500_000 DAI', async () => {
-        const minAmountOut = await daiPSM.getMintAmountOut(mintAmount / 2);
+        const minAmountOut = await daiFixedPricePSM.getMintAmountOut(mintAmount / 2);
         const userStartingFEIBalance = await fei.balanceOf(userAddress);
-        const psmStartingDAIBalance = await dai.balanceOf(daiPSM.address);
+        const psmStartingDAIBalance = await dai.balanceOf(daiFixedPricePSM.address);
 
-        await daiPSM.connect(impersonatedSigners[userAddress]).mint(userAddress, mintAmount / 2, minAmountOut);
+        await daiFixedPricePSM
+          .connect(impersonatedSigners[userAddress])
+          .mint(userAddress, mintAmount / 2, minAmountOut);
 
-        const psmEndingDAIBalance = await dai.balanceOf(daiPSM.address);
+        const psmEndingDAIBalance = await dai.balanceOf(daiFixedPricePSM.address);
         const userEndingFEIBalance = await fei.balanceOf(userAddress);
 
         expect(userEndingFEIBalance.sub(userStartingFEIBalance)).to.be.gte(minAmountOut);
@@ -374,7 +388,7 @@ describe('e2e-peg-stability-module', function () {
       });
 
       it('DAI price sanity check', async () => {
-        const actualDAIAmountOut = await daiPSM.getMintAmountOut(mintAmount);
+        const actualDAIAmountOut = await daiFixedPricePSM.getMintAmountOut(mintAmount);
         await expectApprox(actualDAIAmountOut, mintAmount);
       });
     });
@@ -386,6 +400,12 @@ describe('e2e-peg-stability-module', function () {
       beforeEach(async () => {
         await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, redeemAmount);
         await fei.connect(impersonatedSigners[userAddress]).approve(raiPriceBoundPSM.address, redeemAmount);
+
+        // Ensure RAI PSM has sufficient balance to redeem against
+        const raiWhale = '0x618788357d0ebd8a37e763adab3bc575d54c2c7d';
+        await forceEth(raiWhale);
+        const raiWhaleSigner = await getImpersonatedSigner(raiWhale);
+        await rai.connect(raiWhaleSigner).transfer(raiPriceBoundPSM.address, redeemAmount);
       });
 
       it('exchanges 1000 FEI for rai', async () => {

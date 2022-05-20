@@ -26,7 +26,6 @@ describe('e2e-buybacks', function () {
   before(async () => {
     chai.use(CBN(ethers.BigNumber));
     chai.use(solidity);
-    await resetFork();
   });
 
   before(async function () {

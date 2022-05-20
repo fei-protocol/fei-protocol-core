@@ -6,6 +6,7 @@ import { BigNumber, BigNumberish, Contract, Signer } from 'ethers';
 import { NamedAddresses } from '@custom-types/types';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import EthersAdapter from '@gnosis.pm/safe-ethers-lib';
+import { BN } from 'ethereumjs-util';
 import Safe from '@gnosis.pm/safe-core-sdk';
 
 // use default BigNumber
@@ -84,7 +85,8 @@ async function resetFork(): Promise<void> {
       {
         forking: hre.config.networks.hardhat.forking
           ? {
-              jsonRpcUrl: hre.config.networks.hardhat.forking.url
+              jsonRpcUrl: hre.config.networks.hardhat.forking.url,
+              blockNumber: hre.config.networks.hardhat.forking.blockNumber
             }
           : undefined
       }
@@ -107,7 +109,7 @@ async function latestTime(): Promise<number> {
 
 async function mine(): Promise<void> {
   await hre.network.provider.request({
-    method: 'evm_mine'
+    method: 'hardhat_mine'
   });
 }
 
@@ -132,6 +134,11 @@ async function getCore(): Promise<Core> {
 
   return core;
 }
+
+const validateArraysEqual = (arrayA: string[], arrayB: string[]) => {
+  expect(arrayA.length).to.equal(arrayB.length);
+  arrayA.every((a) => expect(arrayB.map((b) => b.toLowerCase()).includes(a.toLowerCase())));
+};
 
 async function expectApprox(
   actual: string | number | BigNumberish,
@@ -215,9 +222,11 @@ const time = {
 
     if (durationBN.lt(ethers.constants.Zero)) throw Error(`Cannot increase time by a negative amount (${duration})`);
 
-    await hre.network.provider.send('evm_increaseTime', [durationBN.toNumber()]);
-
-    await hre.network.provider.send('evm_mine');
+    if (durationBN.eq(ethers.constants.Zero)) {
+      await hre.network.provider.send('hardhat_mine');
+    } else {
+      await hre.network.provider.send('hardhat_mine', ['0x2', ethers.utils.hexStripZeros(durationBN.toHexString())]);
+    }
   },
 
   increaseTo: async (target: number | string | BigNumberish): Promise<void> => {
@@ -234,21 +243,15 @@ const time = {
     target = ethers.BigNumber.from(target);
 
     const currentBlock = await time.latestBlock();
-    const start = Date.now();
-    let notified;
     if (target.lt(currentBlock))
       throw Error(`Target block #(${target}) is lower than current block #(${currentBlock})`);
-    while (ethers.BigNumber.from(await time.latestBlock()).lt(target)) {
-      if (!notified && Date.now() - start >= 5000) {
-        notified = true;
-        console.warn(`You're advancing many blocks; this test may be slow.`);
-      }
-      await time.advanceBlock();
-    }
+
+    const diff = target.sub(currentBlock);
+    await hre.network.provider.send('hardhat_mine', [ethers.utils.hexStripZeros(diff.toHexString())]);
   },
 
   advanceBlock: async (): Promise<void> => {
-    await hre.network.provider.send('evm_mine');
+    await hre.network.provider.send('hardhat_mine');
   }
 };
 
@@ -342,5 +345,6 @@ export {
   resetFork,
   overwriteChainlinkAggregator,
   performDAOAction,
-  initialiseGnosisSDK
+  initialiseGnosisSDK,
+  validateArraysEqual
 };

@@ -138,7 +138,7 @@ describe('FeiDAO', function () {
 
         // advance to end of voting period
         const endBlock = (await feiDAO.proposals(pid)).endBlock;
-        await time.advanceBlockTo(endBlock.toString());
+        await time.advanceBlockTo(endBlock.toNumber());
 
         // queue
         await feiDAO['queue(uint256)'](pid);
