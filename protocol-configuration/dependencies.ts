@@ -127,7 +127,8 @@ const dependencies: DependencyMap = {
       'podAdminGateway',
       'podFactory',
       'roleBastion',
-      'daiFixedPricePSMFeiSkimmer'
+      'daiFixedPricePSMFeiSkimmer',
+      'balancerGaugeStaker'
     ]
   },
   fei: {
@@ -661,6 +662,9 @@ const dependencies: DependencyMap = {
   },
   erc20Dripper: {
     contractDependencies: ['core', 'tribe', 'tribalChief', 'tribeMinter']
+  },
+  balancerGaugeStaker: {
+    contractDependencies: ['core']
   },
   rariRewardsDistributorDelegate: {
     contractDependencies: [

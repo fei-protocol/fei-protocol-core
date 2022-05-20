@@ -50,8 +50,17 @@ const proposals: ProposalsConfigMap = {
     totalValue: 0, // amount of ETH to send to DAO execution
     proposal: balancer_gauge_fix, // full proposal file, imported from '@proposals/description/fip_xx.ts'
     proposalId: null,
-    affectedContractSignoff: [],
-    deprecatedContractSignoff: [],
+    affectedContractSignoff: [
+      'tribalCouncilTimelock',
+      'balancerDepositFeiWeth',
+      'balancerLensBpt30Fei70Weth',
+      'pcvGuardianNew',
+      'core',
+      'balancerGaugeStaker',
+      'collateralizationOracle',
+      'pcvGuardianNew'
+    ],
+    deprecatedContractSignoff: ['balancerLensBpt30Fei70WethOld'],
     category: ProposalCategory.TC
   }
 };
