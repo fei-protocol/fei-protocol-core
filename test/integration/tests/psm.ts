@@ -325,6 +325,16 @@ describe('e2e-peg-stability-module', function () {
       beforeEach(async () => {
         await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, redeemAmount);
         await fei.connect(impersonatedSigners[userAddress]).approve(daiFixedPricePSM.address, redeemAmount);
+
+        const isPaused = await daiFixedPricePSM.paused();
+        if (isPaused) {
+          await daiFixedPricePSM.unpause();
+        }
+
+        const isRedeemPaused = await daiFixedPricePSM.redeemPaused();
+        if (isRedeemPaused) {
+          await daiFixedPricePSM.unpauseRedeem();
+        }
       });
 
       it('exchanges 500,000 FEI for DAI', async () => {
