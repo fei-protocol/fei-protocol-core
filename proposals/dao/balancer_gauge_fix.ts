@@ -139,20 +139,6 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(sourceBalanceBefore.sub(sourceBalanceAfter)).to.be.equal(withdrawAmount);
   expect(targetBalanceAfter.sub(targetBalanceBefore)).to.be.equal(withdrawAmount);
 
-  // check withdrawERC20() can unstake gauge & move LP tokens
-  const lpWithdrawAmount = `1${e18}`;
-  const sourceLpBalanceBefore = await contracts.balancerGaugeBpt30Fei70Weth.balanceOf(addresses.balancerGaugeStaker);
-  const targetLpBalanceBefore = await contracts.bpt30Fei70Weth.balanceOf(addresses.feiDAOTimelock);
-  await contracts.balancerGaugeStaker.withdrawERC20(
-    addresses.bpt30Fei70Weth,
-    addresses.feiDAOTimelock,
-    lpWithdrawAmount
-  );
-  const sourceLpBalanceAfter = await contracts.balancerGaugeBpt30Fei70Weth.balanceOf(addresses.balancerGaugeStaker);
-  const targetLpBalanceAfter = await contracts.bpt30Fei70Weth.balanceOf(addresses.feiDAOTimelock);
-  expect(sourceLpBalanceBefore.sub(sourceLpBalanceAfter)).to.be.equal(lpWithdrawAmount);
-  expect(targetLpBalanceAfter.sub(targetLpBalanceBefore)).to.be.equal(lpWithdrawAmount);
-
   // display pcvStats
   console.log('----------------------------------------------------');
   console.log(' pcvStatsBefore.protocolControlledValue [M]e18 ', pcvStatsBefore.protocolControlledValue / 1e24);

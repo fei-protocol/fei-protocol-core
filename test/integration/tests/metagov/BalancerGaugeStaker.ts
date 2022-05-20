@@ -152,29 +152,16 @@ describe('e2e-metagov', function () {
         await staker.connect(daoSigner).unpause();
       });
 
-      describe('should work if user has PCV_CONTROLLER_ROLE role', function () {
-        it('should emit Withdrawal if token is BAL', async function () {
-          const balanceBefore = await contracts.bal.balanceOf(daoSigner.address);
-          expectEvent(
-            await staker.connect(daoSigner).withdrawERC20(contracts.bal.address, daoSigner.address, '10'),
-            staker,
-            'Withdrawal',
-            [daoSigner.address, daoSigner.address, '10']
-          );
-          const balanceAfter = await contracts.bal.balanceOf(daoSigner.address);
-          expect(balanceAfter.sub(balanceBefore)).to.be.equal('10');
-        });
-        it('should unstake from gauge and emit WithdrawERC20 otherwise', async function () {
-          const balanceBefore = await contracts.bpt30Fei70Weth.balanceOf(daoSigner.address);
-          expectEvent(
-            await staker.connect(daoSigner).withdrawERC20(contracts.bpt30Fei70Weth.address, daoSigner.address, '10'),
-            staker,
-            'WithdrawERC20',
-            [daoSigner.address, contracts.bpt30Fei70Weth.address, daoSigner.address, '10']
-          );
-          const balanceAfter = await contracts.bpt30Fei70Weth.balanceOf(daoSigner.address);
-          expect(balanceAfter.sub(balanceBefore)).to.be.equal('10');
-        });
+      it('should work if user has PCV_CONTROLLER_ROLE role', async function () {
+        const balanceBefore = await contracts.bal.balanceOf(daoSigner.address);
+        expectEvent(
+          await staker.connect(daoSigner).withdrawERC20(contracts.bal.address, daoSigner.address, '10'),
+          staker,
+          'WithdrawERC20',
+          [daoSigner.address, contracts.bal.address, daoSigner.address, '10']
+        );
+        const balanceAfter = await contracts.bal.balanceOf(daoSigner.address);
+        expect(balanceAfter.sub(balanceBefore)).to.be.equal('10');
       });
     });
   });

@@ -73,36 +73,6 @@ contract BalancerGaugeStaker is PCVDeposit, LiquidityGaugeManager {
         emit Withdrawal(msg.sender, to, amount);
     }
 
-    /// @notice withdraw ERC20 from the contract
-    /// @param token address of the ERC20 to send
-    /// @param to address destination of the ERC20
-    /// @param amount quantity of ERC20 to send
-    function withdrawERC20(
-        address token,
-        address to,
-        uint256 amount
-    ) public virtual override onlyPCVController whenNotPaused {
-        // if the token has a gauge, we unstake it from the gauge before transfer
-        // @dev : note that this gauge unstaking normally is access controlled to
-        // onlyTribeRole(TribeRoles.METAGOVERNANCE_GAUGE_ADMIN), but since
-        // withdrawERC20() is a higher clearance role (PCVController), this
-        // privilege of gauge unstaking is also made available to the PCV controller,
-        // that may have important reasons to quickly unstake from the gauge and move
-        // the staked ERC20s to another place.
-        address gaugeAddress = tokenToGauge[token];
-        if (gaugeAddress != address(0)) {
-            ILiquidityGauge(gaugeAddress).withdraw(amount, false);
-        }
-
-        // emit the right event if the withdrawn token
-        // is the one used in accounting.
-        if (token == BAL) {
-            withdraw(to, amount);
-        } else {
-            _withdrawERC20(token, to, amount);
-        }
-    }
-
     /// @notice Mint everything which belongs to this contract in the given gauge
     /// @param token whose gauge should be claimed
     function mintGaugeRewards(address token) external whenNotPaused returns (uint256) {
