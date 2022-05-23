@@ -35,7 +35,7 @@ const proposals: ProposalsConfigMap = {
       'tribalCouncilTimelock'
     ],
     deprecatedContractSignoff: [],
-    category: ProposalCategory.TC
+    category: ProposalCategory.DAO
   }
 };
 

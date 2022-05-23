@@ -11,51 +11,45 @@ const withdraw_lbp_liquidity: ProposalDescription = {
       description:
         'Set the Compound DAI PCV deposit and TribalCouncil multisig and timelock to be safe addresses for PCV withdrawal'
     },
+    // Have to call exitPool()
+    {
+      target: 'dpiToDaiLBPSwapper',
+      values: '0',
+      method: 'exitPool(address)',
+      arguments: ['{compoundDaiPCVDeposit}'],
+      description: 'Withdraw all DAI and DPI from LBP pool to the compoundDAIPCVDeposit'
+    },
+    // Desired end state: DPI on TC safe, DAI on compoundDAIDeposit
     {
       target: 'pcvGuardianNew',
       values: '0',
       method: 'withdrawERC20ToSafeAddress(address,address,address,uint256,bool,bool)',
       arguments: [
-        '{dpiToDaiLBPSwapper}',
         '{compoundDaiPCVDeposit}',
-        '{dai}',
-        '300000000000000000000000', // TODO, update with accurate figure
-        false,
-        false
-      ],
-      description: 'Withdraw DAI from the LBP to the Compound PCV DAI deposit'
-    },
-    {
-      target: 'compoundDaiPCVDeposit',
-      values: '0',
-      method: 'deposit()',
-      arguments: [],
-      description: 'Deposit DAI on deposit into Compound PCV Deposit'
-    },
-    {
-      target: 'pcvGuardianNew',
-      values: '0',
-      method: 'withdrawERC20ToSafeAddress(address,address,address,uint256,bool,bool)',
-      arguments: [
-        '{dpiToDaiLBPSwapper}',
         '{tribalCouncilSafe}',
         '{dpi}',
         '100000000000000000000', // TODO, update with accurate figure
         false,
         false
       ],
-      description: 'Withdraw DPI from the LBP to the TribalCouncil multisig'
+      description: 'Withdraw DPI from the compound DAI PCV deposit to the TribalCouncil multisig'
+    },
+    {
+      target: 'compoundDaiPCVDeposit',
+      values: '0',
+      method: 'deposit()',
+      arguments: [],
+      description: 'Deposit DAI on compoundDAIPCVdeposit into Compound'
     }
   ],
   description: `
-  Withdraw LBP liquidity.
+  Withdraw all liquidity from the DPI LBP.
 
-  Set the TribalCouncil multisig and timelock to be safe addresses for PCV withdrawal.
-
-  Then use the PCV guardian to withdraw all DAI liquidity from the DPI LBP sale to the Compound DAI PCV deposit.
-
-  Lastly, use the PCV guardian to withdraw all DPI liquidity from the DPI LBP sale to the TribalCouncil safe, where it will then be 
-  sold via a DEX aggregator for DAI.
+  Specifically this,:
+  - Sets the TribalCouncil multisig, timelock and compoundDAIPCVDeposit to be safe addresses for PCV withdrawal
+  - Exits the LBP pool and withdraws all liquidity to the compound DAI deposit
+  - Withdraws the DPI from the deposit to the TribalCouncil multisig, uisng the pcvGuardian
+  - Deposits the DAI on the deposit into Compound
   `
 };
 

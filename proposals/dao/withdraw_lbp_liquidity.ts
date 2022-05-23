@@ -7,7 +7,7 @@ import {
   TeardownUpgradeFunc,
   ValidateUpgradeFunc
 } from '@custom-types/types';
-import { getImpersonatedSigner, time } from '@test/helpers';
+import { time } from '@test/helpers';
 import { BigNumber } from 'ethers';
 import { forceEth } from '@test/integration/setup/utils';
 
@@ -39,7 +39,7 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
   const dpi = contracts.dpi;
   initialTCDpiBalance = await dpi.balanceOf(addresses.tribalCouncilSafe);
   initialDaiPCVBalance = await contracts.compoundDaiPCVDeposit.balance();
-  console.log('Initial dai balance: ', initialDaiPCVBalance.toString());
+  logging && console.log('Initial dai balance: ', initialDaiPCVBalance.toString());
 
   // Fast forward to end of LPB
   const timeRemaining = await contracts.dpiToDaiLBPSwapper.remainingTime();
@@ -66,6 +66,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   // 2. Validate withdrawn liquidity destinations
   const finalDAIDepositBalance = await contracts.compoundDaiPCVDeposit.balance();
   expect(finalDAIDepositBalance).to.be.bignumber.at.least(initialDaiPCVBalance.add(minExpectedLBPDai));
+  logging && console.log('Final DAI balance: ', finalDAIDepositBalance.toString());
 
   const dpi = contracts.dpi;
   const finalTCDpiBalance = await dpi.balanceOf(addresses.tribalCouncilSafe);
