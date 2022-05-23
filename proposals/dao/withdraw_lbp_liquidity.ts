@@ -39,24 +39,13 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
   const dpi = contracts.dpi;
   initialTCDpiBalance = await dpi.balanceOf(addresses.tribalCouncilSafe);
   initialDaiPCVBalance = await contracts.compoundDaiPCVDeposit.balance();
-  console.log('initial dai balance: ', initialDaiPCVBalance.toString());
+  console.log('Initial dai balance: ', initialDaiPCVBalance.toString());
 
   // Fast forward to end of LPB
   const timeRemaining = await contracts.dpiToDaiLBPSwapper.remainingTime();
   await time.increase(timeRemaining);
 
-  // Drop DAI and DPI onto contract, so can test withdraw
-  const daiWhale = '0x5d3a536e4d6dbd6114cc1ead35777bab948e3643';
-  const dpiWhale = '0x6f634c6135d2ebd550000ac92f494f9cb8183dae';
-  const daiWhaleSigner = await getImpersonatedSigner(daiWhale);
-  const dpiWhaleSigner = await getImpersonatedSigner(dpiWhale);
-
-  await forceEth(daiWhale);
-  await forceEth(dpiWhale);
   await forceEth(addresses.tribalCouncilTimelock);
-
-  await contracts.dai.connect(daiWhaleSigner).transfer(addresses.dpiToDaiLBPSwapper, minExpectedLBPDai);
-  await contracts.dpi.connect(dpiWhaleSigner).transfer(addresses.dpiToDaiLBPSwapper, minExpectedLBPDpi);
 };
 
 // Tears down any changes made in setup() that need to be
