@@ -44,8 +44,6 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
   // Fast forward to end of LPB
   const timeRemaining = await contracts.dpiToDaiLBPSwapper.remainingTime();
   await time.increase(timeRemaining);
-
-  await forceEth(addresses.tribalCouncilTimelock);
 };
 
 // Tears down any changes made in setup() that need to be
