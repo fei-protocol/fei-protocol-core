@@ -1,14 +1,14 @@
 import { ProposalCategory, ProposalsConfigMap } from '@custom-types/types';
 
-import fip_105 from '@proposals/description/fip_105';
+import fip_104 from '@proposals/description/fip_104';
+import balancer_gauge_fix from '@proposals/description/balancer_gauge_fix';
 import withdraw_lbp_liquidity from '@proposals/description/withdraw_lbp_liquidity';
-// import fip_xx_proposal from '@proposals/description/fip_xx';
 
 const proposals: ProposalsConfigMap = {
-  fip_105: {
+  fip_104: {
     deploy: false, // deploy flag for whether to run deploy action during e2e tests or use mainnet state
     totalValue: 0, // amount of ETH to send to DAO execution
-    proposal: fip_105, // full proposal file, imported from '@proposals/description/fip_xx.ts'
+    proposal: fip_104, // full proposal file, imported from '@proposals/description/fip_xx.ts'
     proposalId: '',
     affectedContractSignoff: [
       'daiFixedPricePSMFeiSkimmer',
@@ -44,6 +44,24 @@ const proposals: ProposalsConfigMap = {
       'dpiDepositWrapper'
     ],
     category: ProposalCategory.DAO
+  },
+  balancer_gauge_fix: {
+    deploy: false, // deploy flag for whether to run deploy action during e2e tests or use mainnet state
+    totalValue: 0, // amount of ETH to send to DAO execution
+    proposal: balancer_gauge_fix, // full proposal file, imported from '@proposals/description/fip_xx.ts'
+    proposalId: null,
+    affectedContractSignoff: [
+      'tribalCouncilTimelock',
+      'balancerDepositFeiWeth',
+      'balancerLensBpt30Fei70Weth',
+      'pcvGuardianNew',
+      'core',
+      'balancerGaugeStaker',
+      'collateralizationOracle',
+      'pcvGuardianNew'
+    ],
+    deprecatedContractSignoff: ['balancerLensBpt30Fei70WethOld'],
+    category: ProposalCategory.TC
   },
   withdraw_lbp_liquidity: {
     deploy: false,

@@ -1,7 +1,7 @@
 import { ProposalDescription } from '@custom-types/types';
 
-const fip_105: ProposalDescription = {
-  title: 'FIP-105: Reinforce PCV by consolidating assets and perform technical maintenance',
+const fip_104: ProposalDescription = {
+  title: 'FIP-104: Reinforce PCV by consolidating assets and perform technical maintenance',
   commands: [
     {
       target: 'pcvGuardianNew',
@@ -22,8 +22,23 @@ const fip_105: ProposalDescription = {
       target: 'compoundDaiPCVDeposit',
       values: '0',
       method: 'withdraw(address,uint256)',
-      arguments: ['{dpiToDaiLBPSwapper}', '187947000000000000000000'],
+      arguments: ['{dpiToDaiLBPSwapper}', '230000000000000000000000'],
       description: 'Withdraw DAI from the CompoundPCVDeposit and transfer to the LBP pool'
+    },
+    // Correcting the oracle needs to happen before forceSwap()
+    {
+      target: 'dpiToDaiLBPSwapper',
+      values: '0',
+      method: 'setDoInvert(bool)',
+      arguments: [false],
+      description: 'Set the dpiToDai LBP swapper to not invert'
+    },
+    {
+      target: 'dpiToDaiLBPSwapper',
+      values: '0',
+      method: 'forceSwap()',
+      arguments: [],
+      description: 'Start the auction and override the current no-op auction'
     },
     {
       target: 'collateralizationOracle',
@@ -106,7 +121,7 @@ const fip_105: ProposalDescription = {
     }
   ],
   description: `
-  FIP-105: Reinforce PCV by consolidating assets and perform technical maintenance.
+  FIP-104: Reinforce PCV by consolidating assets and perform technical maintenance.
 
   This FIP implements parts of the PCV reinforcement proposal that was approved in this snapshot:
   https://snapshot.fei.money/#/proposal/0x2fd5bdda0067098f6c0520fe309dfe90ca403758f0ce98c1854a00bf38999674 
@@ -125,7 +140,8 @@ const fip_105: ProposalDescription = {
     expected 4 days
   - Fund the TribalCouncil with 10 Eth
   - Transfer 15,000 WETH from the DAO timelock to the aaveETHPCVDeposit
+  - Invert oracle price on LBP swapper and initiate auction
   `
 };
 
-export default fip_105;
+export default fip_104;

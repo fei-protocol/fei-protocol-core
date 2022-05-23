@@ -192,7 +192,7 @@ const MainnetAddresses: MainnetAddresses = {
     category: AddressCategory.PCV
   },
   dpiToDaiLBPPool: {
-    artifactName: 'ILiquidityBootstrappingPoolFactory',
+    artifactName: 'IWeightedPool',
     address: '0xd10386804959a121a8a487e49f45aa9f5a2eb2a0',
     category: AddressCategory.External
   },
@@ -396,6 +396,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x90291319F1D4eA3ad4dB0Dd8fe9E12BAF749E845',
     category: AddressCategory.External
   },
+  balancerMinter: {
+    artifactName: 'IBalancerMinter',
+    address: '0x239e55F427D44C3cc793f49bFB507ebe76638a2b',
+    category: AddressCategory.External
+  },
   balancerGaugeController: {
     artifactName: 'ILiquidityGaugeController',
     address: '0xC128468b7Ce63eA702C1f104D55A2566b13D3ABD',
@@ -411,19 +416,34 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0xc4EAc760C2C631eE0b064E39888b89158ff808B2',
     category: AddressCategory.Governance
   },
-  gaugeLensBpt30Fei70WethGauge: {
+  balancerGaugeStaker: {
+    artifactName: 'BalancerGaugeStaker', // actually a TransparentUpgradeableProxy
+    address: '0x66977Ce30049CD0e443216Bf26377966c3A109E2',
+    category: AddressCategory.Governance
+  },
+  balancerGaugeStakerImpl: {
+    artifactName: 'BalancerGaugeStaker',
+    address: '0xF53E251352683155898295569d77B8506bA00d80',
+    category: AddressCategory.Governance
+  },
+  gaugeLensBpt30Fei70WethGaugeOld: {
     artifactName: 'CurveGaugeLens',
     address: '0xa8E388a1f19f2b33Be8bf2cCeC43641C10b4D1e5',
-    category: AddressCategory.External // not really External, but not PCV
+    category: AddressCategory.Deprecated
+  },
+  gaugeLensBpt30Fei70WethGauge: {
+    artifactName: 'CurveGaugeLens',
+    address: '0xd9fc482E0Af8fd509699f1074d72D137cAC94D5B',
+    category: AddressCategory.PCV_V1
   },
   balancerLensBpt30Fei70WethOld: {
     artifactName: 'BalancerPool2Lens',
-    address: '0xb31F75550e97A2C4c7AC8d4355032B8AE8b9584D',
+    address: '0x673f7DFA863b611dE657759aEDE629b260F4E682',
     category: AddressCategory.Deprecated
   },
   balancerLensBpt30Fei70Weth: {
     artifactName: 'BalancerPool2Lens',
-    address: '0x673f7DFA863b611dE657759aEDE629b260F4E682',
+    address: '0x8465E7CFA63Aa6682531C7a34141966318aC5178',
     category: AddressCategory.PCV
   },
   balancerLensVeBalBal: {
