@@ -1,15 +1,14 @@
 import { ProposalDescription } from '@custom-types/types';
 
 const fip_104b: ProposalDescription = {
-  title: 'Withdraw LBP liquidity',
+  title: 'FIP_104b: Withdraw LBP liquidity',
   commands: [
     {
       target: 'pcvGuardianNew',
       values: '0',
       method: 'setSafeAddresses(address[])',
-      arguments: [['{tribalCouncilSafe}', '{tribalCouncilTimelock}', '{compoundDaiPCVDeposit}']],
-      description:
-        'Set the Compound DAI PCV deposit and TribalCouncil multisig and timelock to be safe addresses for PCV withdrawal'
+      arguments: [['{tribalCouncilSafe}', '{tribalCouncilTimelock}']],
+      description: 'Set the TribalCouncil multisig and timelock to be safe addresses for PCV withdrawal'
     },
     {
       target: 'dpiToDaiLBPSwapper',
@@ -19,18 +18,16 @@ const fip_104b: ProposalDescription = {
       description: 'Withdraw all DAI and DPI from LBP pool to the compoundDAIPCVDeposit'
     },
     {
-      target: 'pcvGuardianNew',
+      target: 'ratioPCVControllerV2',
       values: '0',
-      method: 'withdrawERC20ToSafeAddress(address,address,address,uint256,bool,bool)',
+      method: 'withdrawRatioERC20(address,address,address,uint256)',
       arguments: [
-        '{compoundDaiPCVDeposit}',
-        '{tribalCouncilSafe}',
-        '{dpi}',
-        '100000000000000000000', // TODO, update with accurate figure
-        false,
-        false
+        '{compoundDaiPCVDeposit}', // pcvDeposit
+        '{dpi}', // token
+        '{tribalCouncilSafe}', // to
+        '10000' // basisPoints, 100%
       ],
-      description: 'Withdraw DPI from the compound DAI PCV deposit to the TribalCouncil multisig'
+      description: 'Withdraw all the DPI from the Compound DAI PCV deposit to the TribalCouncil multisig'
     },
     {
       target: 'compoundDaiPCVDeposit',
@@ -48,7 +45,7 @@ const fip_104b: ProposalDescription = {
   and discussed here: https://tribe.fei.money/t/fip-104-fei-pcv-reinforcement-proposal/4162 .
 
   Specifically it:
-  - Sets the TribalCouncil multisig, timelock and compoundDAIPCVDeposit to be safe addresses for PCV withdrawal
+  - Sets the TribalCouncil multisig and timelock to be safe addresses for PCV withdrawal
   - Exits the LBP pool and withdraws all liquidity to the compound DAI deposit
   - Withdraws the DPI from the deposit to the TribalCouncil multisig, uisng the pcvGuardian
   - Deposits the DAI on the deposit into Compound

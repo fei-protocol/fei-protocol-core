@@ -9,7 +9,6 @@ import {
 } from '@custom-types/types';
 import { time } from '@test/helpers';
 import { BigNumber } from 'ethers';
-import { forceEth } from '@test/integration/setup/utils';
 
 /*
 Withdraw liquidity from the LBP once it has finished
@@ -19,9 +18,6 @@ const fipNumber = 'fip_104b';
 
 let initialDaiPCVBalance: BigNumber;
 let initialTCDpiBalance: BigNumber;
-
-const minExpectedLBPDai = ethers.constants.WeiPerEther.mul(300_000); // TODO, update to accurate numbers
-const minExpectedLBPDpi = ethers.constants.WeiPerEther.mul(100); // TODO, update to accurate numbers
 
 // Do any deployments
 // This should exclusively include new contract deployments
@@ -59,16 +55,18 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const pcvGuardian = contracts.pcvGuardianNew;
   expect(await pcvGuardian.isSafeAddress(addresses.tribalCouncilSafe)).to.be.true;
   expect(await pcvGuardian.isSafeAddress(addresses.tribalCouncilTimelock)).to.be.true;
-  expect(await pcvGuardian.isSafeAddress(addresses.compoundDaiPCVDeposit)).to.be.true;
 
   // 2. Validate withdrawn liquidity destinations
+  const sanityCheckDAIAmount = ethers.constants.WeiPerEther.mul(100_000);
   const finalDAIDepositBalance = await contracts.compoundDaiPCVDeposit.balance();
-  expect(finalDAIDepositBalance).to.be.bignumber.at.least(initialDaiPCVBalance.add(minExpectedLBPDai));
+  expect(finalDAIDepositBalance).to.be.bignumber.at.least(initialDaiPCVBalance.add(sanityCheckDAIAmount));
   logging && console.log('Final DAI balance: ', finalDAIDepositBalance.toString());
 
   const dpi = contracts.dpi;
+
+  const sanityCheckDPIAmount = ethers.constants.WeiPerEther.mul(100);
   const finalTCDpiBalance = await dpi.balanceOf(addresses.tribalCouncilSafe);
-  expect(finalTCDpiBalance).to.be.bignumber.at.least(initialTCDpiBalance.add(minExpectedLBPDpi));
+  expect(finalTCDpiBalance).to.be.bignumber.at.least(initialTCDpiBalance.add(sanityCheckDPIAmount));
 };
 
 export { deploy, setup, teardown, validate };

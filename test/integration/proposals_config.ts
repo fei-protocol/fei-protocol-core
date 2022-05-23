@@ -28,6 +28,7 @@ const proposals: ProposalsConfigMap = {
     proposal: fip_104b,
     proposalId: '',
     affectedContractSignoff: [
+      'ratioPCVControllerV2',
       'dpiToDaiLBPSwapper',
       'compoundDaiPCVDeposit',
       'pcvGuardianNew',
