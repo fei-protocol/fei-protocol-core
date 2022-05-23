@@ -4,6 +4,13 @@ const curve_swap_stables: ProposalDescription = {
   title: 'Curve swap stables',
   commands: [
     {
+      target: 'pcvGuardian',
+      values: '0',
+      method: 'setSafeAddress(address)',
+      arguments: ['{tribalCouncilTimelock}'],
+      description: 'Set the Compound DAI PCV deposit as a safe address'
+    },
+    {
       target: 'pcvGuardianNew',
       values: '0',
       method: 'withdrawToSafeAddress(address,address,uint256,bool,bool)',

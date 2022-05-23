@@ -71,7 +71,7 @@ const proposals: ProposalsConfigMap = {
     proposalId: null,
     affectedContractSignoff: ['pcvGuardianNew', 'compoundDaiPCVDeposit', 'tribalCouncilTimelock', 'curve3pool', 'dai'],
     deprecatedContractSignoff: [],
-    category: ProposalCategory.TC
+    category: ProposalCategory.DAO
   }
 };
 

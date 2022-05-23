@@ -21,9 +21,6 @@ const fipNumber = '9001'; // Change me!
 const minUSDCReceived = ethers.constants.WeiPerEther.mul(10_500_000); // 10.5M
 const minUSDTReceived = ethers.constants.WeiPerEther.mul(134_000); // 134k
 
-const daiInForUsdc = ethers.constants.WeiPerEther.mul(10_300_000); // 10.3M
-const daiInForUsdt = ethers.constants.WeiPerEther.mul(134_000); // 134k
-
 // Do any deployments
 // This should exclusively include new contract deployments
 const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: NamedAddresses, logging: boolean) => {
@@ -38,6 +35,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 // ensuring contracts have a specific state, etc.
 const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
   await forceEth(addresses.tribalCouncilTimelock);
+  await forceEth(addresses.tribalCouncilSafe);
 };
 
 // Tears down any changes made in setup() that need to be
