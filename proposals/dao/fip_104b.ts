@@ -15,7 +15,7 @@ import { forceEth } from '@test/integration/setup/utils';
 Withdraw liquidity from the LBP once it has finished
 */
 
-const fipNumber = 'withdraw_lbp_liquidity';
+const fipNumber = 'fip_104b';
 
 let initialDaiPCVBalance: BigNumber;
 let initialTCDpiBalance: BigNumber;

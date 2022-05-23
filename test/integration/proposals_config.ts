@@ -1,7 +1,7 @@
 import { ProposalCategory, ProposalsConfigMap } from '@custom-types/types';
 
 import balancer_gauge_fix from '@proposals/description/balancer_gauge_fix';
-import withdraw_lbp_liquidity from '@proposals/description/withdraw_lbp_liquidity';
+import fip_104b from '@proposals/description/fip_104b';
 
 const proposals: ProposalsConfigMap = {
   balancer_gauge_fix: {
@@ -22,10 +22,10 @@ const proposals: ProposalsConfigMap = {
     deprecatedContractSignoff: ['balancerLensBpt30Fei70WethOld'],
     category: ProposalCategory.TC
   },
-  withdraw_lbp_liquidity: {
+  fip_104b: {
     deploy: false,
     totalValue: 0,
-    proposal: withdraw_lbp_liquidity,
+    proposal: fip_104b,
     proposalId: '',
     affectedContractSignoff: [
       'dpiToDaiLBPSwapper',
