@@ -9,7 +9,7 @@ const proposals: ProposalsConfigMap = {
     deploy: false, // deploy flag for whether to run deploy action during e2e tests or use mainnet state
     totalValue: 0, // amount of ETH to send to DAO execution
     proposal: fip_104, // full proposal file, imported from '@proposals/description/fip_xx.ts'
-    proposalId: '',
+    proposalId: '31578302030309093637065801555854148925062532860791705694822567566349182964602',
     affectedContractSignoff: [
       'daiFixedPricePSMFeiSkimmer',
       'core',
