@@ -2115,6 +2115,11 @@ const MainnetAddresses: MainnetAddresses = {
     artifactName: 'RoleBastion',
     address: '0x8096314D9014EbB69Fc777ED3791DDE6FFbaFAed',
     category: AddressCategory.Governance
+  },
+  usdt: {
+    artifactName: 'IERC20',
+    address: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
+    category: AddressCategory.External
   }
 };
 
