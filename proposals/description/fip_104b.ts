@@ -47,7 +47,7 @@ const fip_104b: ProposalDescription = {
   Specifically it:
   - Sets the TribalCouncil multisig and timelock to be safe addresses for PCV withdrawal
   - Exits the LBP pool and withdraws all liquidity to the compound DAI deposit
-  - Withdraws the DPI from the deposit to the TribalCouncil multisig, uisng the pcvGuardian
+  - Withdraws the DPI from the deposit to the TribalCouncil multisig, uisng the ratioPCVController
   - Deposits the DAI on the deposit into Compound
   `
 };
