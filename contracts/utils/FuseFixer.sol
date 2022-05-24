@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
-import {PCVDeposit} from "../pcv/PCVDeposit.sol";
-import {CTokenFuse, CEtherFuse} from "../external/fuse/CToken.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {PCVDeposit} from "../pcv/PCVDeposit.sol";
+import {CTokenFuse, CEtherFuse} from "../external/fuse/CToken.sol";
 import {CoreRef} from "../refs/CoreRef.sol";
 import {TribeRoles} from "../core/TribeRoles.sol";
+import "hardhat/console.sol";
 
 /// @title base class for a Compound PCV Deposit
 /// @author Fei Protocol
@@ -86,11 +87,13 @@ contract FuseFixer is PCVDeposit {
     }
 
     /// @dev Repay all debt
-    function repayAll() public onlyGovernor {
+    function repayAll() public onlyTribeRole(TribeRoles.PCV_GUARDIAN_ADMIN) {
+        console.log("Repaying ETH.");
         _repayETH();
 
         // we skip index 0 because that's ETH
         for (uint256 i = 1; i < UNDERLYINGS.length; i++) {
+            console.log("Repaying ", UNDERLYINGS[i]);
             _repayERC20(UNDERLYINGS[i]);
         }
     }
@@ -99,7 +102,7 @@ contract FuseFixer is PCVDeposit {
     /// @notice reverts if the total bad debt is beyond the provided maximum
     /// @param underlying the asset to repay in
     /// @param maximum the maximum amount of underlying asset to repay
-    function repay(address underlying, uint256 maximum) public onlyGovernor {
+    function repay(address underlying, uint256 maximum) public onlyTribeRole(TribeRoles.PCV_GUARDIAN_ADMIN) {
         require(getTotalDebt(underlying) < maximum, "Total debt is greater than maximum");
 
         if (underlying == address(0)) {
@@ -138,7 +141,14 @@ contract FuseFixer is PCVDeposit {
         for (uint256 i = 0; i < cEtherTokens.length; i++) {
             CEtherFuse token = CEtherFuse(cEtherTokens[i]);
             uint256 debtAmount = token.borrowBalanceCurrent(DEBTOR);
-            token.repayBorrowBehalf{value: debtAmount}(DEBTOR);
+            if (debtAmount > 0) {
+                console.log("Repaying", debtAmount, "ETH to cEtherFuse", address(token));
+                console.log("Current balance is", address(this).balance);
+                token.repayBorrowBehalf{value: debtAmount / 10}(DEBTOR);
+                console.log("New balance is", address(this).balance);
+            } else {
+                console.log("No debt to repay for cEtherFuse", address(token));
+            }
         }
     }
 

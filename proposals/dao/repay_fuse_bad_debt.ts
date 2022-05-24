@@ -7,7 +7,7 @@ import {
   ValidateUpgradeFunc
 } from '@custom-types/types';
 import { getImpersonatedSigner } from '@test/helpers';
-import { forceEth, forceEthMultiple } from '@test/integration/setup/utils';
+import { forceEth, forceEthMultiple, forceSpecificEth } from '@test/integration/setup/utils';
 import { utils } from 'ethers';
 import hre from 'hardhat';
 
@@ -88,7 +88,7 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
   );
   const ustw = await hre.ethers.getContractAt(
     'ERC20',
-    '0xa47c8bf37f92aBed4A126BDA807A7b7498661acD',
+    '0xa693B19d2931d498c5B318dF961919BB4aee87a5',
     await getImpersonatedSigner('0x2faf487a4414fe77e2327f0bf4ae2a264a776ad2')
   );
   const usdt = await hre.ethers.getContractAt(
@@ -103,9 +103,10 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
   await dai.transfer(addresses.fuseFixer, utils.parseEther('15000000'));
   await usdc.transfer(addresses.fuseFixer, utils.parseEther('11000000').div(1e12));
   await lusd.transfer(addresses.fuseFixer, utils.parseEther('2000000'));
-  await ustw.transfer(addresses.fuseFixer, utils.parseEther('3000000'));
+  await ustw.transfer(addresses.fuseFixer, utils.parseEther('3000000').div(1e12));
   await usdt.transfer(addresses.fuseFixer, utils.parseEther('150000').div(1e12));
 
+  await forceSpecificEth(addresses.fuseFixer, utils.parseEther('6500').toString());
   // contract should now have enough to repayBorrowBehalf everything
 };
 

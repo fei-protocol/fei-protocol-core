@@ -4,6 +4,7 @@ import format from 'string-template';
 import { OptimisticTimelock } from '@custom-types/contracts';
 import { getImpersonatedSigner, time } from '@test/helpers';
 import { Contract } from '@ethersproject/contracts';
+import { forceEth } from '@test/integration/setup/utils';
 
 export async function simulateOAProposal(
   proposalInfo: ProposalDescription,
@@ -35,6 +36,7 @@ export async function simulateTimelockProposal(
   contractAddresses: NamedAddresses,
   logging = false
 ) {
+  await forceEth(multisigAddress);
   const signer = await getImpersonatedSigner(multisigAddress);
   logging && console.log(`Constructing proposal ${proposalInfo.title}`);
 
