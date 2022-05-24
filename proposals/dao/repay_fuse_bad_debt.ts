@@ -11,6 +11,8 @@ import { BigNumber } from 'ethers';
 import { forceEth } from '@test/integration/setup/utils';
 import { getImpersonatedSigner } from '@test/helpers';
 import { randomInt } from 'crypto';
+import { FuseFixer, FuseFixer__factory } from '@custom-types/contracts';
+import { utils } from 'ethers';
 
 /*
 Withdraw FEI from Aave and Compound
@@ -21,8 +23,10 @@ const fipNumber = 'repay_fuse_bad_debt'; // Change me!
 // Do any deployments
 // This should exclusively include new contract deployments
 const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: NamedAddresses, logging: boolean) => {
-  console.log(`No deploy actions for fip${fipNumber}`);
-  return {};
+  const fuseFixerFactory = (await hre.ethers.getContractFactory('FuseFixer')) as FuseFixer__factory;
+  const fuseFixer = await fuseFixerFactory.deploy(addresses.core);
+
+  return { fuseFixer };
 };
 
 // Do any setup necessary for running the test.
@@ -83,6 +87,17 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
     '0xdAC17F958D2ee523a2206206994597C13D831ec7',
     await getImpersonatedSigner('0x5754284f345afc66a98fbb0a0afe71e0f007b949')
   );
+
+  await fei.transfer(addresses.fuseFixer, utils.parseEther('21000000'));
+  await frax.transfer(addresses.fuseFixer, utils.parseEther('14000000'));
+  await rai.transfer(addresses.fuseFixer, utils.parseEther('32000'));
+  await dai.transfer(addresses.fuseFixer, utils.parseEther('15000000'));
+  await usdc.transfer(addresses.fuseFixer, utils.parseEther('11000000'));
+  await lusd.transfer(addresses.fuseFixer, utils.parseEther('2000000'));
+  await ustw.transfer(addresses.fuseFixer, utils.parseEther('3000000'));
+  await usdt.transfer(addresses.fuseFixer, utils.parseEther('150000'));
+
+  // contract should now have enough to repayBorrowBehalf everything
 };
 
 // Tears down any changes made in setup() that need to be

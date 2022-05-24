@@ -26,9 +26,8 @@ const forkBlock = process.env.FORK_BLOCK;
 const logging = process.env.LOGGING;
 
 if (!(process.env.NODE_OPTIONS && process.env.NODE_OPTIONS.includes('max-old-space-size'))) {
-  throw new Error(
-    `Please export node env var max-old-space-size before running hardhat. "export NODE_OPTIONS=--max-old-space-size=4096"`
-  );
+  console.warn(`Node option 'max-old-space-size' is not set. This *might* cause hardhat to run out of memory.`);
+  console.warn('To fix: export NODE_OPTIONS=--max-old-space-size=4096');
 }
 
 if (enableMainnetForking) {
