@@ -7,6 +7,7 @@ import {
   ValidateUpgradeFunc
 } from '@custom-types/types';
 import { getImpersonatedSigner } from '@test/helpers';
+import { forceEth, forceEthMultiple } from '@test/integration/setup/utils';
 import { utils } from 'ethers';
 import hre from 'hardhat';
 
@@ -42,6 +43,18 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
   // 1,955,846  lusd  --> 0x5f98805A4E8be255a32880FDeC7F6728C6568bA0 // 0x66017d22b0f8556afdd19fc67041899eb65a21bb (liquidity stability pool)
   // 2,793,119  ustw  --> 0xa47c8bf37f92aBed4A126BDA807A7b7498661acD // 0x2faf487a4414fe77e2327f0bf4ae2a264a776ad2 (ftx exchange)
   // 133,178    usdt  --> 0xdAC17F958D2ee523a2206206994597C13D831ec7 // 0x5754284f345afc66a98fbb0a0afe71e0f007b949 (tether treasury)
+
+  // give eth to each of the signers
+  await forceEthMultiple([
+    '0xbC9C084a12678ef5B516561df902fdc426d95483',
+    '0xd632f22692fac7611d2aa1c0d552930d43caed3b',
+    '0xc9BC48c72154ef3e5425641a3c747242112a46AF',
+    '0x5d3a536E4D6DbD6114cc1Ead35777bAB948E3643',
+    '0x0A59649758aa4d66E25f08Dd01271e891fe52199',
+    '0x66017d22b0f8556afdd19fc67041899eb65a21bb',
+    '0x2faf487a4414fe77e2327f0bf4ae2a264a776ad2',
+    '0x5754284f345afc66a98fbb0a0afe71e0f007b949'
+  ]);
 
   const fei = await hre.ethers.getContractAt(
     'ERC20',
@@ -88,10 +101,10 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
   await frax.transfer(addresses.fuseFixer, utils.parseEther('14000000'));
   await rai.transfer(addresses.fuseFixer, utils.parseEther('32000'));
   await dai.transfer(addresses.fuseFixer, utils.parseEther('15000000'));
-  await usdc.transfer(addresses.fuseFixer, utils.parseEther('11000000'));
+  await usdc.transfer(addresses.fuseFixer, utils.parseEther('11000000').div(1e12));
   await lusd.transfer(addresses.fuseFixer, utils.parseEther('2000000'));
   await ustw.transfer(addresses.fuseFixer, utils.parseEther('3000000'));
-  await usdt.transfer(addresses.fuseFixer, utils.parseEther('150000'));
+  await usdt.transfer(addresses.fuseFixer, utils.parseEther('150000').div(1e12));
 
   // contract should now have enough to repayBorrowBehalf everything
 };
