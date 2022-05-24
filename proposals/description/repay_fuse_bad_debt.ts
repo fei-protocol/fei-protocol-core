@@ -1,6 +1,6 @@
 import { ProposalDescription } from '@custom-types/types';
 
-const repay_fuse_bad_debt: ProposalDescription = {
+const fip_x: ProposalDescription = {
   title: 'Repay Fuse Bad Debt',
   commands: [
     {
@@ -14,4 +14,4 @@ const repay_fuse_bad_debt: ProposalDescription = {
   description: 'Repay all bad debt in Fuse pools 8, 18, 27, 127, 144, 146, 156'
 };
 
-export default repay_fuse_bad_debt;
+export default fip_x;

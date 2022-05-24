@@ -31,7 +31,7 @@ export const permissions = {
     'opsOptimisticTimelock',
     'tribalCouncilTimelock'
   ],
-  SWAP_ADMIN_ROLE: ['pcvEquityMinter', 'optimisticTimelock'],
+  SWAP_ADMIN_ROLE: ['pcvEquityMinter', 'optimisticTimelock', 'tribalCouncilTimelock'],
   BALANCER_MANAGER_ADMIN_ROLE: [],
   RATE_LIMITED_MINTER_ADMIN: [],
   PARAMETER_ADMIN: [],
@@ -43,7 +43,7 @@ export const permissions = {
   PCV_SAFE_MOVER_ROLE: ['tribalCouncilTimelock'],
   METAGOVERNANCE_VOTE_ADMIN: ['feiDAOTimelock', 'opsOptimisticTimelock', 'tribalCouncilTimelock'],
   METAGOVERNANCE_TOKEN_STAKING: ['feiDAOTimelock', 'opsOptimisticTimelock'],
-  METAGOVERNANCE_GAUGE_ADMIN: ['feiDAOTimelock', 'optimisticTimelock'],
+  METAGOVERNANCE_GAUGE_ADMIN: ['feiDAOTimelock', 'optimisticTimelock', 'tribalCouncilTimelock'],
   ROLE_ADMIN: ['feiDAOTimelock', 'tribalCouncilTimelock'],
   POD_METADATA_REGISTER_ROLE: ['tribalCouncilSafe'],
   FEI_MINT_ADMIN: ['feiDAOTimelock', 'tribalCouncilTimelock'],

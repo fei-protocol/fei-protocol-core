@@ -1,5 +1,7 @@
 import { ProposalCategory, ProposalsConfigMap } from '@custom-types/types';
 
+import fip_104 from '@proposals/description/fip_104';
+import balancer_gauge_fix from '@proposals/description/balancer_gauge_fix';
 import repay_fuse_bad_debt from '@proposals/description/repay_fuse_bad_debt';
 
 const proposals: ProposalsConfigMap = {
@@ -10,6 +12,66 @@ const proposals: ProposalsConfigMap = {
     proposalId: '',
     affectedContractSignoff: [''],
     deprecatedContractSignoff: [''],
+    category: ProposalCategory.TC
+  },
+
+  fip_104: {
+    deploy: false, // deploy flag for whether to run deploy action during e2e tests or use mainnet state
+    totalValue: 0, // amount of ETH to send to DAO execution
+    proposal: fip_104, // full proposal file, imported from '@proposals/description/fip_xx.ts'
+    proposalId: '31578302030309093637065801555854148925062532860791705694822567566349182964602',
+    affectedContractSignoff: [
+      'daiFixedPricePSMFeiSkimmer',
+      'core',
+      'compoundDaiPCVDeposit',
+      'dpiToDaiLBPSwapper',
+      'dpiToDaiLensDai',
+      'dpiToDaiLensDpi',
+      'collateralizationOracle',
+      'tribalCouncilTimelock',
+      'tribalCouncilSafe',
+      'nopeDAO',
+      'compoundEthPCVDeposit',
+      'aaveEthPCVDeposit',
+      'pcvGuardianNew',
+      'uniswapPCVDeposit'
+    ],
+    deprecatedContractSignoff: [
+      'rariPool31FeiPCVDepositWrapper',
+      'rariPool25FeiPCVDepositWrapper',
+      'rariPool9RaiPCVDepositWrapper',
+      'aaveRaiPCVDepositWrapper',
+      'rariPool19DpiPCVDepositWrapper',
+      'liquityFusePoolLusdPCVDeposit',
+      'rariPool72FeiPCVDepositWrapper',
+      'raiDepositWrapper',
+      'rariPool31FeiPCVDeposit',
+      'rariPool25FeiPCVDeposit',
+      'rariPool9RaiPCVDeposit',
+      'aaveRaiPCVDeposit',
+      'rariPool19DpiPCVDeposit',
+      'rariPool72FeiPCVDeposit',
+      'dpiDepositWrapper'
+    ],
+    category: ProposalCategory.DAO
+  },
+
+  balancer_gauge_fix: {
+    deploy: false, // deploy flag for whether to run deploy action during e2e tests or use mainnet state
+    totalValue: 0, // amount of ETH to send to DAO execution
+    proposal: balancer_gauge_fix, // full proposal file, imported from '@proposals/description/fip_xx.ts'
+    proposalId: null,
+    affectedContractSignoff: [
+      'tribalCouncilTimelock',
+      'balancerDepositFeiWeth',
+      'balancerLensBpt30Fei70Weth',
+      'pcvGuardianNew',
+      'core',
+      'balancerGaugeStaker',
+      'collateralizationOracle',
+      'pcvGuardianNew'
+    ],
+    deprecatedContractSignoff: ['balancerLensBpt30Fei70WethOld'],
     category: ProposalCategory.TC
   }
 };
