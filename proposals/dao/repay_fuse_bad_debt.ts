@@ -1,5 +1,4 @@
-import hre, { ethers, artifacts } from 'hardhat';
-import { expect } from 'chai';
+import { FuseFixer__factory } from '@custom-types/contracts';
 import {
   DeployUpgradeFunc,
   NamedAddresses,
@@ -7,12 +6,9 @@ import {
   TeardownUpgradeFunc,
   ValidateUpgradeFunc
 } from '@custom-types/types';
-import { BigNumber } from 'ethers';
-import { forceEth } from '@test/integration/setup/utils';
 import { getImpersonatedSigner } from '@test/helpers';
-import { randomInt } from 'crypto';
-import { FuseFixer, FuseFixer__factory } from '@custom-types/contracts';
 import { utils } from 'ethers';
+import hre from 'hardhat';
 
 /*
 Withdraw FEI from Aave and Compound

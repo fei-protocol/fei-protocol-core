@@ -4,7 +4,7 @@ const repay_fuse_bad_debt: ProposalDescription = {
   title: 'Repay Fuse Bad Debt',
   commands: [
     {
-      target: 'FuseFixer',
+      target: 'fuseFixer',
       values: '0',
       method: 'repayAll()',
       arguments: [],
