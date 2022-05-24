@@ -28,7 +28,7 @@ const proposals: ProposalsConfigMap = {
     totalValue: 0, // amount of ETH to send to DAO execution
     proposal: curve_swap_stables, // full proposal file, imported from '@proposals/description/fip_xx.ts'
     proposalId: null,
-    affectedContractSignoff: ['pcvGuardianNew', 'compoundDaiPCVDeposit', 'tribalCouncilTimelock', 'curve3pool', 'dai'],
+    affectedContractSignoff: ['pcvGuardianNew', 'compoundDaiPCVDeposit', 'tribalCouncilTimelock'],
     deprecatedContractSignoff: [],
     category: ProposalCategory.TC
   }

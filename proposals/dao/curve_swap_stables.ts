@@ -13,7 +13,7 @@ import { forceEth } from '@test/integration/setup/utils';
 
 Curve swap stables
 
-Description: Acquire Fuse hack related stablecoins by selling DAI on Curve.
+Description: Acquire USDC and USDT by selling ~10.264M DAI on Curve.
 */
 
 const fipNumber = 'Swap DAI for USDC and USDT on Curve';

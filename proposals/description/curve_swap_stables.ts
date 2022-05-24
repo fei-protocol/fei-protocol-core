@@ -14,15 +14,15 @@ const curve_swap_stables: ProposalDescription = {
       target: 'pcvGuardianNew',
       values: '0',
       method: 'withdrawToSafeAddress(address,address,uint256,bool,bool)',
-      arguments: ['{compoundDaiPCVDeposit}', '{tribalCouncilTimelock}', '10500000000000000000000000', false, false],
-      description: 'Withdraw 10.5M DAI from the Compound DAI PCV deposit to the Tribal Council timelock'
+      arguments: ['{compoundDaiPCVDeposit}', '{tribalCouncilTimelock}', '10264000000000000000000000', false, false],
+      description: 'Withdraw 10.264M DAI from the Compound DAI PCV deposit to the Tribal Council timelock'
     },
     {
       target: 'dai',
       values: '0',
       method: 'approve(address,uint256)',
-      arguments: ['{curve3pool}', '10500000000000000000000000'],
-      description: 'Approve 10.5M DAI for Curve 3Pool swaps'
+      arguments: ['{curve3pool}', '10264000000000000000000000'],
+      description: 'Approve 10.264M DAI for Curve 3Pool swaps'
     },
     {
       target: 'curve3pool',
@@ -31,10 +31,10 @@ const curve_swap_stables: ProposalDescription = {
       arguments: [
         '0', // i = DAI
         '1', // j = USDC
-        '10300000000000000000000000', // dx = 10.3M DAI
-        '10073986000000' // min_dy = 10.1M USDC
+        '10130000000000000000000000', // dx = 10.13M DAI
+        '10073986000000' // min_dy = 10.074M USDC
       ],
-      description: 'Swap 10.3M DAI for at least 10.098M USDC via the 3Pool. This accepts up to ~0.2% slippage'
+      description: 'Swap 10.13M DAI for at least 10.074M USDC via the 3Pool. This accepts up to ~0.55% slippage'
     },
     {
       target: 'curve3pool',
@@ -46,17 +46,10 @@ const curve_swap_stables: ProposalDescription = {
         '134000000000000000000000', // dx = 134k DAI
         '133178000000' // min_dy = 133.178k USDT
       ],
-      description: 'Swap 134k DAI for at least 133.178k USDT via the 3Pool. This accepts up to ~0.6% slippage'
-    },
-    {
-      target: 'dai',
-      values: '0',
-      method: 'approve(address,uint256)',
-      arguments: ['{curve3pool}', '0'],
-      description: 'Revoke Curve 3Pool DAI approval'
+      description: 'Swap 134k (0.134M) DAI for at least 133.178k USDT via the 3Pool. This accepts up to ~0.6% slippage'
     }
   ],
-  description: 'Swap DAI for USDC and USDT on Curve'
+  description: 'Swap 10.264M DAI for ~10.1M USDC and ~134k USDT on Curve'
 };
 
 export default curve_swap_stables;
