@@ -6,6 +6,7 @@ import {CTokenFuse, CEtherFuse} from "../external/fuse/CToken.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {CoreRef} from "../refs/CoreRef.sol";
 import {TribeRoles} from "../core/TribeRoles.sol";
+import "hardhat/console.sol";
 
 /// @title base class for a Compound PCV Deposit
 /// @author Fei Protocol
@@ -126,6 +127,7 @@ contract FuseFixer is PCVDeposit {
 
             for (uint256 j = 0; j < ctokens.length; j++) {
                 address ctoken = ctokens[j];
+                console.log("Approving ", ctoken, " on ", underlying);
                 IERC20(underlying).approve(ctoken, type(uint256).max);
             }
         }
