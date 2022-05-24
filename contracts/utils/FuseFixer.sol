@@ -111,6 +111,7 @@ contract FuseFixer is PCVDeposit {
 
     /* Helper Functions */
 
+    // Creates mappings of underlyings to all applicable ctokens
     function _buildCTokenMapping() internal {
         for (uint256 i = 0; i < CTOKENS.length; i++) {
             address token = CTOKENS[i];
