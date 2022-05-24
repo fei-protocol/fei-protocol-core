@@ -4,11 +4,11 @@ const curve_swap_stables: ProposalDescription = {
   title: 'Curve swap stables',
   commands: [
     {
-      target: 'pcvGuardian',
+      target: 'pcvGuardianNew',
       values: '0',
       method: 'setSafeAddress(address)',
       arguments: ['{tribalCouncilTimelock}'],
-      description: 'Set the Compound DAI PCV deposit as a safe address'
+      description: 'Set the TribalCouncil timelock as a safe address'
     },
     {
       target: 'pcvGuardianNew',
@@ -32,9 +32,9 @@ const curve_swap_stables: ProposalDescription = {
         '0', // i = DAI
         '1', // j = USDC
         '10300000000000000000000000', // dx = 10.3M DAI
-        '10100000000000' // min_dy = 10.1M USDC
+        '10073986000000' // min_dy = 10.1M USDC
       ],
-      description: 'Swap 10.3M DAI for 10.1M USDC via the 3Pool'
+      description: 'Swap 10.3M DAI for at least 10.098M USDC via the 3Pool. This accepts up to ~0.2% slippage'
     },
     {
       target: 'curve3pool',
@@ -44,8 +44,10 @@ const curve_swap_stables: ProposalDescription = {
         '0', // i = DAI
         '2', // j = USDT
         '134000000000000000000000', // dx = 134k DAI
-        '134000000000' // min_dy = 134k USDT
+        '133178000000' // min_dy = 133.178k USDT
       ],
+      description: 'Swap 134k DAI for at least 133.178k USDT via the 3Pool. This accepts up to ~0.6% slippage'
+    },
       description: 'Swap 134k DAI for 134k USDT via the 3Pool'
     }
   ],

@@ -1,4 +1,4 @@
-import hre, { ethers, artifacts } from 'hardhat';
+import { ethers } from 'hardhat';
 import { expect } from 'chai';
 import {
   DeployUpgradeFunc,
@@ -16,10 +16,10 @@ Curve swap stables
 Description: Acquire Fuse hack related stablecoins by selling DAI on Curve.
 */
 
-const fipNumber = '9001'; // Change me!
+const fipNumber = 'Swap DAI for USDC and USDT on Curve';
 
-const minUSDCReceived = ethers.constants.WeiPerEther.mul(10_500_000); // 10.5M
-const minUSDTReceived = ethers.constants.WeiPerEther.mul(134_000); // 134k
+const minUSDCReceived = ethers.constants.WeiPerEther.mul(10_073_986).div(1e12); // 10.073M USDC, account for 6 decimals
+const minUSDTReceived = ethers.constants.WeiPerEther.mul(133_178).div(1e12); // 133.178k USDT, account for 6 decimals
 
 // Do any deployments
 // This should exclusively include new contract deployments
@@ -49,16 +49,17 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
   const usdc = contracts.usdc;
   const usdt = contracts.usdt;
+  const dai = contracts.dai;
 
   // 1. Validate received USDC
   const receivedUSDC = await usdc.balanceOf(addresses.tribalCouncilTimelock);
   expect(receivedUSDC).to.be.bignumber.at.least(minUSDCReceived);
-  console.log('Amount received USDC: ', receivedUSDC.div(6).toString());
+  console.log('Amount received USDC: ', receivedUSDC.toString());
 
   // 2. Validate received USDT
   const receivedUSDT = await usdt.balanceOf(addresses.tribalCouncilTimelock);
   expect(receivedUSDT).to.be.bignumber.at.least(minUSDTReceived);
-  console.log('Amount received USDT: ', receivedUSDT.div(6).toString());
+  console.log('Amount received USDT: ', receivedUSDT.toString());
 };
 
 export { deploy, setup, teardown, validate };
