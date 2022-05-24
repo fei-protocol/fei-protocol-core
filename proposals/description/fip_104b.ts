@@ -6,8 +6,8 @@ const fip_104b: ProposalDescription = {
     {
       target: 'pcvGuardianNew',
       values: '0',
-      method: 'setSafeAddresses(address[])',
-      arguments: [['{tribalCouncilSafe}', '{tribalCouncilTimelock}']],
+      method: 'setSafeAddress(address)',
+      arguments: ['{tribalCouncilTimelock}'],
       description: 'Set the TribalCouncil multisig and timelock to be safe addresses for PCV withdrawal'
     },
     {

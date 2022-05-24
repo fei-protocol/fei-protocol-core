@@ -53,7 +53,6 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
   // 1. Validate safe addresses set on PCVGuardian
   const pcvGuardian = contracts.pcvGuardianNew;
-  expect(await pcvGuardian.isSafeAddress(addresses.tribalCouncilSafe)).to.be.true;
   expect(await pcvGuardian.isSafeAddress(addresses.tribalCouncilTimelock)).to.be.true;
 
   // 2. Validate withdrawn liquidity destinations
