@@ -5,6 +5,7 @@ import { OptimisticTimelock } from '@custom-types/contracts';
 import { getImpersonatedSigner, time } from '@test/helpers';
 import { Contract } from '@ethersproject/contracts';
 import { forceEth } from '@test/integration/setup/utils';
+import { TransactionRequest } from '@ethersproject/abstract-provider';
 
 export async function simulateOAProposal(
   proposalInfo: ProposalDescription,
@@ -80,6 +81,7 @@ export async function simulateTimelockProposal(
   if ((await timelock.isOperationReady(proposalId)) && !(await timelock.isOperationDone(proposalId))) {
     logging && console.log(`Executing proposal ${proposalInfo.title}`);
     const execute = await timelock.connect(signer).executeBatch(targets, values, datas, predecessor, salt);
+
     console.log('Execute Calldata:', execute.data);
   } else {
     console.log('Operation not ready for execution');

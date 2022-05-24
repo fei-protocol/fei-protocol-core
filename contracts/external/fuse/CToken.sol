@@ -26,5 +26,5 @@ abstract contract CEtherFuse {
 
     function borrowBalanceCurrent(address debtor) external virtual returns (uint256);
 
-    function repayBorrowBehalf(address borrower) external payable virtual returns (uint256);
+    function repayBorrowBehalf(address borrower) external payable virtual;
 }
