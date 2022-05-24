@@ -45,7 +45,7 @@ const fip_104b: ProposalDescription = {
   and discussed here: https://tribe.fei.money/t/fip-104-fei-pcv-reinforcement-proposal/4162 .
 
   Specifically it:
-  - Sets the TribalCouncil multisig and timelock to be safe addresses for PCV withdrawal
+  - Sets the TribalCouncil timelock to be a safe address for PCV withdrawal
   - Exits the LBP pool and withdraws all liquidity to the compound DAI deposit
   - Withdraws the DPI from the deposit to the TribalCouncil multisig, uisng the ratioPCVController
   - Deposits the DAI on the deposit into Compound
