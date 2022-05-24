@@ -48,7 +48,12 @@ const curve_swap_stables: ProposalDescription = {
       ],
       description: 'Swap 134k DAI for at least 133.178k USDT via the 3Pool. This accepts up to ~0.6% slippage'
     },
-      description: 'Swap 134k DAI for 134k USDT via the 3Pool'
+    {
+      target: 'dai',
+      values: '0',
+      method: 'approve(address,uint256)',
+      arguments: ['{curve3pool}', '0'],
+      description: 'Revoke Curve 3Pool DAI approval'
     }
   ],
   description: 'Swap DAI for USDC and USDT on Curve'

@@ -60,6 +60,9 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const receivedUSDT = await usdt.balanceOf(addresses.tribalCouncilTimelock);
   expect(receivedUSDT).to.be.bignumber.at.least(minUSDTReceived);
   console.log('Amount received USDT: ', receivedUSDT.toString());
+
+  // 3. Validate curve pool DAI allowance revoked
+  expect(await dai.allowance(addresses.tribalCouncilTimelock, addresses.curve3pool)).to.equal('0');
 };
 
 export { deploy, setup, teardown, validate };
