@@ -52,12 +52,12 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const dai = contracts.dai;
 
   // 1. Validate received USDC
-  const receivedUSDC = await usdc.balanceOf(addresses.tribalCouncilTimelock);
+  const receivedUSDC = await usdc.balanceOf(addresses.fuseFixer);
   expect(receivedUSDC).to.be.bignumber.at.least(minUSDCReceived);
   console.log('Amount received USDC: ', receivedUSDC.toString());
 
   // 2. Validate received USDT
-  const receivedUSDT = await usdt.balanceOf(addresses.tribalCouncilTimelock);
+  const receivedUSDT = await usdt.balanceOf(addresses.fuseFixer);
   expect(receivedUSDT).to.be.bignumber.at.least(minUSDTReceived);
   console.log('Amount received USDT: ', receivedUSDT.toString());
 

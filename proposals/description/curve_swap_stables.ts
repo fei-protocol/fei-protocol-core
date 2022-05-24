@@ -47,9 +47,27 @@ const curve_swap_stables: ProposalDescription = {
         '133178000000' // min_dy = 133.178k USDT
       ],
       description: 'Swap 134k (0.134M) DAI for at least 133.178k USDT via the 3Pool. This accepts up to ~0.6% slippage'
+    },
+    {
+      target: 'usdc',
+      values: '0',
+      method: 'transfer(address,uint256)',
+      arguments: ['{fuseFixer}', '10073986000000'],
+      description: 'Transfer 10.074M USDC to the Fuse Fixer contract'
+    },
+    {
+      target: 'usdt',
+      values: '0',
+      method: 'transfer(address,uint256)',
+      arguments: ['{fuseFixer}', '133178000000'],
+      description: 'Transfer 133.178k USDT to the Fuse Fixer contract'
     }
   ],
-  description: 'Swap 10.264M DAI for ~10.1M USDC and ~134k USDT on Curve'
+  description: `
+  Swap 10.264M DAI for ~10.1M USDC and ~134k USDT on Curve. 
+
+  Then send the acquired USDC and USDT to the FuseFixer contract.
+  `
 };
 
 export default curve_swap_stables;
