@@ -771,6 +771,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x061118ccabF0c2c62f05a2e3C2bd4379c0C70079',
     category: AddressCategory.Oracle
   },
+  chainlinkOhmEthOracleWrapper: {
+    artifactName: 'ChainlinkOracleWrapper',
+    address: '', // TODO
+    category: AddressCategory.Oracle
+  },
   compositeOracle: {
     artifactName: 'CompositeOracle',
     address: '0x8721f9EAba0B9081069970bCBce38763D3D4f28E',
@@ -1905,6 +1910,11 @@ const MainnetAddresses: MainnetAddresses = {
     artifactName: 'unknown',
     address: '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D',
     category: AddressCategory.Deprecated
+  },
+  ohm: {
+    artifactName: 'ERC20',
+    address: '0x64aa3364f17a4d01c6f1751fd97c2bd3d7e7f1d5',
+    category: AddressCategory.External
   },
   ohmEscrow: {
     artifactName: 'OtcEscrow',
