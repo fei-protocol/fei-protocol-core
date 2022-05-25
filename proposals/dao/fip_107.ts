@@ -11,11 +11,13 @@ import {
 import { forceEth } from '@test/integration/setup/utils';
 import { TransactionResponse } from '@ethersproject/providers';
 import { expectApprox, getImpersonatedSigner, overwriteChainlinkAggregator, time } from '@test/helpers';
-import { BigNumber } from 'ethers';
 
 const toBN = ethers.BigNumber.from;
 
-const CHAINLINK_OHM_ETH_ORACLE = '0x90c2098473852E2F07678Fe1B6d595b1bd9b16Ed';
+const CHAINLINK_OHM_V2_ETH_ORACLE = '0x9a72298ae3886221820b1c878d12d872087d3a23';
+const DECIMAL_FACTOR = 1e9;
+
+// NOTE: Think my oracle for OHM is reporting v1 price, not v2. V1: $60, V2: $20
 
 /*
 
@@ -39,14 +41,14 @@ const fipNumber = '107';
 const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: NamedAddresses, logging: boolean) => {
   //////////// 1. Deploy Chainlink Oracle Wrapper for OHM/ETH
   const chainlinkFactory = await ethers.getContractFactory('ChainlinkOracleWrapper');
-  const chainlinkOhmOracleWrapper = await chainlinkFactory.deploy(addresses.core, CHAINLINK_OHM_ETH_ORACLE);
-  await chainlinkOhmOracleWrapper.deployed();
+  const chainlinkOhmV2OracleWrapper = await chainlinkFactory.deploy(addresses.core, CHAINLINK_OHM_V2_ETH_ORACLE);
+  await chainlinkOhmV2OracleWrapper.deployed();
 
-  logging && console.log('Chainlink OHM oracle deployed to: ', chainlinkOhmOracleWrapper.address);
+  logging && console.log('Chainlink OHM oracle deployed to: ', chainlinkOhmV2OracleWrapper.address);
 
   ///////////  2. Deploy the Balancer LBP swapper
   // // Amounts:
-  // ETH: 5071000000000000000000 (95%), 5071k ETH, ~$10,000,000 at 1 ETH = $1972
+  // ETH: 5071000000000000000000 (95%), 5071 ETH, ~$10,000,000 at 1 ETH = $1972
   // OHM:  23935000000000 (5%), 23,935 OHM, ~$500,000 at 1 OHM = $20.89 overfunding by 10% and transferring $550k
   const BalancerLBPSwapperFactory = await ethers.getContractFactory('BalancerLBPSwapper');
 
@@ -58,7 +60,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   const ethToOhmLBPSwapper = await BalancerLBPSwapperFactory.deploy(
     addresses.core,
     {
-      _oracle: chainlinkOhmOracleWrapper.address,
+      _oracle: chainlinkOhmV2OracleWrapper.address,
       _backupOracle: ethers.constants.AddressZero,
       _invertOraclePrice: true,
       _decimalsNormalizer: 9
@@ -109,7 +111,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   const ohmUSDCompositeOracle = await compositeOracleFactory.deploy(
     addresses.core,
     addresses.chainlinkEthUsdOracle,
-    chainlinkOhmOracleWrapper.address
+    chainlinkOhmV2OracleWrapper.address
   );
 
   await ohmUSDCompositeOracle.deployed();
@@ -141,7 +143,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     ethToOhmLBPSwapper,
     ohmToETHLensOHM,
     ohmToETHLensETH,
-    ohmUSDCompositeOracle
+    ohmUSDCompositeOracle,
+    chainlinkOhmV2OracleWrapper
   };
 };
 
@@ -214,111 +217,117 @@ const validateLBPSetup = async (contracts: NamedContracts, addresses: NamedAddre
   // tokenReceived = OHm
 
   // 2.1 Check oracle price
-  const price = (await ethToOhmLBPSwapper.readOracle())[0]; // DAI price in units of DPI
+  const price = (await ethToOhmLBPSwapper.readOracle())[0]; // OHM in units of ETH
   console.log('price: ', price);
-  expect(price).to.be.bignumber.at.least(ethers.constants.WeiPerEther.mul(90)); // 90e18
-  expect(price).to.be.bignumber.at.most(ethers.constants.WeiPerEther.mul(100)); // 100e18
+  expect(price).to.be.bignumber.at.least(ethers.constants.WeiPerEther.mul(15).div(DECIMAL_FACTOR)); // $15
+  expect(price).to.be.bignumber.at.most(ethers.constants.WeiPerEther.mul(25).div(DECIMAL_FACTOR)); // $25
 
   // 2.2 Check relative price in pool
-  // Putting in 100,000 tokens of DPI, getting an amount of DAI back
-  const response = await ethToOhmLBPSwapper.getTokensIn(100000); // input is spent token balance, 100,000 DPI tokens
+  // Putting in 3 ETH, getting an amount of OHM back
+  const response = await ethToOhmLBPSwapper.getTokensIn(3); // input is spent token balance, 3 ETH
   const amounts = response[1];
-  expect(amounts[0]).to.be.bignumber.equal(ethers.BigNumber.from(100000)); // DPI
+  expect(amounts[0]).to.be.bignumber.equal(ethers.BigNumber.from(3)); // ETH
 
-  // DAI/DPI price * DAI amount * 5% ~= amount
-  expectApprox(price.mul(100000).mul(5).div(ethers.constants.WeiPerEther).div(100), amounts[1]); // DAI
+  // OHM/ETH price * OHM amount * 5% ~= amount
+  expectApprox(price.mul(3).mul(5).div(ethers.constants.WeiPerEther).div(100), amounts[1]); // OHM
   expect(amounts[1]).to.be.bignumber.at.least(toBN(1000)); // Make sure orcacle inversion is correct (i.e. not inverted)
 
   // 2.3 Check pool weights
   const weights = await ethToOhmLBPPool.getNormalizedWeights();
-  expectApprox(weights[0], ethers.constants.WeiPerEther.mul(5).div(100)); // 5% DAI
-  expectApprox(weights[1], ethers.constants.WeiPerEther.mul(95).div(100)); // 95% DPI
+  expectApprox(weights[0], ethers.constants.WeiPerEther.mul(5).div(100)); // 5% OHM
+  expectApprox(weights[1], ethers.constants.WeiPerEther.mul(95).div(100)); // 95% ETH
 
   // 2.4 Check pool info
   const poolTokens = await contracts.balancerVault.getPoolTokens(poolId);
-  // there should be 188k DAI in the pool
+  // there should be 24k OHM in the pool. It has 9 decimals
   expect(poolTokens.tokens[1]).to.be.equal(contracts.dai.address); // this is DAI
-  expect(poolTokens.balances[1]).to.be.bignumber.at.least(ethers.constants.WeiPerEther.mul(185_000));
-  expect(poolTokens.balances[1]).to.be.bignumber.at.most(ethers.constants.WeiPerEther.mul(200_000));
-  // there should be 37k DPI in the pool
-  expect(poolTokens.tokens[0]).to.be.equal(contracts.dpi.address); // this is DPI
-  expect(poolTokens.balances[0]).to.be.equal('37888449801955370645659');
+  expect(poolTokens.balances[1]).to.be.bignumber.at.least(ethers.constants.WeiPerEther.mul(22_000).div(DECIMAL_FACTOR));
+  expect(poolTokens.balances[1]).to.be.bignumber.at.most(ethers.constants.WeiPerEther.mul(26_000).div(DECIMAL_FACTOR));
+  // there should be 5071k ETH in the pool
+  expect(poolTokens.tokens[0]).to.be.equal(contracts.weth.address); // this is ETH
+  expect(poolTokens.balances[0]).to.be.equal('5071000000000000000000');
 
   // Pool balances Maths:
-  // Total value of pool = (188k DAI * $1) + (37k DPI * $93) = $3.63M
-  // DAI share = 5%
-  // DPI share = 95%
-  // Expected DAI amount = $3.63M * 0.05 = ~$181k
-  // Expected DPI amount = $3.63M * 0.95 = ~$3.5M -> ~ ($3500k / 93) 37k DPI
+  // Total value of pool = (24k OHM * $20) + (5071 ETH * $1958) = $10.4M
+  // OHM share = 5%
+  // ETH share = 95%
+  // Expected OHM amount = $10.4M * 0.05 = ~$520k
+  // Expected ETH amount = $10.4M * 0.95 = ~$9.9M -> ~ ($9900k / 2958) 5045 eth
 
   // Validate that a swap can occur
-  const daiWhale = '0x5d3a536e4d6dbd6114cc1ead35777bab948e3643';
-  const daiWhaleSigner = await getImpersonatedSigner(daiWhale);
-  await forceEth(daiWhale);
+  const ohmWhale = '0x245cc372C84B3645Bf0Ffe6538620B04a217988B'; // Olympus DAO funds
+  const ohmWhaleSigner = await getImpersonatedSigner(ohmWhale);
+  await forceEth(ohmWhale);
 
-  const initialUserDpiBalance = await contracts.dpi.balanceOf(daiWhale);
-  const initialUserDaiBalance = await contracts.dai.balanceOf(daiWhale);
+  // Make an ETH buy. User sends in OHM, to purchase ETH. See what the price reported for OHM is. Should be higher than oracle reported price
+  const initialUserWethBalance = await contracts.weth.balanceOf(ohmWhale);
+  const initialUserOhmBalance = await contracts.ohm.balanceOf(ohmWhale);
 
-  const amountIn = ethers.constants.WeiPerEther.mul(10_000);
-  await contracts.dai.connect(daiWhaleSigner).approve(addresses.balancerVault, amountIn);
-  await contracts.balancerVault.connect(daiWhaleSigner).swap(
+  // 1000 OHM buy, ~$20k, so expect ~5 - 15 eth out
+  const amountIn = ethers.constants.WeiPerEther.mul(100).div(DECIMAL_FACTOR); // 1000 OHM buy, ~$20k purchase
+  await contracts.ohm.connect(ohmWhaleSigner).approve(addresses.balancerVault, amountIn);
+  await contracts.balancerVault.connect(ohmWhaleSigner).swap(
     {
       poolId: poolId,
       kind: 0,
-      assetIn: addresses.dai,
-      assetOut: addresses.dpi,
+      assetIn: addresses.ohm,
+      assetOut: addresses.weth,
       amount: amountIn,
       userData: '0x'
     },
     {
-      sender: daiWhale,
+      sender: ohmWhale,
       fromInternalBalance: false,
-      recipient: daiWhale,
+      recipient: ohmWhale,
       toInternalBalance: false
     },
     0,
     '10000000000000000000000'
   );
 
-  const postUserDpiBalance = await contracts.dpi.balanceOf(daiWhale);
-  const postUserDaiBalance = await contracts.dai.balanceOf(daiWhale);
+  const postUserWethBalance = await contracts.weth.balanceOf(ohmWhale);
+  const postUserOhmBalance = await contracts.ohm.balanceOf(ohmWhale);
 
-  const daiSpent = initialUserDaiBalance.sub(postUserDaiBalance);
-  expect(daiSpent).to.be.bignumber.equal(amountIn);
+  // Spent OHM, so starting OHM balance will be less than final balance
+  const ohmSpent = initialUserOhmBalance.sub(postUserOhmBalance);
+  console.log('OHM spent: ', ohmSpent.toString());
+  expect(ohmSpent).to.be.bignumber.equal(amountIn);
 
-  const dpiGained = postUserDpiBalance.sub(initialUserDpiBalance);
-  expect(dpiGained).to.be.bignumber.at.least(ethers.constants.WeiPerEther.mul(80));
-  expect(dpiGained).to.be.bignumber.at.most(ethers.constants.WeiPerEther.mul(120));
+  // Gained WETH, so final WETH balance will be greater than initial WETH balance
+  const wethGained = postUserWethBalance.sub(initialUserWethBalance);
+  console.log('Weth gained: ', wethGained.toString());
+  expect(wethGained).to.be.bignumber.at.least(ethers.constants.WeiPerEther.mul(5));
+  expect(wethGained).to.be.bignumber.at.most(ethers.constants.WeiPerEther.mul(15));
 
-  // Put in 10k DAI, got out 101 DPI
-  // Implies price of $98.5 per DPI, compared to an oracle price of $95.6
-  console.log('DAI spent: ', daiSpent);
-  console.log('DPI gained: ', dpiGained);
+  // Put in ~$20k OHM, got out x
+  // Implies price of $x per ETH, compared to an oracle price of $x
+  console.log('OHM spent: ', ohmSpent);
+  console.log('WETH gained: ', wethGained);
 
   await time.increase(86400 * 7);
   // Perform second swap, check price goes down
-  await contracts.dai.connect(daiWhaleSigner).approve(addresses.balancerVault, amountIn);
-  await contracts.balancerVault.connect(daiWhaleSigner).swap(
+  await contracts.ohm.connect(ohmWhaleSigner).approve(addresses.balancerVault, amountIn);
+  await contracts.balancerVault.connect(ohmWhaleSigner).swap(
     {
       poolId: poolId,
       kind: 0,
-      assetIn: addresses.dai,
-      assetOut: addresses.dpi,
+      assetIn: addresses.ohm,
+      assetOut: addresses.weth,
       amount: amountIn,
       userData: '0x'
     },
     {
-      sender: daiWhale,
+      sender: ohmWhale,
       fromInternalBalance: false,
-      recipient: daiWhale,
+      recipient: ohmWhale,
       toInternalBalance: false
     },
     0,
-    '10000000000000000000000'
+    '10000000000000000000000' // expiry
   );
-  const secondSwapDPIAmount = (await contracts.dpi.balanceOf(daiWhale)).sub(postUserDpiBalance);
-  // If price has dropped, then for the same DAI the user gets more DPI
-  expect(secondSwapDPIAmount).to.be.bignumber.greaterThan(dpiGained);
+  const secondSwapWETHAmount = (await contracts.weth.balanceOf(ohmWhale)).sub(postUserWethBalance);
+  // If price has dropped, then for the same OHM the user gets more ETH
+  expect(secondSwapWETHAmount).to.be.bignumber.greaterThan(wethGained);
 
   // Accelerate time and check ended
   await time.increase(LBP_FREQUENCY);

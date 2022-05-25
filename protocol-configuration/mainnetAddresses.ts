@@ -776,7 +776,7 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x061118ccabF0c2c62f05a2e3C2bd4379c0C70079',
     category: AddressCategory.Oracle
   },
-  chainlinkOhmEthOracleWrapper: {
+  chainlinkOhmV2OracleWrapper: {
     artifactName: 'ChainlinkOracleWrapper',
     address: '', // TODO
     category: AddressCategory.Oracle
