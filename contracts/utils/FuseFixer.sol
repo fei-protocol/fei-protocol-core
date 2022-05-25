@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {PCVDeposit} from "../pcv/PCVDeposit.sol";
 import {CTokenFuse, CEtherFuse} from "../external/fuse/CToken.sol";
 import {CoreRef} from "../refs/CoreRef.sol";
@@ -11,9 +11,9 @@ import {TribeRoles} from "../core/TribeRoles.sol";
 /// @title base class for a Compound PCV Deposit
 /// @author Fei Protocol
 contract FuseFixer is PCVDeposit {
-    address constant DEBTOR = address(0x32075bAd9050d4767018084F0Cb87b3182D36C45);
+    address public constant DEBTOR = address(0x32075bAd9050d4767018084F0Cb87b3182D36C45);
 
-    address[] internal UNDERLYINGS = [
+    address[] public UNDERLYINGS = [
         address(0x0000000000000000000000000000000000000000), // ETH
         address(0x956F47F50A910163D8BF957Cf5846D573E7f87CA), // FEI
         address(0x853d955aCEf822Db058eb8505911ED77F175b99e), // FRAX
@@ -26,7 +26,7 @@ contract FuseFixer is PCVDeposit {
         address(0xdAC17F958D2ee523a2206206994597C13D831ec7) // USDT
     ];
 
-    address[] internal CTOKENS = [
+    address[] public CTOKENS = [
         address(0xd8553552f8868C1Ef160eEdf031cF0BCf9686945), // Pool 8: FEI
         address(0xbB025D470162CC5eA24daF7d4566064EE7f5F111), // Pool 8: ETH
         address(0x7e9cE3CAa9910cc048590801e64174957Ed41d43), // Pool 8: DAI
@@ -64,7 +64,7 @@ contract FuseFixer is PCVDeposit {
         address(0xe92a3db67e4b6AC86114149F522644b34264f858) // Pool 156: ETH
     ];
 
-    mapping(address => address[]) internal underlyingsToCTokens;
+    mapping(address => address[]) public underlyingsToCTokens;
 
     constructor(address core) CoreRef(core) {
         _buildCTokenMapping();
@@ -86,7 +86,7 @@ contract FuseFixer is PCVDeposit {
     }
 
     /// @dev Repay all debt
-    function repayAll() public onlyTribeRole(TribeRoles.PCV_GUARDIAN_ADMIN) {
+    function repayAll() public onlyTribeRole(TribeRoles.PCV_SAFE_MOVER_ROLE) {
         _repayETH();
 
         // we skip index 0 because that's ETH
@@ -99,13 +99,26 @@ contract FuseFixer is PCVDeposit {
     /// @notice reverts if the total bad debt is beyond the provided maximum
     /// @param underlying the asset to repay in
     /// @param maximum the maximum amount of underlying asset to repay
-    function repay(address underlying, uint256 maximum) public onlyTribeRole(TribeRoles.PCV_GUARDIAN_ADMIN) {
+    function repay(address underlying, uint256 maximum) public onlyTribeRole(TribeRoles.PCV_SAFE_MOVER_ROLE) {
         require(getTotalDebt(underlying) < maximum, "Total debt is greater than maximum");
 
         if (underlying == address(0)) {
             _repayETH();
         } else {
             _repayERC20(underlying);
+        }
+    }
+
+    /// @dev Gets the total debt for the provided underlying asset
+    /// @notice This is not a view function! Use .staticcall in ethers to get the return value
+    /// @param underlying the asset to get the debt for; pass in 0x0 for ETH
+    /// @return debt the total debt for the asset
+    function getTotalDebt(address underlying) public returns (uint256 debt) {
+        for (uint256 i = 0; i < CTOKENS.length; i++) {
+            CTokenFuse token = CTokenFuse(CTOKENS[i]);
+            if (token.underlying() == underlying) {
+                debt += CTokenFuse(CTOKENS[i]).borrowBalanceCurrent(DEBTOR);
+            }
         }
     }
 
@@ -120,10 +133,14 @@ contract FuseFixer is PCVDeposit {
         }
     }
 
+    // Approves all underlyings to their respective ctokens
     function _approveCTokens() internal {
-        // UNDERLYINGS[0] == ETH, so we skip that one
-        for (uint256 i = 1; i < UNDERLYINGS.length; i++) {
+        for (uint256 i = 0; i < UNDERLYINGS.length; i++) {
             address underlying = UNDERLYINGS[i];
+
+            // Don't approve to the 0x0 address
+            if (underlying == address(0)) continue;
+
             address[] memory ctokens = underlyingsToCTokens[underlying];
 
             for (uint256 j = 0; j < ctokens.length; j++) {
@@ -133,6 +150,7 @@ contract FuseFixer is PCVDeposit {
         }
     }
 
+    // Repays ETH to all cether-tokens
     function _repayETH() internal {
         address[] memory cEtherTokens = underlyingsToCTokens[address(0)];
 
@@ -145,6 +163,7 @@ contract FuseFixer is PCVDeposit {
         }
     }
 
+    // Repays the provided erc20 to the applicable ctokens
     function _repayERC20(address underlying) internal {
         address[] memory cERC20Tokens = underlyingsToCTokens[underlying];
 
@@ -155,23 +174,13 @@ contract FuseFixer is PCVDeposit {
         }
     }
 
-    // Must be non-view since this updates a state var
-    function getTotalDebt(address underlying) internal returns (uint256 debt) {
-        for (uint256 i = 0; i < CTOKENS.length; i++) {
-            CTokenFuse token = CTokenFuse(CTOKENS[i]);
-            if (token.underlying() == underlying) {
-                debt += CTokenFuse(CTOKENS[i]).borrowBalanceCurrent(DEBTOR);
-            }
-        }
-    }
-
     /* Required Functions from PCVDeposit */
 
     function deposit() external override {
         // no-op
     }
 
-    function withdraw(address to, uint256 amount) external {
+    function withdraw(address to, uint256 amount) external override {
         // no-op, use withdrawERC20 or withdrawETH
     }
 
@@ -182,6 +191,8 @@ contract FuseFixer is PCVDeposit {
     function balanceReportedIn() public view virtual override returns (address) {
         return address(0);
     }
+
+    /* Make this contract able to receive ETH */
 
     receive() external payable {}
 

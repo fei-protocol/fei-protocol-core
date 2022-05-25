@@ -1,4 +1,4 @@
-import { CToken, CTokenFuse, FuseFixer__factory } from '@custom-types/contracts';
+import { CToken, CTokenFuse, FuseFixer__factory, FuseFixer } from '@custom-types/contracts';
 import {
   DeployUpgradeFunc,
   NamedAddresses,
@@ -8,7 +8,7 @@ import {
 } from '@custom-types/types';
 import { getImpersonatedSigner } from '@test/helpers';
 import { forceEth, forceEthMultiple, forceSpecificEth } from '@test/integration/setup/utils';
-import { utils } from 'ethers';
+import { BigNumber, utils } from 'ethers';
 import hre from 'hardhat';
 
 /*
@@ -22,6 +22,7 @@ const fipNumber = 'repay_fuse_bad_debt'; // Change me!
 const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: NamedAddresses, logging: boolean) => {
   const fuseFixerFactory = (await hre.ethers.getContractFactory('FuseFixer')) as FuseFixer__factory;
   const fuseFixer = await fuseFixerFactory.deploy(addresses.core);
+  await fuseFixer.deployTransaction.wait();
 
   return { fuseFixer };
 };
@@ -159,12 +160,36 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
     '0xe92a3db67e4b6AC86114149F522644b34264f858' // Pool 156: ETH
   ];
 
+  // Verify that the borrowBalanceCurrent for the debtor is zero for each ctoken
   for (const ctokenAddress of ctokens) {
     const ctoken = await hre.ethers.getContractAt('CTokenFuse', ctokenAddress);
     const debt = await ctoken.callStatic.borrowBalanceCurrent(debtor);
 
     if (debt.gt(0)) {
       throw new Error(`Debt for ctoken ${ctokenAddress} is greater than 0: ${debt}`);
+    }
+  }
+
+  const fuseFixer = contracts.fuseFixer as FuseFixer;
+
+  // Copied from smart contract
+  const underlyings = [
+    '0x0000000000000000000000000000000000000000', // ETH
+    '0x956F47F50A910163D8BF957Cf5846D573E7f87CA', // FEI
+    '0x853d955aCEf822Db058eb8505911ED77F175b99e', // FRAX
+    '0x03ab458634910AaD20eF5f1C8ee96F1D6ac54919', // RAI
+    '0x6B175474E89094C44Da98b954EedeAC495271d0F', // DAI
+    '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', // USDC
+    '0x5f98805A4E8be255a32880FDeC7F6728C6568bA0', // LUSD
+    '0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0', // wstETH
+    '0xa693B19d2931d498c5B318dF961919BB4aee87a5', // USTw
+    '0xdAC17F958D2ee523a2206206994597C13D831ec7' // USDT
+  ];
+
+  for (const underlying of underlyings) {
+    const debt = await fuseFixer.callStatic.getTotalDebt(underlying);
+    if (!debt.eq(BigNumber.from(0))) {
+      throw new Error('Debt for ' + underlying + ' is not zero: ' + debt.toString());
     }
   }
 };
