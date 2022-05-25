@@ -28,7 +28,14 @@ const proposals: ProposalsConfigMap = {
     totalValue: 0, // amount of ETH to send to DAO execution
     proposal: fip_107, // full proposal file, imported from '@proposals/description/fip_xx.ts'
     proposalId: null,
-    affectedContractSignoff: [],
+    affectedContractSignoff: [
+      'pcvGuardianNew',
+      'ohmToEthLBPSwapper',
+      'aaveEthPCVDeposit',
+      'collateralizationOracle',
+      'ohmToETHLensOHM',
+      'ohmToETHLensETH'
+    ],
     deprecatedContractSignoff: [],
     category: ProposalCategory.TC
   }
