@@ -1921,6 +1921,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x64aa3364f17a4d01c6f1751fd97c2bd3d7e7f1d5',
     category: AddressCategory.External
   },
+  ohmUSDCompositeOracle: {
+    artifactName: 'CompositeOracle',
+    address: '',
+    category: AddressCategory.Oracle
+  },
   ohmEscrow: {
     artifactName: 'OtcEscrow',
     address: '0x14d2F529576d3a5451BfbA370408a899Bb5261a9',

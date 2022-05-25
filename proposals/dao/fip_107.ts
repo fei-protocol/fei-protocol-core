@@ -50,13 +50,18 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   // OHM:  23935000000000 (5%), 23,935 OHM, ~$500,000 at 1 OHM = $20.89 overfunding by 10% and transferring $550k
   const BalancerLBPSwapperFactory = await ethers.getContractFactory('BalancerLBPSwapper');
 
+  // tokenSpent = WETH, tokenReceived = OHM
+  // Oracle reports OHM / ETH, therefore is reporting in tokenReceived terms. So, needs inverting
+  // DecimalsNormalizer also needs setting.
+  // WETH = 18 decimals
+  // OHM = 9 decimals
   const ethToOhmLBPSwapper = await BalancerLBPSwapperFactory.deploy(
     addresses.core,
     {
       _oracle: chainlinkOhmOracleWrapper.address,
       _backupOracle: ethers.constants.AddressZero,
-      _invertOraclePrice: true, // TODO
-      _decimalsNormalizer: 0 // TODO: Probably not zero
+      _invertOraclePrice: true,
+      _decimalsNormalizer: 9
     },
     LBP_FREQUENCY,
     '50000000000000000', // small weight 5%
@@ -99,11 +104,20 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   await tx2.wait();
 
   // 4. Deploy a lens to report the swapper value
+
+  const compositeOracleFactory = await ethers.getContractFactory('CompositeOracle');
+  const ohmUSDCompositeOracle = await compositeOracleFactory.deploy(
+    addresses.core,
+    addresses.chainlinkEthUsdOracle,
+    chainlinkOhmOracleWrapper.address
+  );
+
+  await ohmUSDCompositeOracle.deployed();
   const BPTLensFactory = await ethers.getContractFactory('BPTLens');
   const ohmToETHLensOHM = await BPTLensFactory.deploy(
     addresses.ohm, // token reported in
-    noFeeEthOhmLBPAddress, // pool address 
-    addresses., // reportedOracle - OHM. TODO: Is there a chainlink OHM USD oracle?
+    noFeeEthOhmLBPAddress, // pool address
+    ohmUSDCompositeOracle.address, // reportedOracle - OHM
     addresses.chainlinkEthUsdOracle, // otherOracle - ETH
     false, // feiIsReportedIn
     false // feiIsOther
@@ -116,7 +130,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     addresses.weth, // token reported in
     noFeeEthOhmLBPAddress, // pool address
     addresses.chainlinkEthUsdOracle, // reportedOracle - ETH
-    addresses., // otherOracle - OHM
+    addresses.ohmUSDCompositeOracle, // otherOracle - OHM
     false, // feiIsReportedIn
     false // feiIsOther
   );
@@ -126,7 +140,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   return {
     ethToOhmLBPSwapper,
     ohmToETHLensOHM,
-    ohmToETHLensETH
+    ohmToETHLensETH,
+    ohmUSDCompositeOracle
   };
 };
 
@@ -172,7 +187,7 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // Run any validations required on the fip using mocha or console logging
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  const core = contracts.core
+  const core = contracts.core;
 
   ////////////    1. New Safe adddresses   //////////////
   expect(await contracts.pcvGuardianNew.isSafeAddress(addresses.ohmToEthLBPSwapper)).to.be.true;
@@ -191,7 +206,6 @@ const validateLBPSetup = async (contracts: NamedContracts, addresses: NamedAddre
   const retrievedPoolId = await ethToOhmLBPSwapper.getPoolId();
   expect(retrievedPoolId).to.equal(poolId);
 
-  // expect(await dpiToDaiLBPSwapper.doInvert()).to.be.equal(true);
   expect(await ethToOhmLBPSwapper.isTimeStarted()).to.be.true;
   expect(await ethToOhmLBPSwapper.tokenSpent()).to.equal(addresses.weth);
   expect(await ethToOhmLBPSwapper.tokenReceived()).to.equal(addresses.ohm);
