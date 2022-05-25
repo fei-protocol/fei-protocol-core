@@ -196,6 +196,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0xd10386804959a121a8a487e49f45aa9f5a2eb2a0',
     category: AddressCategory.External
   },
+  ethToOhmLBPPool: {
+    artifactName: 'IWeightedPool',
+    address: '',
+    category: AddressCategory.External
+  },
   aaveEthPCVDeposit: {
     artifactName: 'AavePCVDeposit',
     address: '0x5B86887e171bAE0C2C826e87E34Df8D558C079B9',
