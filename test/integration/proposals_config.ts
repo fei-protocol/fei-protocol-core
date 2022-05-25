@@ -1,50 +1,10 @@
 import { ProposalCategory, ProposalsConfigMap } from '@custom-types/types';
 
-import fip_104 from '@proposals/description/fip_104';
+import register_proposal from '@proposals/description/register_proposal';
 // import fip_xx_proposal from '@proposals/description/fip_xx';
 import balancer_gauge_fix from '@proposals/description/balancer_gauge_fix';
 
 const proposals: ProposalsConfigMap = {
-  fip_104: {
-    deploy: false, // deploy flag for whether to run deploy action during e2e tests or use mainnet state
-    totalValue: 0, // amount of ETH to send to DAO execution
-    proposal: fip_104, // full proposal file, imported from '@proposals/description/fip_xx.ts'
-    proposalId: '31578302030309093637065801555854148925062532860791705694822567566349182964602',
-    affectedContractSignoff: [
-      'daiFixedPricePSMFeiSkimmer',
-      'core',
-      'compoundDaiPCVDeposit',
-      'dpiToDaiLBPSwapper',
-      'dpiToDaiLensDai',
-      'dpiToDaiLensDpi',
-      'collateralizationOracle',
-      'tribalCouncilTimelock',
-      'tribalCouncilSafe',
-      'nopeDAO',
-      'compoundEthPCVDeposit',
-      'aaveEthPCVDeposit',
-      'pcvGuardianNew',
-      'uniswapPCVDeposit'
-    ],
-    deprecatedContractSignoff: [
-      'rariPool31FeiPCVDepositWrapper',
-      'rariPool25FeiPCVDepositWrapper',
-      'rariPool9RaiPCVDepositWrapper',
-      'aaveRaiPCVDepositWrapper',
-      'rariPool19DpiPCVDepositWrapper',
-      'liquityFusePoolLusdPCVDeposit',
-      'rariPool72FeiPCVDepositWrapper',
-      'raiDepositWrapper',
-      'rariPool31FeiPCVDeposit',
-      'rariPool25FeiPCVDeposit',
-      'rariPool9RaiPCVDeposit',
-      'aaveRaiPCVDeposit',
-      'rariPool19DpiPCVDeposit',
-      'rariPool72FeiPCVDeposit',
-      'dpiDepositWrapper'
-    ],
-    category: ProposalCategory.DAO
-  },
   balancer_gauge_fix: {
     deploy: false, // deploy flag for whether to run deploy action during e2e tests or use mainnet state
     totalValue: 0, // amount of ETH to send to DAO execution
@@ -61,6 +21,15 @@ const proposals: ProposalsConfigMap = {
       'pcvGuardianNew'
     ],
     deprecatedContractSignoff: ['balancerLensBpt30Fei70WethOld'],
+    category: ProposalCategory.TC
+  },
+  register_proposal: {
+    deploy: false, // deploy flag for whether to run deploy action during e2e tests or use mainnet state
+    totalValue: 0, // amount of ETH to send to DAO execution
+    proposal: register_proposal, // full proposal file, imported from '@proposals/description/fip_xx.ts'
+    proposalId: null,
+    affectedContractSignoff: ['core'],
+    deprecatedContractSignoff: [],
     category: ProposalCategory.TC
   }
 };
