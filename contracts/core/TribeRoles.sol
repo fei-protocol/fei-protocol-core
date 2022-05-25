@@ -84,6 +84,9 @@ library TribeRoles {
     /// @notice capable of setting properties on Balancer BasePool utility wrapper
     bytes32 internal constant BALANCER_MANAGER_ADMIN_ROLE = keccak256("BALANCER_MANAGER_ADMIN_ROLE");
 
+    /// @notice capable of managing ENS domains and related metadata
+    bytes32 internal constant ENS_MANAGER_ROLE = keccak256("ENS_MANAGER_ROLE");
+
     /*///////////////////////////////////////////////////////////////
                                  Minor Roles
     //////////////////////////////////////////////////////////////*/
