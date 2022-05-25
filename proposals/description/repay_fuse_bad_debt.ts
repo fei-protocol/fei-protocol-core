@@ -20,6 +20,13 @@ const fip_x: ProposalDescription = {
   title: 'Repay Fuse Bad Debt',
   commands: [
     {
+      target: 'pcvGuardianNew',
+      values: '0',
+      method: 'setSafeAddress(address)',
+      arguments: ['{fuseFixer}'],
+      description: 'Set FuseFixer as a safe address'
+    },
+    {
       target: 'fuseFixer',
       values: '0',
       method: 'repay(address,uint256)',

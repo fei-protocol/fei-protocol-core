@@ -1,4 +1,4 @@
-import { CToken, CTokenFuse, FuseFixer__factory, FuseFixer } from '@custom-types/contracts';
+import { CToken, CTokenFuse, FuseFixer__factory, FuseFixer, PCVGuardian } from '@custom-types/contracts';
 import {
   DeployUpgradeFunc,
   NamedAddresses,
@@ -191,6 +191,14 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
     if (!debt.eq(BigNumber.from(0))) {
       throw new Error('Debt for ' + underlying + ' is not zero: ' + debt.toString());
     }
+  }
+
+  // Ensure that the fuse fixer is a safe address
+  const pcvGuardian = contracts.pcvGuardianNew as PCVGuardian;
+  const isSafeAddress = await pcvGuardian.isSafeAddress(fuseFixer.address);
+
+  if (!isSafeAddress) {
+    throw new Error(`Fuse fixer (${fuseFixer.address}) is not a safe address`);
   }
 };
 
