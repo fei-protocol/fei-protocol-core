@@ -2115,6 +2115,26 @@ const MainnetAddresses: MainnetAddresses = {
     artifactName: 'RoleBastion',
     address: '0x8096314D9014EbB69Fc777ED3791DDE6FFbaFAed',
     category: AddressCategory.Governance
+  },
+  feiDev1Deployer: {
+    artifactName: 'unknown',
+    address: '0x64c4Bffb220818F0f2ee6DAe7A2F17D92b359c5d',
+    category: AddressCategory.External
+  },
+  feiDev2Deployer: {
+    artifactName: 'unknown',
+    address: '0xcE96fE7Eb7186E9F894DE7703B4DF8ea60E2dD77',
+    category: AddressCategory.External
+  },
+  feiDev3Deployer: {
+    artifactName: 'unknown',
+    address: '0xE2388f22cf5e328C197D6530663809cc0408a510',
+    category: AddressCategory.External
+  },
+  feiDev4Deployer: {
+    artifactName: 'unknown',
+    address: '0x5346b4ff3e924508d33d93f352d11e392a7a9d3b',
+    category: AddressCategory.External
   }
 };
 
