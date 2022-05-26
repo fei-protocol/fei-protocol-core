@@ -536,6 +536,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x89DfBC12001b41985eFAbd7dFCae6a77B22E4Ec3',
     category: AddressCategory.PCV
   },
+  fuseFixer: {
+    artifactName: 'FuseFixer',
+    address: '0xFE7547F583aAe1212e72e063Aac25057C06c4797',
+    category: AddressCategory.PCV
+  },
   feiOATimelockWrapper: {
     artifactName: 'PCVDepositWrapper',
     address: '0x7Eb88140af813294aEDce981b6aC08fcd139d408',

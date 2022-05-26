@@ -28,8 +28,12 @@ const dependencies: DependencyMap = {
   laTribuTribeTimelock: {
     contractDependencies: ['tribe']
   },
+  fuseFixer: {
+    contractDependencies: ['core']
+  },
   core: {
     contractDependencies: [
+      'fuseFixer',
       'raiPriceBoundPSM',
       'raiPCVDripController',
       'collateralizationOracleGuardian',
