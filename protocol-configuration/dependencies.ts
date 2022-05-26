@@ -29,7 +29,7 @@ const dependencies: DependencyMap = {
     contractDependencies: ['tribe']
   },
   fuseFixer: {
-    contractDependencies: ['core']
+    contractDependencies: ['core', 'pcvGuardianNew']
   },
   core: {
     contractDependencies: [
@@ -199,7 +199,8 @@ const dependencies: DependencyMap = {
       'daiFixedPricePSM',
       'compoundEthPCVDeposit',
       'aaveEthPCVDeposit',
-      'raiPriceBoundPSM'
+      'raiPriceBoundPSM',
+      'fuseFixer'
     ]
   },
   raiPriceBoundPSM: {

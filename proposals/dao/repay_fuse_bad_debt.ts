@@ -44,7 +44,7 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
   // 1,955,846  lusd  --> 0x5f98805A4E8be255a32880FDeC7F6728C6568bA0 // 0x66017d22b0f8556afdd19fc67041899eb65a21bb (liquidity stability pool)
   // 2,793,119  ustw  --> 0xa47c8bf37f92aBed4A126BDA807A7b7498661acD // 0x2faf487a4414fe77e2327f0bf4ae2a264a776ad2 (ftx exchange)
   // 133,178    usdt  --> 0xdAC17F958D2ee523a2206206994597C13D831ec7 // 0x5754284f345afc66a98fbb0a0afe71e0f007b949 (tether treasury)
-
+  /*
   // give eth to each of the signers
   await forceEthMultiple([
     '0xbC9C084a12678ef5B516561df902fdc426d95483',
@@ -109,6 +109,7 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
 
   await forceSpecificEth(addresses.fuseFixer, utils.parseEther('6500').toString());
   // contract should now have enough to repayBorrowBehalf everything
+  */
 };
 
 // Tears down any changes made in setup() that need to be
