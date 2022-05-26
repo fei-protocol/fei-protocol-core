@@ -1,5 +1,21 @@
 import { ProposalDescription } from '@custom-types/types';
 
+const fip_x: ProposalDescription = {
+  title: 'Repay Fuse Bad Debt',
+  commands: [
+    {
+      target: 'pcvGuardianNew',
+      values: '0',
+      method: 'setSafeAddress(address)',
+      arguments: ['{fuseFixer}'],
+      description: 'Set FuseFixer as a safe address'
+    }
+  ],
+  description: 'Set FuseFixer as a safe address'
+};
+
+export default fip_x;
+
 /*const fip_x: ProposalDescription = {
   title: 'Repay Fuse Bad Debt',
   commands: [
@@ -14,18 +30,7 @@ import { ProposalDescription } from '@custom-types/types';
   description: 'Repay all bad debt in Fuse pools 8, 18, 27, 127, 144, 146, 156'
 };
 
-export default fip_x;*/
-
-const fip_x: ProposalDescription = {
-  title: 'Repay Fuse Bad Debt',
-  commands: [
-    {
-      target: 'pcvGuardianNew',
-      values: '0',
-      method: 'setSafeAddress(address)',
-      arguments: ['{fuseFixer}'],
-      description: 'Set FuseFixer as a safe address'
-    },
+    /*
     {
       target: 'fuseFixer',
       values: '0',
@@ -88,9 +93,4 @@ const fip_x: ProposalDescription = {
       method: 'repay(address,uint256)',
       arguments: ['0xdAC17F958D2ee523a2206206994597C13D831ec7', '150000000000'],
       description: 'Repay USDT'
-    }
-  ],
-  description: 'Repay all bad debt in Fuse pools 8, 18, 27, 127, 144, 146, 156'
-};
-
-export default fip_x;
+    }*/

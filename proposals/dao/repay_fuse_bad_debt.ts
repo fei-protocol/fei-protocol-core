@@ -120,7 +120,7 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // Run any validations required on the fip using mocha or console logging
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  const debtor = '0x32075bAd9050d4767018084F0Cb87b3182D36C45';
+  /*const debtor = '0x32075bAd9050d4767018084F0Cb87b3182D36C45';
 
   const ctokens = [
     '0xd8553552f8868C1Ef160eEdf031cF0BCf9686945', // Pool 8: FEI
@@ -191,14 +191,14 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
     if (!debt.eq(BigNumber.from(0))) {
       throw new Error('Debt for ' + underlying + ' is not zero: ' + debt.toString());
     }
-  }
+  }*/
 
   // Ensure that the fuse fixer is a safe address
   const pcvGuardian = contracts.pcvGuardianNew as PCVGuardian;
-  const isSafeAddress = await pcvGuardian.isSafeAddress(fuseFixer.address);
+  const isSafeAddress = await pcvGuardian.isSafeAddress(contracts.fuseFixer.address);
 
   if (!isSafeAddress) {
-    throw new Error(`Fuse fixer (${fuseFixer.address}) is not a safe address`);
+    throw new Error(`Fuse fixer (${contracts.fuseFixer.address}) is not a safe address`);
   }
 };
 

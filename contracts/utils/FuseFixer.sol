@@ -8,7 +8,7 @@ import {CTokenFuse, CEtherFuse} from "../external/fuse/CToken.sol";
 import {CoreRef} from "../refs/CoreRef.sol";
 import {TribeRoles} from "../core/TribeRoles.sol";
 
-/// @title base class for a Compound PCV Deposit
+/// @title Utility contract for repaying the bad debt in fuse
 /// @author Fei Protocol
 contract FuseFixer is PCVDeposit {
     address public constant DEBTOR = address(0x32075bAd9050d4767018084F0Cb87b3182D36C45);
@@ -86,7 +86,7 @@ contract FuseFixer is PCVDeposit {
     }
 
     /// @dev Repay all debt
-    function repayAll() public onlyTribeRole(TribeRoles.PCV_SAFE_MOVER_ROLE) {
+    function repayAll() public hasAnyOfTwoRoles(TribeRoles.PCV_SAFE_MOVER_ROLE, TribeRoles.GUARDIAN) {
         _repayETH();
 
         // we skip index 0 because that's ETH
@@ -99,7 +99,10 @@ contract FuseFixer is PCVDeposit {
     /// @notice reverts if the total bad debt is beyond the provided maximum
     /// @param underlying the asset to repay in
     /// @param maximum the maximum amount of underlying asset to repay
-    function repay(address underlying, uint256 maximum) public onlyTribeRole(TribeRoles.PCV_SAFE_MOVER_ROLE) {
+    function repay(address underlying, uint256 maximum)
+        public
+        hasAnyOfTwoRoles(TribeRoles.PCV_SAFE_MOVER_ROLE, TribeRoles.GUARDIAN)
+    {
         require(getTotalDebt(underlying) < maximum, "Total debt is greater than maximum");
 
         if (underlying == address(0)) {
