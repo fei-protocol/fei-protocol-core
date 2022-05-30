@@ -17,7 +17,11 @@ const toBN = ethers.BigNumber.from;
 const CHAINLINK_OHM_V2_ETH_ORACLE = '0x9a72298ae3886221820b1c878d12d872087d3a23';
 const DECIMAL_FACTOR = 1e9;
 
-// NOTE: Think my oracle for OHM is reporting v1 price, not v2. V1: $60, V2: $20
+// TODOs
+// 1. Swap this all over to gOHM
+// 2. Figure out where getting resources from
+// 3. Create gOHM oracle and/or source. 
+// 4. Test all to make sure works. Perform swaps and get the price
 
 /*
 
@@ -40,6 +44,7 @@ const fipNumber = '107';
 
 const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: NamedAddresses, logging: boolean) => {
   //////////// 1. Deploy Chainlink Oracle Wrapper for OHM/ETH
+  // 1. Need a gOHM oracle
   const chainlinkFactory = await ethers.getContractFactory('ChainlinkOracleWrapper');
   const chainlinkOhmV2OracleWrapper = await chainlinkFactory.deploy(addresses.core, CHAINLINK_OHM_V2_ETH_ORACLE);
   await chainlinkOhmV2OracleWrapper.deployed();
