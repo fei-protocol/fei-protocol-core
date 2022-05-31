@@ -55,8 +55,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 
   ///////////  2. Deploy the Balancer LBP swapper
   // // Amounts:
-  // ETH: 5109000000000000000000 (95%), 5109 ETH, ~$10,000,000 at 1 ETH = $1957
-  // OHM:  180000000000000000000 (5%), 163 gOHM, ~$500,000 at 1 OHM = $3,060 overfunding by 10% and transferring $550k
+  // ETH: 5410000000000000000000 (95%), 5410 ETH, ~$10,500,000 at 1 ETH = $1941
+  // OHM:  200000000000000000000 (5%), 175 gOHM, ~$525,000 at 1 OHM = $2990 overfunding by 15% and transferring $600k
   const BalancerLBPSwapperFactory = await ethers.getContractFactory('BalancerLBPSwapper');
 
   // tokenSpent = WETH, tokenReceived = gOHM
@@ -92,8 +92,6 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     addresses.balancerLBPoolFactoryNoFee
   );
 
-  // Tokens need to be sorted in a particular way. TODO, check this looks right
-  // Are the tokens the right way round?
   const tx: TransactionResponse = await lbpFactory.create(
     'ETH->gOHM Auction Pool', // pool name
     'apETH-gOHM', // lbp token symbol
@@ -166,7 +164,7 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
   expect(await ethTogOhmLBPSwapper.tokenSpent()).to.be.equal(addresses.weth);
   expect(await ethTogOhmLBPSwapper.tokenReceived()).to.be.equal(addresses.gohm);
   expect(await ethTogOhmLBPSwapper.tokenReceivingAddress()).to.be.equal(addresses.tribalCouncilTimelock);
-  expect(await ethTogOhmLBPSwapper.duration()).to.be.equal(1_209_600);
+  expect(await ethTogOhmLBPSwapper.duration()).to.be.equal(LBP_FREQUENCY);
 
   const poolTokens = await contracts.balancerVault.getPoolTokens(poolId);
   expect(poolTokens.tokens[0]).to.be.equal(addresses.gohm); // poolToken[0] is gOHM
@@ -194,15 +192,12 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // Run any validations required on the fip using mocha or console logging
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  ////////////    0. Validate Cream removed from CR /////////
-  // TODO
-
   ////////////    1. New Safe adddresses   //////////////
   expect(await contracts.pcvGuardianNew.isSafeAddress(addresses.ethTogOhmLBPSwapper)).to.be.true;
 
   ////////////    2. gOHM oracle price is valid   //////////////
   const gOhmUSDPrice = (await contracts.gOhmUSDOracle.read())[0];
-  expect(toBN(gOhmUSDPrice.value)).to.be.bignumber.at.least(ethers.constants.WeiPerEther.mul(2_900)); // $2900
+  expect(toBN(gOhmUSDPrice.value)).to.be.bignumber.at.least(ethers.constants.WeiPerEther.mul(2_500)); // $2500
   expect(toBN(gOhmUSDPrice.value)).to.be.bignumber.at.least(ethers.constants.WeiPerEther.mul(3_400)); // $3400
 
   /////////////  3.    OHM LBP  ////////////////
@@ -225,8 +220,8 @@ const validateLBPSetup = async (contracts: NamedContracts, addresses: NamedAddre
 
   // 2.1 Check oracle price - understand this part
   const price = (await ethTogOhmLBPSwapper.readOracle())[0]; // Eth price in terms of gOHM
-  // gOHM = $3050, ETH = $1970
-  // Expect: 1970 / 3050 = 0.645
+  // gOHM = $2990, ETH = $1941
+  // Expect: 1941 / 2990 = 0.65
   expect(price).to.be.bignumber.at.least(ethers.constants.WeiPerEther.mul(600).div(1e3)); // 0.6
   expect(price).to.be.bignumber.at.most(ethers.constants.WeiPerEther.mul(700).div(1e3)); // 0.7
 
@@ -253,21 +248,21 @@ const validateLBPSetup = async (contracts: NamedContracts, addresses: NamedAddre
   // poolTokens[0] is gOHM
   // poolTokens[1] is WETH
 
-  // there should be 175 OHM in the pool. It has 18 decimals
+  // there should be 200 gOHM in the pool. It has 18 decimals
   expect(poolTokens.tokens[0]).to.be.equal(contracts.gohm.address); // this is gOHM
-  expect(poolTokens.balances[0]).to.be.bignumber.at.least(ethers.constants.WeiPerEther.mul(160));
-  expect(poolTokens.balances[0]).to.be.bignumber.at.most(ethers.constants.WeiPerEther.mul(190));
+  expect(poolTokens.balances[0]).to.be.bignumber.at.least(ethers.constants.WeiPerEther.mul(180));
+  expect(poolTokens.balances[0]).to.be.bignumber.at.most(ethers.constants.WeiPerEther.mul(220));
 
-  // there should be 5071k ETH in the pool
+  // there should be 5410 ETH in the pool
   expect(poolTokens.tokens[1]).to.be.equal(contracts.weth.address); // this is WETH
-  expect(poolTokens.balances[1]).to.be.equal('5109000000000000000000');
+  expect(poolTokens.balances[1]).to.be.equal('5410000000000000000000');
 
   // Pool balances Maths:
-  // Total value of pool = (175 gOHM * $3,153) + (5071 ETH * $1958) = $10.5M
+  // Total value of pool = (200 gOHM * $2990) + (5410 ETH * $1941) = $11.1M
   // gOHM share = 5%
   // ETH share = 95%
-  // Expected gOHM amount = $10.5M * 0.05 = ~$524k
-  // Expected ETH amount = $10.5M * 0.95 = ~$9.9M -> ~ ($9900k / 1972) 5049 eth
+  // Expected gOHM amount = $11.1M * 0.05 = ~$555k
+  // Expected ETH amount = $11.1M * 0.95 = ~$10.55M -> ~ ($10,550k / 1941) 5435 eth
 
   // Validate that a swap can occur
   const gOhmWhale = '0x245cc372C84B3645Bf0Ffe6538620B04a217988B'; // Olympus DAO funds
@@ -278,7 +273,7 @@ const validateLBPSetup = async (contracts: NamedContracts, addresses: NamedAddre
   const initialUserWethBalance = await contracts.weth.balanceOf(gOhmWhale);
   const initialUsergOhmBalance = await contracts.gohm.balanceOf(gOhmWhale);
 
-  // 5 gOHM buy, ~$16k, so expect ~5 - 15 eth out
+  // 5 gOHM buy, ~$15k, so expect ~7 eth out
   const amountIn = ethers.constants.WeiPerEther.mul(5); // 5 gOHM buy, ~$16k purchase
   await contracts.gohm.connect(gOhmWhaleSigner).approve(addresses.balancerVault, amountIn);
   await contracts.balancerVault.connect(gOhmWhaleSigner).swap(
@@ -312,9 +307,9 @@ const validateLBPSetup = async (contracts: NamedContracts, addresses: NamedAddre
   expect(wethGained).to.be.bignumber.at.least(ethers.constants.WeiPerEther.mul(5));
   expect(wethGained).to.be.bignumber.at.most(ethers.constants.WeiPerEther.mul(15));
 
-  // Put in ~$16k OHM, got out x
-  // Implies price of $x per ETH, compared to an oracle price of $x
-  console.log('OHM spent: ', gOhmSpent);
+  // Put in ~$15k OHM, got out 7.7 ETH
+  // Implied price of $2976 gOHM, compared to a true price of $2953 on Uniswap V3
+  console.log('gOHM spent: ', gOhmSpent);
   console.log('WETH gained: ', wethGained);
 
   await time.increase(86400 * 7);

@@ -15,14 +15,14 @@ const fip_107: ProposalDescription = {
       target: 'gohm',
       values: '0',
       method: 'transfer(address,uint256)',
-      arguments: ['{ethTogOhmLBPSwapper}', '180000000000000000000'],
+      arguments: ['{ethTogOhmLBPSwapper}', '200000000000000000000'],
       description: 'Transfer gOHM from timelock to the LBP swapper'
     },
     {
       target: 'pcvGuardianNew',
       values: '0',
       method: 'withdrawToSafeAddress(address,address,uint256,bool,bool)',
-      arguments: ['{aaveEthPCVDeposit}', '{ethTogOhmLBPSwapper}', '5109000000000000000000', false, false],
+      arguments: ['{aaveEthPCVDeposit}', '{ethTogOhmLBPSwapper}', '5410000000000000000000', false, false],
       description: 'Withdraw WETH from the Aave ETH PCV deposit, using the pcvGuardian, and transfer to the LBP swapper'
     },
     // TODO: Figure out why can't add gOhmToETHLensgOHM to the oracle
