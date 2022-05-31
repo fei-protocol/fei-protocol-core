@@ -20,24 +20,25 @@ interface IgOHM {
 }
 
 /// @title GOHM Oracle
-/// @notice Determines the gOHM price by querying the OHM index and multiplying that by the
-///         Chainlink OHM price
-contract GOhmPriceOracle is IOracle, CoreRef {
+/// @notice Report the gOHM price in units of ETH. Calculated by reading a Chainlink OHM V2
+///         oracle price and multiplying that by the queried OHM index
+contract GOhmOracle is IOracle, CoreRef {
     using Decimal for Decimal.D256;
 
     /// @notice the referenced chainlink oracle
-    AggregatorV3Interface public chainlinkOHMOracle;
+    AggregatorV3Interface public chainlinkOHMETHOracle;
 
     /// @notice Oracle decimals normalizer
     uint256 public oracleDecimalsNormalizer;
 
     /// @notice gOHM token address.
-    IgOHM public GOHM = IgOHM(0x0ab87046fBb341D058F17CBC4c1133F25a20a52f);
+    IgOHM public constant GOHM = IgOHM(0x0ab87046fBb341D058F17CBC4c1133F25a20a52f);
 
     /// @param _core Fei Core for reference
-    /// @param _chainlinkOHMOracle Chainlink OHM V2 oracle
-    constructor(address _core, address _chainlinkOHMOracle) CoreRef(_core) {
-        chainlinkOHMOracle = AggregatorV3Interface(_chainlinkOHMOracle);
+    /// @param _chainlinkOHMETHOracle Chainlink OHM V2 oracle reporting in terms of ETH
+    constructor(address _core, address _chainlinkOHMETHOracle) CoreRef(_core) {
+        // This will be a chainlink interface. Maybe report in terms of ETH first?
+        chainlinkOHMETHOracle = AggregatorV3Interface(_chainlinkOHMETHOracle);
         _init();
     }
 
@@ -45,7 +46,7 @@ contract GOhmPriceOracle is IOracle, CoreRef {
     // updates that behavior in the future, we might consider reading the
     // oracle decimals() on every read() call.
     function _init() internal {
-        uint8 oracleDecimals = chainlinkOHMOracle.decimals();
+        uint8 oracleDecimals = chainlinkOHMETHOracle.decimals();
         oracleDecimalsNormalizer = 10**uint256(oracleDecimals);
     }
 
@@ -56,21 +57,26 @@ contract GOhmPriceOracle is IOracle, CoreRef {
     /// @notice determine if read value is stale
     /// @return true if read value is stale
     function isOutdated() external view override returns (bool) {
-        (uint80 roundId, , , , uint80 answeredInRound) = chainlinkOHMOracle.latestRoundData();
+        (uint80 roundId, , , , uint80 answeredInRound) = chainlinkOHMETHOracle.latestRoundData();
         return answeredInRound != roundId;
     }
 
-    /// @notice read the oracle price
-    /// @return oracle price
+    /// @notice Determine the gOHM price. Report in units of ETH.
+    /// @return oracle gOHM price in units of ETH
     /// @return true if price is valid
     function read() external view override returns (Decimal.D256 memory, bool) {
-        (uint80 roundId, int256 price, , , uint80 answeredInRound) = chainlinkOHMOracle.latestRoundData();
-        bool valid = !paused() && price > 0 && answeredInRound == roundId;
+        (uint80 roundId, int256 ohmEthPrice, , , uint80 answeredInRound) = chainlinkOHMETHOracle.latestRoundData();
+        bool valid = !paused() && ohmEthPrice > 0 && answeredInRound == roundId;
 
         // Feth the OHM price and normalise for number of decimals
-        Decimal.D256 memory value = Decimal.from(uint256(price)).div(oracleDecimalsNormalizer);
+        // OHMV2 chainlink reports in ETH terms
+        Decimal.D256 memory ohmEthValue = Decimal.from(uint256(ohmEthPrice)).div(oracleDecimalsNormalizer);
 
         // Multiple decimal by Index
-        return (value.mul(Decimal.from(GOHM.index())), valid);
+        // TODO: Index has 9 decimals, divide them off
+        Decimal.D256 memory gOHMIndex = Decimal.from(GOHM.index());
+
+        Decimal.D256 memory gOhmEthValue = ohmEthValue.mul(gOHMIndex).div(1e9); // 1e9 = OHM base unit and therefore also gOHM/OHM index base unit
+        return (gOhmEthValue, valid);
     }
 }
