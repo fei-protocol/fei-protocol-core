@@ -14,7 +14,7 @@ interface RariPriceOracle {
     function price(address) external view returns (uint256);
 }
 
-/// @notice Integration test to validate gOHM oracle matches Rari gOHM oracle price
+/// @notice Integration test to validate gOHM oracle price
 contract GOhmOracleIntegrationTest is DSTest, StdLib {
     GOhmEthOracle public gOhmEthOracle;
 

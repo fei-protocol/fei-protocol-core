@@ -37,7 +37,6 @@ contract GOhmEthOracle is IOracle, CoreRef {
     /// @param _core Fei Core for reference
     /// @param _chainlinkOHMETHOracle Chainlink OHM V2 oracle reporting in terms of ETH
     constructor(address _core, address _chainlinkOHMETHOracle) CoreRef(_core) {
-        // This will be a chainlink interface. Maybe report in terms of ETH first?
         chainlinkOHMETHOracle = AggregatorV3Interface(_chainlinkOHMETHOracle);
         _init();
     }
@@ -73,7 +72,6 @@ contract GOhmEthOracle is IOracle, CoreRef {
         Decimal.D256 memory ohmEthValue = Decimal.from(uint256(ohmEthPrice)).div(oracleDecimalsNormalizer);
 
         // Multiple decimal by Index
-        // TODO: Index has 9 decimals, divide them off
         Decimal.D256 memory gOHMIndex = Decimal.from(GOHM.index());
 
         Decimal.D256 memory gOhmEthValue = ohmEthValue.mul(gOHMIndex).div(1e9); // 1e9 = OHM base unit and therefore also gOHM/OHM index base unit

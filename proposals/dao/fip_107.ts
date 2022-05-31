@@ -20,12 +20,12 @@ const CHAINLINK_OHM_V2_ETH_ORACLE = '0x9a72298ae3886221820b1c878d12d872087d3a23'
 
 Tribal Council proposal FIP #107
 
-0. Deploy Chainlink oracle for OHM/ETH
-1. Deploy Balancer LBP and initialise auction of ETH for OHM
-2. Set Balancer LBP contract as a safe address on the guardian
-3. Withdraw $10M ETH from Aave PCVDeposit to the Balancer LBP contract
-5. Withdraw ~$530k OHM from x to the Balancer LBP contract
-7. Initiate auction by calling forceSwap()
+1. Deploy oracle for gOHM
+2. Deploy Balancer LBP and initialise auction of ETH for gOHM
+3. Set Balancer LBP contract as a safe address on the guardian
+4. Withdraw $10.5M ETH from Aave PCVDeposit to the Balancer LBP contract
+5. Transfer ~$600k gOHM from the DAO timelock to the Balancer LBP contract
+6. Initiate auction by calling forceSwap()
 */
 
 // LBP Swapper config
