@@ -1921,6 +1921,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x64aa3364f17a4d01c6f1751fd97c2bd3d7e7f1d5',
     category: AddressCategory.External
   },
+  gohm: {
+    artifactName: 'ERC20',
+    address: '0x0ab87046fbb341d058f17cbc4c1133f25a20a52f',
+    category: AddressCategory.External
+  },
   ohmUSDCompositeOracle: {
     artifactName: 'CompositeOracle',
     address: '',
