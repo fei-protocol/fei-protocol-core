@@ -15,13 +15,6 @@ import { expectApprox, getImpersonatedSigner, overwriteChainlinkAggregator, time
 const toBN = ethers.BigNumber.from;
 
 const CHAINLINK_OHM_V2_ETH_ORACLE = '0x9a72298ae3886221820b1c878d12d872087d3a23';
-const DECIMAL_FACTOR = 1e18;
-
-// TODOs
-// 1. Swap this all over to gOHM
-// 2. Figure out where getting resources from
-// 3. Create gOHM oracle and/or source.
-// 4. Test all to make sure works. Perform swaps and get the price
 
 /*
 
@@ -43,28 +36,40 @@ let poolId; // auction pool id
 const fipNumber = '107';
 
 const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: NamedAddresses, logging: boolean) => {
-  //////////// 1. Deploy Chainlink Oracle Wrapper for OHM/ETH
-  // 1. Need a gOHM oracle
-  const chainlinkFactory = await ethers.getContractFactory('ChainlinkOracleWrapper');
-  const chainlinkOhmV2OracleWrapper = await chainlinkFactory.deploy(addresses.core, CHAINLINK_OHM_V2_ETH_ORACLE);
-  await chainlinkOhmV2OracleWrapper.deployed();
+  ////////////// 1. Create and deploy gOHM USD oracle
+  const GOhmEthOracleFactory = await ethers.getContractFactory('GOhmEthOracle');
+  const gOHMEthOracle = await GOhmEthOracleFactory.deploy(addresses.core, CHAINLINK_OHM_V2_ETH_ORACLE);
+  await gOHMEthOracle.deployed();
 
-  logging && console.log('Chainlink OHM oracle deployed to: ', chainlinkOhmV2OracleWrapper.address);
+  logging && console.log(`Deployed gOHM Eth Oracle at ${gOHMEthOracle.address}`);
+
+  // Create the gOHM USD oracle
+  const CompositeOracleFactory = await ethers.getContractFactory('CompositeOracle');
+  const gOhmUSDOracle = await CompositeOracleFactory.deploy(
+    addresses.core,
+    gOHMEthOracle.address,
+    addresses.chainlinkEthUsdOracleWrapper
+  );
+
+  logging && console.log('Deployed gOHM oracle to: ', gOhmUSDOracle.address);
 
   ///////////  2. Deploy the Balancer LBP swapper
   // // Amounts:
-  // ETH: 5071000000000000000000 (95%), 5071 ETH, ~$10,000,000 at 1 ETH = $1972
-  // OHM:  175000000000000000000 (5%), 159 gOHM, ~$500,000 at 1 OHM = $3,143 overfunding by 10% and transferring $550k
+  // ETH: 5109000000000000000000 (95%), 5109 ETH, ~$10,000,000 at 1 ETH = $1957
+  // OHM:  180000000000000000000 (5%), 163 gOHM, ~$500,000 at 1 OHM = $3,060 overfunding by 10% and transferring $550k
   const BalancerLBPSwapperFactory = await ethers.getContractFactory('BalancerLBPSwapper');
 
-  // tokenSpent = WETH, tokenReceived = OHM
+  // tokenSpent = WETH, tokenReceived = gOHM
   // Oracle reports gOHM / ETH, therefore is reporting in tokenReceived terms.
   // WETH = 18 decimals
   // gOHM = 18 decimals
+  // tokenSpent = WETH
+  // tokenReceived = gOHM
+
   const ethTogOhmLBPSwapper = await BalancerLBPSwapperFactory.deploy(
     addresses.core,
     {
-      _oracle: chainlinkOhmV2OracleWrapper.address,
+      _oracle: gOHMEthOracle.address, // oracle that reports tokenSpent price
       _backupOracle: ethers.constants.AddressZero,
       _invertOraclePrice: true,
       _decimalsNormalizer: 0
@@ -72,14 +77,14 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     LBP_FREQUENCY,
     '50000000000000000', // small weight 5%
     '950000000000000000', // large weight 95%
-    addresses.weth,
-    addresses.gohm,
+    addresses.weth, // tokenSpent
+    addresses.gohm, // tokenReceived
     addresses.tribalCouncilTimelock, // Send OHM to the TribalCouncil Timelock once LBP has completed
     MIN_LBP_SIZE // minimum size of a pool which the swapper is used against
   );
 
   await ethTogOhmLBPSwapper.deployed();
-  logging && console.log('ETH to OHM swapper deployed to: ', ethTogOhmLBPSwapper.address);
+  logging && console.log('ETH to gOHM swapper deployed to: ', ethTogOhmLBPSwapper.address);
 
   // 2. Create a liquidity bootstrapping pool between ETH and OHM
   const lbpFactory = await ethers.getContractAt(
@@ -87,11 +92,13 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     addresses.balancerLBPoolFactoryNoFee
   );
 
+  // Tokens need to be sorted in a particular way. TODO, check this looks right
+  // Are the tokens the right way round?
   const tx: TransactionResponse = await lbpFactory.create(
     'ETH->gOHM Auction Pool', // pool name
     'apETH-gOHM', // lbp token symbol
-    [addresses.weth, addresses.gohm], // pool contains [WETH, gOHM]
-    [ethers.constants.WeiPerEther.mul(95).div(100), ethers.constants.WeiPerEther.mul(5).div(100)], // initial weights 5%/95%
+    [addresses.gohm, addresses.weth], // pool contains [WETH, gOHM]
+    [ethers.constants.WeiPerEther.mul(5).div(100), ethers.constants.WeiPerEther.mul(95).div(100)], // initial weights 5%/95%
     ethers.constants.WeiPerEther.mul(30).div(10_000), // 0.3% swap fees
     ethTogOhmLBPSwapper.address, // pool owner = fei protocol swapper
     true
@@ -109,24 +116,15 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   const tx2 = await ethTogOhmLBPSwapper.init(noFeeEthgOhmLBPAddress);
   await tx2.wait();
 
+  const ethToGOhmLBPPool = await ethers.getContractAt('IWeightedPool', noFeeEthgOhmLBPAddress);
+
   // 4. Deploy a lens to report the swapper value
-
-  // TODO: Replace OHM oracle with gOHM oracle I create
-  const compositeOracleFactory = await ethers.getContractFactory('CompositeOracle');
-  const gOhmUSDCompositeOracle = await compositeOracleFactory.deploy(
-    addresses.core,
-    addresses.chainlinkEthUsdOracle,
-    chainlinkOhmV2OracleWrapper.address // TODO: Put in gOHM oracle
-  );
-
-  await gOhmUSDCompositeOracle.deployed();
-
   const BPTLensFactory = await ethers.getContractFactory('BPTLens');
   const gOhmToETHLensgOHM = await BPTLensFactory.deploy(
-    addresses.ghm, // token reported in
+    addresses.gohm, // token reported in
     noFeeEthgOhmLBPAddress, // pool address
-    gOhmUSDCompositeOracle.address, // reportedOracle - gOHM. TODO
-    addresses.chainlinkEthUsdOracle, // otherOracle - ETH
+    gOhmUSDOracle.address, // reportedOracle - gOHM
+    addresses.chainlinkEthUsdOracleWrapper, // otherOracle - ETH
     false, // feiIsReportedIn
     false // feiIsOther
   );
@@ -134,23 +132,24 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 
   logging && console.log('BPTLens for OHM in swapper pool: ', gOhmToETHLensgOHM.address);
 
-  const ohmToETHLensETH = await BPTLensFactory.deploy(
+  const gOhmToETHLensETH = await BPTLensFactory.deploy(
     addresses.weth, // token reported in
     noFeeEthgOhmLBPAddress, // pool address
-    addresses.chainlinkEthUsdOracle, // reportedOracle - ETH
-    addresses.ohmUSDCompositeOracle, // otherOracle - OHM. TODO. Should be gOHM
+    addresses.chainlinkEthUsdOracleWrapper, // reportedOracle - ETH
+    gOhmUSDOracle.address, // otherOracle - gOHM
     false, // feiIsReportedIn
     false // feiIsOther
   );
-  await ohmToETHLensETH.deployTransaction.wait();
+  await gOhmToETHLensETH.deployTransaction.wait();
 
-  logging && console.log('BPTLens for OHM in swapper pool: ', ohmToETHLensETH.address);
+  logging && console.log('BPTLens for OHM in swapper pool: ', gOhmToETHLensETH.address);
   return {
     ethTogOhmLBPSwapper,
     gOhmToETHLensgOHM,
-    ohmToETHLensETH,
-    gOhmUSDCompositeOracle,
-    chainlinkOhmV2OracleWrapper
+    gOhmToETHLensETH,
+    gOhmUSDOracle,
+    gOHMEthOracle,
+    ethToGOhmLBPPool
   };
 };
 
@@ -159,9 +158,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 // ensuring contracts have a specific state, etc.
 const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
   // overwrite chainlink ETH/USD oracle
-  const ethTogOhmLBPSwapper = contracts.ethToOhmLBPSwapper;
+  const ethTogOhmLBPSwapper = contracts.ethTogOhmLBPSwapper;
 
-  // TODO: Checkout this overwriting
   await overwriteChainlinkAggregator(addresses.chainlinkEthUsdOracle, '250000000000', '8');
 
   // invariant checks
@@ -171,16 +169,16 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
   expect(await ethTogOhmLBPSwapper.duration()).to.be.equal(1_209_600);
 
   const poolTokens = await contracts.balancerVault.getPoolTokens(poolId);
-  expect(poolTokens.tokens[0]).to.be.equal(addresses.weth);
-  expect(poolTokens.tokens[1]).to.be.equal(addresses.gohm);
+  expect(poolTokens.tokens[0]).to.be.equal(addresses.gohm); // poolToken[0] is gOHM
+  expect(poolTokens.tokens[1]).to.be.equal(addresses.weth); // poolToken[1] is WETH
 
   // LBP swapper should be empty
   expect(poolTokens.balances[0]).to.be.equal('0');
   expect(poolTokens.balances[1]).to.be.equal('0');
 
   // Lenses should report 0 because LBP is empty
-  expect(await contracts.ohmToETHLensgOHM.balance()).to.be.equal('0');
-  expect(await contracts.ohmToETHLensETH.balance()).to.be.equal('0');
+  expect(await contracts.gOhmToETHLensgOHM.balance()).to.be.equal('0');
+  expect(await contracts.gOhmToETHLensETH.balance()).to.be.equal('0');
 
   // Swapper should hold no tokens
   expect(await contracts.weth.balanceOf(ethTogOhmLBPSwapper.address)).to.be.equal('0');
@@ -196,11 +194,16 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // Run any validations required on the fip using mocha or console logging
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
+  ////////////    0. Validate Cream removed from CR /////////
+  // TODO
+
   ////////////    1. New Safe adddresses   //////////////
   expect(await contracts.pcvGuardianNew.isSafeAddress(addresses.ethTogOhmLBPSwapper)).to.be.true;
 
-  ////////////    2. Chainlink gOHM/ETH oracle valid   //////////////
-  // TODO
+  ////////////    2. gOHM oracle price is valid   //////////////
+  const gOhmUSDPrice = (await contracts.gOhmUSDOracle.read())[0];
+  expect(toBN(gOhmUSDPrice.value)).to.be.bignumber.at.least(ethers.constants.WeiPerEther.mul(2_900)); // $2900
+  expect(toBN(gOhmUSDPrice.value)).to.be.bignumber.at.least(ethers.constants.WeiPerEther.mul(3_400)); // $3400
 
   /////////////  3.    OHM LBP  ////////////////
   await validateLBPSetup(contracts, addresses, poolId);
@@ -208,48 +211,56 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 
 const validateLBPSetup = async (contracts: NamedContracts, addresses: NamedAddresses, poolId: string) => {
   const ethTogOhmLBPSwapper = contracts.ethTogOhmLBPSwapper;
-  const ethTogOhmLBPPool = contracts.ethTogOhmLBPPool;
+  const ethToGOhmLBPPool = contracts.ethToGOhmLBPPool;
 
-  const retrievedPoolId = await ethTogOhmLBPSwapper.getPoolId();
+  const retrievedPoolId = await ethToGOhmLBPPool.getPoolId();
   expect(retrievedPoolId).to.equal(poolId);
 
   expect(await ethTogOhmLBPSwapper.isTimeStarted()).to.be.true;
   expect(await ethTogOhmLBPSwapper.tokenSpent()).to.equal(addresses.weth);
-  expect(await ethTogOhmLBPSwapper.tokenReceived()).to.equal(addresses.ohm);
-  expect(await ethTogOhmLBPPool.getSwapEnabled()).to.equal(true);
+  expect(await ethTogOhmLBPSwapper.tokenReceived()).to.equal(addresses.gohm);
+  expect(await ethToGOhmLBPPool.getSwapEnabled()).to.equal(true);
   // tokenSpent = WETH
   // tokenReceived = gOHM
 
-  // 2.1 Check oracle price
-  const price = (await ethTogOhmLBPSwapper.readOracle())[0]; // gOHM in units of ETH
-  console.log('price: ', price);
-  expect(price).to.be.bignumber.at.least(ethers.constants.WeiPerEther.mul(3000).div(DECIMAL_FACTOR)); // $15
-  expect(price).to.be.bignumber.at.most(ethers.constants.WeiPerEther.mul(3500).div(DECIMAL_FACTOR)); // $25
+  // 2.1 Check oracle price - understand this part
+  const price = (await ethTogOhmLBPSwapper.readOracle())[0]; // Eth price in terms of gOHM
+  // gOHM = $3050, ETH = $1970
+  // Expect: 1970 / 3050 = 0.645
+  expect(price).to.be.bignumber.at.least(ethers.constants.WeiPerEther.mul(600).div(1e3)); // 0.6
+  expect(price).to.be.bignumber.at.most(ethers.constants.WeiPerEther.mul(700).div(1e3)); // 0.7
 
   // 2.2 Check relative price in pool
   // Putting in 3 ETH, getting an amount of OHM back
-  const response = await ethTogOhmLBPSwapper.getTokensIn(3); // input is spent token balance, 3 ETH
+  const response = await ethTogOhmLBPSwapper.getTokensIn(ethers.constants.WeiPerEther.mul(3)); // input is spent token balance, 3 ETH
   const amounts = response[1];
-  expect(amounts[0]).to.be.bignumber.equal(ethers.BigNumber.from(3)); // ETH
+  expect(amounts[1]).to.be.bignumber.equal(ethers.BigNumber.from(ethers.constants.WeiPerEther.mul(3))); // ETH
 
   // gOHM/ETH price * gOHM amount * 5% ~= amount
-  expectApprox(price.mul(3).mul(5).div(ethers.constants.WeiPerEther).div(100), amounts[1]); // gOHM
-  expect(amounts[1]).to.be.bignumber.at.least(toBN(1000)); // Make sure orcacle inversion is correct (i.e. not inverted)
+  expectApprox(
+    price.mul(ethers.constants.WeiPerEther.mul(3)).mul(5).div(ethers.constants.WeiPerEther).div(100),
+    amounts[0]
+  ); // gOHM
+  expect(amounts[0]).to.be.bignumber.at.least(toBN(1000)); // Make sure oracle inversion is correct (i.e. not inverted)
 
   // 2.3 Check pool weights
-  const weights = await ethTogOhmLBPPool.getNormalizedWeights();
+  const weights = await ethToGOhmLBPPool.getNormalizedWeights();
   expectApprox(weights[0], ethers.constants.WeiPerEther.mul(5).div(100)); // 5% gOHM
   expectApprox(weights[1], ethers.constants.WeiPerEther.mul(95).div(100)); // 95% ETH
 
   // 2.4 Check pool info
   const poolTokens = await contracts.balancerVault.getPoolTokens(poolId);
+  // poolTokens[0] is gOHM
+  // poolTokens[1] is WETH
+
   // there should be 175 OHM in the pool. It has 18 decimals
-  expect(poolTokens.tokens[1]).to.be.equal(contracts.gohm.address); // this is DAI
-  expect(poolTokens.balances[1]).to.be.bignumber.at.least(ethers.constants.WeiPerEther.mul(160).div(DECIMAL_FACTOR));
-  expect(poolTokens.balances[1]).to.be.bignumber.at.most(ethers.constants.WeiPerEther.mul(190).div(DECIMAL_FACTOR));
+  expect(poolTokens.tokens[0]).to.be.equal(contracts.gohm.address); // this is gOHM
+  expect(poolTokens.balances[0]).to.be.bignumber.at.least(ethers.constants.WeiPerEther.mul(160));
+  expect(poolTokens.balances[0]).to.be.bignumber.at.most(ethers.constants.WeiPerEther.mul(190));
+
   // there should be 5071k ETH in the pool
-  expect(poolTokens.tokens[0]).to.be.equal(contracts.weth.address); // this is ETH
-  expect(poolTokens.balances[0]).to.be.equal('5071000000000000000000');
+  expect(poolTokens.tokens[1]).to.be.equal(contracts.weth.address); // this is WETH
+  expect(poolTokens.balances[1]).to.be.equal('5109000000000000000000');
 
   // Pool balances Maths:
   // Total value of pool = (175 gOHM * $3,153) + (5071 ETH * $1958) = $10.5M
@@ -268,8 +279,8 @@ const validateLBPSetup = async (contracts: NamedContracts, addresses: NamedAddre
   const initialUsergOhmBalance = await contracts.gohm.balanceOf(gOhmWhale);
 
   // 5 gOHM buy, ~$16k, so expect ~5 - 15 eth out
-  const amountIn = ethers.constants.WeiPerEther.mul(5).div(DECIMAL_FACTOR); // 5 gOHM buy, ~$16k purchase
-  await contracts.ohm.connect(gOhmWhaleSigner).approve(addresses.balancerVault, amountIn);
+  const amountIn = ethers.constants.WeiPerEther.mul(5); // 5 gOHM buy, ~$16k purchase
+  await contracts.gohm.connect(gOhmWhaleSigner).approve(addresses.balancerVault, amountIn);
   await contracts.balancerVault.connect(gOhmWhaleSigner).swap(
     {
       poolId: poolId,
@@ -294,12 +305,10 @@ const validateLBPSetup = async (contracts: NamedContracts, addresses: NamedAddre
 
   // Spent OHM, so starting OHM balance will be less than final balance
   const gOhmSpent = initialUsergOhmBalance.sub(postUsergOhmBalance);
-  console.log('gOHM spent: ', gOhmSpent.toString());
   expect(gOhmSpent).to.be.bignumber.equal(amountIn);
 
   // Gained WETH, so final WETH balance will be greater than initial WETH balance
   const wethGained = postUserWethBalance.sub(initialUserWethBalance);
-  console.log('Weth gained: ', wethGained.toString());
   expect(wethGained).to.be.bignumber.at.least(ethers.constants.WeiPerEther.mul(5));
   expect(wethGained).to.be.bignumber.at.most(ethers.constants.WeiPerEther.mul(15));
 
@@ -310,12 +319,12 @@ const validateLBPSetup = async (contracts: NamedContracts, addresses: NamedAddre
 
   await time.increase(86400 * 7);
   // Perform second swap, check price goes down
-  await contracts.ohm.connect(gOhmWhaleSigner).approve(addresses.balancerVault, amountIn);
+  await contracts.gohm.connect(gOhmWhaleSigner).approve(addresses.balancerVault, amountIn);
   await contracts.balancerVault.connect(gOhmWhaleSigner).swap(
     {
       poolId: poolId,
       kind: 0,
-      assetIn: addresses.ohm,
+      assetIn: addresses.gohm,
       assetOut: addresses.weth,
       amount: amountIn,
       userData: '0x'

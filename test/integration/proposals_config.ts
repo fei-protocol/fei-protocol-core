@@ -18,7 +18,7 @@ const proposals: ProposalsConfigMap = {
       'ohmToETHLensETH'
     ],
     deprecatedContractSignoff: [],
-    category: ProposalCategory.TC
+    category: ProposalCategory.DAO
   }
 };
 
