@@ -75,10 +75,10 @@ describe('e2e-dao', function () {
 
       await hre.network.provider.request({
         method: 'hardhat_impersonateAccount',
-        params: [contractAddresses.multisig]
+        params: [contractAddresses.guardianMultisig]
       });
 
-      const signer = await ethers.getSigner(contractAddresses.multisig);
+      const signer = await ethers.getSigner(contractAddresses.guardianMultisig);
 
       // Propose
       // note ethers.js requires using this notation when two overloaded methods exist)
@@ -122,11 +122,11 @@ describe('e2e-dao', function () {
 
   describe('Optimistic Approval', async () => {
     beforeEach(async function () {
-      const { tribalChiefOptimisticMultisig, timelock } = contractAddresses;
+      const { optimisticMultisig, timelock } = contractAddresses;
 
       await hre.network.provider.request({
         method: 'hardhat_impersonateAccount',
-        params: [tribalChiefOptimisticMultisig]
+        params: [optimisticMultisig]
       });
 
       await hre.network.provider.request({
@@ -142,7 +142,7 @@ describe('e2e-dao', function () {
 
       await (
         await ethers.getSigner(timelock)
-      ).sendTransaction({ to: tribalChiefOptimisticMultisig, value: toBN('40000000000000000') });
+      ).sendTransaction({ to: optimisticMultisig, value: toBN('40000000000000000') });
     });
 
     it('governor can assume timelock admin', async () => {
@@ -158,12 +158,12 @@ describe('e2e-dao', function () {
     });
 
     it('proposal can execute on tribalChief', async () => {
-      const { tribalChiefOptimisticMultisig } = contractAddresses;
+      const { optimisticMultisig } = contractAddresses;
       const { optimisticTimelock, tribalChief } = contracts;
 
       const oldBlockReward = await tribalChief.tribePerBlock();
       await optimisticTimelock
-        .connect(await ethers.getSigner(tribalChiefOptimisticMultisig))
+        .connect(await ethers.getSigner(optimisticMultisig))
         .schedule(
           tribalChief.address,
           0,
@@ -184,7 +184,7 @@ describe('e2e-dao', function () {
 
       await increaseTime(500000);
       await optimisticTimelock
-        .connect(await ethers.getSigner(tribalChiefOptimisticMultisig))
+        .connect(await ethers.getSigner(optimisticMultisig))
         .execute(
           tribalChief.address,
           0,

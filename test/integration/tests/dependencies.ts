@@ -14,6 +14,25 @@ describe('e2e-dependencies', function () {
     proposalNames = Object.keys(proposals);
   });
 
+  it('no duplicates in mainnetAddresses.ts', async function () {
+    const addressToLabel = {};
+    for (const key in addresses) {
+      const mapKey = addresses[key].address.toLowerCase();
+      addressToLabel[mapKey] = addressToLabel[mapKey] || [];
+      addressToLabel[mapKey].push(key);
+    }
+    for (const address in addressToLabel) {
+      const msg =
+        'Address ' +
+        address +
+        ' has ' +
+        addressToLabel[address].length +
+        ' labels: ' +
+        addressToLabel[address].join(', ');
+      expect(addressToLabel[address].length).to.be.equal(1, msg);
+    }
+  });
+
   describe('Check Dependencies', function () {
     it('are all signed off', async function () {
       for (let i = 0; i < proposalNames.length; i++) {

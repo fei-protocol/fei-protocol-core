@@ -2,7 +2,7 @@ import { TribalChiefConfig } from '../types/types';
 
 const config: TribalChiefConfig = {
   feiTribePair: { allocPoint: 0, unlocked: false }, // Uniswap-v2 FEI/TRIBE LP
-  curve3Metapool: { allocPoint: 0, unlocked: false }, // Curve 3crv-FEI metapool LP
+  curveFei3crvMetapool: { allocPoint: 0, unlocked: false }, // Curve 3crv-FEI metapool LP
   gUniFeiDaiLP: { allocPoint: 0, unlocked: true }, // G-UNI DAI/FEI 0.05% fee tier
   stakingTokenWrapperRari: { allocPoint: 1000, unlocked: false }, // FeiRari: TRIBE
   stakingTokenWrapperGROLaaS: { allocPoint: 0, unlocked: false }, // LaaS: GRO

@@ -58,7 +58,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   const balancerPool2LensFactory = await ethers.getContractFactory('BalancerPool2Lens');
   const balancerLensBpt30Fei70Weth = await balancerPool2LensFactory.deploy(
     gaugeLensBpt30Fei70WethGauge.address, // address _depositAddress
-    addresses.wethERC20, // address _token
+    addresses.weth, // address _token
     '0x90291319f1d4ea3ad4db0dd8fe9e12baf749e845', // IWeightedPool _pool
     addresses.chainlinkEthUsdOracleWrapper, // IOracle _reportedOracle
     addresses.oneConstantOracle, // IOracle _otherOracle
@@ -112,7 +112,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   // check rewards can be claimed
   await time.increase('86400');
   const balBalanceBefore = await contracts.bal.balanceOf(addresses.balancerGaugeStaker);
-  await contracts.balancerGaugeStaker.mintGaugeRewards(addresses.balancerFeiWethPool);
+  await contracts.balancerGaugeStaker.mintGaugeRewards(addresses.bpt30Fei70Weth);
   const balBalanceAfter = await contracts.bal.balanceOf(addresses.balancerGaugeStaker);
   expect(balBalanceAfter.sub(balBalanceBefore)).to.be.at.least(`1${e18}`);
 

@@ -307,8 +307,8 @@ describe('e2e-staking', function () {
 
     describe('Guardian Disables Supply Rewards', async () => {
       it('does not receive reward when supply incentives are moved to zero', async () => {
-        const { erc20Dripper, multisig, rariRewardsDistributorDelegator } = contractAddresses;
-        const signer = await getImpersonatedSigner(multisig);
+        const { erc20Dripper, guardianMultisig, rariRewardsDistributorDelegator } = contractAddresses;
+        const signer = await getImpersonatedSigner(guardianMultisig);
         const { rariPool8Tribe } = contracts;
         const rewardsDistributorDelegator = await ethers.getContractAt(
           'IRewardsAdmin',

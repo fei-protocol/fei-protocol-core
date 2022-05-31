@@ -71,13 +71,12 @@ const dependencies: DependencyMap = {
       'ethLidoPCVDeposit',
       'ethTokemakPCVDeposit',
       'feiLusdLBPSwapper',
-      'indexCoopFusePoolDpiPCVDeposit',
-      'indexCoopFusePoolFeiPCVDeposit',
+      'rariPool19DpiPCVDeposit',
+      'rariPool19FeiPCVDeposit',
       'indexDelegator',
-      'poolPartyFeiPCVDeposit',
+      'rariPool18Fei',
       'rariTimelock',
       'rariPool18FeiPCVDeposit',
-      'rariPool19FeiPCVDeposit',
       'rariPool22FeiPCVDeposit',
       'rariPool24FeiPCVDeposit',
       'rariPool26FeiPCVDeposit',
@@ -90,7 +89,7 @@ const dependencies: DependencyMap = {
       'rariPool8FeiPCVDeposit',
       'rariPool91FeiPCVDeposit',
       'rariPool9FeiPCVDeposit',
-      'reflexerStableAssetFusePoolRaiPCVDeposit',
+      'rariPool9RaiPCVDeposit',
       'tokeTokemakPCVDeposit',
       'uniswapPCVDeposit',
       'collateralizationOracle',
@@ -151,10 +150,9 @@ const dependencies: DependencyMap = {
       'lusdPSMFeiSkimmer',
       'aaveFeiPCVDeposit',
       'agEurAngleUniswapPCVDeposit',
-      'indexCoopFusePoolFeiPCVDeposit',
-      'poolPartyFeiPCVDeposit',
-      'rariPool18FeiPCVDeposit',
       'rariPool19FeiPCVDeposit',
+      'rariPool18Fei',
+      'rariPool18FeiPCVDeposit',
       'rariPool22FeiPCVDeposit',
       'rariPool24FeiPCVDeposit',
       'rariPool26FeiPCVDeposit',
@@ -379,16 +377,16 @@ const dependencies: DependencyMap = {
   feiLusdLBPSwapper: {
     contractDependencies: ['core', 'chainlinkLUSDOracleWrapper']
   },
-  indexCoopFusePoolDpiPCVDeposit: {
+  rariPool19DpiPCVDeposit: {
     contractDependencies: ['core']
   },
-  indexCoopFusePoolFeiPCVDeposit: {
+  rariPool19FeiPCVDeposit: {
     contractDependencies: ['core', 'fei']
   },
   indexDelegator: {
     contractDependencies: ['core']
   },
-  poolPartyFeiPCVDeposit: {
+  rariPool18Fei: {
     contractDependencies: ['core', 'fei']
   },
   rariPool146Comptroller: {
@@ -401,9 +399,6 @@ const dependencies: DependencyMap = {
     contractDependencies: ['rariPool146Comptroller']
   },
   rariPool18FeiPCVDeposit: {
-    contractDependencies: ['core', 'fei']
-  },
-  rariPool19FeiPCVDeposit: {
     contractDependencies: ['core', 'fei']
   },
   rariPool22FeiPCVDeposit: {
@@ -442,7 +437,7 @@ const dependencies: DependencyMap = {
   rariPool9FeiPCVDeposit: {
     contractDependencies: ['core', 'fei']
   },
-  reflexerStableAssetFusePoolRaiPCVDeposit: {
+  rariPool9RaiPCVDeposit: {
     contractDependencies: ['core']
   },
   tokeTokemakPCVDeposit: {
