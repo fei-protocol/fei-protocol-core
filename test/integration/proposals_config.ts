@@ -11,11 +11,11 @@ const proposals: ProposalsConfigMap = {
     proposalId: null,
     affectedContractSignoff: [
       'pcvGuardianNew',
-      'ohmToEthLBPSwapper',
+      'ethTogOhmLBPSwapper',
       'aaveEthPCVDeposit',
       'collateralizationOracle',
       'ohmToETHLensOHM',
-      'ohmToETHLensETH'
+      'gOhmToETHLensETH'
     ],
     deprecatedContractSignoff: [],
     category: ProposalCategory.DAO

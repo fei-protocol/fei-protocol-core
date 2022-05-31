@@ -25,36 +25,29 @@ const fip_107: ProposalDescription = {
       arguments: ['{aaveEthPCVDeposit}', '{ethTogOhmLBPSwapper}', '5109000000000000000000', false, false],
       description: 'Withdraw WETH from the Aave ETH PCV deposit, using the pcvGuardian, and transfer to the LBP swapper'
     },
-    // {
-    //   target: 'collateralizationOracle',
-    //   values: '0',
-    //   method: 'addDeposit(address)',
-    //   arguments: ['{gOhmToETHLensgOHM}'],
-    //   description: 'Add OHM swapper lens to the CR oracle'
-    // },
-    // {
-    //   target: 'collateralizationOracle',
-    //   values: '0',
-    //   method: 'addDeposit(address)',
-    //   arguments: ['{gOhmToETHLensETH}'],
-    //   description: 'Add ETH swapper lens to the CR oracle'
-    // },
+    // TODO: Figure out why can't add gOhmToETHLensgOHM to the oracle
+    {
+      target: 'collateralizationOracle',
+      values: '0',
+      method: 'addDeposits(address[])',
+      arguments: [['{gOhmToETHLensETH}']],
+      description: 'Add gOHM and ETH swapper lenses to the CR oracle'
+    },
     {
       target: 'ethTogOhmLBPSwapper',
       values: '0',
       method: 'forceSwap()',
       arguments: [],
       description: 'Start the auction and override the current no-op auction'
-    }
-
+    },
     // Technical maintenance
-    // {
-    //   target: 'collateralizationOracle',
-    //   values: '0',
-    //   method: 'removeDeposit(address)',
-    //   arguments: [['{creamDepositWrapper}']],
-    //   description: 'Remove empty CREAM deposit from the CR oracle'
-    // }
+    {
+      target: 'collateralizationOracle',
+      values: '0',
+      method: 'removeDeposit(address)',
+      arguments: ['{creamDepositWrapper}'],
+      description: 'Remove empty CREAM deposit from the CR oracle'
+    }
   ],
   description: `
   FIP-107: Acquire gOHM by selling $10M of ETH
