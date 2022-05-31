@@ -19,7 +19,7 @@ contract GOhmOracleIntegrationTest is DSTest, StdLib {
     GOhmEthOracle public gOhmEthOracle;
 
     address gOHM = 0x0ab87046fBb341D058F17CBC4c1133F25a20a52f;
-    RariPriceOracle public rariOracle = RariPriceOracle(0x057eCDA7f61C73c3Adcc36899d2626C7b79C3249);
+    RariPriceOracle public rariOracle = RariPriceOracle(0x1887118E49e0F4A78Bd71B792a49dE03504A764D);
 
     // Chainlink OHM V2 Oracle reporting in terms of ETH
     address chainlinkOHMEthOracle = 0x9a72298ae3886221820B1c878d12D872087D3a23;
@@ -55,5 +55,13 @@ contract GOhmOracleIntegrationTest is DSTest, StdLib {
         // gOHM price is ~$3000
         assertGt(gOhmUSDPrice.value / 1e18, 2000);
         assertLt(gOhmUSDPrice.value / 1e18, 4000);
+    }
+
+    /// @notice Validate that the Rari gOHM oracle matches the Fei gOHM oracle
+    function testOracleMatchesRari() public {
+        (Decimal.D256 memory gOhmEthPrice, ) = gOhmEthOracle.read();
+        uint256 rariOracleGOhmPrice = rariOracle.price(gOHM);
+
+        assertEq(gOhmEthPrice.value, rariOracleGOhmPrice);
     }
 }
