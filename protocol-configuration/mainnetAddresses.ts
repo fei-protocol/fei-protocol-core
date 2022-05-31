@@ -1923,7 +1923,7 @@ const MainnetAddresses: MainnetAddresses = {
   },
   gohm: {
     artifactName: 'ERC20',
-    address: '0x0ab87046fbb341d058f17cbc4c1133f25a20a52f',
+    address: '0x0ab87046fBb341D058F17CBC4c1133F25a20a52f',
     category: AddressCategory.External
   },
   ohmUSDCompositeOracle: {

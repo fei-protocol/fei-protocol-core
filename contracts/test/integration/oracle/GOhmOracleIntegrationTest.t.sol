@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import {DSTest} from "../../utils/DSTest.sol";
 import {StdLib} from "../../utils/StdLib.sol";
-import {GOhmOracle} from "../../../oracle/GOhmOracle.sol";
+import {GOhmEthOracle} from "../../../oracle/GOhmOracle.sol";
 import {CompositeOracle} from "../../../oracle/CompositeOracle.sol";
 import {MainnetAddresses} from "../fixtures/MainnetAddresses.sol";
 import {Decimal, IOracle} from "../../../oracle/IOracle.sol";
@@ -16,7 +16,7 @@ interface RariPriceOracle {
 
 /// @notice Integration test to validate gOHM oracle matches Rari gOHM oracle price
 contract GOhmOracleIntegrationTest is DSTest, StdLib {
-    GOhmOracle public gOhmOracle;
+    GOhmEthOracle public gOhmEthOracle;
 
     address gOHM = 0x0ab87046fBb341D058F17CBC4c1133F25a20a52f;
     RariPriceOracle public rariOracle = RariPriceOracle(0x057eCDA7f61C73c3Adcc36899d2626C7b79C3249);
@@ -28,11 +28,11 @@ contract GOhmOracleIntegrationTest is DSTest, StdLib {
     IOracle chainlinkEthUSDOracleWrapper = IOracle(0xCd3c40AE1256922BA16C7872229385E20Bc8351e);
 
     function setUp() public {
-        gOhmOracle = new GOhmOracle(MainnetAddresses.CORE, chainlinkOHMEthOracle);
+        gOhmEthOracle = new GOhmEthOracle(MainnetAddresses.CORE, chainlinkOHMEthOracle);
     }
 
     function testValidgOHMPrice() public {
-        (Decimal.D256 memory gOhmEthPrice, ) = gOhmOracle.read();
+        (Decimal.D256 memory gOhmEthPrice, ) = gOhmEthOracle.read();
         console.log("eth price: ", gOhmEthPrice.value);
 
         // Eth price is ~$1973. gOHM price is ~$3050
@@ -46,7 +46,7 @@ contract GOhmOracleIntegrationTest is DSTest, StdLib {
         // OHM V2 oracle in terms of USD
         CompositeOracle gOhmUSDOracle = new CompositeOracle(
             MainnetAddresses.CORE,
-            gOhmOracle,
+            gOhmEthOracle,
             chainlinkEthUSDOracleWrapper
         );
         (Decimal.D256 memory gOhmUSDPrice, ) = gOhmUSDOracle.read();

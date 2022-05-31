@@ -19,10 +19,10 @@ interface IgOHM {
     function migrate(address _staking, address _sOHM) external;
 }
 
-/// @title GOHM Oracle
+/// @title GOHM Eth Oracle
 /// @notice Report the gOHM price in units of ETH. Calculated by reading a Chainlink OHM V2
 ///         oracle price and multiplying that by the queried OHM index
-contract GOhmOracle is IOracle, CoreRef {
+contract GOhmEthOracle is IOracle, CoreRef {
     using Decimal for Decimal.D256;
 
     /// @notice the referenced chainlink oracle
