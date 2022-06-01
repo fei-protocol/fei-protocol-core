@@ -409,7 +409,7 @@ describe('e2e-peg-stability-module', function () {
         await rai.connect(raiWhaleSigner).transfer(raiPriceBoundPSM.address, redeemAmount);
 
         // Set floor to something sufficiently low for tests to pass - RAI price on-chain fluctuates
-        await raiPriceBoundPSM.connect(impersonatedSigners[governorAddress]).setOracleFloorBasisPoints(25000);
+        await raiPriceBoundPSM.connect(impersonatedSigners[userAddress]).setOracleFloorBasisPoints(25000);
       });
 
       it('exchanges 1000 FEI for rai', async () => {
@@ -463,7 +463,7 @@ describe('e2e-peg-stability-module', function () {
         await rai.connect(impersonatedSigners[userAddress]).approve(raiPriceBoundPSM.address, mintAmount * 2);
 
         // Set floor to something sufficiently low for tests to pass - RAI price on-chain fluctuates
-        await raiPriceBoundPSM.connect(impersonatedSigners[governorAddress]).setOracleFloorBasisPoints(2500);
+        await raiPriceBoundPSM.connect(impersonatedSigners[userAddress]).setOracleFloorBasisPoints(2500);
       });
 
       it('cannot mint because the rai psm is paused', async () => {
