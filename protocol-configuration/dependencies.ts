@@ -28,8 +28,12 @@ const dependencies: DependencyMap = {
   laTribuTribeTimelock: {
     contractDependencies: ['tribe']
   },
+  fuseFixer: {
+    contractDependencies: ['core', 'pcvGuardianNew']
+  },
   core: {
     contractDependencies: [
+      'fuseFixer',
       'raiPriceBoundPSM',
       'raiPCVDripController',
       'collateralizationOracleGuardian',
@@ -195,7 +199,8 @@ const dependencies: DependencyMap = {
       'daiFixedPricePSM',
       'compoundEthPCVDeposit',
       'aaveEthPCVDeposit',
-      'raiPriceBoundPSM'
+      'raiPriceBoundPSM',
+      'fuseFixer'
     ]
   },
   raiPriceBoundPSM: {
