@@ -8,7 +8,7 @@ const proposals: ProposalsConfigMap = {
     totalValue: 0, // amount of ETH to send to DAO execution
     proposal: register_proposal, // full proposal file, imported from '@proposals/description/fip_xx.ts'
     proposalId: '',
-    affectedContractSignoff: [],
+    affectedContractSignoff: ['core'],
     deprecatedContractSignoff: [],
     category: ProposalCategory.TC
   },
