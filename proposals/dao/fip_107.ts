@@ -22,7 +22,7 @@ Tribal Council proposal FIP #107
 2. Deploy Balancer LBP and initialise auction of ETH for gOHM
 3. Set Balancer LBP contract as a safe address on the guardian
 4. Withdraw $10.5M ETH from Aave PCVDeposit to the Balancer LBP contract
-5. Transfer ~$600k gOHM from the DAO timelock to the Balancer LBP contract
+5. Transfer ~$784k gOHM from the DAO timelock to the Balancer LBP contract
 6. Initiate auction by calling forceSwap()
 */
 
@@ -190,6 +190,8 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // Run any validations required on the fip using mocha or console logging
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
+  const gohm = contracts.gohm;
+
   ////////////    1. gOHM oracle price is valid   //////////////
   const gOhmUSDPrice = (await contracts.gOhmUSDOracle.read())[0];
   expect(toBN(gOhmUSDPrice.value)).to.be.bignumber.at.least(ethers.constants.WeiPerEther.mul(2_500)); // $2500
@@ -197,6 +199,9 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 
   /////////////  2.    OHM LBP  ////////////////
   await validateLBPSetup(contracts, addresses, poolId);
+
+  /////////////  3. Validate remainder of gOHM was sent to Tribal Council timelock ///////////////
+  expect(await gohm.balanceOf(addresses.tribalCouncilTimelock)).to.be.equal('263000000000000000000');
 };
 
 const validateLBPSetup = async (contracts: NamedContracts, addresses: NamedAddresses, poolId: string) => {
