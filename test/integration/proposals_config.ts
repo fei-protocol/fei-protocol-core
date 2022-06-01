@@ -27,7 +27,7 @@ const proposals: ProposalsConfigMap = {
     proposal: repay_fuse_bad_debt, // full proposal file, imported from '@proposals/description/fip_xx.ts'
     proposalId: '',
     affectedContractSignoff: ['core', 'fuseFixer', 'pcvGuardianNew'],
-    deprecatedContractSignoff: [''],
+    deprecatedContractSignoff: [],
     category: ProposalCategory.TC
   }
 };
