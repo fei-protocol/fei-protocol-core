@@ -18,8 +18,6 @@ const end_tribe_incentives: ProposalDescription = {
       arguments: ['0'],
       description: 'Set Tribal Chief block reward to 0'
     }
-    // TODO: Harvest deposits
-    // TODO: Sync up deposits
   ],
   description: `
   TIP-109: Discontinue Tribe Incentives

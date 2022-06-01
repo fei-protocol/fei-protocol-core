@@ -17,12 +17,6 @@ Ends all Tribe Incentives being distributed
 Steps:
 1. Mass update all pools registered for Tribe rewards, so they have all rewards they are entitled to so far
 2. Set TribalChief block reward to zero, to stop distributing new rewards
-3. Calculate how much TRIBE the reward receivers have accrued, x
-4. Withdraw balance(TribalChief) - x amount of Tribe from the TribalChief contract
-5. Stop displaying Tribe rewards on the UIs:
-   - 
-  
-
 */
 
 const fipNumber = 'TIP-109: Discontinue Tribe Incentives';
@@ -52,7 +46,12 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // Run any validations required on the fip using mocha or console logging
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  console.log(`No actions to complete in validate for fip${fipNumber}`);
+  const tribalChief = contracts.tribalChief;
+
+  // 1. Verify TribalChief block rewards are 0
+  expect(await tribalChief.tribePerBlock()).to.equal(0);
+
+  // 2. Validate reward arithmetic is functional
 };
 
 export { deploy, setup, teardown, validate };
