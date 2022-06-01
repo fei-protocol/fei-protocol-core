@@ -14,8 +14,6 @@ import { expectApprox, getImpersonatedSigner, overwriteChainlinkAggregator, time
 
 const toBN = ethers.BigNumber.from;
 
-const CHAINLINK_OHM_V2_ETH_ORACLE = '0x9a72298ae3886221820b1c878d12d872087d3a23';
-
 /*
 
 Tribal Council proposal FIP #107
@@ -38,7 +36,7 @@ const fipNumber = '107';
 const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: NamedAddresses, logging: boolean) => {
   ////////////// 1. Create and deploy gOHM USD oracle
   const GOhmEthOracleFactory = await ethers.getContractFactory('GOhmEthOracle');
-  const gOHMEthOracle = await GOhmEthOracleFactory.deploy(addresses.core, CHAINLINK_OHM_V2_ETH_ORACLE);
+  const gOHMEthOracle = await GOhmEthOracleFactory.deploy(addresses.core, addresses.chainlinkOHMV2EthOracle);
   await gOHMEthOracle.deployed();
 
   logging && console.log(`Deployed gOHM Eth Oracle at ${gOHMEthOracle.address}`);
@@ -56,7 +54,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   ///////////  2. Deploy the Balancer LBP swapper
   // // Amounts:
   // ETH: 5410000000000000000000 (95%), 5410 ETH, ~$10,500,000 at 1 ETH = $1941
-  // OHM:  200000000000000000000 (5%), 175 gOHM, ~$525,000 at 1 OHM = $2990 overfunding by 15% and transferring $600k
+  // OHM:  263000000000000000000 (5%), 263 gOHM, ~$525,000 at 1 OHM = $2990 overfunding by 15% and transferring $784k
   const BalancerLBPSwapperFactory = await ethers.getContractFactory('BalancerLBPSwapper');
 
   // tokenSpent = WETH, tokenReceived = gOHM
@@ -93,8 +91,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   );
 
   const tx: TransactionResponse = await lbpFactory.create(
-    'ETH->gOHM Auction Pool', // pool name
-    'apETH-gOHM', // lbp token symbol
+    'WETH->gOHM Auction Pool', // pool name
+    'apWETH-gOHM', // lbp token symbol
     [addresses.gohm, addresses.weth], // pool contains [WETH, gOHM]
     [ethers.constants.WeiPerEther.mul(5).div(100), ethers.constants.WeiPerEther.mul(95).div(100)], // initial weights 5%/95%
     ethers.constants.WeiPerEther.mul(30).div(10_000), // 0.3% swap fees
@@ -245,21 +243,21 @@ const validateLBPSetup = async (contracts: NamedContracts, addresses: NamedAddre
   // poolTokens[0] is gOHM
   // poolTokens[1] is WETH
 
-  // there should be 200 gOHM in the pool. It has 18 decimals
+  // there should be 263 gOHM in the pool. It has 18 decimals
   expect(poolTokens.tokens[0]).to.be.equal(contracts.gohm.address); // this is gOHM
-  expect(poolTokens.balances[0]).to.be.bignumber.at.least(ethers.constants.WeiPerEther.mul(180));
-  expect(poolTokens.balances[0]).to.be.bignumber.at.most(ethers.constants.WeiPerEther.mul(220));
+  expect(poolTokens.balances[0]).to.be.bignumber.at.least(ethers.constants.WeiPerEther.mul(240));
+  expect(poolTokens.balances[0]).to.be.bignumber.at.most(ethers.constants.WeiPerEther.mul(285));
 
   // there should be 5410 ETH in the pool
   expect(poolTokens.tokens[1]).to.be.equal(contracts.weth.address); // this is WETH
   expect(poolTokens.balances[1]).to.be.equal('5410000000000000000000');
 
   // Pool balances Maths:
-  // Total value of pool = (200 gOHM * $2990) + (5410 ETH * $1941) = $11.1M
+  // Total value of pool = (262 gOHM * $2990) + (5410 ETH * $1941) = $11.3M
   // gOHM share = 5%
   // ETH share = 95%
-  // Expected gOHM amount = $11.1M * 0.05 = ~$555k
-  // Expected ETH amount = $11.1M * 0.95 = ~$10.55M -> ~ ($10,550k / 1941) 5435 eth
+  // Expected gOHM amount = $11.3M * 0.05 = ~$565k
+  // Expected ETH amount = $11.3M * 0.95 = ~$10.74M -> ~ ($10,740k / 1941) 5533 eth
 
   // Validate that a swap can occur
   const gOhmWhale = '0x245cc372C84B3645Bf0Ffe6538620B04a217988B'; // Olympus DAO funds

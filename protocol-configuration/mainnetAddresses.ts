@@ -731,6 +731,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0xDE02522cDc4959117fe839a7326D80F9858f383C',
     category: AddressCategory.Oracle
   },
+  chainlinkOHMV2EthOracle: {
+    artifactName: 'unknown',
+    address: '0x9a72298ae3886221820b1c878d12d872087d3a23',
+    category: AddressCategory.Oracle
+  },
   chainlinkDaiUsdOracleWrapper: {
     artifactName: 'ChainlinkOracleWrapper',
     address: '0x231aDa12E273eDf3fA54CbD90c5C1a73129D5bb9',
