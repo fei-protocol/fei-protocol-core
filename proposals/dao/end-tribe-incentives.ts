@@ -7,6 +7,7 @@ import {
   TeardownUpgradeFunc,
   ValidateUpgradeFunc
 } from '@custom-types/types';
+import { getImpersonatedSigner } from '@test/helpers';
 
 /*
 
@@ -46,12 +47,25 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // Run any validations required on the fip using mocha or console logging
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
+  const tribe = contracts.tribe;
   const tribalChief = contracts.tribalChief;
 
   // 1. Verify TribalChief block rewards are 0
   expect(await tribalChief.tribePerBlock()).to.equal(0);
 
-  // 2. Validate reward arithmetic is functional
+  // 2. Validate that can harvest Tribe rewards
+  const receiver = '0xbEA4B2357e8ec53AF60BbcA4bc570332a7C7E232';
+  const initialBalance = await tribe.balanceOf(receiver);
+
+  const poolId = 0; // UniswapV2 Fei-Tribe LP pool
+
+  const stakerInFeiTribe = '0x7d809969f6a04777f0a87ff94b57e56078e5fe0f';
+  const stakerInFeiTribeSigner = await getImpersonatedSigner(stakerInFeiTribe);
+
+  await tribalChief.connect(stakerInFeiTribeSigner).harvest(poolId, receiver);
+  const finalBalance = await tribe.balanceOf(receiver);
+
+  expect(finalBalance.sub(initialBalance)).to.be.bignumber.at.least(0);
 };
 
 export { deploy, setup, teardown, validate };
