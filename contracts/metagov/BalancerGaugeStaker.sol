@@ -3,12 +3,13 @@ pragma solidity ^0.8.0;
 
 import "../pcv/PCVDeposit.sol";
 import "./utils/LiquidityGaugeManager.sol";
+import "./utils/VeBoostManager.sol";
 import "../external/balancer/IBalancerMinter.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 /// @title Deposit that can stake in Balancer gauges
 /// @author Fei Protocol
-contract BalancerGaugeStaker is PCVDeposit, LiquidityGaugeManager {
+contract BalancerGaugeStaker is PCVDeposit, LiquidityGaugeManager, VeBoostManager {
     using SafeERC20 for IERC20;
 
     event BalancerMinterChanged(address indexed oldMinter, address indexed newMinter);
@@ -18,24 +19,35 @@ contract BalancerGaugeStaker is PCVDeposit, LiquidityGaugeManager {
     address public balancerMinter;
 
     /// @notice Balancer gauge staker
-    /// @param _core Fei Core for reference
     constructor(
         address _core,
         address _gaugeController,
-        address _balancerMinter
-    ) CoreRef(_core) LiquidityGaugeManager(_gaugeController) {
+        address _balancerMinter,
+        address _votingEscrowDelegation
+    ) CoreRef(_core) LiquidityGaugeManager(_gaugeController) VeBoostManager(_votingEscrowDelegation) {
+        gaugeController = _gaugeController;
         balancerMinter = _balancerMinter;
+        votingEscrowDelegation = _votingEscrowDelegation;
     }
 
     function initialize(
         address _core,
         address _gaugeController,
-        address _balancerMinter
+        address _balancerMinter,
+        address _votingEscrowDelegation
     ) external {
-        require(gaugeController == address(0), "BalancerGaugeStaker: initialized");
+        require(
+            address(core()) == address(0) ||
+                gaugeController == address(0) ||
+                balancerMinter == address(0) ||
+                votingEscrowDelegation == address(0),
+            "BalancerGaugeStaker: initialized"
+        );
+
         CoreRef._initialize(_core);
         gaugeController = _gaugeController;
         balancerMinter = _balancerMinter;
+        votingEscrowDelegation = _votingEscrowDelegation;
     }
 
     /// @notice Set the balancer minter used to mint BAL

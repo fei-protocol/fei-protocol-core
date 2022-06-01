@@ -406,6 +406,11 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0xC128468b7Ce63eA702C1f104D55A2566b13D3ABD',
     category: AddressCategory.External
   },
+  balancerVotingEscrowDelegation: {
+    artifactName: 'IVotingEscrowDelegation',
+    address: '0x44A41fE82c9539C1aadaBEE5B9C3f327eba5C8a3',
+    category: AddressCategory.External
+  },
   balancerGaugeBpt30Fei70Weth: {
     artifactName: 'ILiquidityGauge',
     address: '0x4f9463405F5bC7b4C1304222c1dF76EFbD81a407',
@@ -421,10 +426,10 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x66977Ce30049CD0e443216Bf26377966c3A109E2',
     category: AddressCategory.Governance
   },
-  balancerGaugeStakerImpl: {
+  balancerGaugeStakerImplMay2022: {
     artifactName: 'BalancerGaugeStaker',
     address: '0xF53E251352683155898295569d77B8506bA00d80',
-    category: AddressCategory.Governance
+    category: AddressCategory.Deprecated
   },
   gaugeLensBpt30Fei70WethGaugeOld: {
     artifactName: 'CurveGaugeLens',
