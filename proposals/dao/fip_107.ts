@@ -192,15 +192,12 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // Run any validations required on the fip using mocha or console logging
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  ////////////    1. New Safe adddresses   //////////////
-  expect(await contracts.pcvGuardianNew.isSafeAddress(addresses.ethTogOhmLBPSwapper)).to.be.true;
-
-  ////////////    2. gOHM oracle price is valid   //////////////
+  ////////////    1. gOHM oracle price is valid   //////////////
   const gOhmUSDPrice = (await contracts.gOhmUSDOracle.read())[0];
   expect(toBN(gOhmUSDPrice.value)).to.be.bignumber.at.least(ethers.constants.WeiPerEther.mul(2_500)); // $2500
   expect(toBN(gOhmUSDPrice.value)).to.be.bignumber.at.least(ethers.constants.WeiPerEther.mul(3_400)); // $3400
 
-  /////////////  3.    OHM LBP  ////////////////
+  /////////////  2.    OHM LBP  ////////////////
   await validateLBPSetup(contracts, addresses, poolId);
 };
 
