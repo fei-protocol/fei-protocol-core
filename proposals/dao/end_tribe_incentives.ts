@@ -16,11 +16,13 @@ const toBN = ethers.BigNumber.from;
 
 TIP-109: Discontinue Tribe Incentives
 
-Ends all Tribe Incentives being distributed
+Ends all Tribe Incentives being distributed. 
 
-Steps:
-1. Mass update all pools registered for Tribe rewards, so they have all rewards they are entitled to so far
-2. Set TribalChief block reward to zero, to stop distributing new rewards
+Specifically:
+- Unlock all pools to release principle
+- Set AP rewards of all pools to 0, and set one pool AP reward to 1
+- Effectively set Tribe block reward to 0
+- Remove CREAM deposit from CR
 */
 
 const NEW_TRIBE_BLOCK_REWARD = 100000;
@@ -105,7 +107,13 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(harvestedTribe).to.be.bignumber.at.least(toBN(1));
 
   // 6. Validate can withdraw principle from staked pool
+  const receiverBalanceBefore = await stakedToken.balanceOf(receiver);
   await tribalChief.connect(stakerInPoolSigner).withdrawAllAndHarvest(poolId, receiver);
+  const receiverBalanceAfter = await stakedToken.balanceOf(receiver);
+  const withdrawnPrinciple = receiverBalanceAfter.sub(receiverBalanceBefore);
+  console.log('withdrawn principle: ', withdrawnPrinciple.toString());
+
+  expect(withdrawnPrinciple).to.be.bignumber.at.least(toBN(1));
 };
 
 export { deploy, setup, teardown, validate };

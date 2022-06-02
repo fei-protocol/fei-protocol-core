@@ -4,14 +4,6 @@ const end_tribe_incentives: ProposalDescription = {
   // Pool ID is where the pool is in the array
   title: 'TIP-109: Discontinue Tribe Incentives',
   commands: [
-    /////  Update reward variables of all pools
-    {
-      target: 'tribalChief',
-      values: '0',
-      method: 'massUpdatePools(uint256[])',
-      arguments: [['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17']],
-      description: 'Update reward variables on all pools registered for Tribe rewards'
-    },
     /////// TC grants itself TRIBAL_CHIEF_ADMIN_ROLE
     {
       target: 'core',
