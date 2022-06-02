@@ -103,7 +103,6 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   await tribalChief.connect(stakerInPoolSigner).harvest(poolId, receiver);
   const finalBalance = await tribe.balanceOf(receiver);
   const harvestedTribe = finalBalance.sub(initialBalance);
-  console.log('harvested tribe: ', harvestedTribe);
   expect(harvestedTribe).to.be.bignumber.at.least(toBN(1));
 
   // 6. Validate can withdraw principle from staked pool
@@ -111,8 +110,6 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   await tribalChief.connect(stakerInPoolSigner).withdrawAllAndHarvest(poolId, receiver);
   const receiverBalanceAfter = await stakedToken.balanceOf(receiver);
   const withdrawnPrinciple = receiverBalanceAfter.sub(receiverBalanceBefore);
-  console.log('withdrawn principle: ', withdrawnPrinciple.toString());
-
   expect(withdrawnPrinciple).to.be.bignumber.at.least(toBN(1));
 };
 

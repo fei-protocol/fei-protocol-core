@@ -186,6 +186,21 @@ describe('e2e-staking', function () {
     before(async () => {
       stakingTokenWrapper = contracts.stakingTokenWrapperRari;
       tribalChief = contracts.tribalChief as TribalChief;
+
+      // TribalChief fixture: setup with non-zero block reward and various pools with allocation points
+      const daoSigner = await getImpersonatedSigner(contracts.feiDAOTimelock.address);
+      await forceEth(contracts.feiDAOTimelock.address);
+      await tribalChief.connect(daoSigner).updateBlockReward('26150000000000000000');
+
+      // Initialise various pools with rewards
+      await tribalChief.connect(daoSigner).set(pid, poolAllocPoints, ethers.constants.AddressZero, false);
+      await tribalChief.connect(daoSigner).set(12, 250, ethers.constants.AddressZero, false);
+      await tribalChief.connect(daoSigner).set(13, 250, ethers.constants.AddressZero, false);
+      await tribalChief.connect(daoSigner).set(14, 1000, ethers.constants.AddressZero, false);
+      await tribalChief.connect(daoSigner).set(15, 100, ethers.constants.AddressZero, false);
+      await tribalChief.connect(daoSigner).set(16, 500, ethers.constants.AddressZero, false);
+      await tribalChief.connect(daoSigner).set(17, 250, ethers.constants.AddressZero, false);
+
       tribePerBlock = await tribalChief.tribePerBlock();
 
       rewardsDistributorAdmin = contracts.rewardsDistributorAdmin;
@@ -199,18 +214,7 @@ describe('e2e-staking', function () {
       });
       await forceEth(optimisticTimelock.address);
 
-      // TribalChief fixture: setup with non-zero block reward and various pools with allocation points
-      const daoSigner = await getImpersonatedSigner(contracts.feiDAOTimelock.address);
-      await forceEth(contracts.feiDAOTimelock.address);
-      await contracts.tribalChief.connect(daoSigner).updateBlockReward('26150000000000000000');
-
-      // Initialise various pools with rewards
-      await contracts.tribalChief.connect(daoSigner).set(pid, poolAllocPoints, ethers.constants.AddressZero, false);
-      await contracts.tribalChief.connect(daoSigner).set(12, 250, ethers.constants.AddressZero, false);
-      await contracts.tribalChief.connect(daoSigner).set(13, 250, ethers.constants.AddressZero, false);
-      await contracts.tribalChief.connect(daoSigner).set(15, 100, ethers.constants.AddressZero, false);
-      await contracts.tribalChief.connect(daoSigner).set(16, 500, ethers.constants.AddressZero, false);
-      await contracts.tribalChief.connect(daoSigner).set(17, 250, ethers.constants.AddressZero, false);
+      totalAllocPoint = await tribalChief.totalAllocPoint();
     });
 
     describe('Staking Token Wrapper', async () => {
@@ -345,6 +349,23 @@ describe('e2e-staking', function () {
   });
 
   describe('TribalChiefSyncV2', async () => {
+    before(async () => {
+      const tribalChief = contracts.tribalChief;
+      // Fixture: Set Tribe block reward to be greater than 0
+      const daoSigner = await getImpersonatedSigner(contracts.feiDAOTimelock.address);
+      await forceEth(contracts.feiDAOTimelock.address);
+      await contracts.tribalChief.connect(daoSigner).updateBlockReward('26150000000000000000');
+
+      // Initialise various pools with rewards
+      await tribalChief.connect(daoSigner).set(3, 1000, ethers.constants.AddressZero, false);
+      await tribalChief.connect(daoSigner).set(12, 250, ethers.constants.AddressZero, false);
+      await tribalChief.connect(daoSigner).set(13, 250, ethers.constants.AddressZero, false);
+      await tribalChief.connect(daoSigner).set(14, 1000, ethers.constants.AddressZero, false);
+      await tribalChief.connect(daoSigner).set(15, 100, ethers.constants.AddressZero, false);
+      await tribalChief.connect(daoSigner).set(16, 500, ethers.constants.AddressZero, false);
+      await tribalChief.connect(daoSigner).set(17, 250, ethers.constants.AddressZero, false);
+    });
+
     it('auto-sync works correctly', async () => {
       const tribalChiefSync: TribalChiefSyncV2 = contracts.tribalChiefSyncV2 as TribalChiefSyncV2;
       const tribalChiefSyncExtension: TribalChiefSyncExtension =
