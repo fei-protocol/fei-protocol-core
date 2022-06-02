@@ -8,6 +8,9 @@ import {
   ValidateUpgradeFunc
 } from '@custom-types/types';
 import { getImpersonatedSigner } from '@test/helpers';
+import { forceEth } from '@test/integration/setup/utils';
+
+const toBN = ethers.BigNumber.from;
 
 /*
 
@@ -19,6 +22,9 @@ Steps:
 1. Mass update all pools registered for Tribe rewards, so they have all rewards they are entitled to so far
 2. Set TribalChief block reward to zero, to stop distributing new rewards
 */
+
+const NEW_TRIBE_BLOCK_REWARD = 100000;
+const NEW_TOTAL_ALLOC_POINTS = 1;
 
 const fipNumber = 'TIP-109: Discontinue Tribe Incentives';
 
@@ -56,7 +62,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   ).to.equal(true);
 
   // 1. Verify TribalChief block rewards are 0
-  expect(await tribalChief.tribePerBlock()).to.equal(0);
+  expect(await tribalChief.tribePerBlock()).to.equal(NEW_TRIBE_BLOCK_REWARD);
 
   // 2. Validate number of pools is as expected
   const poolIds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
@@ -67,38 +73,39 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const feiRariPoolId = '3';
   for (const pid in poolIds) {
     const poolInfo = await tribalChief.poolInfo(pid);
-    const rewarder = await tribalChief.rewarders(pid);
-    console.log({ poolInfo });
-
     expect(poolInfo.unlocked).to.equal(true);
-    expect(rewarder).to.equal(ethers.constants.AddressZero);
 
     if (pid == feiRariPoolId) {
-      expect(poolInfo.allocPoint).to.be.bignumber.equal(1);
+      expect(poolInfo.allocPoint).to.be.equal(NEW_TOTAL_ALLOC_POINTS.toString());
     } else {
-      expect(poolInfo.allocPoint).to.be.bignumber.equal(0);
+      expect(poolInfo.allocPoint).to.be.equal('0');
     }
   }
 
   // 4. Verify total AP points is 1
-  expect(await tribalChief.totalAllocPoint()).to.be.bignumber.equal(1);
+  expect(await tribalChief.totalAllocPoint()).to.be.equal(NEW_TOTAL_ALLOC_POINTS.toString());
 
   // 5. Validate that can harvest Tribe rewards
   const receiver = '0xbEA4B2357e8ec53AF60BbcA4bc570332a7C7E232';
   const initialBalance = await tribe.balanceOf(receiver);
 
-  const poolId = 0; // UniswapV2 Fei-Tribe LP pool
-  const stakerInFeiTribe = '0x7d809969f6a04777f0a87ff94b57e56078e5fe0f';
-  const stakerInFeiTribeSigner = await getImpersonatedSigner(stakerInFeiTribe);
+  const poolId = 1;
+  // This is a staking token wrapper
+  const stakedTokenAddress = '0x06cb22615BA53E60D67Bf6C341a0fD5E718E1655';
+  const stakerInPool = '0x019EdcB493Bd91e2b25b70f26D5d9041Fd7EF946';
+  const stakerInPoolSigner = await getImpersonatedSigner(stakerInPool);
+  await forceEth(stakerInPool);
 
-  await tribalChief.connect(stakerInFeiTribeSigner).harvest(poolId, receiver);
+  const stakedToken = await ethers.getContractAt('StakingTokenWrapper', stakedTokenAddress);
+
+  await tribalChief.connect(stakerInPoolSigner).harvest(poolId, receiver);
   const finalBalance = await tribe.balanceOf(receiver);
   const harvestedTribe = finalBalance.sub(initialBalance);
-  console.log('Harvested tribe: ', harvestedTribe.toString());
-  expect(harvestedTribe).to.be.bignumber.at.least(0);
+  console.log('harvested tribe: ', harvestedTribe);
+  expect(harvestedTribe).to.be.bignumber.at.least(toBN(1));
 
   // 6. Validate can withdraw principle from staked pool
-  // TODO
+  await tribalChief.connect(stakerInPoolSigner).withdrawAllAndHarvest(poolId, receiver);
 };
 
 export { deploy, setup, teardown, validate };
