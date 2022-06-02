@@ -12,6 +12,15 @@ const end_tribe_incentives: ProposalDescription = {
       arguments: [['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17']],
       description: 'Update reward variables on all pools registered for Tribe rewards'
     },
+    /////// TC grants itself TRIBAL_CHIEF_ADMIN_ROLE
+    {
+      target: 'core',
+      values: '0',
+      method: 'grantRole(bytes32,address)',
+      arguments: ['0x23970cab3799b6876df4319661e6c03cc45bd59628799d92e988dd8cbdc90e31', '{tribalCouncilTimelock}'],
+      description: 'Grant TRIBAL_CHIEF_ADMIN_ROLE to Tribal Council timelock'
+    },
+
     /////////////  Replicate onlyGovernor behaviour or resetRewards()
     ////  Unlock pools all pools to allow principle withdrawal
     {
@@ -163,6 +172,8 @@ const end_tribe_incentives: ProposalDescription = {
       arguments: ['2', '0', '0x0000000000000000000000000000000000000000', true],
       description: 'Set Pool 2 rewards to 0 to allow principle withdrawal and set rewarder to 0x0'
     },
+
+    // Note: Setting a single pool here to have an AP point != 0
     {
       target: 'tribalChief',
       values: '0',

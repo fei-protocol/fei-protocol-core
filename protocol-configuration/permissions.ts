@@ -36,7 +36,7 @@ export const permissions = {
   RATE_LIMITED_MINTER_ADMIN: [],
   PARAMETER_ADMIN: [],
   PSM_ADMIN_ROLE: ['tribalCouncilTimelock'],
-  TRIBAL_CHIEF_ADMIN_ROLE: ['optimisticTimelock', 'tribalChiefSyncV2'],
+  TRIBAL_CHIEF_ADMIN_ROLE: ['optimisticTimelock', 'tribalChiefSyncV2', 'tribalCouncilTimelock'],
   FUSE_ADMIN: ['optimisticTimelock', 'tribalChiefSyncV2', 'tribalCouncilTimelock'],
   VOTIUM_ADMIN_ROLE: ['opsOptimisticTimelock'],
   PCV_GUARDIAN_ADMIN_ROLE: ['optimisticTimelock', 'tribalCouncilTimelock'],
