@@ -11,11 +11,10 @@ import { solidity } from 'ethereum-waffle';
 import { BigNumber, Contract } from 'ethers';
 import hre, { ethers } from 'hardhat';
 import { NamedAddresses, NamedContracts } from '@custom-types/types';
-import { expectApprox, getImpersonatedSigner, resetFork, time } from '@test/helpers';
+import { expectApprox, getImpersonatedSigner, time } from '@test/helpers';
 import proposals from '@test/integration/proposals_config';
 import { TestEndtoEndCoordinator } from '../setup';
 import { forceEth } from '@test/integration/setup/utils';
-import { BN } from 'ethereumjs-util';
 
 const toBN = ethers.BigNumber.from;
 
@@ -199,6 +198,19 @@ describe('e2e-staking', function () {
         params: [optimisticTimelock.address]
       });
       await forceEth(optimisticTimelock.address);
+
+      // TribalChief fixture: setup with non-zero block reward and various pools with allocation points
+      const daoSigner = await getImpersonatedSigner(contracts.feiDAOTimelock.address);
+      await forceEth(contracts.feiDAOTimelock.address);
+      await contracts.tribalChief.connect(daoSigner).updateBlockReward('26150000000000000000');
+
+      // Initialise various pools with rewards
+      await contracts.tribalChief.connect(daoSigner).set(pid, poolAllocPoints, ethers.constants.AddressZero, false);
+      await contracts.tribalChief.connect(daoSigner).set(12, 250, ethers.constants.AddressZero, false);
+      await contracts.tribalChief.connect(daoSigner).set(13, 250, ethers.constants.AddressZero, false);
+      await contracts.tribalChief.connect(daoSigner).set(15, 100, ethers.constants.AddressZero, false);
+      await contracts.tribalChief.connect(daoSigner).set(16, 500, ethers.constants.AddressZero, false);
+      await contracts.tribalChief.connect(daoSigner).set(17, 250, ethers.constants.AddressZero, false);
     });
 
     describe('Staking Token Wrapper', async () => {
