@@ -19,7 +19,7 @@ const end_tribe_incentives: ProposalDescription = {
       target: 'tribalChief',
       values: '0',
       method: 'set(uint256,uint120,address,bool)',
-      arguments: ['0', '0', '0x0000000000000000000000000000000000000000', false],
+      arguments: ['0', '1', '0x0000000000000000000000000000000000000000', false],
       description: 'Set Pool 0 rewards to 0 and do not overwrite or change the rewarder'
     },
     {
@@ -42,7 +42,7 @@ const end_tribe_incentives: ProposalDescription = {
       target: 'tribalChief',
       values: '0',
       method: 'set(uint256,uint120,address,bool)',
-      arguments: ['3', '1', '0x0000000000000000000000000000000000000000', false],
+      arguments: ['3', '0', '0x0000000000000000000000000000000000000000', false],
       description: 'Set Pool 3 rewards to 1 and do not overwrite or change the rewarder'
     },
     {
@@ -151,6 +151,28 @@ const end_tribe_incentives: ProposalDescription = {
       method: 'updateBlockReward(uint256)',
       arguments: ['100000'],
       description: 'Set Tribal Chief block reward effectively to zero. Setting to 100000'
+    },
+
+    ///// Deprecate roles of Incentives system
+    {
+      target: 'core',
+      values: '0',
+      method: 'revokeRole(bytes32,address)',
+      arguments: [
+        '0x7f85477db6c0857f19179a2b3846a7ddbc64caeeb3a02ef34771b82f5ab926e4', // FUSE_ADMIN
+        '{tribalChiefSyncV2}'
+      ],
+      description: 'Revoke FUSE_ADMIN from tribalChiefSyncV2'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'revokeRole(bytes32,address)',
+      arguments: [
+        '0x23970cab3799b6876df4319661e6c03cc45bd59628799d92e988dd8cbdc90e31', // TRIBAL_CHIEF_ADMIN_ROLE
+        '{tribalChiefSyncV2}'
+      ],
+      description: 'Revoke TRIBAL_CHIEF_ADMIN_ROLE from tribalChiefSyncV2'
     },
 
     ////// Remove CREAM from CR

@@ -62,6 +62,12 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
     await contracts.core.hasRole(ethers.utils.id('TRIBAL_CHIEF_ADMIN_ROLE'), addresses.tribalCouncilTimelock)
   ).to.equal(true);
 
+  expect(
+    await contracts.core.hasRole(ethers.utils.id('TRIBAL_CHIEF_ADMIN_ROLE'), addresses.tribalChiefSyncV2)
+  ).to.equal(false);
+
+  expect(await contracts.core.hasRole(ethers.utils.id('FUSE_ADMIN'), addresses.tribalChiefSyncV2)).to.equal(false);
+
   // 1. Verify TribalChief block rewards are effectively 0
   expect(await tribalChief.tribePerBlock()).to.equal(NEW_TRIBE_BLOCK_REWARD);
 
@@ -71,7 +77,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(numPools).to.equal(poolIds.length);
 
   // 3. Validate that all pool AP points are set to zero, apart from Fei-Rari
-  const feiRariPoolId = '3';
+  const feiRariPoolId = '0';
   for (const pid in poolIds) {
     const poolInfo = await tribalChief.poolInfo(pid);
 
