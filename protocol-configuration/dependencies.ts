@@ -247,7 +247,6 @@ const dependencies: DependencyMap = {
       'feiDAO',
       'fei',
       'proxyAdmin',
-      'creamDepositWrapper',
       'wethDepositWrapper',
       'agEurDepositWrapper',
       'aaveTribeIncentivesController',
@@ -475,7 +474,6 @@ const dependencies: DependencyMap = {
       'aaveFeiPCVDepositWrapper',
       'compoundDaiPCVDepositWrapper',
       'compoundEthPCVDepositWrapper',
-      'creamDepositWrapper',
       'wethDepositWrapper',
       'agEurDepositWrapper',
       'ethLidoPCVDepositWrapper',
@@ -514,9 +512,6 @@ const dependencies: DependencyMap = {
   },
   compoundEthPCVDepositWrapper: {
     contractDependencies: ['collateralizationOracle']
-  },
-  creamDepositWrapper: {
-    contractDependencies: ['feiDAOTimelock', 'collateralizationOracle']
   },
   wethDepositWrapper: {
     contractDependencies: ['feiDAOTimelock', 'collateralizationOracle']

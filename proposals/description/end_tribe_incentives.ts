@@ -142,7 +142,7 @@ const end_tribe_incentives: ProposalDescription = {
       description: 'Unlock pool 17'
     },
 
-    //////// Set Pool allocation points to 0 and set Rewarder address to 0x0. This also updates reward variables
+    //////// Set Pool allocation points to 0. This also updates reward variables
     {
       target: 'tribalChief',
       values: '0',

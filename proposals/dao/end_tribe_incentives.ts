@@ -63,7 +63,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
     await contracts.core.hasRole(ethers.utils.id('TRIBAL_CHIEF_ADMIN_ROLE'), addresses.tribalCouncilTimelock)
   ).to.equal(true);
 
-  // 1. Verify TribalChief block rewards are 0
+  // 1. Verify TribalChief block rewards are effectively 0
   expect(await tribalChief.tribePerBlock()).to.equal(NEW_TRIBE_BLOCK_REWARD);
 
   // 2. Validate number of pools is as expected
