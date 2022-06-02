@@ -17,137 +17,140 @@ const end_tribe_incentives: ProposalDescription = {
     {
       target: 'tribalChief',
       values: '0',
-      method: 'resetRewards(uint256)',
+      method: 'set(uint256,uint120,address,bool)',
       arguments: ['0'],
       description: 'Set Pool 0 rewards to 0 and unlock the pool, to allow principle withdrawal'
     },
     {
       target: 'tribalChief',
       values: '0',
-      method: 'resetRewards(uint256)',
+      method: 'set(uint256,uint120,address,bool)',
       arguments: ['1'],
       description: 'Set Pool 1 rewards to 0 and unlock the pool, to allow principle withdrawal'
     },
     {
       target: 'tribalChief',
       values: '0',
-      method: 'resetRewards(uint256)',
+      method: 'set(uint256,uint120,address,bool)',
       arguments: ['2'],
       description: 'Set Pool 2 rewards to 0 and unlock the pool, to allow principle withdrawal'
     },
     {
       target: 'tribalChief',
       values: '0',
-      method: 'resetRewards(uint256)',
+      method: 'set(uint256,uint120,address,bool)',
       arguments: ['3'],
       description: 'Set Pool 3 rewards to 0 and unlock the pool, to allow principle withdrawal'
     },
     {
       target: 'tribalChief',
       values: '0',
-      method: 'resetRewards(uint256)',
+      method: 'set(uint256,uint120,address,bool)',
       arguments: ['4'],
       description: 'Set Pool 4 rewards to 0 and unlock the pool, to allow principle withdrawal'
     },
     {
       target: 'tribalChief',
       values: '0',
-      method: 'resetRewards(uint256)',
+      method: 'set(uint256,uint120,address,bool)',
       arguments: ['5'],
       description: 'Set Pool 5 rewards to 0 and unlock the pool, to allow principle withdrawal'
     },
     {
       target: 'tribalChief',
       values: '0',
-      method: 'resetRewards(uint256)',
+      method: 'set(uint256,uint120,address,bool)',
       arguments: ['6'],
       description: 'Set Pool 6 rewards to 0 and unlock the pool, to allow principle withdrawal'
     },
     {
       target: 'tribalChief',
       values: '0',
-      method: 'resetRewards(uint256)',
+      method: 'set(uint256,uint120,address,bool)',
       arguments: ['7'],
       description: 'Set Pool 7 rewards to 0 and unlock the pool, to allow principle withdrawal'
     },
     {
       target: 'tribalChief',
       values: '0',
-      method: 'resetRewards(uint256)',
+      method: 'set(uint256,uint120,address,bool)',
       arguments: ['8'],
       description: 'Set Pool 8 rewards to 0 and unlock the pool, to allow principle withdrawal'
     },
     {
       target: 'tribalChief',
       values: '0',
-      method: 'resetRewards(uint256)',
+      method: 'set(uint256,uint120,address,bool)',
       arguments: ['9'],
       description: 'Set Pool 9 rewards to 0 and unlock the pool, to allow principle withdrawal'
     },
     {
       target: 'tribalChief',
       values: '0',
-      method: 'resetRewards(uint256)',
+      method: 'set(uint256,uint120,address,bool)',
       arguments: ['10'],
       description: 'Set Pool 10 rewards to 0 and unlock the pool, to allow principle withdrawal'
     },
     {
       target: 'tribalChief',
       values: '0',
-      method: 'resetRewards(uint256)',
+      method: 'set(uint256,uint120,address,bool)',
       arguments: ['11'],
       description: 'Set Pool 11 rewards to 0 and unlock the pool, to allow principle withdrawal'
     },
     {
       target: 'tribalChief',
       values: '0',
-      method: 'resetRewards(uint256)',
+      method: 'set(uint256,uint120,address,bool)',
       arguments: ['12'],
       description: 'Set Pool 12 rewards to 0 and unlock the pool, to allow principle withdrawal'
     },
     {
       target: 'tribalChief',
       values: '0',
-      method: 'resetRewards(uint256)',
+      method: 'set(uint256,uint120,address,bool)',
       arguments: ['13'],
       description: 'Set Pool 13 rewards to 0 and unlock the pool, to allow principle withdrawal'
     },
     {
       target: 'tribalChief',
       values: '0',
-      method: 'resetRewards(uint256)',
+      method: 'set(uint256,uint120,address,bool)',
       arguments: ['14'],
       description: 'Set Pool 14 rewards to 0 and unlock the pool, to allow principle withdrawal'
     },
     {
       target: 'tribalChief',
       values: '0',
-      method: 'resetRewards(uint256)',
+      method: 'set(uint256,uint120,address,bool)',
       arguments: ['15'],
       description: 'Set Pool 15 rewards to 0 and unlock the pool, to allow principle withdrawal'
     },
     {
       target: 'tribalChief',
       values: '0',
-      method: 'resetRewards(uint256)',
+      method: 'set(uint256,uint120,address,bool)',
       arguments: ['16'],
       description: 'Set Pool 16 rewards to 0 and unlock the pool, to allow principle withdrawal'
     },
     {
       target: 'tribalChief',
       values: '0',
-      method: 'resetRewards(uint256)',
+      method: 'set(uint256,uint120,address,bool)',
       arguments: ['17'],
       description: 'Set Pool 17 rewards to 0 and unlock the pool, to allow principle withdrawal'
     },
+
+    //// Leave one pool with a non-zero AP allocation, but effectively zero
     {
       target: 'tribalChief',
       values: '0',
-      method: 'resetRewards(uint256)',
-      arguments: ['18'],
-      description: 'Set Pool 18 rewards to 0 and unlock the pool, to allow principle withdrawal'
+      method: 'set(uint256,uint120,address,bool)',
+      arguments: ['3', '1', '0x0000000000000000000000000000000000000000', false],
+      description: 'Set Fei Rari pool AP points to 1. Do not set the rewarder, overwrite is false'
     },
 
+    ////  Set block rewards to effectively 0
     {
       target: 'tribalChief',
       values: '0',

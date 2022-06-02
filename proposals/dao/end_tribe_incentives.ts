@@ -58,14 +58,31 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const initialBalance = await tribe.balanceOf(receiver);
 
   const poolId = 0; // UniswapV2 Fei-Tribe LP pool
-
   const stakerInFeiTribe = '0x7d809969f6a04777f0a87ff94b57e56078e5fe0f';
   const stakerInFeiTribeSigner = await getImpersonatedSigner(stakerInFeiTribe);
 
   await tribalChief.connect(stakerInFeiTribeSigner).harvest(poolId, receiver);
   const finalBalance = await tribe.balanceOf(receiver);
+  const harvestedTribe = finalBalance.sub(initialBalance);
+  console.log('Harvested tribe: ', harvestedTribe.toString());
+  expect(harvestedTribe).to.be.bignumber.at.least(0);
 
-  expect(finalBalance.sub(initialBalance)).to.be.bignumber.at.least(0);
+  // 3. Validate that all pools are unlocked and that AP points are set to zero, apart from Fei-Rari
+  const poolIds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
+
+  const feiRariPoolId = '3';
+  for (const pid in poolIds) {
+    const poolInfo = await tribalChief.poolInfo[pid];
+    console.log({ poolInfo });
+
+    expect(poolInfo.unlocked).to.equal(true);
+
+    if (pid == feiRariPoolId) {
+      expect(poolInfo.allocPoint).to.be.bignumber.equal(1);
+    } else {
+      expect(poolInfo.allocPoint).to.be.bignumber.equal(0);
+    }
+  }
 };
 
 export { deploy, setup, teardown, validate };
