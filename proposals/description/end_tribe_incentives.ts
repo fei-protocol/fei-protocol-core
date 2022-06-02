@@ -153,6 +153,42 @@ const end_tribe_incentives: ProposalDescription = {
       description: 'Set Tribal Chief block reward effectively to zero. Setting to 100000'
     },
 
+    //// Sync new reward speeds on all AutoRewardDistributors
+    {
+      target: 'autoRewardsDistributor',
+      values: '0',
+      method: 'setAutoRewardsDistribution()',
+      arguments: [],
+      description: 'Sync the reward speed of the AutoRewardsDistributor'
+    },
+    {
+      target: 'd3AutoRewardsDistributor',
+      values: '0',
+      method: 'setAutoRewardsDistribution()',
+      arguments: [],
+      description: 'Sync the reward speed of the d3AutoRewardsDistributor'
+    },
+    {
+      target: 'fei3CrvAutoRewardsDistributor',
+      values: '0',
+      method: 'setAutoRewardsDistribution()',
+      arguments: [],
+      description: 'Sync the reward speed of the fei3CrvAutoRewardsDistributor'
+    },
+    {
+      target: 'feiDaiAutoRewardsDistributor',
+      values: '0',
+      method: 'setAutoRewardsDistribution()',
+      arguments: [],
+      description: 'Sync the reward speed of the feiDaiAutoRewardsDistributor'
+    },
+    {
+      target: 'feiUsdcAutoRewardsDistributor',
+      values: '0',
+      method: 'setAutoRewardsDistribution()',
+      arguments: [],
+      description: 'Sync the reward speed of the feiUsdcAutoRewardsDistributor'
+    },
     ///// Deprecate roles of Incentives system
     {
       target: 'core',

@@ -819,17 +819,17 @@ const MainnetAddresses: MainnetAddresses = {
   autoRewardsDistributor: {
     artifactName: 'AutoRewardsDistributor',
     address: '0x61be49dfbd869a601fea076e1a1379903e61a895',
-    category: AddressCategory.Rewards
+    category: AddressCategory.Deprecated
   },
   d3AutoRewardsDistributor: {
     artifactName: 'AutoRewardsDistributorV2',
     address: '0x9Fd318C3F8f8583Fd40a0C2fba058fB7097E11d4',
-    category: AddressCategory.Rewards
+    category: AddressCategory.Deprecated
   },
   fei3CrvAutoRewardsDistributor: {
     artifactName: 'AutoRewardsDistributorV2',
     address: '0x15f6D0d95aceCD7570e8Ff6128D953BC6aA3573C',
-    category: AddressCategory.Rewards
+    category: AddressCategory.Deprecated
   },
   erc20Dripper: {
     artifactName: 'ERC20Dripper',
@@ -919,12 +919,12 @@ const MainnetAddresses: MainnetAddresses = {
   feiDaiAutoRewardsDistributor: {
     artifactName: 'AutoRewardsDistributorV2',
     address: '0xE6Fef62A834D9b0BA1Da832769D6E99135dD2E0e',
-    category: AddressCategory.Rewards
+    category: AddressCategory.Deprecated
   },
   feiUsdcAutoRewardsDistributor: {
     artifactName: 'AutoRewardsDistributorV2',
     address: '0x1126f1fA7Da556F8F82846223E3C2176B5631707',
-    category: AddressCategory.Rewards
+    category: AddressCategory.Deprecated
   },
   d3StakingTokenWrapper: {
     artifactName: 'StakingTokenWrapper',
