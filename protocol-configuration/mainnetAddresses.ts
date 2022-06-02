@@ -519,7 +519,7 @@ const MainnetAddresses: MainnetAddresses = {
   creamDepositWrapper: {
     artifactName: 'ERC20PCVDepositWrapper',
     address: '0x3a1838Ac9EcA864054bebB82C32455Dd7d7Fc89c',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
   ethLidoPCVDepositWrapper: {
     artifactName: 'PCVDepositWrapper',

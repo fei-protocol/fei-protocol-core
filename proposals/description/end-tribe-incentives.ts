@@ -152,15 +152,28 @@ const end_tribe_incentives: ProposalDescription = {
       target: 'tribalChief',
       values: '0',
       method: 'updateBlockReward(uint256)',
-      arguments: ['0'],
-      description: 'Set Tribal Chief block reward to 0'
+      arguments: ['100000'],
+      description: 'Set Tribal Chief block reward effectively to zero. Setting to 100000'
+    },
+
+    ////// Remove CREAM from CR
+    {
+      target: 'collateralizationOracle',
+      values: '0',
+      method: 'removeDeposit(address)',
+      arguments: ['{creamDepositWrapper}'],
+      description: 'Remove empty CREAM deposit from the CR oracle'
     }
   ],
   description: `
   TIP-109: Discontinue Tribe Incentives
 
-  This proposal will disable all Tribe incentives. It updates the reward variables of incentivised pools and then
-  sets the amount of Tribe issued per block by the Tribal Chief to 0.
+  This proposal will disable all Tribe incentives. Specifically it:
+  - Sets the allocation points of all pools effectively to 0
+  - Updates the reward variables of incentivised pools
+  - Sets the amount of Tribe issued per block by the Tribal Chief to effectively zero
+
+  It also removes CREAM from the Collaterisation Oracle
   `
 };
 
