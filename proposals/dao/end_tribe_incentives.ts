@@ -19,7 +19,6 @@ TIP-109: Discontinue Tribe Incentives
 Ends all Tribe Incentives being distributed. 
 
 Specifically:
-- Unlock all pools to release principle
 - Set AP rewards of all pools to 0, and set one pool AP reward to 1
 - Effectively set Tribe block reward to 0
 - Remove CREAM deposit from CR
@@ -71,11 +70,10 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const numPools = await tribalChief.numPools();
   expect(numPools).to.equal(poolIds.length);
 
-  // 3. Validate that all pools are unlocked, rewarders are set to 0 and AP points are set to zero, apart from Fei-Rari
+  // 3. Validate that all pool AP points are set to zero, apart from Fei-Rari
   const feiRariPoolId = '3';
   for (const pid in poolIds) {
     const poolInfo = await tribalChief.poolInfo(pid);
-    expect(poolInfo.unlocked).to.equal(true);
 
     if (pid == feiRariPoolId) {
       expect(poolInfo.allocPoint).to.be.equal(NEW_TOTAL_ALLOC_POINTS.toString());
