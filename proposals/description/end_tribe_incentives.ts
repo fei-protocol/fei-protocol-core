@@ -175,6 +175,67 @@ const end_tribe_incentives: ProposalDescription = {
       description: 'Revoke TRIBAL_CHIEF_ADMIN_ROLE from tribalChiefSyncV2'
     },
 
+    // Deprecate RewardDistributorAdmin internal roles
+    {
+      target: 'rewardsDistributorAdmin',
+      values: '0',
+      method: 'becomeAdmin()',
+      arguments: [],
+      description:
+        'Grant the TC timelock the DEFAULT_ADMIN_ROLE, to it can dismantle the RewardDistributorAdmin permissions'
+      // TODO: Maybe clear this up after?
+    },
+    {
+      target: 'rewardsDistributorAdmin',
+      values: '0',
+      method: 'revokeRole(bytes32,address)',
+      arguments: [
+        '0x19cca239eaee0f28c6ba4c8c860332b8a23b35008b89b0507b96138ca5691cbb', // AUTO_REWARDS_DISTRIBUTOR_ROLE
+        '{feiDaiAutoRewardsDistributor}'
+      ],
+      description: 'Revoke AUTO_REWARDS_DISTRIBUTOR_ROLE from feiDaiAutoRewardsDistributor'
+    },
+    {
+      target: 'rewardsDistributorAdmin',
+      values: '0',
+      method: 'revokeRole(bytes32,address)',
+      arguments: [
+        '0x19cca239eaee0f28c6ba4c8c860332b8a23b35008b89b0507b96138ca5691cbb', // AUTO_REWARDS_DISTRIBUTOR_ROLE
+        '{feiUsdcAutoRewardsDistributor}'
+      ],
+      description: 'Revoke AUTO_REWARDS_DISTRIBUTOR_ROLE from feiUsdcAutoRewardsDistributor'
+    },
+    {
+      target: 'rewardsDistributorAdmin',
+      values: '0',
+      method: 'revokeRole(bytes32,address)',
+      arguments: [
+        '0x19cca239eaee0f28c6ba4c8c860332b8a23b35008b89b0507b96138ca5691cbb', // AUTO_REWARDS_DISTRIBUTOR_ROLE
+        '{autoRewardsDistributor}'
+      ],
+      description: 'Revoke AUTO_REWARDS_DISTRIBUTOR_ROLE from autoRewardsDistributor'
+    },
+    {
+      target: 'rewardsDistributorAdmin',
+      values: '0',
+      method: 'revokeRole(bytes32,address)',
+      arguments: [
+        '0x19cca239eaee0f28c6ba4c8c860332b8a23b35008b89b0507b96138ca5691cbb', // AUTO_REWARDS_DISTRIBUTOR_ROLE
+        '{d3AutoRewardsDistributor}'
+      ],
+      description: 'Revoke AUTO_REWARDS_DISTRIBUTOR_ROLE from d3AutoRewardsDistributor'
+    },
+    {
+      target: 'rewardsDistributorAdmin',
+      values: '0',
+      method: 'revokeRole(bytes32,address)',
+      arguments: [
+        '0x19cca239eaee0f28c6ba4c8c860332b8a23b35008b89b0507b96138ca5691cbb', // AUTO_REWARDS_DISTRIBUTOR_ROLE
+        '{fei3CrvAutoRewardsDistributor}'
+      ],
+      description: 'Revoke AUTO_REWARDS_DISTRIBUTOR_ROLE from fei3CrvAutoRewardsDistributor'
+    },
+
     ////// Remove CREAM from CR
     {
       target: 'collateralizationOracle',

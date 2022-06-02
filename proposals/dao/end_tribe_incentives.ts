@@ -1,4 +1,4 @@
-import hre, { ethers, artifacts } from 'hardhat';
+import hre, { ethers } from 'hardhat';
 import { expect } from 'chai';
 import {
   DeployUpgradeFunc,
@@ -76,7 +76,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const numPools = await tribalChief.numPools();
   expect(numPools).to.equal(poolIds.length);
 
-  // 3. Validate that all pool AP points are set to zero, apart from Fei-Rari
+  // 3. Validate that all pool AP points are set to zero, apart from Fei-Tribe Uniswap V2
   const feiRariPoolId = '0';
   for (const pid in poolIds) {
     const poolInfo = await tribalChief.poolInfo(pid);
@@ -87,6 +87,43 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
       expect(poolInfo.allocPoint).to.be.equal('0');
     }
   }
+
+  // 4. Verify rewardsDistributorAdmin internal ACL revoked
+  const rewardsDistributorAdmin = contracts.rewardsDistributorAdmin;
+  expect(
+    await rewardsDistributorAdmin.hasRole(
+      ethers.utils.id('AUTO_REWARDS_DISTRIBUTOR_ROLE'),
+      addresses.feiDaiAutoRewardsDistributor
+    )
+  ).to.equal(false);
+
+  expect(
+    await rewardsDistributorAdmin.hasRole(
+      ethers.utils.id('AUTO_REWARDS_DISTRIBUTOR_ROLE'),
+      addresses.feiUsdcAutoRewardsDistributor
+    )
+  ).to.equal(false);
+
+  expect(
+    await rewardsDistributorAdmin.hasRole(
+      ethers.utils.id('AUTO_REWARDS_DISTRIBUTOR_ROLE'),
+      addresses.autoRewardsDistributor
+    )
+  ).to.equal(false);
+
+  expect(
+    await rewardsDistributorAdmin.hasRole(
+      ethers.utils.id('AUTO_REWARDS_DISTRIBUTOR_ROLE'),
+      addresses.d3AutoRewardsDistributor
+    )
+  ).to.equal(false);
+
+  expect(
+    await rewardsDistributorAdmin.hasRole(
+      ethers.utils.id('AUTO_REWARDS_DISTRIBUTOR_ROLE'),
+      addresses.fei3CrvAutoRewardsDistributor
+    )
+  ).to.equal(false);
 
   // 4. Verify total AP points is 1
   expect(await tribalChief.totalAllocPoint()).to.be.equal(NEW_TOTAL_ALLOC_POINTS.toString());

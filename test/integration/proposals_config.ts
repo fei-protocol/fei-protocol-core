@@ -29,7 +29,14 @@ const proposals: ProposalsConfigMap = {
     proposal: end_tribe_incentives, // full proposal file, imported from '@proposals/description/fip_xx.ts'
     proposalId: '',
     affectedContractSignoff: ['core', 'tribalChief', 'tribalCouncilTimelock', 'collateralizationOracle'],
-    deprecatedContractSignoff: ['creamDepositWrapper'],
+    deprecatedContractSignoff: [
+      'creamDepositWrapper',
+      'fei3CrvAutoRewardsDistributor',
+      'd3AutoRewardsDistributor',
+      'autoRewardsDistributor',
+      'feiDaiAutoRewardsDistributor',
+      'feiUsdcAutoRewardsDistributor'
+    ],
     category: ProposalCategory.TC
   }
 };
