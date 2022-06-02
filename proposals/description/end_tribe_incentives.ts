@@ -148,21 +148,21 @@ const end_tribe_incentives: ProposalDescription = {
       values: '0',
       method: 'set(uint256,uint120,address,bool)',
       arguments: ['0', '0', '0x0000000000000000000000000000000000000000', false],
-      description: 'Set Pool 0 rewards to 0 to allow principle withdrawal and do not overwrite or change the rewarder'
+      description: 'Set Pool 0 rewards to 0 and do not overwrite or change the rewarder'
     },
     {
       target: 'tribalChief',
       values: '0',
       method: 'set(uint256,uint120,address,bool)',
       arguments: ['1', '0', '0x0000000000000000000000000000000000000000', false],
-      description: 'Set Pool 1 rewards to 0 to allow principle withdrawal and do not overwrite or change the rewarder'
+      description: 'Set Pool 1 rewards to 0 and do not overwrite or change the rewarder'
     },
     {
       target: 'tribalChief',
       values: '0',
       method: 'set(uint256,uint120,address,bool)',
       arguments: ['2', '0', '0x0000000000000000000000000000000000000000', false],
-      description: 'Set Pool 2 rewards to 0 to allow principle withdrawal and do not overwrite or change the rewarder'
+      description: 'Set Pool 2 rewards to 0 and do not overwrite or change the rewarder'
     },
 
     // Note: Setting a single pool here to have an AP point != 0
@@ -171,105 +171,105 @@ const end_tribe_incentives: ProposalDescription = {
       values: '0',
       method: 'set(uint256,uint120,address,bool)',
       arguments: ['3', '1', '0x0000000000000000000000000000000000000000', false],
-      description: 'Set Pool 3 rewards to 1 to allow principle withdrawal and do not overwrite or change the rewarder'
+      description: 'Set Pool 3 rewards to 1 and do not overwrite or change the rewarder'
     },
     {
       target: 'tribalChief',
       values: '0',
       method: 'set(uint256,uint120,address,bool)',
       arguments: ['4', '0', '0x0000000000000000000000000000000000000000', false],
-      description: 'Set Pool 4 rewards to 0 to allow principle withdrawal and do not overwrite or change the rewarder'
+      description: 'Set Pool 4 rewards to 0 and do not overwrite or change the rewarder'
     },
     {
       target: 'tribalChief',
       values: '0',
       method: 'set(uint256,uint120,address,bool)',
       arguments: ['5', '0', '0x0000000000000000000000000000000000000000', false],
-      description: 'Set Pool 5 rewards to 0 to allow principle withdrawal and do not overwrite or change the rewarder'
+      description: 'Set Pool 5 rewards to 0 and do not overwrite or change the rewarder'
     },
     {
       target: 'tribalChief',
       values: '0',
       method: 'set(uint256,uint120,address,bool)',
       arguments: ['6', '0', '0x0000000000000000000000000000000000000000', false],
-      description: 'Set Pool 6 rewards to 0 to allow principle withdrawal and do not overwrite or change the rewarder'
+      description: 'Set Pool 6 rewards to 0 and do not overwrite or change the rewarder'
     },
     {
       target: 'tribalChief',
       values: '0',
       method: 'set(uint256,uint120,address,bool)',
       arguments: ['7', '0', '0x0000000000000000000000000000000000000000', false],
-      description: 'Set Pool 7 rewards to 0 to allow principle withdrawal and do not overwrite or change the rewarder'
+      description: 'Set Pool 7 rewards to 0 and do not overwrite or change the rewarder'
     },
     {
       target: 'tribalChief',
       values: '0',
       method: 'set(uint256,uint120,address,bool)',
       arguments: ['8', '0', '0x0000000000000000000000000000000000000000', false],
-      description: 'Set Pool 8 rewards to 0 to allow principle withdrawal and do not overwrite or change the rewarder'
+      description: 'Set Pool 8 rewards to 0 and do not overwrite or change the rewarder'
     },
     {
       target: 'tribalChief',
       values: '0',
       method: 'set(uint256,uint120,address,bool)',
       arguments: ['9', '0', '0x0000000000000000000000000000000000000000', false],
-      description: 'Set Pool 9 rewards to 0 to allow principle withdrawal and do not overwrite or change the rewarder'
+      description: 'Set Pool 9 rewards to 0 and do not overwrite or change the rewarder'
     },
     {
       target: 'tribalChief',
       values: '0',
       method: 'set(uint256,uint120,address,bool)',
       arguments: ['10', '0', '0x0000000000000000000000000000000000000000', false],
-      description: 'Set Pool 10 rewards to 0 to allow principle withdrawal and do not overwrite or change the rewarder'
+      description: 'Set Pool 10 rewards to 0 and do not overwrite or change the rewarder'
     },
     {
       target: 'tribalChief',
       values: '0',
       method: 'set(uint256,uint120,address,bool)',
       arguments: ['11', '0', '0x0000000000000000000000000000000000000000', false],
-      description: 'Set Pool 11 rewards to 0 to allow principle withdrawal and do not overwrite or change the rewarder'
+      description: 'Set Pool 11 rewards to 0 and do not overwrite or change the rewarder'
     },
     {
       target: 'tribalChief',
       values: '0',
       method: 'set(uint256,uint120,address,bool)',
       arguments: ['12', '0', '0x0000000000000000000000000000000000000000', false],
-      description: 'Set Pool 12 rewards to 0 to allow principle withdrawal and do not overwrite or change the rewarder'
+      description: 'Set Pool 12 rewards to 0 and do not overwrite or change the rewarder'
     },
     {
       target: 'tribalChief',
       values: '0',
       method: 'set(uint256,uint120,address,bool)',
       arguments: ['13', '0', '0x0000000000000000000000000000000000000000', false],
-      description: 'Set Pool 13 rewards to 0 to allow principle withdrawal and do not overwrite or change the rewarder'
+      description: 'Set Pool 13 rewards to 0 and do not overwrite or change the rewarder'
     },
     {
       target: 'tribalChief',
       values: '0',
       method: 'set(uint256,uint120,address,bool)',
       arguments: ['14', '0', '0x0000000000000000000000000000000000000000', false],
-      description: 'Set Pool 14 rewards to 0 to allow principle withdrawal and do not overwrite or change the rewarder'
+      description: 'Set Pool 14 rewards to 0 and do not overwrite or change the rewarder'
     },
     {
       target: 'tribalChief',
       values: '0',
       method: 'set(uint256,uint120,address,bool)',
       arguments: ['15', '0', '0x0000000000000000000000000000000000000000', false],
-      description: 'Set Pool 15 rewards to 0 to allow principle withdrawal and do not overwrite or change the rewarder'
+      description: 'Set Pool 15 rewards to 0 and do not overwrite or change the rewarder'
     },
     {
       target: 'tribalChief',
       values: '0',
       method: 'set(uint256,uint120,address,bool)',
       arguments: ['16', '0', '0x0000000000000000000000000000000000000000', false],
-      description: 'Set Pool 16 rewards to 0 to allow principle withdrawal and do not overwrite or change the rewarder'
+      description: 'Set Pool 16 rewards to 0 and do not overwrite or change the rewarder'
     },
     {
       target: 'tribalChief',
       values: '0',
       method: 'set(uint256,uint120,address,bool)',
       arguments: ['17', '0', '0x0000000000000000000000000000000000000000', false],
-      description: 'Set Pool 17 rewards to 0 to allow principle withdrawal and do not overwrite or change the rewarder'
+      description: 'Set Pool 17 rewards to 0 and do not overwrite or change the rewarder'
     },
 
     ////  Set block rewards to effectively 0
