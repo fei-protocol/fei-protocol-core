@@ -54,14 +54,44 @@ interface IAuraMerkleDrop {
 contract VlAuraDelegatorPCVDeposit is DelegatorPCVDeposit {
     using SafeERC20 for IERC20;
 
-    address private constant AURA_TOKEN = 0x0000000000000000000000000000000000000000;
-    address private constant VLAURA_TOKEN = 0x0000000000000000000000000000000000000000;
-    address private constant AURA_AIRDROP = 0x0000000000000000000000000000000000000000;
+    address public aura;
+    address public auraLocker;
+    address public auraMerkleDrop;
 
     /// @notice constructor
     /// @param _core Fei Core for reference
-    /// @param _initialDelegate the initial delegate
-    constructor(address _core, address _initialDelegate) DelegatorPCVDeposit(_core, VLAURA_TOKEN, _initialDelegate) {}
+    constructor(address _core)
+        DelegatorPCVDeposit(
+            _core,
+            address(0), // token
+            address(0) // initialDelegate
+        )
+    {}
+
+    function initialize(
+        address _aura,
+        address _auraLocker,
+        address _auraMerkleDrop,
+        address _initialDelegate
+    ) external {
+        // the Tribal Council multisig can initialize the state variables,
+        // only once, after contract deployment.
+        require(msg.sender == address(0x2EC598d8e3DF35E5D6F13AE2f05a7bB2704e92Ea), "!TC");
+
+        require(
+            aura == address(0) ||
+                auraLocker == address(0) ||
+                auraMerkleDrop == address(0) ||
+                address(token) == address(0),
+            "initialized"
+        );
+
+        aura = _aura;
+        auraLocker = _auraLocker;
+        auraMerkleDrop = _auraMerkleDrop;
+        token = ERC20Votes(_auraLocker);
+        _delegate(_initialDelegate);
+    }
 
     /// @notice noop, vlAURA can't be transferred.
     /// wait for lock expiry, and call withdrawERC20 on AURA.
@@ -69,54 +99,39 @@ contract VlAuraDelegatorPCVDeposit is DelegatorPCVDeposit {
 
     /// @notice returns the balance of locked + unlocked
     function balance() public view virtual override returns (uint256) {
-        return IERC20(AURA_TOKEN).balanceOf(address(this)) + IERC20(VLAURA_TOKEN).balanceOf(address(this));
+        return IERC20(aura).balanceOf(address(this)) + IERC20(auraLocker).balanceOf(address(this));
     }
 
     /// @notice claim AURA airdrop and vote-lock it for 16 weeks
     /// this function is not access controlled & can be called by anyone.
     function claimAirdropAndLock(bytes32[] calldata _proof, uint256 _amount) external returns (bool) {
-        return IAuraMerkleDrop(AURA_AIRDROP).claim(_proof, _amount, true);
+        return IAuraMerkleDrop(auraMerkleDrop).claim(_proof, _amount, true);
     }
 
     /// @notice lock AURA held on this contract to vlAURA
     function lock() external whenNotPaused onlyTribeRole(TribeRoles.METAGOVERNANCE_TOKEN_STAKING) {
-        uint256 amount = IERC20(AURA_TOKEN).balanceOf(address(this));
-        IERC20(AURA_TOKEN).safeApprove(VLAURA_TOKEN, amount);
-        IAuraLocker(VLAURA_TOKEN).lock(address(this), amount);
+        uint256 amount = IERC20(aura).balanceOf(address(this));
+        IERC20(aura).safeApprove(auraLocker, amount);
+        IAuraLocker(auraLocker).lock(address(this), amount);
     }
 
     /// @notice refresh lock after it has expired
     function relock() external whenNotPaused onlyTribeRole(TribeRoles.METAGOVERNANCE_TOKEN_STAKING) {
-        IAuraLocker(VLAURA_TOKEN).processExpiredLocks(true);
+        IAuraLocker(auraLocker).processExpiredLocks(true);
     }
 
     /// @notice exit lock after it has expired
     function unlock() external whenNotPaused onlyTribeRole(TribeRoles.METAGOVERNANCE_TOKEN_STAKING) {
-        IAuraLocker(VLAURA_TOKEN).processExpiredLocks(false);
+        IAuraLocker(auraLocker).processExpiredLocks(false);
     }
 
     /// @notice emergency withdraw if system is shut down
     function emergencyWithdraw() external whenNotPaused onlyTribeRole(TribeRoles.METAGOVERNANCE_TOKEN_STAKING) {
-        IAuraLocker(VLAURA_TOKEN).emergencyWithdraw();
+        IAuraLocker(auraLocker).emergencyWithdraw();
     }
 
     /// @notice get rewards & stake them (rewards claiming is permissionless)
     function getReward() external {
-        IAuraLocker(VLAURA_TOKEN).getReward(address(this), true);
-    }
-
-    /// @notice governor-protected function to call another contract.
-    /// as this contract manages a locked position as is immutable,
-    /// this function is added to make sure no funds are ever locked,
-    /// and that the voting power from locking tokens can always be used
-    /// even if the external smart contracts change.
-    function call(
-        address target,
-        uint256 value,
-        bytes calldata data
-    ) external onlyGovernor {
-        // solhint-disable-next-line
-        (bool success, ) = target.call{value: value}(data);
-        require(success, "call failed");
+        IAuraLocker(auraLocker).getReward(address(this), true);
     }
 }

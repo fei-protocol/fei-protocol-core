@@ -15,7 +15,7 @@ contract DelegatorPCVDeposit is PCVDeposit {
     event DelegateUpdate(address indexed oldDelegate, address indexed newDelegate);
 
     /// @notice the token that is being used for voting
-    ERC20Votes public immutable token;
+    ERC20Votes public token;
 
     /// @notice the snapshot delegate for the deposit
     address public delegate;
@@ -30,13 +30,13 @@ contract DelegatorPCVDeposit is PCVDeposit {
         address _initialDelegate
     ) CoreRef(_core) {
         token = ERC20Votes(_token);
-        _delegate(_initialDelegate);
+        if (_initialDelegate != address(0)) _delegate(_initialDelegate);
     }
 
     /// @notice withdraw tokens from the PCV allocation
     /// @param amount of tokens withdrawn
     /// @param to the address to send PCV to
-    function withdraw(address to, uint256 amount) external override onlyPCVController {
+    function withdraw(address to, uint256 amount) external virtual override onlyPCVController {
         IERC20(token).safeTransfer(to, amount);
         emit Withdrawal(msg.sender, to, amount);
     }
