@@ -66,6 +66,7 @@ export enum ProposalCategory {
   DEBUG,
   OA,
   TC, // Tribal Council
+  DEBUG_TC,
   None
 }
 
