@@ -43,6 +43,15 @@ describe('votium-bribe', function () {
     await forceEth(contracts.opsOptimisticTimelock.address);
     daoSigner = await getImpersonatedSigner(contracts.feiDAOTimelock.address);
     await forceEth(contracts.feiDAOTimelock.address);
+
+    // Setup TribalChief so that rewards are active
+    await contracts.tribalChief.connect(daoSigner).updateBlockReward('26150000000000000000');
+    await contracts.tribalChief.connect(daoSigner).set(12, 250, ethers.constants.AddressZero, false);
+
+    // Grant bribeSigner role to interact with VotiumBribers
+    await contracts.core
+      .connect(daoSigner)
+      .grantRole(ethers.utils.id('VOTIUM_ADMIN_ROLE'), contracts.opsOptimisticTimelock.address);
   });
 
   describe('When no voting round is active', async function () {

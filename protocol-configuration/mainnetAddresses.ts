@@ -519,7 +519,7 @@ const MainnetAddresses: MainnetAddresses = {
   creamDepositWrapper: {
     artifactName: 'ERC20PCVDepositWrapper',
     address: '0x3a1838Ac9EcA864054bebB82C32455Dd7d7Fc89c',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
   ethLidoPCVDepositWrapper: {
     artifactName: 'PCVDepositWrapper',
@@ -819,17 +819,17 @@ const MainnetAddresses: MainnetAddresses = {
   autoRewardsDistributor: {
     artifactName: 'AutoRewardsDistributor',
     address: '0x61be49dfbd869a601fea076e1a1379903e61a895',
-    category: AddressCategory.Rewards
+    category: AddressCategory.Deprecated
   },
   d3AutoRewardsDistributor: {
     artifactName: 'AutoRewardsDistributorV2',
     address: '0x9Fd318C3F8f8583Fd40a0C2fba058fB7097E11d4',
-    category: AddressCategory.Rewards
+    category: AddressCategory.Deprecated
   },
   fei3CrvAutoRewardsDistributor: {
     artifactName: 'AutoRewardsDistributorV2',
     address: '0x15f6D0d95aceCD7570e8Ff6128D953BC6aA3573C',
-    category: AddressCategory.Rewards
+    category: AddressCategory.Deprecated
   },
   erc20Dripper: {
     artifactName: 'ERC20Dripper',
@@ -841,100 +841,101 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0x220f93183a69d1598e8405310cB361CFF504146F',
     category: AddressCategory.Rewards
   },
+  // TODO: This has ~$1.5M TRIBE on it
   rariRewardsDistributorDelegator: {
-    artifactName: 'IRewardsDistributorAdmin',
+    artifactName: 'IRewardsDistributorDelegator',
     address: '0x73F16f0c0Cd1A078A54894974C5C054D8dC1A3d7',
     category: AddressCategory.Rewards
   },
   rewardsDistributorAdmin: {
     artifactName: 'RewardsDistributorAdmin',
     address: '0x4e979E8b136Cd7BdEBB83ea50a599C3BED1e15c0',
-    category: AddressCategory.Rewards
+    category: AddressCategory.Deprecated
   },
   stakingTokenWrapperBribeD3pool: {
     artifactName: 'StakingTokenWrapper',
     address: '0x462515dC7c21C728C8b7A777fDC89EEdAcF74537',
-    category: AddressCategory.Rewards
+    category: AddressCategory.Deprecated
   },
   stakingTokenWrapperFOXLaaS: {
     artifactName: 'StakingTokenWrapper',
     address: '0x3CD384ff1Fa1cbA8f06DF326AF4cbDA634aF94e8',
-    category: AddressCategory.Rewards
+    category: AddressCategory.Deprecated
   },
   stakingTokenWrapperGROLaaS: {
     artifactName: 'StakingTokenWrapper',
     address: '0x508629e8E0B96986Df4D0F1F60aadeF1d0FbaE96',
-    category: AddressCategory.Rewards
+    category: AddressCategory.Deprecated
   },
   stakingTokenWrapperKYLINLaaS: {
     artifactName: 'StakingTokenWrapper',
     address: '0xFe266d143dB42a9835e2B1AB43B64a46278398cc',
-    category: AddressCategory.Rewards
+    category: AddressCategory.Deprecated
   },
   stakingTokenWrapperMStableLaaS: {
     artifactName: 'StakingTokenWrapper',
     address: '0x9B9ad20Cd99Cac3B536b94497A18346d66db0379',
-    category: AddressCategory.Rewards
+    category: AddressCategory.Deprecated
   },
   stakingTokenWrapperNEARLaaS: {
     artifactName: 'StakingTokenWrapper',
     address: '0x3b3591a4f7FD386E9987Eb48d898e29b57c30c47',
-    category: AddressCategory.Rewards
+    category: AddressCategory.Deprecated
   },
   stakingTokenWrapperPoolTogetherLaaS: {
     artifactName: 'StakingTokenWrapper',
     address: '0x6b018170311F3DA23c3fA62AFe1b2D0638522CCD',
-    category: AddressCategory.Rewards
+    category: AddressCategory.Deprecated
   },
   stakingTokenWrapperRari: {
     artifactName: 'StakingTokenWrapper',
     address: '0xd81Be1B9A7895C996704A8DDa794BbA4454EeB90',
-    category: AddressCategory.Rewards
+    category: AddressCategory.Deprecated
   },
   stakingTokenWrapperSYNLaaS: {
     artifactName: 'StakingTokenWrapper',
     address: '0x5Db85e395735Bb42eEB720Fe2EE69627d246e300',
-    category: AddressCategory.Rewards
+    category: AddressCategory.Deprecated
   },
   stakingTokenWrapperUMALaaS: {
     artifactName: 'StakingTokenWrapper',
     address: '0x90B336dFF819b9e4b3D9A32cabdcAB0E92836065',
-    category: AddressCategory.Rewards
+    category: AddressCategory.Deprecated
   },
   fei3CrvStakingtokenWrapper: {
     artifactName: 'StakingTokenWrapper',
     address: '0x7013dc2e3c0D5ca3c0a6a66F6B5883eD203ac49c',
-    category: AddressCategory.Rewards
+    category: AddressCategory.Deprecated
   },
   feiDaiStakingTokenWrapper: {
     artifactName: 'StakingTokenWrapper',
     address: '0x601FFddACcAF7F05600D7E7561a51C745B8A2A3e',
-    category: AddressCategory.Rewards
+    category: AddressCategory.Deprecated
   },
   feiUsdcStakingTokenWrapper: {
     artifactName: 'StakingTokenWrapper',
     address: '0x0A0542Adf2fA8e85DD797697da537448b2e7c3EE',
-    category: AddressCategory.Rewards
+    category: AddressCategory.Deprecated
   },
   feiDaiAutoRewardsDistributor: {
     artifactName: 'AutoRewardsDistributorV2',
     address: '0xE6Fef62A834D9b0BA1Da832769D6E99135dD2E0e',
-    category: AddressCategory.Rewards
+    category: AddressCategory.Deprecated
   },
   feiUsdcAutoRewardsDistributor: {
     artifactName: 'AutoRewardsDistributorV2',
     address: '0x1126f1fA7Da556F8F82846223E3C2176B5631707',
-    category: AddressCategory.Rewards
+    category: AddressCategory.Deprecated
   },
   d3StakingTokenWrapper: {
     artifactName: 'StakingTokenWrapper',
     address: '0xAa267d0A5A0A56Ef0F17bB4A28f85a5C4e0394F6',
-    category: AddressCategory.Rewards
+    category: AddressCategory.Deprecated
   },
   stwBulkHarvest: {
     artifactName: 'STWBulkHarvest',
     address: '0x83433D925048d7e9D2D7Eec2A0Efbb4456Af2F93',
-    category: AddressCategory.Rewards
+    category: AddressCategory.Deprecated
   },
   tribalChief: {
     artifactName: 'TribalChief',
@@ -949,18 +950,19 @@ const MainnetAddresses: MainnetAddresses = {
   tribalChiefSyncV2: {
     artifactName: 'TribalChiefSyncV2',
     address: '0xb41c594f9a6a2E0882212598337AF8145f63731b',
-    category: AddressCategory.Rewards
+    category: AddressCategory.Deprecated
   },
   tribalChiefSyncExtension: {
     artifactName: 'TribalChiefSyncExtension',
     address: '0x7b834cA07f81d52bB52d98DaE560D1442b2d7dBa',
-    category: AddressCategory.Rewards
+    category: AddressCategory.Deprecated
   },
   stakingTokenWrapperBribe3Crvpool: {
     artifactName: 'StakingTokenWrapper',
     address: '0xaC98807E5CC43f134b00E87349e4ea3eDf927961',
-    category: AddressCategory.Rewards
+    category: AddressCategory.Deprecated
   },
+  // TODO: This has $50k TRIBE on it, should withdraw
   votiumBriber3Crvpool: {
     artifactName: 'VotiumBriber',
     address: '0x8B6A295a35171E2F05B1579E485017B999810dcb',
@@ -969,7 +971,7 @@ const MainnetAddresses: MainnetAddresses = {
   votiumBriberD3pool: {
     artifactName: 'VotiumBriber',
     address: '0x0BEC570466B466aB689Ad33F1Ce5238CA43C8003',
-    category: AddressCategory.Rewards
+    category: AddressCategory.Deprecated
   },
   rariPool8ConvexD3Plugin: {
     artifactName: 'IConvexERC4626',
