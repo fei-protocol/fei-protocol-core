@@ -95,45 +95,13 @@ describe('e2e-end-tribe-incentives', function () {
     expect(harvestedTribe).to.equal(0);
   });
 
-  it('should be able to harvest existing TRIBE rewards from an AutoRewardDistributor in a Fuse pool', async () => {
-    const { rariRewardsDistributorDelegator, stakingTokenWrapperRari, tribe } = contracts;
-
-    // 1. Harvest Rari staking token wrapper
-    const delegatorBalanceBeforeHarvest = await tribe.balanceOf(rariRewardsDistributorDelegator.address);
-    await stakingTokenWrapperRari.harvest();
-    const delegatorBalanceAfterHarvest = await tribe.balanceOf(rariRewardsDistributorDelegator.address);
-    expect(delegatorBalanceAfterHarvest.sub(delegatorBalanceBeforeHarvest)).to.be.bignumber.at.least(toBN(1));
-
-    // 2. Market participant claims TRIBE rewards
-    const userBalanceBefore = await tribe.balanceOf(pool8User);
-    await rariRewardsDistributorDelegator['claimRewards(address)'](pool8User);
-    const userBalanceAfter = await tribe.balanceOf(pool8User);
-    const userHarvestedTribe = userBalanceAfter.sub(userBalanceBefore);
-    expect(userHarvestedTribe).to.be.bignumber.at.least(toBN(1));
+  it('should be able to harvest existing TRIBE rewards and withdraw principle from an AutoRewardDistributor in a Fuse pool', async () => {
+    // Find a staker in a Rari pool eligible for rewards
   });
 
   it('should NOT be able to harvest future TRIBE rewards from an AutoRewardDistributor in a Fuse pool', async () => {
-    const { rariRewardsDistributorDelegator, stakingTokenWrapperRari, tribe } = contracts;
-
-    // 1. Harvest staking token wrapper to clear out all earned rewards. User also harvests their rewards
-    await stakingTokenWrapperRari.harvest();
-    await rariRewardsDistributorDelegator['claimRewards(address)'](pool8User);
-
     // Fast forward time by a few blocks
-    await time.increase(86400 * 7);
-
-    // 2. Attempt to harvest more rewards for ARD from Staking Token wrapper. Should harvest 0, as rewards have stopped
-    const ardBalanceBefore = await tribe.balanceOf(rariRewardsDistributorDelegator.address);
-    await stakingTokenWrapperRari.harvest();
-    const ardBalanceAfter = await tribe.balanceOf(rariRewardsDistributorDelegator.address);
-    const ardHarvestedTribe = ardBalanceAfter.sub(ardBalanceBefore);
-    expect(ardHarvestedTribe).to.equal(0);
-
-    // 3. Have user attempt to harvest TRIBE rewards, should harvest 0 TRIBE
-    const userBalanceBefore = await tribe.balanceOf(pool8User);
-    await rariRewardsDistributorDelegator['claimRewards(address)'](pool8User);
-    const userBalanceAfter = await tribe.balanceOf(pool8User);
-    const userHarvestedTribe = userBalanceAfter.sub(userBalanceBefore);
-    expect(userHarvestedTribe).to.equal(0);
+    // Try to withdraw
+    // Should withdraw basically zero
   });
 });
