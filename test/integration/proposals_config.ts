@@ -28,13 +28,7 @@ const proposals: ProposalsConfigMap = {
     totalValue: 0, // amount of ETH to send to DAO execution
     proposal: end_tribe_incentives, // full proposal file, imported from '@proposals/description/fip_xx.ts'
     proposalId: '',
-    affectedContractSignoff: [
-      'core',
-      'tribalChief',
-      'tribalCouncilTimelock',
-      'collateralizationOracle',
-      'tribalChiefSyncV2'
-    ],
+    affectedContractSignoff: ['core', 'tribalChief', 'tribalCouncilTimelock', 'collateralizationOracle'],
     deprecatedContractSignoff: [
       'creamDepositWrapper',
       'fei3CrvAutoRewardsDistributor',
@@ -57,7 +51,11 @@ const proposals: ProposalsConfigMap = {
       'fei3CrvStakingtokenWrapper',
       'feiDaiStakingTokenWrapper',
       'feiUsdcStakingTokenWrapper',
-      'stakingTokenWrapperBribe3Crvpool'
+      'stakingTokenWrapperBribe3Crvpool',
+      'tribalChiefSyncV2',
+      'tribalChiefSyncExtension',
+      'd3StakingTokenWrapper',
+      'votiumBriberD3pool'
     ],
     category: ProposalCategory.TC
   }

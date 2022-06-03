@@ -930,7 +930,7 @@ const MainnetAddresses: MainnetAddresses = {
   d3StakingTokenWrapper: {
     artifactName: 'StakingTokenWrapper',
     address: '0xAa267d0A5A0A56Ef0F17bB4A28f85a5C4e0394F6',
-    category: AddressCategory.Rewards
+    category: AddressCategory.Deprecated
   },
   stwBulkHarvest: {
     artifactName: 'STWBulkHarvest',
@@ -950,18 +950,19 @@ const MainnetAddresses: MainnetAddresses = {
   tribalChiefSyncV2: {
     artifactName: 'TribalChiefSyncV2',
     address: '0xb41c594f9a6a2E0882212598337AF8145f63731b',
-    category: AddressCategory.Rewards
+    category: AddressCategory.Deprecated
   },
   tribalChiefSyncExtension: {
     artifactName: 'TribalChiefSyncExtension',
     address: '0x7b834cA07f81d52bB52d98DaE560D1442b2d7dBa',
-    category: AddressCategory.Rewards
+    category: AddressCategory.Deprecated
   },
   stakingTokenWrapperBribe3Crvpool: {
     artifactName: 'StakingTokenWrapper',
     address: '0xaC98807E5CC43f134b00E87349e4ea3eDf927961',
     category: AddressCategory.Deprecated
   },
+  // TODO: This has $50k TRIBE on it, should withdraw
   votiumBriber3Crvpool: {
     artifactName: 'VotiumBriber',
     address: '0x8B6A295a35171E2F05B1579E485017B999810dcb',
@@ -970,7 +971,7 @@ const MainnetAddresses: MainnetAddresses = {
   votiumBriberD3pool: {
     artifactName: 'VotiumBriber',
     address: '0x0BEC570466B466aB689Ad33F1Ce5238CA43C8003',
-    category: AddressCategory.Rewards
+    category: AddressCategory.Deprecated
   },
   rariPool8ConvexD3Plugin: {
     artifactName: 'IConvexERC4626',

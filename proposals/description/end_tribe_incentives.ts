@@ -271,6 +271,18 @@ const end_tribe_incentives: ProposalDescription = {
       description: 'Revoke AUTO_REWARDS_DISTRIBUTOR_ROLE from fei3CrvAutoRewardsDistributor'
     },
 
+    //// Revoke VOTIUM_ROLE, no longer needed
+    {
+      target: 'core',
+      values: '0',
+      method: 'revokeRole(bytes32,address)',
+      arguments: [
+        '0x2d46c62aa6fbc9b550f22e00476aebb90f4ea69cd492a68db4d444217763330d', // VOTIUM_ADMIN_ROLE
+        '{opsOptimisticTimelock}'
+      ],
+      description: 'Revoke VOTIUM_ROLE from opsOptimisticTimelock as no longer required'
+    },
+
     ////// Remove CREAM from CR
     {
       target: 'collateralizationOracle',

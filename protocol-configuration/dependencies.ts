@@ -264,12 +264,11 @@ const dependencies: DependencyMap = {
     contractDependencies: ['optimisticTimelock']
   },
   opsOptimisticTimelock: {
-    contractDependencies: ['votiumBriberD3pool', 'votiumBriber3Crvpool']
+    contractDependencies: ['votiumBriber3Crvpool']
   },
   optimisticTimelock: {
     contractDependencies: [
       'core',
-      'tribalChiefSyncV2',
       'rariPool8Comptroller',
       'optimisticMultisig',
       'optimisticMinter',
@@ -671,36 +670,15 @@ const dependencies: DependencyMap = {
       'rariPool8Tribe',
       'rariRewardsDistributorDelegate', // impl
       'rariPool8Comptroller',
-      'd3StakingTokenWrapper',
       'rariPool8Fei3Crv',
       'rariPool8d3'
     ]
   },
-  d3StakingTokenWrapper: {
-    contractDependencies: ['tribalChief', 'rariRewardsDistributorDelegator']
-  },
   tribalChief: {
-    contractDependencies: [
-      'core',
-      'tribalChiefSyncV2',
-      'optimisticTimelock',
-      'erc20Dripper',
-      'tribalChiefImpl',
-      'proxyAdmin',
-      'd3StakingTokenWrapper'
-    ]
+    contractDependencies: ['core', 'optimisticTimelock', 'erc20Dripper', 'tribalChiefImpl', 'proxyAdmin']
   },
   tribalChiefImpl: {
     contractDependencies: ['tribalChief']
-  },
-  tribalChiefSyncV2: {
-    contractDependencies: [
-      'optimisticTimelock', // executes atomic updates
-      'tribalChief' // mass updates pools
-    ]
-  },
-  votiumBriberD3pool: {
-    contractDependencies: ['opsOptimisticTimelock']
   },
   votiumBriber3Crvpool: {
     contractDependencies: ['opsOptimisticTimelock']
