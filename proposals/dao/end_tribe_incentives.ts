@@ -130,31 +130,6 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 
   // 4. Verify total AP points is 1
   expect(await tribalChief.totalAllocPoint()).to.be.equal(NEW_TOTAL_ALLOC_POINTS.toString());
-
-  // 5. Validate that can harvest Tribe rewards
-  const receiver = '0xbEA4B2357e8ec53AF60BbcA4bc570332a7C7E232';
-  const initialBalance = await tribe.balanceOf(receiver);
-
-  const poolId = 1;
-  // This is a staking token wrapper
-  const stakedTokenAddress = '0x06cb22615BA53E60D67Bf6C341a0fD5E718E1655';
-  const stakerInPool = '0x019EdcB493Bd91e2b25b70f26D5d9041Fd7EF946';
-  const stakerInPoolSigner = await getImpersonatedSigner(stakerInPool);
-  await forceEth(stakerInPool);
-
-  const stakedToken = await ethers.getContractAt('StakingTokenWrapper', stakedTokenAddress);
-
-  await tribalChief.connect(stakerInPoolSigner).harvest(poolId, receiver);
-  const finalBalance = await tribe.balanceOf(receiver);
-  const harvestedTribe = finalBalance.sub(initialBalance);
-  expect(harvestedTribe).to.be.bignumber.at.least(toBN(1));
-
-  // 6. Validate can withdraw principle from staked pool
-  const receiverBalanceBefore = await stakedToken.balanceOf(receiver);
-  await tribalChief.connect(stakerInPoolSigner).withdrawAllAndHarvest(poolId, receiver);
-  const receiverBalanceAfter = await stakedToken.balanceOf(receiver);
-  const withdrawnPrinciple = receiverBalanceAfter.sub(receiverBalanceBefore);
-  expect(withdrawnPrinciple).to.be.bignumber.at.least(toBN(1));
 };
 
 export { deploy, setup, teardown, validate };
