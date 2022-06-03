@@ -298,6 +298,9 @@ const end_tribe_incentives: ProposalDescription = {
   - Sets the allocation points of all pools effectively to 0
   - Updates the reward variables of incentivised pools
   - Sets the amount of Tribe issued per block by the Tribal Chief to effectively zero
+  - Dismantle internal ACL/permission mapping of the rewardsDistributorAdmin
+  - Sync all AutoRewardDistributors
+  - Revoke TribeRoles from incentives system
 
   It also removes CREAM from the Collaterisation Oracle
   `
