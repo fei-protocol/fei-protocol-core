@@ -843,7 +843,7 @@ const MainnetAddresses: MainnetAddresses = {
   },
   // TODO: This has ~$1.5M TRIBE on it
   rariRewardsDistributorDelegator: {
-    artifactName: 'IRewardsDistributorAdmin',
+    artifactName: 'IRewardsDistributorDelegator',
     address: '0x73F16f0c0Cd1A078A54894974C5C054D8dC1A3d7',
     category: AddressCategory.Rewards
   },
