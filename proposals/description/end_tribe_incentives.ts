@@ -15,6 +15,8 @@ const end_tribe_incentives: ProposalDescription = {
 
     /////////////  Replicate onlyGovernor behaviour or resetRewards()
     //////// Set Pool allocation points to 0. This also updates reward variables
+
+    // FEI-TRIBE LP has a single AP point
     {
       target: 'tribalChief',
       values: '0',
@@ -36,8 +38,6 @@ const end_tribe_incentives: ProposalDescription = {
       arguments: ['2', '0', '0x0000000000000000000000000000000000000000', false],
       description: 'Set Pool 2 rewards to 0 and do not overwrite or change the rewarder'
     },
-
-    // Note: Setting a single pool here to have an AP point != 0
     {
       target: 'tribalChief',
       values: '0',

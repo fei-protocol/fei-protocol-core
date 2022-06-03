@@ -67,7 +67,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   ).to.equal(false);
 
   expect(await contracts.core.hasRole(ethers.utils.id('FUSE_ADMIN'), addresses.tribalChiefSyncV2)).to.equal(false);
-  expect(await contracts.core.hasRole(ethers.utils.id('VOTIUM_ADMIN_ROLE'), addresses.tribalChiefSyncV2)).to.equal(
+  expect(await contracts.core.hasRole(ethers.utils.id('VOTIUM_ADMIN_ROLE'), addresses.opsOptimisticTimelock)).to.equal(
     false
   );
 
