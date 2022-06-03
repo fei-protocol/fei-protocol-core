@@ -28,7 +28,13 @@ const proposals: ProposalsConfigMap = {
     totalValue: 0, // amount of ETH to send to DAO execution
     proposal: end_tribe_incentives, // full proposal file, imported from '@proposals/description/fip_xx.ts'
     proposalId: '',
-    affectedContractSignoff: ['core', 'tribalChief', 'tribalCouncilTimelock', 'collateralizationOracle'],
+    affectedContractSignoff: [
+      'core',
+      'tribalChief',
+      'tribalCouncilTimelock',
+      'collateralizationOracle',
+      'opsOptimisticTimelock'
+    ],
     deprecatedContractSignoff: [
       'creamDepositWrapper',
       'fei3CrvAutoRewardsDistributor',

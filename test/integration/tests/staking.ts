@@ -201,6 +201,8 @@ describe('e2e-staking', function () {
       await tribalChief.connect(daoSigner).set(16, 500, ethers.constants.AddressZero, false);
       await tribalChief.connect(daoSigner).set(17, 250, ethers.constants.AddressZero, false);
 
+      // TOOD: Grant various autoRewardDistributors the relevant role
+
       tribePerBlock = await tribalChief.tribePerBlock();
 
       rewardsDistributorAdmin = contracts.rewardsDistributorAdmin;
