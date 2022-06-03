@@ -219,7 +219,6 @@ const end_tribe_incentives: ProposalDescription = {
       arguments: [],
       description:
         'Grant the TC timelock the DEFAULT_ADMIN_ROLE, to it can dismantle the RewardDistributorAdmin permissions'
-      // TODO: Maybe clear this up after?
     },
     {
       target: 'rewardsDistributorAdmin',

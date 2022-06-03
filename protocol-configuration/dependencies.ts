@@ -269,7 +269,6 @@ const dependencies: DependencyMap = {
   optimisticTimelock: {
     contractDependencies: [
       'core',
-      'rewardsDistributorAdmin',
       'tribalChiefSyncV2',
       'rariPool8Comptroller',
       'optimisticMultisig',
@@ -671,74 +670,14 @@ const dependencies: DependencyMap = {
     contractDependencies: [
       'rariPool8Tribe',
       'rariRewardsDistributorDelegate', // impl
-      'rewardsDistributorAdmin', //admin
       'rariPool8Comptroller',
-      'fei3CrvStakingtokenWrapper',
       'd3StakingTokenWrapper',
       'rariPool8Fei3Crv',
-      'rariPool8d3',
-      'feiDaiStakingTokenWrapper',
-      'feiUsdcStakingTokenWrapper'
+      'rariPool8d3'
     ]
-  },
-  fei3CrvStakingtokenWrapper: {
-    contractDependencies: ['tribalChief', 'rariRewardsDistributorDelegator']
-  },
-  feiDaiStakingTokenWrapper: {
-    contractDependencies: ['tribalChief', 'rariRewardsDistributorDelegator']
-  },
-  feiUsdcStakingTokenWrapper: {
-    contractDependencies: ['tribalChief', 'rariRewardsDistributorDelegator']
   },
   d3StakingTokenWrapper: {
     contractDependencies: ['tribalChief', 'rariRewardsDistributorDelegator']
-  },
-  rewardsDistributorAdmin: {
-    contractDependencies: ['rariRewardsDistributorDelegator', 'optimisticTimelock']
-  },
-  stwBulkHarvest: {
-    contractDependencies: [
-      'stakingTokenWrapperFOXLaaS',
-      'stakingTokenWrapperBribeD3pool',
-      'stakingTokenWrapperGROLaaS',
-      'stakingTokenWrapperKYLINLaaS',
-      'stakingTokenWrapperMStableLaaS',
-      'stakingTokenWrapperNEARLaaS',
-      'stakingTokenWrapperPoolTogetherLaaS',
-      'stakingTokenWrapperRari',
-      'stakingTokenWrapperSYNLaaS',
-      'stakingTokenWrapperUMALaaS'
-    ]
-  },
-  stakingTokenWrapperFOXLaaS: {
-    contractDependencies: ['tribalChief', 'stwBulkHarvest']
-  },
-  stakingTokenWrapperBribeD3pool: {
-    contractDependencies: ['tribalChief', 'votiumBriberD3pool', 'stwBulkHarvest']
-  },
-  stakingTokenWrapperGROLaaS: {
-    contractDependencies: ['tribalChief', 'stwBulkHarvest']
-  },
-  stakingTokenWrapperKYLINLaaS: {
-    contractDependencies: ['tribalChief', 'stwBulkHarvest']
-  },
-  stakingTokenWrapperMStableLaaS: {
-    contractDependencies: ['tribalChief', 'stwBulkHarvest']
-  },
-  stakingTokenWrapperNEARLaaS: {
-    contractDependencies: ['tribalChief', 'stwBulkHarvest']
-  },
-  stakingTokenWrapperPoolTogetherLaaS: {
-    contractDependencies: ['tribalChief', 'stwBulkHarvest']
-  },
-  stakingTokenWrapperRari: {
-    contractDependencies: ['tribalChief', 'stwBulkHarvest']
-  },
-  stakingTokenWrapperSYNLaaS: {
-    contractDependencies: ['tribalChief', 'stwBulkHarvest']
-  },
-  stakingTokenWrapperUMALaaS: {
-    contractDependencies: ['tribalChief', 'stwBulkHarvest']
   },
   tribalChief: {
     contractDependencies: [
@@ -746,22 +685,9 @@ const dependencies: DependencyMap = {
       'tribalChiefSyncV2',
       'optimisticTimelock',
       'erc20Dripper',
-      'stakingTokenWrapperBribeD3pool',
-      'stakingTokenWrapperFOXLaaS',
-      'stakingTokenWrapperGROLaaS',
-      'stakingTokenWrapperKYLINLaaS',
-      'stakingTokenWrapperMStableLaaS',
-      'stakingTokenWrapperNEARLaaS',
-      'stakingTokenWrapperPoolTogetherLaaS',
-      'stakingTokenWrapperRari',
-      'stakingTokenWrapperSYNLaaS',
-      'stakingTokenWrapperUMALaaS',
       'tribalChiefImpl',
       'proxyAdmin',
-      'fei3CrvStakingtokenWrapper',
-      'd3StakingTokenWrapper',
-      'feiDaiStakingTokenWrapper',
-      'feiUsdcStakingTokenWrapper'
+      'd3StakingTokenWrapper'
     ]
   },
   tribalChiefImpl: {
@@ -774,7 +700,7 @@ const dependencies: DependencyMap = {
     ]
   },
   votiumBriberD3pool: {
-    contractDependencies: ['stakingTokenWrapperBribeD3pool', 'opsOptimisticTimelock']
+    contractDependencies: ['opsOptimisticTimelock']
   },
   votiumBriber3Crvpool: {
     contractDependencies: ['opsOptimisticTimelock']
