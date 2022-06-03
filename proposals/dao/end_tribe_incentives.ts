@@ -128,8 +128,18 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
     )
   ).to.equal(false);
 
-  // 4. Verify total AP points is 1
+  // 5. Verify total AP points is 1
   expect(await tribalChief.totalAllocPoint()).to.be.equal(NEW_TOTAL_ALLOC_POINTS.toString());
+
+  // 6. Verify an AutoRewardDistributor speed is set correctly
+  const d3Ctoken = await contracts.rariPool8Comptroller.cTokensByUnderlying(addresses.curveD3pool);
+
+  const d3RewardSpeed = await contracts.d3AutoRewardsDistributor.getNewRewardSpeed();
+  expect(d3RewardSpeed[1]).to.equal(false); // updateNeeded
+  expect(d3RewardSpeed[0]).to.equal(0); // newSpeed
+
+  const delegatorReportedSpeed = await contracts.rariRewardsDistributorDelegator.compSupplySpeeds(d3Ctoken);
+  expect(delegatorReportedSpeed).to.equal(0);
 };
 
 export { deploy, setup, teardown, validate };
