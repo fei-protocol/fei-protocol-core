@@ -42,7 +42,7 @@ const end_tribe_incentives: ProposalDescription = {
       values: '0',
       method: 'set(uint256,uint120,address,bool)',
       arguments: ['3', '0', '0x0000000000000000000000000000000000000000', false],
-      description: 'Set Pool 3 rewards to 1 and do not overwrite or change the rewarder'
+      description: 'Set Pool 3 rewards to 0 and do not overwrite or change the rewarder'
     },
     {
       target: 'tribalChief',
