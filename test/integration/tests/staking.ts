@@ -59,7 +59,7 @@ const setupIncentivesFixtures = async (
   }
 };
 
-describe.only('e2e-staking', function () {
+describe('e2e-staking', function () {
   let contracts: NamedContracts;
   let contractAddresses: NamedAddresses;
   let deployAddress: string;
@@ -415,7 +415,7 @@ describe.only('e2e-staking', function () {
       );
     });
 
-    it.only('auto-sync works correctly', async () => {
+    it('auto-sync works correctly', async () => {
       const tribalChiefSync: TribalChiefSyncV2 = contracts.tribalChiefSyncV2 as TribalChiefSyncV2;
       const tribalChiefSyncExtension: TribalChiefSyncExtension =
         contracts.tribalChiefSyncExtension as TribalChiefSyncExtension;

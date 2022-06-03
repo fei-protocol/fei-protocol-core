@@ -52,7 +52,7 @@ const proposals: ProposalsConfigMap = {
       'stakingTokenWrapperUMALaaS',
       'stakingTokenWrapperSYNLaaS',
       'rewardsDistributorAdmin',
-      'stwHarvest',
+      'stwBulkHarvest',
       'stakingTokenWrapperBribeD3pool',
       'fei3CrvStakingtokenWrapper',
       'feiDaiStakingTokenWrapper',
