@@ -1,7 +1,6 @@
 import { ProposalDescription } from '@custom-types/types';
 
 const end_tribe_incentives: ProposalDescription = {
-  // Pool ID is where the pool is in the array
   title: 'TIP-109: Discontinue Tribe Incentives',
   commands: [
     /////// TC grants itself TRIBAL_CHIEF_ADMIN_ROLE
@@ -22,7 +21,7 @@ const end_tribe_incentives: ProposalDescription = {
       values: '0',
       method: 'set(uint256,uint120,address,bool)',
       arguments: ['0', '1', '0x0000000000000000000000000000000000000000', false],
-      description: 'Set Pool 0 rewards to 0 and do not overwrite or change the rewarder'
+      description: 'Set Pool 0 rewards to 1 and do not overwrite or change the rewarder'
     },
     {
       target: 'tribalChief',

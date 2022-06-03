@@ -98,13 +98,13 @@ describe('e2e-end-tribe-incentives', function () {
   it('should be able to harvest existing TRIBE rewards from an AutoRewardDistributor in a Fuse pool', async () => {
     const { rariRewardsDistributorDelegator, stakingTokenWrapperRari, tribe } = contracts;
 
-    // 2. Harvest Rari staking token wrapper
+    // 1. Harvest Rari staking token wrapper
     const delegatorBalanceBeforeHarvest = await tribe.balanceOf(rariRewardsDistributorDelegator.address);
     await stakingTokenWrapperRari.harvest();
     const delegatorBalanceAfterHarvest = await tribe.balanceOf(rariRewardsDistributorDelegator.address);
     expect(delegatorBalanceAfterHarvest.sub(delegatorBalanceBeforeHarvest)).to.be.bignumber.at.least(toBN(1));
 
-    // 3. Market participant claims TRIBE rewards
+    // 2. Market participant claims TRIBE rewards
     const userBalanceBefore = await tribe.balanceOf(pool8User);
     await rariRewardsDistributorDelegator['claimRewards(address)'](pool8User);
     const userBalanceAfter = await tribe.balanceOf(pool8User);
