@@ -44,7 +44,7 @@ describe('e2e-backstop', function () {
     doLogging && console.log(`Environment loaded.`);
   });
 
-  describe('TribeMinter', async function () {
+  describe.only('TribeMinter', async function () {
     it('mint TRIBE', async function () {
       const { tribeMinter, tribe } = contracts;
       const tribeSupply = await tribe.totalSupply();
