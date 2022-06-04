@@ -467,9 +467,16 @@ describe('e2e-peg-stability-module', function () {
       });
 
       it('cannot mint because the rai psm is paused', async () => {
-        await expect(
-          raiPriceBoundPSM.connect(impersonatedSigners[userAddress]).mint(userAddress, mintAmount, mintAmount)
-        ).to.be.revertedWith('PegStabilityModule: Minting paused');
+        const typedPSM = raiPriceBoundPSM as PriceBoundPSM;
+        if (await typedPSM.paused()) {
+          await expect(
+            raiPriceBoundPSM.connect(impersonatedSigners[userAddress]).mint(userAddress, mintAmount, mintAmount)
+          ).to.be.revertedWith('Pausable: paused');
+        } else {
+          await expect(
+            raiPriceBoundPSM.connect(impersonatedSigners[userAddress]).mint(userAddress, mintAmount, mintAmount)
+          ).to.be.revertedWith('PegStabilityModule: Minting paused');
+        }
       });
 
       it('mint succeeds with 5_000_000 rai', async () => {
