@@ -9,7 +9,7 @@ import proposals from '@test/integration/proposals_config';
 import { forceEth } from '@test/integration/setup/utils';
 import { Contract, Signer } from 'ethers';
 import { expectApprox } from '@test/helpers';
-import { WETH9 } from '@custom-types/contracts';
+import { PriceBoundPSM, WETH9 } from '@custom-types/contracts';
 
 const toBN = ethers.BigNumber.from;
 
@@ -473,6 +473,9 @@ describe('e2e-peg-stability-module', function () {
       });
 
       it('mint succeeds with 5_000_000 rai', async () => {
+        const typedPSM = raiPriceBoundPSM as PriceBoundPSM;
+        if (await typedPSM.paused())
+          await raiPriceBoundPSM.connect(impersonatedSigners[feiDAOTimelock.address]).unpause();
         await raiPriceBoundPSM.connect(impersonatedSigners[feiDAOTimelock.address]).unpauseMint();
         const minAmountOut = await raiPriceBoundPSM.getMintAmountOut(mintAmount / 2);
         const userStartingFEIBalance = await fei.balanceOf(userAddress);
@@ -490,6 +493,9 @@ describe('e2e-peg-stability-module', function () {
       });
 
       it('mint succeeds with 10_000_000 rai', async () => {
+        const typedPSM = raiPriceBoundPSM as PriceBoundPSM;
+        if (await typedPSM.paused())
+          await raiPriceBoundPSM.connect(impersonatedSigners[feiDAOTimelock.address]).unpause();
         await raiPriceBoundPSM.connect(impersonatedSigners[feiDAOTimelock.address]).unpauseMint();
         const minAmountOut = await raiPriceBoundPSM.getMintAmountOut(mintAmount);
         const userStartingFEIBalance = await fei.balanceOf(userAddress);
