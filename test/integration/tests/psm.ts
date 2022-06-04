@@ -413,6 +413,10 @@ describe('e2e-peg-stability-module', function () {
       });
 
       it('exchanges 1000 FEI for rai', async () => {
+        const typedPSM = raiPriceBoundPSM as PriceBoundPSM;
+        if (await typedPSM.paused())
+          await raiPriceBoundPSM.connect(impersonatedSigners[feiDAOTimelock.address]).unpause();
+
         const startingFEIBalance = await fei.balanceOf(userAddress);
         const startingraiBalance = await rai.balanceOf(userAddress);
         const expectedraiAmount = await raiPriceBoundPSM.getRedeemAmountOut(redeemAmount);
@@ -430,6 +434,10 @@ describe('e2e-peg-stability-module', function () {
       });
 
       it('exchanges 500 FEI for rai', async () => {
+        const typedPSM = raiPriceBoundPSM as PriceBoundPSM;
+        if (await typedPSM.paused())
+          await raiPriceBoundPSM.connect(impersonatedSigners[feiDAOTimelock.address]).unpause();
+
         const startingFEIBalance = await fei.balanceOf(userAddress);
         const startingraiBalance = await rai.balanceOf(userAddress);
         const expectedraiAmount = await raiPriceBoundPSM.getRedeemAmountOut(redeemAmount / 2);
