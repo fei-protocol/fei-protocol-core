@@ -311,8 +311,8 @@ const validateLBPSetup = async (contracts: NamedContracts, addresses: NamedAddre
   expect(daiSpent).to.be.bignumber.equal(amountIn);
 
   const dpiGained = postUserDpiBalance.sub(initialUserDpiBalance);
-  expect(dpiGained).to.be.bignumber.at.least(ethers.constants.WeiPerEther.mul(100));
-  expect(dpiGained).to.be.bignumber.at.most(ethers.constants.WeiPerEther.mul(110));
+  expect(dpiGained).to.be.bignumber.at.least(ethers.constants.WeiPerEther.mul(80));
+  expect(dpiGained).to.be.bignumber.at.most(ethers.constants.WeiPerEther.mul(120));
 
   // Put in 10k DAI, got out 101 DPI
   // Implies price of $98.5 per DPI, compared to an oracle price of $95.6

@@ -28,8 +28,12 @@ const dependencies: DependencyMap = {
   laTribuTribeTimelock: {
     contractDependencies: ['tribe']
   },
+  fuseFixer: {
+    contractDependencies: ['core', 'pcvGuardianNew']
+  },
   core: {
     contractDependencies: [
+      'fuseFixer',
       'raiPriceBoundPSM',
       'raiPCVDripController',
       'collateralizationOracleGuardian',
@@ -110,7 +114,6 @@ const dependencies: DependencyMap = {
       'tribeUsdCompositeOracle',
       'zeroConstantOracle',
       'collateralizationOracleKeeper',
-      'autoRewardsDistributor',
       'erc20Dripper',
       'tribalChief',
       'fuseAdmin',
@@ -127,7 +130,8 @@ const dependencies: DependencyMap = {
       'podAdminGateway',
       'podFactory',
       'roleBastion',
-      'daiFixedPricePSMFeiSkimmer'
+      'daiFixedPricePSMFeiSkimmer',
+      'balancerGaugeStaker'
     ]
   },
   fei: {
@@ -194,7 +198,8 @@ const dependencies: DependencyMap = {
       'daiFixedPricePSM',
       'compoundEthPCVDeposit',
       'aaveEthPCVDeposit',
-      'raiPriceBoundPSM'
+      'raiPriceBoundPSM',
+      'fuseFixer'
     ]
   },
   raiPriceBoundPSM: {
@@ -241,7 +246,6 @@ const dependencies: DependencyMap = {
       'feiDAO',
       'fei',
       'proxyAdmin',
-      'creamDepositWrapper',
       'wethDepositWrapper',
       'agEurDepositWrapper',
       'aaveTribeIncentivesController',
@@ -260,13 +264,11 @@ const dependencies: DependencyMap = {
     contractDependencies: ['optimisticTimelock']
   },
   opsOptimisticTimelock: {
-    contractDependencies: ['votiumBriberD3pool', 'votiumBriber3Crvpool']
+    contractDependencies: ['votiumBriber3Crvpool']
   },
   optimisticTimelock: {
     contractDependencies: [
       'core',
-      'rewardsDistributorAdmin',
-      'tribalChiefSyncV2',
       'rariPool8Comptroller',
       'optimisticMultisig',
       'optimisticMinter',
@@ -469,7 +471,6 @@ const dependencies: DependencyMap = {
       'aaveFeiPCVDepositWrapper',
       'compoundDaiPCVDepositWrapper',
       'compoundEthPCVDepositWrapper',
-      'creamDepositWrapper',
       'wethDepositWrapper',
       'agEurDepositWrapper',
       'ethLidoPCVDepositWrapper',
@@ -508,9 +509,6 @@ const dependencies: DependencyMap = {
   },
   compoundEthPCVDepositWrapper: {
     contractDependencies: ['collateralizationOracle']
-  },
-  creamDepositWrapper: {
-    contractDependencies: ['feiDAOTimelock', 'collateralizationOracle']
   },
   wethDepositWrapper: {
     contractDependencies: ['feiDAOTimelock', 'collateralizationOracle']
@@ -656,11 +654,11 @@ const dependencies: DependencyMap = {
   aaveTribeIncentivesControllerImpl: {
     contractDependencies: ['aaveTribeIncentivesController']
   },
-  autoRewardsDistributor: {
-    contractDependencies: ['core', 'rewardsDistributorAdmin', 'tribalChiefSyncV2', 'tribalChief', 'rariPool8Tribe']
-  },
   erc20Dripper: {
     contractDependencies: ['core', 'tribe', 'tribalChief', 'tribeMinter']
+  },
+  balancerGaugeStaker: {
+    contractDependencies: ['core']
   },
   rariRewardsDistributorDelegate: {
     contractDependencies: [
@@ -671,136 +669,16 @@ const dependencies: DependencyMap = {
     contractDependencies: [
       'rariPool8Tribe',
       'rariRewardsDistributorDelegate', // impl
-      'rewardsDistributorAdmin', //admin
       'rariPool8Comptroller',
-      'fei3CrvStakingtokenWrapper',
-      'd3StakingTokenWrapper',
       'rariPool8Fei3Crv',
-      'rariPool8d3',
-      'feiDaiStakingTokenWrapper',
-      'feiUsdcStakingTokenWrapper'
+      'rariPool8d3'
     ]
-  },
-  fei3CrvAutoRewardsDistributor: {
-    contractDependencies: ['fei3CrvStakingtokenWrapper', 'tribalChief', 'rewardsDistributorAdmin', 'rariPool8Fei3Crv']
-  },
-  d3AutoRewardsDistributor: {
-    contractDependencies: ['d3StakingTokenWrapper', 'tribalChief', 'rewardsDistributorAdmin', 'rariPool8d3']
-  },
-  feiDaiAutoRewardsDistributor: {
-    contractDependencies: ['feiDaiStakingTokenWrapper', 'tribalChief', 'rewardsDistributorAdmin']
-  },
-  feiUsdcAutoRewardsDistributor: {
-    contractDependencies: ['feiUsdcStakingTokenWrapper', 'tribalChief', 'rewardsDistributorAdmin']
-  },
-  fei3CrvStakingtokenWrapper: {
-    contractDependencies: ['fei3CrvAutoRewardsDistributor', 'tribalChief', 'rariRewardsDistributorDelegator']
-  },
-  feiDaiStakingTokenWrapper: {
-    contractDependencies: ['feiDaiAutoRewardsDistributor', 'tribalChief', 'rariRewardsDistributorDelegator']
-  },
-  feiUsdcStakingTokenWrapper: {
-    contractDependencies: ['feiUsdcAutoRewardsDistributor', 'tribalChief', 'rariRewardsDistributorDelegator']
-  },
-  d3StakingTokenWrapper: {
-    contractDependencies: ['d3AutoRewardsDistributor', 'tribalChief', 'rariRewardsDistributorDelegator']
-  },
-  rewardsDistributorAdmin: {
-    contractDependencies: [
-      'rariRewardsDistributorDelegator',
-      'optimisticTimelock',
-      'autoRewardsDistributor', // rewards dripper role
-      'fei3CrvAutoRewardsDistributor',
-      'd3AutoRewardsDistributor',
-      'feiDaiAutoRewardsDistributor',
-      'feiUsdcAutoRewardsDistributor'
-    ]
-  },
-  stwBulkHarvest: {
-    contractDependencies: [
-      'stakingTokenWrapperFOXLaaS',
-      'stakingTokenWrapperBribeD3pool',
-      'stakingTokenWrapperGROLaaS',
-      'stakingTokenWrapperKYLINLaaS',
-      'stakingTokenWrapperMStableLaaS',
-      'stakingTokenWrapperNEARLaaS',
-      'stakingTokenWrapperPoolTogetherLaaS',
-      'stakingTokenWrapperRari',
-      'stakingTokenWrapperSYNLaaS',
-      'stakingTokenWrapperUMALaaS'
-    ]
-  },
-  stakingTokenWrapperFOXLaaS: {
-    contractDependencies: ['tribalChief', 'stwBulkHarvest']
-  },
-  stakingTokenWrapperBribeD3pool: {
-    contractDependencies: ['tribalChief', 'votiumBriberD3pool', 'stwBulkHarvest']
-  },
-  stakingTokenWrapperGROLaaS: {
-    contractDependencies: ['tribalChief', 'stwBulkHarvest']
-  },
-  stakingTokenWrapperKYLINLaaS: {
-    contractDependencies: ['tribalChief', 'stwBulkHarvest']
-  },
-  stakingTokenWrapperMStableLaaS: {
-    contractDependencies: ['tribalChief', 'stwBulkHarvest']
-  },
-  stakingTokenWrapperNEARLaaS: {
-    contractDependencies: ['tribalChief', 'stwBulkHarvest']
-  },
-  stakingTokenWrapperPoolTogetherLaaS: {
-    contractDependencies: ['tribalChief', 'stwBulkHarvest']
-  },
-  stakingTokenWrapperRari: {
-    contractDependencies: ['tribalChief', 'stwBulkHarvest']
-  },
-  stakingTokenWrapperSYNLaaS: {
-    contractDependencies: ['tribalChief', 'stwBulkHarvest']
-  },
-  stakingTokenWrapperUMALaaS: {
-    contractDependencies: ['tribalChief', 'stwBulkHarvest']
   },
   tribalChief: {
-    contractDependencies: [
-      'core',
-      'autoRewardsDistributor',
-      'tribalChiefSyncV2',
-      'optimisticTimelock',
-      'erc20Dripper',
-      'stakingTokenWrapperBribeD3pool',
-      'stakingTokenWrapperFOXLaaS',
-      'stakingTokenWrapperGROLaaS',
-      'stakingTokenWrapperKYLINLaaS',
-      'stakingTokenWrapperMStableLaaS',
-      'stakingTokenWrapperNEARLaaS',
-      'stakingTokenWrapperPoolTogetherLaaS',
-      'stakingTokenWrapperRari',
-      'stakingTokenWrapperSYNLaaS',
-      'stakingTokenWrapperUMALaaS',
-      'tribalChiefImpl',
-      'proxyAdmin',
-      'fei3CrvAutoRewardsDistributor',
-      'd3AutoRewardsDistributor',
-      'fei3CrvStakingtokenWrapper',
-      'd3StakingTokenWrapper',
-      'feiDaiStakingTokenWrapper',
-      'feiUsdcStakingTokenWrapper',
-      'feiDaiAutoRewardsDistributor',
-      'feiUsdcAutoRewardsDistributor'
-    ]
+    contractDependencies: ['core', 'optimisticTimelock', 'erc20Dripper', 'tribalChiefImpl', 'proxyAdmin']
   },
   tribalChiefImpl: {
     contractDependencies: ['tribalChief']
-  },
-  tribalChiefSyncV2: {
-    contractDependencies: [
-      'autoRewardsDistributor', // triggers autoRewardsDistributor after updates
-      'optimisticTimelock', // executes atomic updates
-      'tribalChief' // mass updates pools
-    ]
-  },
-  votiumBriberD3pool: {
-    contractDependencies: ['stakingTokenWrapperBribeD3pool', 'opsOptimisticTimelock']
   },
   votiumBriber3Crvpool: {
     contractDependencies: ['opsOptimisticTimelock']
@@ -858,30 +736,17 @@ const dependencies: DependencyMap = {
     contractDependencies: ['rariPool8Fei3Crv', 'rariPool8d3']
   },
   rariPool8Fei3Crv: {
-    contractDependencies: [
-      'rariPool8CTokenImpl',
-      'tribe',
-      'rariPool8Comptroller',
-      'rariRewardsDistributorDelegator',
-      'fei3CrvAutoRewardsDistributor'
-    ]
+    contractDependencies: ['rariPool8CTokenImpl', 'tribe', 'rariPool8Comptroller', 'rariRewardsDistributorDelegator']
   },
   rariPool8d3: {
-    contractDependencies: [
-      'rariPool8CTokenImpl',
-      'tribe',
-      'rariPool8Comptroller',
-      'rariRewardsDistributorDelegator',
-      'd3AutoRewardsDistributor'
-    ]
+    contractDependencies: ['rariPool8CTokenImpl', 'tribe', 'rariPool8Comptroller', 'rariRewardsDistributorDelegator']
   },
   rariPool8Tribe: {
     contractDependencies: [
       'tribe',
       'rariPool8Comptroller',
       'rariPool8TribeIrm',
-      'rariRewardsDistributorDelegator', // Drips TRIBE rewards
-      'autoRewardsDistributor'
+      'rariRewardsDistributorDelegator' // Drips TRIBE rewards
     ]
   },
   rariPool8TribeIrm: {

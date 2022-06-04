@@ -1,5 +1,3 @@
-import { ethers } from 'hardhat';
-import { Contract } from '@ethersproject/contracts';
 import { permissions } from '@protocol/permissions';
 import { getAllContractAddresses, getAllContracts } from './loadContracts';
 import {
@@ -24,7 +22,7 @@ import '@nomiclabs/hardhat-ethers';
 import { resetFork } from '@test/helpers';
 import { simulateOAProposal } from '@scripts/utils/simulateTimelockProposal';
 import { simulateTCProposal } from '@scripts/utils/simulateTimelockProposal';
-import { replaceArgs } from '@scripts/utils/simulateTimelockProposal';
+import { simulateDEBUGProposal } from '@scripts/utils/simulateDEBUGProposal';
 import { forceEth } from '@test/integration/setup/utils';
 import { getImpersonatedSigner } from '@test/helpers';
 
@@ -189,26 +187,17 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
       const signer = await getImpersonatedSigner(contracts.feiDAOTimelock.address);
       await forceEth(contracts.feiDAOTimelock.address);
 
-      let totalGasUsed = 0;
-      for (let i = 0; i < config.proposal.commands.length; i++) {
-        const cmd = config.proposal.commands[i];
-        // build tx & print details
-        console.log('  Step' + (config.proposal.commands.length >= 10 && i < 10 ? ' ' : ''), i, ':', cmd.description);
-        const to = contractAddresses[cmd.target] || cmd.target;
-        const value = cmd.values;
-        const args = replaceArgs(cmd.arguments, contractAddresses);
-        const ethersContract: Contract = contracts[cmd.target] as Contract;
-        const calldata = ethersContract.interface.encodeFunctionData(cmd.method, args);
-        console.log('    Target:', cmd.target, '[' + to + ']');
-        console.log('    Method:', cmd.method, '- Calling...');
+      await simulateDEBUGProposal(signer, contractAddresses, contracts as unknown as MainnetContracts, config);
+    }
 
-        // send tx
-        const tx = await signer.sendTransaction({ data: calldata, to, value: Number(value) });
-        const d = await tx.wait();
-        console.log('    Done. Used ' + d.cumulativeGasUsed.toString() + ' gas.');
-        totalGasUsed += Number(d.cumulativeGasUsed.toString());
-      }
-      console.log('  Done. Used', totalGasUsed, 'gas in total.');
+    if (config.category === ProposalCategory.DEBUG_TC) {
+      console.log('Simulating TC proposal in DEBUG mode (step by step)...');
+      console.log('  Title: ', config.proposal.title);
+
+      const signer = await getImpersonatedSigner(contracts.tribalCouncilTimelock.address);
+      await forceEth(contracts.tribalCouncilTimelock.address);
+
+      await simulateDEBUGProposal(signer, contractAddresses, contracts as unknown as MainnetContracts, config);
     }
 
     // teardown the DAO proposal
