@@ -15,3 +15,9 @@ export async function forceSpecificEth(target: string, amount: string): Promise<
   const forceETHContract = await forceETHContractFactory.deploy({ value: ethers.BigNumber.from(amount) });
   await forceETHContract.forceEth(target);
 }
+
+export async function forceEthMultiple(targets: string[]): Promise<void> {
+  for (const target of targets) {
+    await forceEth(target);
+  }
+}
