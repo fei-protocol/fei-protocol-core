@@ -98,8 +98,8 @@ export type ProposalCommand = {
   description: string;
 };
 
-export interface MainnetAddresses {
-  [key: string]: AddressConfig;
+export interface MainnetContractsConfig {
+  [key: string]: ContractConfig;
 }
 
 export type TribalChiefPoolConfig = {
@@ -111,7 +111,7 @@ export interface TribalChiefConfig {
   [key: string]: TribalChiefPoolConfig;
 }
 
-export interface AddressConfig {
+export interface ContractConfig {
   artifactName: string;
   address: string;
   category: AddressCategory;
