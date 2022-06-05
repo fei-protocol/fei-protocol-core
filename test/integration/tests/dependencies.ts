@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { ProposalCategory, ProposalDescription } from '@custom-types/types';
-import proposals from '@test/integration/proposals_config';
+import proposals from '@test/integration/proposalsConfig';
 import dependencies from '@protocol/dependencies';
 import addresses from '@protocol/mainnetAddresses';
 import collateralizationAddresses from '@protocol/collateralizationOracle';

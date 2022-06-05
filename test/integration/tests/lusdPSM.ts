@@ -13,7 +13,7 @@ import {
   overwriteChainlinkAggregator,
   resetFork
 } from '@test/helpers';
-import proposals from '@test/integration/proposals_config';
+import proposals from '@test/integration/proposalsConfig';
 import { TestEndtoEndCoordinator } from '../setup';
 import { forceEth } from '../setup/utils';
 

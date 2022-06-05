@@ -5,7 +5,7 @@ import { Interface } from '@ethersproject/abi';
 import { utils } from 'ethers';
 import { getAllContractAddresses, getAllContracts } from '@test/integration/setup/loadContracts';
 import { ProposalCategory, ProposalDescription } from '@custom-types/types';
-import proposals from '@test/integration/proposals_config';
+import proposals from '@test/integration/proposalsConfig';
 
 type ExtendedAlphaProposal = {
   targets: string[];

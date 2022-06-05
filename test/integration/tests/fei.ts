@@ -4,7 +4,7 @@ import { solidity } from 'ethereum-waffle';
 import { ethers } from 'hardhat';
 import { NamedAddresses, NamedContracts } from '@custom-types/types';
 import { getAddresses, getImpersonatedSigner, resetFork, ZERO_ADDRESS } from '@test/helpers';
-import proposals from '@test/integration/proposals_config';
+import proposals from '@test/integration/proposalsConfig';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
 import { Fei } from '@custom-types/contracts';
 import { Signer } from '@ethersproject/abstract-signer';

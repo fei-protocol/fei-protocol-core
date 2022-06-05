@@ -4,7 +4,7 @@ import { solidity } from 'ethereum-waffle';
 import { ethers } from 'hardhat';
 import { NamedAddresses, NamedContracts } from '@custom-types/types';
 import { expectApprox, overwriteChainlinkAggregator } from '@test/helpers';
-import proposals from '@test/integration/proposals_config';
+import proposals from '@test/integration/proposalsConfig';
 import collateralizationAddresses from '@protocol/collateralizationOracle';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
 import {
