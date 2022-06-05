@@ -6,7 +6,7 @@ import { solidity } from 'ethereum-waffle';
 import { ethers } from 'hardhat';
 import { NamedAddresses, NamedContracts } from '@custom-types/types';
 import { getImpersonatedSigner, resetFork } from '@test/helpers';
-import proposals from '@test/integration/proposalsConfig';
+import proposals from '@protocol/proposalsConfig';
 import { forceEth } from '@test/integration/setup/utils';
 import { TestEndtoEndCoordinator } from '../setup';
 import { BigNumber } from 'ethers';

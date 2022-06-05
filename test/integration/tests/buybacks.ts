@@ -11,7 +11,7 @@ import {
   resetFork,
   overwriteChainlinkAggregator
 } from '@test/helpers';
-import proposals from '@test/integration/proposalsConfig';
+import proposals from '@protocol/proposalsConfig';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
 import { CollateralizationOracle } from '@custom-types/contracts';
 const toBN = ethers.BigNumber.from;

@@ -4,7 +4,7 @@ import { solidity } from 'ethereum-waffle';
 import { ethers } from 'hardhat';
 import { NamedContracts } from '@custom-types/types';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
-import proposals from '@test/integration/proposalsConfig';
+import proposals from '@protocol/proposalsConfig';
 import mainnetAddresses from '@protocol/mainnetAddresses';
 import tribalchief from '@protocol/tribalchief';
 

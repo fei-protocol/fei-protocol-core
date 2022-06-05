@@ -5,7 +5,7 @@ import { ethers } from 'hardhat';
 import { NamedAddresses, NamedContracts } from '@custom-types/types';
 import { getImpersonatedSigner, resetFork, time } from '@test/helpers';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
-import proposals from '@test/integration/proposalsConfig';
+import proposals from '@protocol/proposalsConfig';
 import { PegExchanger, PegExchangerDripper } from '@custom-types/contracts';
 import { expectApprox, expectRevert } from '@test/helpers';
 import { forceEth } from '../setup/utils';

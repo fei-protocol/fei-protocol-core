@@ -3,7 +3,7 @@ import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
 import { ethers } from 'hardhat';
 import { NamedAddresses, NamedContracts } from '@custom-types/types';
-import proposals from '@test/integration/proposalsConfig';
+import proposals from '@protocol/proposalsConfig';
 import { TestEndtoEndCoordinator } from '../setup';
 import { expectApprox, getImpersonatedSigner, resetFork } from '@test/helpers';
 import { abi as PCVDepositAbi } from '../../../artifacts/contracts/pcv/compound/ERC20CompoundPCVDeposit.sol/ERC20CompoundPCVDeposit.json';
