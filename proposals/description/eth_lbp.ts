@@ -12,31 +12,24 @@ const eth_lbp: ProposalDescription = {
     },
     ////////    ETH LBP    ////////
     {
-      target: 'aaveEthPCVDeposit',
+      target: 'pcvGuardianNew',
       values: '0',
-      method: 'withdraw(address,uint256)',
-      arguments: ['{ethToDaiLBPSwapper}', '20000000000000000000000'],
-      description: 'Transfer DPI from DAO timelock to the LBP swapper'
+      method: 'withdrawToSafeAddress(address,address,uint256,bool,bool)',
+      arguments: ['{aaveEthPCVDeposit}', '{ethToDaiLBPSwapper}', '20000000000000000000000', false, false],
+      description: 'Transfer WETH from Aave to the LBP swapper'
     },
     {
-      target: 'compoundDaiPCVDeposit',
+      target: 'pcvGuardianNew',
       values: '0',
-      method: 'withdraw(address,uint256)',
-      arguments: ['{ethToDaiLBPSwapper}', '2000000000000000000000000'],
-      description: 'Withdraw 2M DAI from the CompoundPCVDeposit and transfer to the LBP pool'
+      method: 'withdrawToSafeAddress(address,address,uint256,bool,bool)',
+      arguments: ['{compoundDaiPCVDeposit}', '{ethToDaiLBPSwapper}', '3000000000000000000000000', false, false],
+      description: 'Withdraw 3M DAI from the CompoundPCVDeposit and transfer to the LBP pool'
     },
-    // Correcting the oracle needs to happen before forceSwap()
-    // {
-    //   target: 'ethToDaiLBPSwapper',
-    //   values: '0',
-    //   method: 'setDoInvert(bool)',
-    //   arguments: [false],
-    //   description: 'Set the dpiToDai LBP swapper to not invert'
-    // },
+    // Swap and update CR oracle
     {
       target: 'ethToDaiLBPSwapper',
       values: '0',
-      method: 'forceSwap()',
+      method: 'swap()',
       arguments: [],
       description: 'Start the auction and override the current no-op auction'
     },
@@ -54,14 +47,7 @@ const eth_lbp: ProposalDescription = {
       arguments: ['{ethToDaiLensEth}'],
       description: 'Add ETH swapper lens to the CR oracle'
     },
-    //////// Tighten ETH PSM //////////
-    {
-      target: 'core',
-      values: '0',
-      method: 'grantRole(bytes32,address)',
-      arguments: ['0x1749ca1ca3564d20da6efea465c2a5ae869a9e4b006da7035e688beb14d704e0', '{tribalCouncilTimelock}'],
-      description: 'Grant TribalCouncilTimelock PSM_ADMIN_ROLE so it can tighten ETH redemption spread'
-    },
+    ////// Tighten ETH PSM //////////
     {
       target: 'ethPSM',
       values: '0',

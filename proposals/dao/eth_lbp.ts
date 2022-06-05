@@ -41,12 +41,12 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 
   // Oracle reports WETH price in terms of USD, so should not be inverted
   // Specifically reports: 101258471470000000000, which is $101. As expected
-  const ethToDaiSwapper = await BalancerLBPSwapperFactory.deploy(
+  const ethToDaiLBPSwapper = await BalancerLBPSwapperFactory.deploy(
     addresses.core,
     {
       _oracle: addresses.chainlinkEthUsdOracleWrapper,
       _backupOracle: ethers.constants.AddressZero,
-      _invertOraclePrice: true,
+      _invertOraclePrice: false,
       _decimalsNormalizer: 0
     },
     LBP_FREQUENCY,
@@ -58,8 +58,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     MIN_LBP_SIZE // minimum size of a pool which the swapper is used against
   );
 
-  await ethToDaiSwapper.deployed();
-  logging && console.log('WETH to DAI swapper deployed to: ', ethToDaiSwapper.address);
+  await ethToDaiLBPSwapper.deployed();
+  logging && console.log('WETH to DAI swapper deployed to: ', ethToDaiLBPSwapper.address);
 
   // 2. Create a liquidity bootstrapping pool between WETH and DAI
   const lbpFactory = await ethers.getContractAt(
@@ -70,10 +70,10 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   const tx: TransactionResponse = await lbpFactory.create(
     'WETH->DAI Auction Pool', // pool name
     'apWETH-DAI', // lbp token symbol
-    [addresses.weth, addresses.dai], // pool contains [WETH, DAI]
-    [ethers.constants.WeiPerEther.mul(95).div(100), ethers.constants.WeiPerEther.mul(5).div(100)], // initial weights 5%/95%
+    [addresses.dai, addresses.weth], // pool contains [DAI, WETH]
+    [ethers.constants.WeiPerEther.mul(5).div(100), ethers.constants.WeiPerEther.mul(95).div(100)], // initial weights 5%/95%
     ethers.constants.WeiPerEther.mul(30).div(10_000), // 0.3% swap fees
-    ethToDaiSwapper.address, // pool owner = fei protocol swapper
+    ethToDaiLBPSwapper.address, // pool owner = fei protocol swapper
     true
   );
 
@@ -86,7 +86,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   logging && console.log('LBP Pool Id: ', poolId);
 
   // 3. Initialise the LBP swapper with the pool address
-  const tx2 = await ethToDaiSwapper.init(noFeeEthDaiLBPAddress);
+  const tx2 = await ethToDaiLBPSwapper.init(noFeeEthDaiLBPAddress);
   await tx2.wait();
 
   // 4. Deploy a lens to report the swapper value
@@ -115,7 +115,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 
   logging && console.log('BPTLens for WETH in swapper pool: ', ethToDaiLensEth.address);
   return {
-    ethToDaiSwapper,
+    ethToDaiLBPSwapper,
     ethToDaiLensDai,
     ethToDaiLensEth
   };
@@ -125,10 +125,15 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 // This could include setting up Hardhat to impersonate accounts,
 // ensuring contracts have a specific state, etc.
 const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  poolId = '0xd10386804959a121a8a487e49f45aa9f5a2eb2a00002000000000000000001f1';
+  // check PSM redeem fee
+  const psm = contracts.ethPSM;
+  expect(await psm.redeemFeeBasisPoints()).to.be.equal('75');
+
   // overwrite chainlink ETH/USD oracle
   const ethToDaiLBPSwapper = contracts.ethToDaiLBPSwapper;
-  await overwriteChainlinkAggregator(addresses.chainlinkEthUsdOracle, '250000000000', '8');
+  poolId = await ethToDaiLBPSwapper.pid();
+
+  await overwriteChainlinkAggregator(addresses.chainlinkEthUsdOracle, '200000000000', '8'); // $2000 ETH
 
   // invariant checks
   expect(await ethToDaiLBPSwapper.tokenSpent()).to.be.equal(addresses.weth);
@@ -136,8 +141,8 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
   expect(await ethToDaiLBPSwapper.tokenReceivingAddress()).to.be.equal(addresses.compoundDaiPCVDeposit);
 
   const poolTokens = await contracts.balancerVault.getPoolTokens(poolId);
-  expect(poolTokens.tokens[0]).to.be.equal(addresses.weth);
-  expect(poolTokens.tokens[1]).to.be.equal(addresses.dai);
+  expect(poolTokens.tokens[0]).to.be.equal(addresses.dai);
+  expect(poolTokens.tokens[1]).to.be.equal(addresses.weth);
 
   // LBP swapper should be empty
   expect(poolTokens.balances[0]).to.be.equal('0');
@@ -153,7 +158,10 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
 
   console.log('Starting DAI PSM dai balance [M]', (await contracts.compoundDaiPCVDeposit.balance()) / 1e24);
 
+  console.log('DAI needed', await ethToDaiLBPSwapper.getTokensIn(ethers.constants.WeiPerEther.mul(20_000)));
   await forceEth(addresses.tribalCouncilTimelock);
+
+  await time.increase(LBP_FREQUENCY);
 };
 
 // Tears down any changes made in setup() that need to be
@@ -166,32 +174,36 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
   const core = contracts.core;
-  poolId = '0xd10386804959a121a8a487e49f45aa9f5a2eb2a00002000000000000000001f1';
+  const ethToDaiLBPSwapper = contracts.ethToDaiLBPSwapper;
+  poolId = await ethToDaiLBPSwapper.pid();
+
   console.log('Final DAI PSM dai balance [M]', (await contracts.compoundDaiPCVDeposit.balance()) / 1e24);
 
   ////////////    1. New Safe adddresses   //////////////
   expect(await contracts.pcvGuardianNew.isSafeAddress(addresses.ethToDaiLBPSwapper)).to.be.true;
 
-  /////////////  2.    WETH LBP  ////////////////
+  /////////////  2. WETH LBP  ////////////////
   await validateLBPSetup(contracts, addresses, poolId);
 
-  // Validate SWAP_ADMIN_ROLE is under ROLE_ADMIN and that TribalCouncilTimelock has the role
-  expect(await core.hasRole(ethers.utils.id('SWAP_ADMIN_ROLE'), addresses.tribalCouncilTimelock)).to.be.true;
-  expect(await core.getRoleAdmin(ethers.utils.id('SWAP_ADMIN_ROLE'))).to.be.equal(ethers.utils.id('ROLE_ADMIN'));
+  /////////////  3. PSM Redeem  ////////////////
+
+  // check PSM redeem fee
+  const psm = contracts.ethPSM;
+  expect(await psm.redeemFeeBasisPoints()).to.be.equal('60');
+
+  // Validate PSM_ADMIN_ROLE is under ROLE_ADMIN and that TribalCouncilTimelock has the role
+  expect(await core.hasRole(ethers.utils.id('PSM_ADMIN_ROLE'), addresses.tribalCouncilTimelock)).to.be.true;
+  expect(await core.getRoleAdmin(ethers.utils.id('PSM_ADMIN_ROLE'))).to.be.equal(ethers.utils.id('ROLE_ADMIN'));
 };
 
 const validateLBPSetup = async (contracts: NamedContracts, addresses: NamedAddresses, poolId: string) => {
   const ethToDaiLBPSwapper = contracts.ethToDaiLBPSwapper;
-  const ethToDaiLBPPool = contracts.ethToDaiLBPPool;
-
-  const retrievedPoolId = await ethToDaiLBPPool.getPoolId();
-  expect(retrievedPoolId).to.equal(poolId);
 
   // expect(await ethToDaiLBPSwapper.doInvert()).to.be.equal(true);
   expect(await ethToDaiLBPSwapper.isTimeStarted()).to.be.true;
   expect(await ethToDaiLBPSwapper.tokenSpent()).to.equal(addresses.weth);
   expect(await ethToDaiLBPSwapper.tokenReceived()).to.equal(addresses.dai);
-  expect(await ethToDaiLBPPool.getSwapEnabled()).to.equal(true);
+
   // tokenSpent = WETH
   // tokenReceived = DAI
   // On BalancerVault, token[0] = WETH, token[1] = DAI
@@ -200,33 +212,30 @@ const validateLBPSetup = async (contracts: NamedContracts, addresses: NamedAddre
   // 2.1 Check oracle price
   const price = (await ethToDaiLBPSwapper.readOracle())[0]; // DAI price in units of WETH
   console.log('price: ', price);
-  expect(price).to.be.bignumber.at.least(ethers.constants.WeiPerEther.mul(90)); // 90e18
-  expect(price).to.be.bignumber.at.most(ethers.constants.WeiPerEther.mul(100)); // 100e18
+  expect(price).to.be.bignumber.at.least(ethers.constants.WeiPerEther.mul(1600)); // 1600e18
+  expect(price).to.be.bignumber.at.most(ethers.constants.WeiPerEther.mul(2200)); // 2200e18
 
   // 2.2 Check relative price in pool
-  // Putting in 100,000 tokens of WETH, getting an amount of DAI back
-  const response = await ethToDaiLBPSwapper.getTokensIn(100000); // input is spent token balance, 100,000 WETH tokens
+
+  // Putting in 20,000 tokens of WETH, getting an amount of DAI back
+  const response = await ethToDaiLBPSwapper.getTokensIn(20000); // input is spent token balance, 100,000 WETH tokens
   const amounts = response[1];
-  expect(amounts[0]).to.be.bignumber.equal(ethers.BigNumber.from(100000)); // WETH
 
   // DAI/WETH price * DAI amount * 5% ~= amount
-  expectApprox(price.mul(100000).mul(5).div(ethers.constants.WeiPerEther).div(100), amounts[1]); // DAI
-  expect(amounts[1]).to.be.bignumber.at.least(toBN(1000)); // Make sure orcacle inversion is correct (i.e. not inverted)
+  expectApprox(price.mul(20000).mul(5).div(ethers.constants.WeiPerEther).div(100), amounts[1]); // DAI
+  expect(amounts[0]).to.be.bignumber.at.least(toBN(2_000_000)); // Make sure orcacle inversion is correct (i.e. not inverted)
 
-  // 2.3 Check pool weights
-  const weights = await ethToDaiLBPPool.getNormalizedWeights();
-  expectApprox(weights[0], ethers.constants.WeiPerEther.mul(5).div(100)); // 5% DAI
-  expectApprox(weights[1], ethers.constants.WeiPerEther.mul(95).div(100)); // 95% WETH
+  expect(amounts[1]).to.be.bignumber.equal(ethers.BigNumber.from(20000)); // WETH
 
-  // 2.4 Check pool info
+  // 2.3 Check pool info
   const poolTokens = await contracts.balancerVault.getPoolTokens(poolId);
-  // there should be 188k DAI in the pool
-  expect(poolTokens.tokens[1]).to.be.equal(contracts.dai.address); // this is DAI
-  expect(poolTokens.balances[1]).to.be.bignumber.at.least(ethers.constants.WeiPerEther.mul(185_000));
-  expect(poolTokens.balances[1]).to.be.bignumber.at.most(ethers.constants.WeiPerEther.mul(200_000));
-  // there should be 37k WETH in the pool
-  expect(poolTokens.tokens[0]).to.be.equal(contracts.weth.address); // this is WETH
-  expect(poolTokens.balances[0]).to.be.equal('37888449801955370645659');
+  // there should be 2.1M DAI in the pool
+  expect(poolTokens.tokens[0]).to.be.equal(contracts.dai.address); // this is DAI
+  expect(poolTokens.balances[0]).to.be.bignumber.at.least(ethers.constants.WeiPerEther.mul(2_000_000));
+  expect(poolTokens.balances[0]).to.be.bignumber.at.most(ethers.constants.WeiPerEther.mul(2_200_000));
+  // there should be 20k WETH in the pool
+  expect(poolTokens.tokens[1]).to.be.equal(contracts.weth.address); // this is WETH
+  expect(poolTokens.balances[1]).to.be.equal('20000000000000000000000');
 
   // Pool balances Maths:
   // Total value of pool = (188k DAI * $1) + (37k WETH * $93) = $3.63M
@@ -271,38 +280,13 @@ const validateLBPSetup = async (contracts: NamedContracts, addresses: NamedAddre
   expect(daiSpent).to.be.bignumber.equal(amountIn);
 
   const ethGained = postUserEthBalance.sub(initialUserEthBalance);
-  expect(ethGained).to.be.bignumber.at.least(ethers.constants.WeiPerEther.mul(80));
-  expect(ethGained).to.be.bignumber.at.most(ethers.constants.WeiPerEther.mul(120));
+  expect(ethGained).to.be.bignumber.at.least(ethers.constants.WeiPerEther.mul(4));
+  expect(ethGained).to.be.bignumber.at.most(ethers.constants.WeiPerEther.mul(6));
 
-  // Put in 10k DAI, got out 101 WETH
-  // Implies price of $98.5 per WETH, compared to an oracle price of $95.6
+  // Put in 10k DAI, got out ~5 WETH
+  // Implies price of $2000 per WETH
   console.log('DAI spent: ', daiSpent);
   console.log('WETH gained: ', ethGained);
-
-  await time.increase(86400 * 7);
-  // Perform second swap, check price goes down
-  await contracts.dai.connect(daiWhaleSigner).approve(addresses.balancerVault, amountIn);
-  await contracts.balancerVault.connect(daiWhaleSigner).swap(
-    {
-      poolId: poolId,
-      kind: 0,
-      assetIn: addresses.dai,
-      assetOut: addresses.weth,
-      amount: amountIn,
-      userData: '0x'
-    },
-    {
-      sender: daiWhale,
-      fromInternalBalance: false,
-      recipient: daiWhale,
-      toInternalBalance: false
-    },
-    0,
-    '10000000000000000000000'
-  );
-  const secondSwapWETHAmount = (await contracts.weth.balanceOf(daiWhale)).sub(postUserEthBalance);
-  // If price has dropped, then for the same DAI the user gets more WETH
-  expect(secondSwapWETHAmount).to.be.bignumber.greaterThan(ethGained);
 
   // Accelerate time and check ended
   await time.increase(LBP_FREQUENCY);
