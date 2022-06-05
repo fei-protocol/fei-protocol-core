@@ -24,7 +24,8 @@
     "test/*", "test/**/*",
     "scripts/*", "scripts/**/*",
     "proposals/*", "proposals/**/*",
-    "./types/contracts/*", "./types/contracts/**/*", "protocol-configuration/proposalsConfig.ts",
+    "protocol-configuration/*", "protocol-configuration/**/*",
+    "types/*", "types/**/*",
   ],
   "exclude": [
     "scripts/deploy/old/*",
