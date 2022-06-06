@@ -456,6 +456,16 @@ const MainnetAddresses: MainnetAddresses = {
     address: '0xD8Eb546726d449fC1dEd06DFeCa800A2fa8bB930',
     category: AddressCategory.PCV
   },
+  vlAuraDelegatorPCVDeposit: {
+    artifactName: 'VlAuraDelegatorPCVDeposit', // actually a TransparentUpgradeableProxy
+    address: '0xc44902C03093D52213d20E5b06a0Bda4D9Ce6524',
+    category: AddressCategory.External // will become PCV after airdrop happen
+  },
+  vlAuraDelegatorPCVDepositImplementation: {
+    artifactName: 'VlAuraDelegatorPCVDeposit',
+    address: '0xEd47a9519F86a695A212B53B5EBff92aF41741b1',
+    category: AddressCategory.External // not really external but PCV adds e2e tests on CR oracle config
+  },
   d3poolConvexPCVDeposit: {
     artifactName: 'ConvexPCVDeposit',
     address: '0x5ae217dE26f6Ff5F481C6e10ec48b2cf2fc857C8',
