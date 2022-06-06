@@ -33,14 +33,10 @@ let poolId; // auction pool id
 const fipNumber = '110';
 
 const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: NamedAddresses, logging: boolean) => {
-  ///////////  2. Deploy the Balancer LBP swapper
-  // // Amounts:
-  // WETH: 37888449801955370645659 (95%), 37k WETH, $3,587,445
-  // DAI: 187947000000000000000000 (5%), 187k DAI, $179,372.05, overfunding by ~$9k and transferring $187,947
+  ///////////  1. Deploy the Balancer LBP swapper
   const BalancerLBPSwapperFactory = await ethers.getContractFactory('BalancerLBPSwapper');
 
   // Oracle reports WETH price in terms of USD, so should not be inverted
-  // Specifically reports: 101258471470000000000, which is $101. As expected
   const ethToDaiLBPSwapper = await BalancerLBPSwapperFactory.deploy(
     addresses.core,
     {
@@ -236,13 +232,6 @@ const validateLBPSetup = async (contracts: NamedContracts, addresses: NamedAddre
   // there should be 20k WETH in the pool
   expect(poolTokens.tokens[1]).to.be.equal(contracts.weth.address); // this is WETH
   expect(poolTokens.balances[1]).to.be.equal('20000000000000000000000');
-
-  // Pool balances Maths:
-  // Total value of pool = (188k DAI * $1) + (37k WETH * $93) = $3.63M
-  // DAI share = 5%
-  // WETH share = 95%
-  // Expected DAI amount = $3.63M * 0.05 = ~$181k
-  // Expected WETH amount = $3.63M * 0.95 = ~$3.5M -> ~ ($3500k / 93) 37k WETH
 
   // Validate that a swap can occur
   const daiWhale = '0x5d3a536e4d6dbd6114cc1ead35777bab948e3643';
