@@ -388,10 +388,10 @@ describe('BalancerLBPSwapper', function () {
       await balancerLBPSwapper.connect(impersonatedSigners[governorAddress]).swap();
     });
 
-    describe('emergencyExit', function () {
+    describe('exitPoolToSelf', function () {
       it('guardian succeeds', async function () {
         expect(await pool.balanceOf(balancerLBPSwapper.address)).to.be.bignumber.equal(await vault.LIQUIDITY_AMOUNT());
-        await balancerLBPSwapper.connect(impersonatedSigners[guardianAddress]).emergencyExit();
+        await balancerLBPSwapper.connect(impersonatedSigners[guardianAddress]).exitPoolToSelf();
         expect(await pool.balanceOf(balancerLBPSwapper.address)).to.be.bignumber.equal(toBN(0));
         expect(await fei.balanceOf(balancerLBPSwapper.address)).to.be.bignumber.equal(
           ethers.constants.WeiPerEther.mul(toBN(2))
@@ -400,7 +400,7 @@ describe('BalancerLBPSwapper', function () {
 
       it('non-authorized reverts', async function () {
         await expectRevert(
-          balancerLBPSwapper.connect(impersonatedSigners[userAddress]).emergencyExit(),
+          balancerLBPSwapper.connect(impersonatedSigners[userAddress]).exitPoolToSelf(),
           'UNAUTHORIZED'
         );
       });

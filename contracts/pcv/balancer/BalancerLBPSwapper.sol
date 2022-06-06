@@ -201,7 +201,7 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
     }
 
     /// @notice exit LBP with all assets to this contract. The tokens can then be withdrawn via standard PCV deposit methods.
-    function emergencyExit()
+    function exitPoolToSelf()
         external
         hasAnyOfThreeRoles(TribeRoles.GUARDIAN, TribeRoles.PCV_CONTROLLER, TribeRoles.SWAP_ADMIN_ROLE)
     {
