@@ -51,19 +51,14 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // Run any validations required on the fip using mocha or console logging
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  // 1. Validate safe addresses set on PCVGuardian
-  const pcvGuardian = contracts.pcvGuardianNew;
-  expect(await pcvGuardian.isSafeAddress(addresses.tribalCouncilTimelock)).to.be.true;
-
-  // 2. Validate withdrawn liquidity destinations
-  const sanityCheckDAIAmount = ethers.constants.WeiPerEther.mul(100_000);
+  // 1. Validate withdrawn liquidity destinations
+  const sanityCheckDAIAmount = ethers.constants.WeiPerEther.mul(3_500_000);
   const finalDAIDepositBalance = await contracts.compoundDaiPCVDeposit.balance();
   expect(finalDAIDepositBalance).to.be.bignumber.at.least(initialDaiPCVBalance.add(sanityCheckDAIAmount));
   logging && console.log('Final DAI balance: ', finalDAIDepositBalance.toString());
 
   const dpi = contracts.dpi;
-
-  const sanityCheckDPIAmount = ethers.constants.WeiPerEther.mul(100);
+  const sanityCheckDPIAmount = ethers.constants.WeiPerEther.mul(1500);
   const finalTCDpiBalance = await dpi.balanceOf(addresses.tribalCouncilSafe);
   expect(finalTCDpiBalance).to.be.bignumber.at.least(initialTCDpiBalance.add(sanityCheckDPIAmount));
 };

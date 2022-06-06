@@ -4,18 +4,11 @@ const fip_104b: ProposalDescription = {
   title: 'FIP_104b: Withdraw LBP liquidity',
   commands: [
     {
-      target: 'pcvGuardianNew',
-      values: '0',
-      method: 'setSafeAddress(address)',
-      arguments: ['{tribalCouncilTimelock}'],
-      description: 'Set the TribalCouncil multisig and timelock to be safe addresses for PCV withdrawal'
-    },
-    {
       target: 'dpiToDaiLBPSwapper',
       values: '0',
       method: 'exitPool(address)',
       arguments: ['{compoundDaiPCVDeposit}'],
-      description: 'Withdraw all DAI and DPI from LBP pool to the compoundDAIPCVDeposit'
+      description: 'Withdraw all DAI and DPI from LBP pool to the compoundDAIPCVDeposit (~$3.8m)'
     },
     {
       target: 'ratioPCVControllerV2',
@@ -27,7 +20,8 @@ const fip_104b: ProposalDescription = {
         '{tribalCouncilSafe}', // to
         '10000' // basisPoints, 100%
       ],
-      description: 'Withdraw all the DPI from the Compound DAI PCV deposit to the TribalCouncil multisig'
+      description:
+        'Withdraw all DPI from the Compound DAI PCV deposit (~$200k) to the TribalCouncil multisig, where it will be liquidated'
     },
     {
       target: 'compoundDaiPCVDeposit',
@@ -45,9 +39,8 @@ const fip_104b: ProposalDescription = {
   and discussed here: https://tribe.fei.money/t/fip-104-fei-pcv-reinforcement-proposal/4162 .
 
   Specifically it:
-  - Sets the TribalCouncil timelock to be a safe address for PCV withdrawal
   - Exits the LBP pool and withdraws all liquidity to the compound DAI deposit
-  - Withdraws the DPI from the deposit to the TribalCouncil multisig, uisng the ratioPCVController
+  - Withdraws the DPI from the deposit to the TribalCouncil multisig, using the ratioPCVController
   - Deposits the DAI on the deposit into Compound
   `
 };
