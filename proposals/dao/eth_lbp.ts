@@ -199,7 +199,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 const validateLBPSetup = async (contracts: NamedContracts, addresses: NamedAddresses, poolId: string) => {
   const ethToDaiLBPSwapper = contracts.ethToDaiLBPSwapper;
 
-  // expect(await ethToDaiLBPSwapper.doInvert()).to.be.equal(true);
+  expect(await ethToDaiLBPSwapper.doInvert()).to.be.equal(false);
   expect(await ethToDaiLBPSwapper.isTimeStarted()).to.be.true;
   expect(await ethToDaiLBPSwapper.tokenSpent()).to.equal(addresses.weth);
   expect(await ethToDaiLBPSwapper.tokenReceived()).to.equal(addresses.dai);
