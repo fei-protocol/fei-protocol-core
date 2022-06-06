@@ -22,6 +22,7 @@ describe('BalancerLBPSwapper', function () {
   let pcvControllerAddress: string;
   let governorAddress: string;
   let minterAddress: string;
+  let guardianAddress: string;
   let core: Core;
   let fei: Fei;
   let tribe: Tribe;
@@ -39,7 +40,8 @@ describe('BalancerLBPSwapper', function () {
       addresses.pcvControllerAddress,
       addresses.governorAddress,
       addresses.minterAddress,
-      addresses.burnerAddress
+      addresses.burnerAddress,
+      addresses.guardianAddress
     ];
 
     for (const address of impersonatedAddresses) {
@@ -48,7 +50,8 @@ describe('BalancerLBPSwapper', function () {
   });
 
   beforeEach(async function () {
-    ({ userAddress, pcvControllerAddress, governorAddress, minterAddress, burnerAddress } = await getAddresses());
+    ({ userAddress, pcvControllerAddress, governorAddress, minterAddress, burnerAddress, guardianAddress } =
+      await getAddresses());
 
     core = await getCore();
 
@@ -385,6 +388,23 @@ describe('BalancerLBPSwapper', function () {
       await balancerLBPSwapper.connect(impersonatedSigners[governorAddress]).swap();
     });
 
+    describe('emergencyExit', function () {
+      it('guardian succeeds', async function () {
+        expect(await pool.balanceOf(balancerLBPSwapper.address)).to.be.bignumber.equal(await vault.LIQUIDITY_AMOUNT());
+        await balancerLBPSwapper.connect(impersonatedSigners[guardianAddress]).emergencyExit();
+        expect(await pool.balanceOf(balancerLBPSwapper.address)).to.be.bignumber.equal(toBN(0));
+        expect(await fei.balanceOf(balancerLBPSwapper.address)).to.be.bignumber.equal(
+          ethers.constants.WeiPerEther.mul(toBN(2))
+        );
+      });
+
+      it('non-authorized reverts', async function () {
+        await expectRevert(
+          balancerLBPSwapper.connect(impersonatedSigners[userAddress]).emergencyExit(),
+          'UNAUTHORIZED'
+        );
+      });
+    });
     it('succeeds', async function () {
       expect(await pool.balanceOf(balancerLBPSwapper.address)).to.be.bignumber.equal(await vault.LIQUIDITY_AMOUNT());
       await balancerLBPSwapper.connect(impersonatedSigners[pcvControllerAddress]).exitPool(userAddress);

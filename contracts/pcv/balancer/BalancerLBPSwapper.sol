@@ -5,6 +5,7 @@ import "./manager/WeightedBalancerPoolManager.sol";
 import "./IVault.sol";
 import "../../utils/Timed.sol";
 import "../../refs/OracleRef.sol";
+import "../../core/TribeRoles.sol";
 import "../IPCVSwapper.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
@@ -197,6 +198,14 @@ contract BalancerLBPSwapper is IPCVSwapper, OracleRef, Timed, WeightedBalancerPo
     */
     function forceSwap() external whenNotPaused onlyGovernor {
         _swap();
+    }
+
+    /// @notice exit LBP with all assets to this contract. The tokens can then be withdrawn via standard PCV deposit methods.
+    function emergencyExit()
+        external
+        hasAnyOfThreeRoles(TribeRoles.GUARDIAN, TribeRoles.PCV_CONTROLLER, TribeRoles.SWAP_ADMIN_ROLE)
+    {
+        _exitPool();
     }
 
     /// @notice redeeem all assets from LP pool
