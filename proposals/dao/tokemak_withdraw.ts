@@ -45,34 +45,8 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // Run any validations required on the fip using mocha or console logging
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  const ethTokemakPCVDeposit = contracts.ethTokemakPCVDeposit;
-
-  // Validate that DAO can withdraw funds in the next cycle
-  // impersonate the rollover signer, and make the Tokemak pool go to next cycle
-  await forceEth(addresses.tokemakManagerRollover);
-  const tokemakRolloverSigner = await getImpersonatedSigner(addresses.tokemakManagerRollover);
-  const tokemakManagerAbi = [
-    'function nextCycleStartTime() view returns (uint256)',
-    'function completeRollover(string calldata rewardsIpfsHash)'
-  ];
-  const tokemakManager = new ethers.Contract(addresses.tokemakManager, tokemakManagerAbi, tokemakRolloverSigner);
-  const cycleEnd = await tokemakManager.nextCycleStartTime();
-  await time.increaseTo(cycleEnd + 1);
-  await tokemakManager.completeRollover(IPFS_JSON_FILE_HASH);
-
-  // Perform withdraw
-  await ethTokemakPCVDeposit.withdraw(ethTokemakPCVDeposit.address, ethers.constants.WeiPerEther.mul(10_000));
-
-  // Should end with 0 tWETH, 10k ETH
-  expect((await contracts.tWETH.balanceOf(ethTokemakPCVDeposit.address)).toString()).to.be.equal(
-    ethers.utils.parseEther('0')
-  );
-  expect((await ethers.provider.getBalance(ethTokemakPCVDeposit.address)).toString()).to.be.equal(
-    ethers.utils.parseEther('10000')
-  );
-
-  // Then re-deposit, to clean up state for e2e tests
-  await ethTokemakPCVDeposit.deposit();
+  console.log(`No actions to complete in validate for fip${fipNumber}`);
+  // Validation performed in e2e test
 };
 
 export { deploy, setup, teardown, validate };
