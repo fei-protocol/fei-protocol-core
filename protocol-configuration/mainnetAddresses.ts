@@ -196,6 +196,26 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     address: '0xd10386804959a121a8a487e49f45aa9f5a2eb2a0',
     category: AddressCategory.External
   },
+  ethToDaiLBPSwapper: {
+    artifactName: 'BalancerLBPSwapper',
+    address: '0xf7991f4698ffb6716982aec7f78964dd731c4a54',
+    category: AddressCategory.Core
+  },
+  ethToDaiLensDai: {
+    artifactName: 'BPTLens',
+    address: '0xdF9Ff5c077d9F3427ade67AC2d27a864Be6F3187',
+    category: AddressCategory.PCV
+  },
+  ethToDaiLensEth: {
+    artifactName: 'BPTLens',
+    address: '0xf24401F6992FaEAcbc5d6C6991db15B5F8364A1B',
+    category: AddressCategory.PCV
+  },
+  ethToDaiLBPPool: {
+    artifactName: 'IWeightedPool',
+    address: '0x34809aEDF93066b49F638562c42A9751eDb36DF5',
+    category: AddressCategory.External
+  },
   aaveEthPCVDeposit: {
     artifactName: 'AavePCVDeposit',
     address: '0x5B86887e171bAE0C2C826e87E34Df8D558C079B9',

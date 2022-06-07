@@ -13,7 +13,7 @@ const collateralizationAddresses: CollateralizationAddressType = {
     'turboFusePCVDeposit'
   ],
   lusd: ['rariPool7LusdPCVDeposit', 'bammDeposit', 'lusdPSM'],
-  dai: ['compoundDaiPCVDepositWrapper', 'daiFixedPricePSM', 'dpiToDaiLensDai'],
+  dai: ['compoundDaiPCVDepositWrapper', 'daiFixedPricePSM', 'dpiToDaiLensDai', 'ethToDaiLensDai'],
   usd: ['namedStaticPCVDepositWrapper', 'd3poolCurvePCVDeposit', 'd3poolConvexPCVDeposit'],
   bal: ['balancerDepositBalWeth', 'balancerLensVeBalBal', 'balancerGaugeStaker'],
   weth: [
@@ -26,7 +26,8 @@ const collateralizationAddresses: CollateralizationAddressType = {
     'wethDepositWrapper',
     'balancerDepositFeiWeth',
     'balancerLensBpt30Fei70Weth',
-    'balancerLensVeBalWeth'
+    'balancerLensVeBalWeth',
+    'ethToDaiLensEth'
   ],
   dpi: ['dpiToDaiLensDpi'],
   rai: ['raiPriceBoundPSM'],
