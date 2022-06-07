@@ -1,66 +1,68 @@
 import { ProposalCategory, ProposalsConfigMap } from '@custom-types/types';
 
-import fip_104 from '@proposals/description/fip_104';
-// import fip_xx_proposal from '@proposals/description/fip_xx';
-import balancer_gauge_fix from '@proposals/description/balancer_gauge_fix';
+import repay_fuse_bad_debt from '@proposals/description/repay_fuse_bad_debt';
+import register_proposal from '@proposals/description/register_proposal';
+import end_tribe_incentives from '@proposals/description/end_tribe_incentives';
 
 const proposals: ProposalsConfigMap = {
-  fip_104: {
+  register_proposal: {
     deploy: false, // deploy flag for whether to run deploy action during e2e tests or use mainnet state
     totalValue: 0, // amount of ETH to send to DAO execution
-    proposal: fip_104, // full proposal file, imported from '@proposals/description/fip_xx.ts'
+    proposal: register_proposal, // full proposal file, imported from '@proposals/description/fip_xx.ts'
+    proposalId: '',
+    affectedContractSignoff: ['core'],
+    deprecatedContractSignoff: [],
+    category: ProposalCategory.TC
+  },
+  repay_fuse_bad_debt: {
+    deploy: false, // deploy flag for whether to run deploy action during e2e tests or use mainnet state
+    totalValue: 0, // amount of ETH to send to DAO execution
+    proposal: repay_fuse_bad_debt, // full proposal file, imported from '@proposals/description/fip_xx.ts'
+    proposalId: '',
+    affectedContractSignoff: ['core', 'fuseFixer', 'pcvGuardianNew'],
+    deprecatedContractSignoff: [],
+    category: ProposalCategory.TC
+  },
+  end_tribe_incentives: {
+    deploy: false, // deploy flag for whether to run deploy action during e2e tests or use mainnet state
+    totalValue: 0, // amount of ETH to send to DAO execution
+    proposal: end_tribe_incentives, // full proposal file, imported from '@proposals/description/fip_xx.ts'
     proposalId: '',
     affectedContractSignoff: [
-      'daiFixedPricePSMFeiSkimmer',
       'core',
-      'compoundDaiPCVDeposit',
-      'dpiToDaiLBPSwapper',
-      'dpiToDaiLensDai',
-      'dpiToDaiLensDpi',
-      'collateralizationOracle',
+      'tribalChief',
       'tribalCouncilTimelock',
-      'tribalCouncilSafe',
-      'nopeDAO',
-      'compoundEthPCVDeposit',
-      'aaveEthPCVDeposit',
-      'pcvGuardianNew',
-      'uniswapPCVDeposit'
+      'collateralizationOracle',
+      'opsOptimisticTimelock'
     ],
     deprecatedContractSignoff: [
-      'rariPool31FeiPCVDepositWrapper',
-      'rariPool25FeiPCVDepositWrapper',
-      'rariPool9RaiPCVDepositWrapper',
-      'aaveRaiPCVDepositWrapper',
-      'rariPool19DpiPCVDepositWrapper',
-      'liquityFusePoolLusdPCVDeposit',
-      'rariPool72FeiPCVDepositWrapper',
-      'raiDepositWrapper',
-      'rariPool31FeiPCVDeposit',
-      'rariPool25FeiPCVDeposit',
-      'rariPool9RaiPCVDeposit',
-      'aaveRaiPCVDeposit',
-      'rariPool19DpiPCVDeposit',
-      'rariPool72FeiPCVDeposit',
-      'dpiDepositWrapper'
+      'creamDepositWrapper',
+      'fei3CrvAutoRewardsDistributor',
+      'd3AutoRewardsDistributor',
+      'autoRewardsDistributor',
+      'feiDaiAutoRewardsDistributor',
+      'feiUsdcAutoRewardsDistributor',
+      'stakingTokenWrapperRari',
+      'stakingTokenWrapperFOXLaaS',
+      'stakingTokenWrapperGROLaaS',
+      'stakingTokenWrapperKYLINLaaS',
+      'stakingTokenWrapperMStableLaaS',
+      'stakingTokenWrapperNEARLaaS',
+      'stakingTokenWrapperPoolTogetherLaaS',
+      'stakingTokenWrapperUMALaaS',
+      'stakingTokenWrapperSYNLaaS',
+      'rewardsDistributorAdmin',
+      'stwBulkHarvest',
+      'stakingTokenWrapperBribeD3pool',
+      'fei3CrvStakingtokenWrapper',
+      'feiDaiStakingTokenWrapper',
+      'feiUsdcStakingTokenWrapper',
+      'stakingTokenWrapperBribe3Crvpool',
+      'tribalChiefSyncV2',
+      'tribalChiefSyncExtension',
+      'd3StakingTokenWrapper',
+      'votiumBriberD3pool'
     ],
-    category: ProposalCategory.DAO
-  },
-  balancer_gauge_fix: {
-    deploy: false, // deploy flag for whether to run deploy action during e2e tests or use mainnet state
-    totalValue: 0, // amount of ETH to send to DAO execution
-    proposal: balancer_gauge_fix, // full proposal file, imported from '@proposals/description/fip_xx.ts'
-    proposalId: null,
-    affectedContractSignoff: [
-      'tribalCouncilTimelock',
-      'balancerDepositFeiWeth',
-      'balancerLensBpt30Fei70Weth',
-      'pcvGuardianNew',
-      'core',
-      'balancerGaugeStaker',
-      'collateralizationOracle',
-      'pcvGuardianNew'
-    ],
-    deprecatedContractSignoff: ['balancerLensBpt30Fei70WethOld'],
     category: ProposalCategory.TC
   }
 };
