@@ -89,6 +89,9 @@ export default async function constructProposal(
     const ethersContract = contracts[command.target as keyof MainnetContracts];
 
     const generateArgsFunc = command.arguments;
+    if (typeof generateArgsFunc !== 'function') {
+      throw new Error(`Command ${command.target} has no arguments function (cannot use direct assignments)`);
+    }
     const args = generateArgsFunc(contractAddresses);
 
     proposalBuilder.addContractAction(ethersContract, command.method, args, command.values);

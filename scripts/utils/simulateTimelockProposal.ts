@@ -69,6 +69,9 @@ export async function simulateTimelockProposal(
     values.push(command.values);
 
     const generateArgsFunc = command.arguments;
+    if (typeof generateArgsFunc !== 'function') {
+      throw new Error(`Command ${command.target} has no arguments function (cannot use direct assignments)`);
+    }
     const args = generateArgsFunc(contractAddresses);
 
     const data = ethersContract.interface.encodeFunctionData(command.method, args);
