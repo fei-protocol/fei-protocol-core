@@ -70,7 +70,7 @@ describe('eth PSM', function () {
     fei = await ethers.getContractAt('Fei', contractAddresses.fei);
     dripper = contracts.aaveEthPCVDripController as PCVDripController;
     await hre.network.provider.send('hardhat_setBalance', [deployAddress.address, '0x21E19E0C9BAB2400000']);
-    guardian = await getImpersonatedSigner(contractAddresses.guardian);
+    guardian = await getImpersonatedSigner(contractAddresses.guardianMultisig);
     await forceEth(guardian.address);
   });
 
@@ -194,9 +194,9 @@ describe('eth PSM', function () {
         // empty drip target to make sure it is empty
         await forceEth(ethPSM.address);
         const signer = await getImpersonatedSigner(ethPSM.address);
-        await contracts.wethERC20
+        await contracts.weth
           .connect(signer)
-          .transfer(await dripper.source(), await contracts.wethERC20.balanceOf(ethPSM.address));
+          .transfer(await dripper.source(), await contracts.weth.balanceOf(ethPSM.address));
       });
 
       it('sets ethpsm reserve threshold to 5250 eth', async () => {
