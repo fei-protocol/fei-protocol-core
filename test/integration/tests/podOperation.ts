@@ -103,8 +103,8 @@ describe('Pod operation and veto', function () {
 
     // 1. Deploy a pod through which a proposal will be executed
     const deployTx = await podFactory.connect(tribalCouncilTimelockSigner).createOptimisticPod(podConfig);
-    const { args } = (await deployTx.wait()).events.find((elem) => elem.event === 'CreatePod');
-
+    const result = (await deployTx.wait()).events!.find((elem) => elem.event === 'CreatePod');
+    const args = result!.args!;
     podId = args.podId;
     const safeAddress = await podFactory.getPodSafe(podId);
     timelockAddress = await podFactory.getPodTimelock(podId);
@@ -213,7 +213,8 @@ describe('Pod operation and veto', function () {
     const values = [0];
 
     const proposeTx = await nopeDAO.propose(targets, values, calldatas, description);
-    const { args } = (await proposeTx.wait()).events.find((elem) => elem.event === 'ProposalCreated');
+    const result = (await proposeTx.wait()).events!.find((elem: any) => elem.event === 'ProposalCreated');
+    const args = result!.args!;
     const nopeDAOProposalId = args.proposalId;
 
     // Use the proposalID to vote for this proposal on the nopeDAO
@@ -317,7 +318,7 @@ describe('Pod operation and veto', function () {
     const values = [0];
 
     const proposeTx = await nopeDAO.propose(targets, values, calldatas, description);
-    const { args } = (await proposeTx.wait()).events.find((elem) => elem.event === 'ProposalCreated');
+    const { args } = (await proposeTx.wait()).events.find((elem: any) => elem.event === 'ProposalCreated');
     const nopeDAOProposalId = args.proposalId;
 
     // Use the proposalID to vote for this proposal on the nopeDAO

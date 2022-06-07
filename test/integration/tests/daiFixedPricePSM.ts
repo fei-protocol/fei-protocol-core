@@ -22,8 +22,8 @@ describe('e2e-peg-stability-module', function () {
   let e2eCoord: TestEndtoEndCoordinator;
   let daiPCVDripController: Contract;
   let doLogging: boolean;
-  let userAddress;
-  let minterAddress;
+  let userAddress: string;
+  let minterAddress: string;
   let governorAddress;
   let dai: Contract;
   let daiPSM: Contract;

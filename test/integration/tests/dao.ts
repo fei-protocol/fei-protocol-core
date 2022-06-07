@@ -1,5 +1,5 @@
 import { Core } from '@custom-types/contracts';
-import { NamedAddresses, NamedContracts } from '@custom-types/types';
+import { ContractAccessRights, NamedAddresses, NamedContracts } from '@custom-types/types';
 import proposals from '@protocol/proposalsConfig';
 import { getImpersonatedSigner, increaseTime, latestTime, time } from '@test/helpers';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
@@ -71,7 +71,7 @@ describe('e2e-dao', function () {
       const calldatas = [
         '0x70b0f660000000000000000000000000000000000000000000000000000000000000000a' // set voting delay 10
       ];
-      const description = [];
+      const description = '';
 
       await hre.network.provider.request({
         method: 'hardhat_impersonateAccount',
@@ -218,7 +218,10 @@ describe('e2e-dao', function () {
         const id = ethers.utils.id(element);
         const numRoles = await core.getRoleMemberCount(id);
         doLogging && console.log(`Role count for ${element}: ${numRoles}`);
-        expect(numRoles.toNumber()).to.be.equal(accessRights[element].length, 'role ' + element);
+        expect(numRoles.toNumber()).to.be.equal(
+          accessRights[element as keyof ContractAccessRights].length,
+          'role ' + element
+        );
       }
     });
 
@@ -230,13 +233,16 @@ describe('e2e-dao', function () {
       for (let i = 0; i < roles.length; i++) {
         const element = roles[i];
         const id = ethers.utils.id(element);
-        for (let i = 0; i < accessControl[element].length; i++) {
-          const contractAddress = accessControl[element][i];
+        for (let i = 0; i < accessControl[element as keyof ContractAccessRights].length; i++) {
+          const contractAddress = accessControl[element as keyof ContractAccessRights][i];
           doLogging && console.log(`${element} contract address: ${contractAddress}`);
           const hasRole = await core.hasRole(id, contractAddress);
           expect(hasRole).to.be.equal(
             true,
-            'expect contract ' + accessControl[element][i] + ' expected to have role ' + element
+            'expect contract ' +
+              accessControl[element as keyof ContractAccessRights][i] +
+              ' expected to have role ' +
+              element
           );
         }
       }
