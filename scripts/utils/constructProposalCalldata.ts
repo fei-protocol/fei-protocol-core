@@ -4,7 +4,7 @@ import { ethers } from 'hardhat';
 import { Interface } from '@ethersproject/abi';
 import { utils } from 'ethers';
 import { getAllContractAddresses, getAllContracts } from '@test/integration/setup/loadContracts';
-import { ProposalCategory, ProposalDescription } from '@custom-types/types';
+import { ProposalCategory, ProposalDescription, TemplatedProposalDescription } from '@custom-types/types';
 import proposals from '@protocol/proposalsConfig';
 
 type ExtendedAlphaProposal = {
@@ -20,7 +20,7 @@ type ExtendedAlphaProposal = {
  * See `proposals/utils/getProposalCalldata.js` on how to construct the proposal calldata
  */
 export async function constructProposalCalldata(proposalName: string): Promise<string> {
-  const proposalInfo = (await import(`@proposals/description/${proposalName}`)).default as ProposalDescription;
+  const proposalInfo = (await import(`@proposals/description/${proposalName}`)).default as TemplatedProposalDescription;
 
   const contracts = await getAllContracts();
   const contractAddresses = getAllContractAddresses();
@@ -59,7 +59,7 @@ function getDAOCalldata(proposal: ExtendedAlphaProposal): string {
   return calldata;
 }
 
-function getTimelockCalldata(proposal: ExtendedAlphaProposal, proposalInfo: ProposalDescription): string {
+function getTimelockCalldata(proposal: ExtendedAlphaProposal, proposalInfo: TemplatedProposalDescription): string {
   const proposeFuncFrag = new Interface([
     'function scheduleBatch(address[] calldata targets,uint256[] calldata values,bytes[] calldata data,bytes32 predecessor,bytes32 salt,uint256 delay) public',
     'function executeBatch(address[] calldata targets,uint256[] calldata values,bytes[] calldata data,bytes32 predecessor,bytes32 salt) public'

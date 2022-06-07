@@ -84,19 +84,33 @@ export type ProposalsConfigMap = {
   [key: string]: ProposalConfig;
 };
 
-export type ProposalDescription = {
+export interface ProposalDescription {
   title: string;
   commands: ProposalCommand[];
   description: string;
-};
+}
 
-export type ProposalCommand = {
+export interface TemplatedProposalDescription {
+  title: string;
+  commands: TemplatedProposalCommand[];
+  description: string;
+}
+
+export interface ProposalCommand {
   target: string;
   values: string;
   method: string;
   arguments: any[];
   description: string;
-};
+}
+
+export interface TemplatedProposalCommand {
+  target: string;
+  values: string;
+  method: string;
+  arguments: (namedAddresses: NamedAddresses) => any[];
+  description: string;
+}
 
 export interface MainnetContractsConfig {
   [key: string]: ContractConfig;

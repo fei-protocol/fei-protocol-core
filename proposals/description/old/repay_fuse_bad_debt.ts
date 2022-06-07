@@ -1,3 +1,4 @@
+import { MainnetAddresses } from '@custom-types/contracts';
 import { ProposalDescription } from '@custom-types/types';
 
 const fip_x: ProposalDescription = {

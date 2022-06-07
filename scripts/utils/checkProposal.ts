@@ -42,7 +42,7 @@ async function checkProposal(proposalName: string, doSetup?: string) {
 
   const proposalNo = proposals[proposalName].proposalId;
 
-  await execProposal(voterAddress, feiDAO.address, proposals[proposalName].totalValue, proposalNo);
+  await execProposal(voterAddress, feiDAO.address, proposals[proposalName].totalValue.toString(), proposalNo);
 
   console.log('Teardown');
   await proposalFuncs.teardown(
