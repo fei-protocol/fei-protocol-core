@@ -176,7 +176,7 @@ async function expectApproxAbs(
   expect(actualBN).to.be.lte(upperBound);
 }
 
-async function expectEvent(tx: Promise<any>, contract: any, event: string, args: any[]): Promise<void> {
+async function expectEvent(tx: any, contract: any, event: string, args: any[]): Promise<void> {
   await expect(tx)
     .to.emit(contract, event)
     .withArgs(...args);

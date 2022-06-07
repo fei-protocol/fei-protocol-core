@@ -78,7 +78,7 @@ describe('CurvePCVDepositPlainPool', function () {
       await curvePool.transfer(deposit.address, '5000');
       expect(await deposit.balance()).to.be.equal('6666');
       // reduce if FEI share of the pool increases
-      fei.connect(await getImpersonatedSigner(minterAddress)).mint(curvePool.address, '10000');
+      await fei.connect(await getImpersonatedSigner(minterAddress)).mint(curvePool.address, '10000');
       expect(await deposit.balance()).to.be.equal('3333');
     });
   });

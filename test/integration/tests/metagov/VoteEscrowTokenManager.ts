@@ -9,7 +9,7 @@ import { getImpersonatedSigner, expectRevert, time } from '@test/helpers';
 import { forceEth } from '@test/integration/setup/utils';
 import { MockVoteEscrowTokenManager } from '@custom-types/contracts';
 
-const e18 = (x) => ethers.constants.WeiPerEther.mul(x);
+const e18 = (x: any) => ethers.constants.WeiPerEther.mul(x);
 
 describe('e2e-metagov', function () {
   let deployAddress: string;

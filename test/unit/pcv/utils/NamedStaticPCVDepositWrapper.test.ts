@@ -106,7 +106,7 @@ describe('NamedStaticPCVDepositWrapper', function () {
       const startingFeiBalance = await deposit.feiReportBalance();
 
       expectEvent(
-        deposit.connect(impersonatedSigners[governorAddress]).addDeposit({
+        await deposit.connect(impersonatedSigners[governorAddress]).addDeposit({
           usdAmount: balance,
           feiAmount: feiBalance,
           underlyingTokenAmount: 1000,
@@ -160,7 +160,7 @@ describe('NamedStaticPCVDepositWrapper', function () {
       const startingNumDeposits = await deposit.numDeposits();
 
       expectEvent(
-        deposit.connect(impersonatedSigners[governorAddress]).bulkAddDeposits([
+        await deposit.connect(impersonatedSigners[governorAddress]).bulkAddDeposits([
           {
             usdAmount: balance,
             feiAmount: feiBalance,
@@ -230,7 +230,7 @@ describe('NamedStaticPCVDepositWrapper', function () {
       balance = '100';
 
       expectEvent(
-        deposit
+        await deposit
           .connect(impersonatedSigners[governorAddress])
           .editDeposit(0, balance, feiBalance, newUnderlyingAmt, 'Visor Finance USDC/FEI Deposit', await core.fei()),
         deposit,
@@ -303,9 +303,12 @@ describe('NamedStaticPCVDepositWrapper', function () {
     it('successfully removes existing deposit when governor calls removeDeposit', async function () {
       const startingNumDeposits = await deposit.numDeposits();
       for (let i = 0; i < parseInt(startingNumDeposits.toString()); i++) {
-        expectEvent(deposit.connect(impersonatedSigners[governorAddress]).removeDeposit(0), deposit, 'DepositRemoved', [
-          0
-        ]);
+        expectEvent(
+          await deposit.connect(impersonatedSigners[governorAddress]).removeDeposit(0),
+          deposit,
+          'DepositRemoved',
+          [0]
+        );
       }
 
       const endingBalance = await deposit.balance();
@@ -320,9 +323,12 @@ describe('NamedStaticPCVDepositWrapper', function () {
     it('successfully removes existing deposit when guardian calls removeDeposit', async function () {
       const startingNumDeposits = await deposit.numDeposits();
       for (let i = 0; i < parseInt(startingNumDeposits.toString()); i++) {
-        expectEvent(deposit.connect(impersonatedSigners[guardianAddress]).removeDeposit(0), deposit, 'DepositRemoved', [
-          0
-        ]);
+        expectEvent(
+          await deposit.connect(impersonatedSigners[guardianAddress]).removeDeposit(0),
+          deposit,
+          'DepositRemoved',
+          [0]
+        );
       }
 
       const [endingBalance, endingFeiBalance] = await deposit.resistantBalanceAndFei();
@@ -336,9 +342,12 @@ describe('NamedStaticPCVDepositWrapper', function () {
     it('successfully removes existing deposit when governor calls removeDeposit', async function () {
       const startingNumDeposits = await deposit.numDeposits();
       for (let i = 0; i < parseInt(startingNumDeposits.toString()); i++) {
-        expectEvent(deposit.connect(impersonatedSigners[governorAddress]).removeDeposit(0), deposit, 'DepositRemoved', [
-          0
-        ]);
+        expectEvent(
+          await deposit.connect(impersonatedSigners[governorAddress]).removeDeposit(0),
+          deposit,
+          'DepositRemoved',
+          [0]
+        );
       }
 
       const [endingBalance, endingFeiBalance] = await deposit.resistantBalanceAndFei();
