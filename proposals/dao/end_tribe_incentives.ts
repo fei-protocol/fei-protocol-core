@@ -7,10 +7,8 @@ import {
   TeardownUpgradeFunc,
   ValidateUpgradeFunc
 } from '@custom-types/types';
-import { getImpersonatedSigner } from '@test/helpers';
+import { getImpersonatedSigner, time } from '@test/helpers';
 import { forceEth } from '@test/integration/setup/utils';
-
-const toBN = ethers.BigNumber.from;
 
 /*
 
@@ -42,7 +40,21 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 // This could include setting up Hardhat to impersonate accounts,
 // ensuring contracts have a specific state, etc.
 const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  console.log(`No actions to complete in setup for fip${fipNumber}`);
+  const stakeAmount = ethers.constants.WeiPerEther.mul(40_000);
+  const curve3Metapool = '0x06cb22615BA53E60D67Bf6C341a0fD5E718E1655';
+  const curvePoolId = 1;
+  const curve3LPWhale = '0xdc69d4cb5b86388fff0b51885677e258883534ae';
+  const curveLPStaker = await getImpersonatedSigner(curve3LPWhale);
+  const curveLPToken = await ethers.getContractAt('ERC20', curve3Metapool);
+
+  await forceEth(curve3LPWhale);
+  await curveLPToken.connect(curveLPStaker).approve(contracts.tribalChief.address, stakeAmount);
+  await contracts.tribalChief.connect(curveLPStaker).deposit(curvePoolId, stakeAmount, 0);
+
+  // Set the pool to have a non-zero AP, so can test can claim rewards
+  const daoSigner = await getImpersonatedSigner(addresses.feiDAOTimelock);
+  await contracts.tribalChief.connect(daoSigner).set(curvePoolId, 500, ethers.constants.AddressZero, false);
+  await time.increase(86400 * 7);
 };
 
 // Tears down any changes made in setup() that need to be
