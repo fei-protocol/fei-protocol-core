@@ -176,17 +176,17 @@ async function expectApproxAbs(
   expect(actualBN).to.be.lte(upperBound);
 }
 
-async function expectEvent(tx: ContractTransaction, contract: any, event: string, args: any[]): Promise<void> {
+async function expectEvent(tx: Promise<ContractTransaction>, contract: any, event: string, args: any[]): Promise<void> {
   await expect(tx)
     .to.emit(contract, event)
     .withArgs(...args);
 }
 
-async function expectRevert(tx: ContractTransaction, errorMessage: string): Promise<void> {
+async function expectRevert(tx: Promise<ContractTransaction>, errorMessage: string): Promise<void> {
   await expect(tx).to.be.revertedWith(errorMessage);
 }
 
-async function expectUnspecifiedRevert(tx: ContractTransaction): Promise<void> {
+async function expectUnspecifiedRevert(tx: Promise<ContractTransaction>): Promise<void> {
   await expect(tx).to.be.reverted;
 }
 

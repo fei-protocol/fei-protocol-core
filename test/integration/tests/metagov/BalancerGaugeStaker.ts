@@ -155,7 +155,7 @@ describe('e2e-metagov', function () {
       it('should work if user has PCV_CONTROLLER_ROLE role', async function () {
         const balanceBefore = await contracts.bal.balanceOf(daoSigner.address);
         expectEvent(
-          await staker.connect(daoSigner).withdrawERC20(contracts.bal.address, daoSigner.address, '10'),
+          staker.connect(daoSigner).withdrawERC20(contracts.bal.address, daoSigner.address, '10'),
           staker,
           'WithdrawERC20',
           [daoSigner.address, contracts.bal.address, daoSigner.address, '10']
