@@ -94,7 +94,7 @@ describe('eth PSM', function () {
 
   describe('ethPSM', async () => {
     it('cannot sell eth to the PSM as redemptions are disabled', async () => {
-      await expectRevert(ethPSM.redeem(ethPSM.address, 0, 0), 'EthPSM: Redeem paused');
+      await expectRevert(await ethPSM.redeem(ethPSM.address, 0, 0), 'EthPSM: Redeem paused');
     });
 
     it('can sell weth directly to the PSM as minting is active', async () => {
@@ -114,7 +114,7 @@ describe('eth PSM', function () {
   describe('PSMRouter', async () => {
     it('cannot sell fei to the PSM as redemptions are disabled', async () => {
       await expectRevert(
-        ethPSMRouter.connect(deployAddress)['redeem(address,uint256,uint256)'](ethPSM.address, 0, 0),
+        await ethPSMRouter.connect(deployAddress)['redeem(address,uint256,uint256)'](ethPSM.address, 0, 0),
         'EthPSM: Redeem paused'
       );
     });
@@ -147,7 +147,7 @@ describe('eth PSM', function () {
     });
 
     it('dripper cannot drip because it is paused', async () => {
-      await expectRevert(dripper.drip(), 'Pausable: paused');
+      await expectRevert(await dripper.drip(), 'Pausable: paused');
     });
   });
 

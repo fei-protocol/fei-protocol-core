@@ -81,11 +81,11 @@ describe('lusd PSM', function () {
   describe('lusdPSM', async () => {
     /// create a before each hook that approves the PSM to spend user's LUSD
     it('cannot sell lusd to the PSM as redemptions are disabled', async () => {
-      await expectRevert(lusdPSM.redeem(lusdPSM.address, 0, 0), 'EthPSM: Redeem paused');
+      await expectRevert(await lusdPSM.redeem(lusdPSM.address, 0, 0), 'EthPSM: Redeem paused');
     });
 
     it('cannot buy lusd to the PSM as minting is disabled', async () => {
-      await expectRevert(lusdPSM.mint(lusdPSM.address, 0, 0), 'Pausable: paused');
+      await expectRevert(await lusdPSM.mint(lusdPSM.address, 0, 0), 'Pausable: paused');
     });
   });
 
@@ -97,7 +97,7 @@ describe('lusd PSM', function () {
     });
 
     it('dripper cannot drip because it is paused', async () => {
-      await expectRevert(dripper.drip(), 'Pausable: paused');
+      await expectRevert(await dripper.drip(), 'Pausable: paused');
     });
   });
 
