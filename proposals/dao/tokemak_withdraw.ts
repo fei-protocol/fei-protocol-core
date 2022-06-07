@@ -70,6 +70,9 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect((await ethers.provider.getBalance(ethTokemakPCVDeposit.address)).toString()).to.be.equal(
     ethers.utils.parseEther('10000')
   );
+
+  // Then re-deposit, to clean up state for e2e tests
+  await ethTokemakPCVDeposit.deposit();
 };
 
 export { deploy, setup, teardown, validate };
