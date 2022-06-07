@@ -1,7 +1,7 @@
 import { ProposalDescription } from '@custom-types/types';
 
 const eth_lbp: ProposalDescription = {
-  title: 'FIP-110: Reinforce PCV via ETH LBP and tighter spread',
+  title: 'FIP-111: Reinforce PCV via ETH LBP and tighter spread',
   commands: [
     {
       target: 'pcvGuardianNew',
@@ -57,7 +57,10 @@ const eth_lbp: ProposalDescription = {
     }
   ],
   description: `
-  FIP-110: Reinforce PCV via ETH LBP and tighter spread.
+  FIP-111: Reinforce PCV via ETH LBP and tighter spread.
+
+  This proposal uses a balancer liquidity bootstrapping pool to sell 20k ETH for DAI over 2 days. 
+  It also tightens the spread on the ETH psm by allowing redemptions for a 60bps fee.
   `
 };
 
