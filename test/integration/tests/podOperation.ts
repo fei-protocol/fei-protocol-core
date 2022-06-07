@@ -196,7 +196,7 @@ describe('Pod operation and veto', function () {
     //    call the podAdminGateway.veto() method with the proposalId that is in the timelock
     // 2. Have a member with >quorum TRIBE vote for proposal
     // 3. Validate that proposal is executed
-    const userWithTribe = await getImpersonatedSigner(contractAddresses.multisig);
+    const userWithTribe = await getImpersonatedSigner(contractAddresses.guardianMultisig);
     const timelockProposalId = await podTimelock.hashOperation(
       contractAddresses.governanceMetadataRegistry,
       0,
@@ -298,7 +298,7 @@ describe('Pod operation and veto', function () {
       );
 
     // 3. Create NopeDAO proposal to veto the timelocked transaction
-    const userWithTribe = await getImpersonatedSigner(contractAddresses.multisig);
+    const userWithTribe = await getImpersonatedSigner(contractAddresses.guardianMultisig);
     const timelockProposalId = await tribalCouncilTimelock.hashOperation(
       contractAddresses.roleBastion,
       0,
