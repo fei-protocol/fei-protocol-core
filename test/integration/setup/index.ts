@@ -1,4 +1,4 @@
-import { permissions } from '@protocol/permissions';
+import { permissions, PermissionsType } from '@protocol/permissions';
 import { getAllContractAddresses, getAllContracts } from './loadContracts';
 import {
   Config,
@@ -6,6 +6,7 @@ import {
   TestCoordinator,
   ContractsAndAddresses,
   ProposalConfig,
+  TemplatedProposalConfig,
   namedContractsToNamedAddresses,
   NamedAddresses,
   NamedContracts,
@@ -99,7 +100,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
   async applyUpgrade(
     existingContracts: NamedContracts,
     proposalName: string,
-    config: ProposalConfig
+    config: TemplatedProposalConfig
   ): Promise<NamedContracts> {
     let deployedUpgradedContracts = {};
 
@@ -247,16 +248,22 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
    * permissions contract
    */
   getAccessControlMapping(): ContractAccessRights {
-    const accessControlRoles = {};
+    const accessControlRoles: ContractAccessRights = {
+      minter: [],
+      burner: [],
+      pcvController: [],
+      governor: [],
+      guardian: []
+    };
 
     // Array of all deployed contracts
     Object.keys(permissions).map((role) => {
-      const contracts = permissions[role];
+      const contracts = permissions[role as PermissionsType];
       const addresses = contracts.map((contractName) => {
         return this.afterUpgradeAddresses[contractName];
       });
 
-      accessControlRoles[role] = addresses;
+      accessControlRoles[role as keyof ContractAccessRights] = addresses;
     });
 
     return accessControlRoles as ContractAccessRights;

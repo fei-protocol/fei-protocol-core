@@ -70,7 +70,7 @@ export enum ProposalCategory {
   None
 }
 
-export type ProposalConfig = {
+export interface ProposalConfig {
   deploy: boolean;
   category: ProposalCategory;
   totalValue: number;
@@ -78,7 +78,17 @@ export type ProposalConfig = {
   affectedContractSignoff: string[];
   deprecatedContractSignoff: string[];
   proposalId: string;
-};
+}
+
+export interface TemplatedProposalConfig {
+  deploy: boolean;
+  category: ProposalCategory;
+  totalValue: number;
+  proposal: TemplatedProposalDescription;
+  affectedContractSignoff: string[];
+  deprecatedContractSignoff: string[];
+  proposalId: string;
+}
 
 export type ProposalsConfigMap = {
   [key: string]: ProposalConfig;
