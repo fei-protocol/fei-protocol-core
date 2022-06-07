@@ -1,18 +1,18 @@
+import { BalancerLBPSwapper, Core, Fei, Tribe } from '@custom-types/contracts';
+import { MockVault } from '@custom-types/contracts/MockVault';
+import { MockWeightedPool } from '@custom-types/contracts/MockWeightedPool';
 import {
   expectRevert,
   getAddresses,
   getCore,
   getImpersonatedSigner,
   increaseTime,
-  ZERO_ADDRESS,
-  latestTime
+  latestTime,
+  ZERO_ADDRESS
 } from '@test/helpers';
 import { expect } from 'chai';
-import { ethers } from 'hardhat';
 import { Signer } from 'ethers';
-import { BalancerLBPSwapper, Core, Fei, Tribe } from '@custom-types/contracts';
-import { MockVault } from '@custom-types/contracts/MockVault';
-import { MockWeightedPool } from '@custom-types/contracts/MockWeightedPool';
+import { ethers } from 'hardhat';
 
 const toBN = ethers.BigNumber.from;
 

@@ -1,18 +1,18 @@
 import { expectRevert, getAddresses, getCore } from '@test/helpers';
-import { expect } from 'chai';
-import hre, { ethers } from 'hardhat';
-import { Signer } from 'ethers';
 import { forceSpecificEth } from '@test/integration/setup/utils';
+import { expect } from 'chai';
+import { Signer } from 'ethers';
+import hre, { ethers } from 'hardhat';
 
 const e18 = '000000000000000000';
 
 const toBN = ethers.BigNumber.from;
 
 describe('EthLidoPCVDeposit', function () {
-  let userAddress;
-  let secondUserAddress;
-  let governorAddress;
-  let pcvControllerAddress;
+  let userAddress: string;
+  let secondUserAddress: string;
+  let governorAddress: string;
+  let pcvControllerAddress: string;
 
   const impersonatedSigners: { [key: string]: Signer } = {};
 

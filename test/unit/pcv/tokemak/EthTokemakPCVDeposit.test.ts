@@ -1,20 +1,20 @@
-import { getImpersonatedSigner, balance, getAddresses, getCore } from '@test/helpers';
-import chai, { expect } from 'chai';
-import hre, { ethers } from 'hardhat';
-import { Signer } from 'ethers';
 import {
+  Core,
+  EthTokemakPCVDeposit,
+  EthTokemakPCVDeposit__factory,
   MockERC20,
   MockERC20__factory,
-  MockWeth,
-  MockWeth__factory,
   MockTokemakEthPool,
   MockTokemakEthPool__factory,
   MockTokemakRewards,
   MockTokemakRewards__factory,
-  EthTokemakPCVDeposit,
-  EthTokemakPCVDeposit__factory,
-  Core
+  MockWeth,
+  MockWeth__factory
 } from '@custom-types/contracts';
+import { balance, getAddresses, getCore, getImpersonatedSigner } from '@test/helpers';
+import chai, { expect } from 'chai';
+import { BigNumber } from 'ethers';
+import { ethers } from 'hardhat';
 
 chai.config.includeStack = true;
 const toBN = ethers.BigNumber.from;
@@ -31,7 +31,7 @@ describe('EthTokemakPCVDeposit', function () {
   let pcvControllerAddress: string;
   let governorAddress: string;
 
-  let depositAmount;
+  let depositAmount: BigNumber;
 
   before(async () => {
     const addresses = await getAddresses();

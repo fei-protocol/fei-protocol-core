@@ -1,15 +1,15 @@
 import { expectRevert, getAddresses, getCore } from '@test/helpers';
 import { expect } from 'chai';
-import hre, { ethers } from 'hardhat';
 import { Signer } from 'ethers';
+import hre, { ethers } from 'hardhat';
 
 const toBN = ethers.BigNumber.from;
 
 const impersonatedSigners: { [key: string]: Signer } = {};
 
 describe('TimelockedDelegator', function () {
-  let userAddress;
-  let governorAddress;
+  let userAddress: string;
+  let governorAddress: string;
 
   before(async () => {
     const addresses = await getAddresses();

@@ -1,23 +1,23 @@
-import { expectRevert, getAddresses, getCore, increaseTime, getImpersonatedSigner } from '@test/helpers';
-import { ethers } from 'hardhat';
+import { Core, Fei, Tribe, TribeReserveStabilizer } from '@custom-types/contracts';
+import { expectRevert, getAddresses, getCore, getImpersonatedSigner, increaseTime } from '@test/helpers';
 import { expect } from 'chai';
-import { Signer } from 'ethers';
-import { Core, Tribe, Fei, TribeReserveStabilizer } from '@custom-types/contracts';
+import { Contract, Signer } from 'ethers';
+import { ethers } from 'hardhat';
 
 const toBN = ethers.BigNumber.from;
 
 describe('TribeReserveStabilizer', function () {
-  let userAddress;
-  let governorAddress;
-  let minterAddress;
-  let pcvControllerAddress;
+  let userAddress: string;
+  let governorAddress: string;
+  let minterAddress: string;
+  let pcvControllerAddress: string;
   let reserveStabilizer: TribeReserveStabilizer;
   let core: Core;
   let fei: Fei;
   let tribe: Tribe;
-  let tribeMinter;
-  let oracle;
-  let collateralizationOracle;
+  let tribeMinter: Contract;
+  let oracle: Contract;
+  let collateralizationOracle: Contract;
 
   const impersonatedSigners: { [key: string]: Signer } = {};
 

@@ -1,16 +1,16 @@
-import { getImpersonatedSigner, getAddresses, getCore } from '@test/helpers';
-import chai, { expect } from 'chai';
-import { ethers } from 'hardhat';
 import {
   Core,
+  CurvePCVDepositPlainPool,
+  CurvePCVDepositPlainPool__factory,
   Fei,
-  MockERC20,
-  MockERC20__factory,
   MockCurve3pool,
   MockCurve3pool__factory,
-  CurvePCVDepositPlainPool,
-  CurvePCVDepositPlainPool__factory
+  MockERC20,
+  MockERC20__factory
 } from '@custom-types/contracts';
+import { getAddresses, getCore, getImpersonatedSigner } from '@test/helpers';
+import chai, { expect } from 'chai';
+import { ethers } from 'hardhat';
 
 chai.config.includeStack = true;
 
