@@ -29,8 +29,8 @@ const eth_lbp: TemplatedProposalDescription = {
       values: '0',
       method: 'withdrawToSafeAddress(address,address,uint256,bool,bool)',
       arguments: (addresses) => [
-        '{compoundDaiPCVDeposit}',
-        '{ethToDaiLBPSwapper}',
+        addresses.compoundDaiPCVDeposit,
+        addresses.ethToDaiLBPSwapper,
         '3000000000000000000000000',
         false,
         false
