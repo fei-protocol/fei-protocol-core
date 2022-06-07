@@ -18,8 +18,6 @@ FIP 111: Withdraw from Tokemak
 
 const fipNumber = 'fip_111_tokemak_withdraw';
 
-const IPFS_JSON_FILE_HASH = 'QmP4Vzg45jExr3mcNsx9xxV1fNft95uVzgZGeLtkBXgpkx';
-
 // Do any deployments
 // This should exclusively include new contract deployments
 const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: NamedAddresses, logging: boolean) => {
