@@ -71,7 +71,7 @@ describe('e2e-dao', function () {
       const calldatas = [
         '0x70b0f660000000000000000000000000000000000000000000000000000000000000000a' // set voting delay 10
       ];
-      const description = '';
+      const description: any[] = [];
 
       await hre.network.provider.request({
         method: 'hardhat_impersonateAccount',
