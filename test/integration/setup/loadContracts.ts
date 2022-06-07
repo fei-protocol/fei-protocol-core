@@ -1,5 +1,5 @@
 import mainnetAddresses from '@protocol/mainnetAddresses';
-import { artifacts, ethers } from 'hardhat';
+import { ethers } from 'hardhat';
 import { MainnetContracts, MainnetContractsConfig, NamedAddresses } from '@custom-types/types';
 
 export async function getAllContracts(): Promise<MainnetContracts> {

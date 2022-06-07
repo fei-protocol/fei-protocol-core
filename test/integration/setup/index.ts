@@ -4,7 +4,7 @@ import {
   Config,
   ContractAccessRights,
   TestCoordinator,
-  Env,
+  ContractsAndAddresses,
   ProposalConfig,
   namedContractsToNamedAddresses,
   NamedAddresses,
@@ -39,6 +39,10 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
 
   constructor(private config: Config, proposals?: any) {
     this.proposals = proposals;
+
+    this.mainnetContracts = {};
+    this.afterUpgradeAddresses = {};
+    this.afterUpgradeContracts = {};
   }
 
   public async initMainnetContracts(): Promise<void> {
@@ -55,7 +59,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
    * 3) Apply appropriate permissions to the contracts e.g. minter, burner priviledges
    *
    */
-  public async loadEnvironment(): Promise<Env> {
+  public async loadEnvironment(): Promise<ContractsAndAddresses> {
     await resetFork();
     await this.initMainnetContracts();
     let existingContracts = this.mainnetContracts;

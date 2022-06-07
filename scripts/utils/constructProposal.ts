@@ -1,16 +1,16 @@
-import hre, { proposals } from 'hardhat';
 import { MainnetContracts, NamedAddresses, ProposalDescription } from '@custom-types/types';
-import format from 'string-template';
+import { errors, PACKAGE_NAME } from '@idle-finance/hardhat-proposals-plugin/dist/src/constants';
 import {
   AlphaProposal,
   AlphaProposalBuilder
 } from '@idle-finance/hardhat-proposals-plugin/dist/src/proposals/compound-alpha';
-import { BigNumber, utils } from 'ethers';
 import { InternalProposalState } from '@idle-finance/hardhat-proposals-plugin/dist/src/proposals/proposal';
-import { HardhatPluginError } from 'hardhat/plugins';
-import { PACKAGE_NAME, errors } from '@idle-finance/hardhat-proposals-plugin/dist/src/constants';
-import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { time } from '@test/helpers';
+import { BigNumber, utils } from 'ethers';
+import hre from 'hardhat';
+import { HardhatPluginError } from 'hardhat/plugins';
+import { HardhatRuntimeEnvironment } from 'hardhat/types';
+import format from 'string-template';
 
 export class SigmaProposal extends AlphaProposal {
   protected async mineBlocks(blocks: any) {
@@ -82,7 +82,7 @@ export default async function constructProposal(
 
   for (let i = 0; i < proposalInfo.commands.length; i += 1) {
     const command = proposalInfo.commands[i];
-    const ethersContract = contracts[command.target];
+    const ethersContract = contracts[command.target as keyof MainnetContracts];
 
     const args = replaceArgs(command.arguments, contractAddresses);
     proposalBuilder.addContractAction(ethersContract, command.method, args, command.values);
@@ -97,13 +97,13 @@ export default async function constructProposal(
 }
 
 // Recursively interpolate strings in the argument array
-const replaceArgs = (args: any[], contractNames: NamedAddresses) => {
+const replaceArgs = (args: any[], contractNames: NamedAddresses): any[] => {
   const result = [];
   for (let i = 0; i < args.length; i++) {
     const element = args[i];
-    if (typeof element === typeof '') {
-      const formatted = format(element, contractNames);
-      result.push(formatted);
+    if (typeof element === 'string') {
+      if (contractNames[element] === undefined) throw new Error(`Unknown contract name: ${element}. Cannot parse.`);
+      result.push(format(element, contractNames));
     } else if (typeof element === typeof []) {
       result.push(replaceArgs(element, contractNames));
     } else {

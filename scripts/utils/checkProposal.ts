@@ -1,6 +1,6 @@
 import { getAllContracts, getAllContractAddresses } from '@test/integration/setup/loadContracts';
 import { NamedContracts, UpgradeFuncs } from '@custom-types/types';
-import proposals from '@test/integration/proposalsConfig';
+import proposals from '@protocol/proposalsConfig';
 
 import * as dotenv from 'dotenv';
 import { execProposal } from './exec';

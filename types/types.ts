@@ -37,13 +37,13 @@ import {
 } from './contracts';
 import { RestrictedPermissions } from './contracts/RestrictedPermissions';
 
-export type Env = {
+export type ContractsAndAddresses = {
   contracts: NamedContracts;
   contractAddresses: NamedAddresses;
 };
 
 export interface TestCoordinator {
-  loadEnvironment(): Promise<Env>;
+  loadEnvironment(): Promise<ContractsAndAddresses>;
 }
 
 export function namedContractsToNamedAddresses(contracts: NamedContracts): NamedAddresses {

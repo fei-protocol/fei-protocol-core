@@ -5,7 +5,7 @@ import { Interface } from '@ethersproject/abi';
 import { utils } from 'ethers';
 import { getAllContractAddresses, getAllContracts } from '@test/integration/setup/loadContracts';
 import { ProposalCategory, ProposalDescription } from '@custom-types/types';
-import proposals from '@test/integration/proposalsConfig';
+import proposals from '@protocol/proposalsConfig';
 
 type ExtendedAlphaProposal = {
   targets: string[];
@@ -23,7 +23,7 @@ export async function constructProposalCalldata(proposalName: string): Promise<s
   const proposalInfo = (await import(`@proposals/description/${proposalName}`)).default as ProposalDescription;
 
   const contracts = await getAllContracts();
-  const contractAddresses = await getAllContractAddresses();
+  const contractAddresses = getAllContractAddresses();
 
   const proposal = (await constructProposal(proposalInfo, contracts, contractAddresses)) as ExtendedAlphaProposal;
 

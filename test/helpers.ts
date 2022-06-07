@@ -6,7 +6,6 @@ import { BigNumber, BigNumberish, Contract, Signer } from 'ethers';
 import { NamedAddresses } from '@custom-types/types';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import EthersAdapter from '@gnosis.pm/safe-ethers-lib';
-import { BN } from 'ethereumjs-util';
 import Safe from '@gnosis.pm/safe-core-sdk';
 
 // use default BigNumber
@@ -262,7 +261,7 @@ async function performDAOAction(
   targets: string[],
   values: number[]
 ): Promise<void> {
-  const description = [];
+  const description = '';
 
   await hre.network.provider.request({
     method: 'hardhat_impersonateAccount',
@@ -310,7 +309,7 @@ async function initialiseGnosisSDK(safeOwner: Signer, safeAddress: string): Prom
     ethers,
     signer: safeOwner
   });
-  const { chainId } = await safeOwner.provider.getNetwork();
+  const { chainId } = await safeOwner.provider!.getNetwork();
   const contractNetworks = {
     [chainId]: {
       multiSendAddress: '0x8D29bE29923b68abfDD21e541b9374737B49cdAD',
