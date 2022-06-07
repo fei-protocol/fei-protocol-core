@@ -1,13 +1,13 @@
+import { Core } from '@custom-types/contracts';
+import { NamedAddresses, NamedContracts } from '@custom-types/types';
+import proposals from '@protocol/proposalsConfig';
+import { getImpersonatedSigner, increaseTime, latestTime, time } from '@test/helpers';
+import { TestEndtoEndCoordinator } from '@test/integration/setup';
+import { forceEth } from '@test/integration/setup/utils';
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
 import hre, { ethers } from 'hardhat';
-import { NamedAddresses, NamedContracts } from '@custom-types/types';
-import { getImpersonatedSigner, increaseTime, latestTime, resetFork, time } from '@test/helpers';
-import proposals from '@protocol/proposalsConfig';
-import { TestEndtoEndCoordinator } from '@test/integration/setup';
-import { forceEth } from '@test/integration/setup/utils';
-import { Core } from '@custom-types/contracts';
 const toBN = ethers.BigNumber.from;
 
 describe('e2e-dao', function () {

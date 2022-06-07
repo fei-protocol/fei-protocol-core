@@ -1,13 +1,13 @@
+import { Fei } from '@custom-types/contracts';
+import { NamedContracts } from '@custom-types/types';
+import { Signer } from '@ethersproject/abstract-signer';
+import proposals from '@protocol/proposalsConfig';
+import { ZERO_ADDRESS } from '@test/helpers';
+import { TestEndtoEndCoordinator } from '@test/integration/setup';
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
 import { ethers } from 'hardhat';
-import { NamedAddresses, NamedContracts } from '@custom-types/types';
-import { getAddresses, getImpersonatedSigner, resetFork, ZERO_ADDRESS } from '@test/helpers';
-import proposals from '@protocol/proposalsConfig';
-import { TestEndtoEndCoordinator } from '@test/integration/setup';
-import { Fei } from '@custom-types/contracts';
-import { Signer } from '@ethersproject/abstract-signer';
 const toBN = ethers.BigNumber.from;
 
 describe('e2e-fei', function () {

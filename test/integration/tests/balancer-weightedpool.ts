@@ -1,14 +1,14 @@
+import { NamedContracts } from '@custom-types/types';
+import { TransactionResponse } from '@ethersproject/providers';
+import proposals from '@protocol/proposalsConfig';
+import { balance, expectApproxAbs, expectRevert, getImpersonatedSigner } from '@test/helpers';
+import { TestEndtoEndCoordinator } from '@test/integration/setup';
+import { forceEth } from '@test/integration/setup/utils';
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
 import { ethers } from 'hardhat';
-import { NamedContracts } from '@custom-types/types';
-import { getImpersonatedSigner, expectRevert, expectApproxAbs, balance, resetFork } from '@test/helpers';
-import proposals from '@protocol/proposalsConfig';
-import { TestEndtoEndCoordinator } from '@test/integration/setup';
-import { forceEth } from '@test/integration/setup/utils';
 const toBN = ethers.BigNumber.from;
-import { TransactionResponse } from '@ethersproject/providers';
 const BNe18 = (x: any) => ethers.constants.WeiPerEther.mul(toBN(x));
 
 describe('balancer-weightedpool', function () {

@@ -1,12 +1,12 @@
+import { NamedContracts } from '@custom-types/types';
+import proposals from '@protocol/proposalsConfig';
+import { getImpersonatedSigner, time } from '@test/helpers';
+import { TestEndtoEndCoordinator } from '@test/integration/setup';
+import { forceEth } from '@test/integration/setup/utils';
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
 import { ethers } from 'hardhat';
-import { NamedContracts } from '@custom-types/types';
-import { getImpersonatedSigner, time, resetFork } from '@test/helpers';
-import proposals from '@protocol/proposalsConfig';
-import { TestEndtoEndCoordinator } from '@test/integration/setup';
-import { forceEth } from '@test/integration/setup/utils';
 const toBN = ethers.BigNumber.from;
 const tenPow18 = toBN('1000000000000000000');
 

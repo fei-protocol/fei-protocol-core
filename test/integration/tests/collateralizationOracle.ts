@@ -1,18 +1,18 @@
+import {
+  CollateralizationOracle,
+  CollateralizationOracleGuardian,
+  CollateralizationOracleWrapper,
+  NamedStaticPCVDepositWrapper
+} from '@custom-types/contracts';
+import { NamedAddresses, NamedContracts } from '@custom-types/types';
+import collateralizationAddresses from '@protocol/collateralizationOracle';
+import proposals from '@protocol/proposalsConfig';
+import { expectApprox, overwriteChainlinkAggregator } from '@test/helpers';
+import { TestEndtoEndCoordinator } from '@test/integration/setup';
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
 import { ethers } from 'hardhat';
-import { NamedAddresses, NamedContracts } from '@custom-types/types';
-import { expectApprox, overwriteChainlinkAggregator } from '@test/helpers';
-import proposals from '@protocol/proposalsConfig';
-import collateralizationAddresses from '@protocol/collateralizationOracle';
-import { TestEndtoEndCoordinator } from '@test/integration/setup';
-import {
-  CollateralizationOracle,
-  CollateralizationOracleWrapper,
-  CollateralizationOracleGuardian,
-  NamedStaticPCVDepositWrapper
-} from '@custom-types/contracts';
 
 describe('e2e-collateralization', function () {
   let contracts: NamedContracts;

@@ -21,8 +21,8 @@ describe('e2e-peg-stability-module', function () {
   let daiPCVDripController: Contract;
   let doLogging: boolean;
   let ethPSMRouter: Contract;
-  let userAddress;
-  let minterAddress;
+  let userAddress: string;
+  let minterAddress: string;
   let governorAddress;
   let weth: Contract;
   let dai: Contract;
@@ -31,9 +31,9 @@ describe('e2e-peg-stability-module', function () {
   let fei: Contract;
   let rai: Contract;
   let core: Contract;
-  let feiDAOTimelock;
-  let beneficiaryAddress1;
-  let guardianAddress;
+  let feiDAOTimelock: Contract;
+  let beneficiaryAddress1: string;
+  let guardianAddress: string;
   let daiFixedPricePSM: Contract;
 
   before(async () => {

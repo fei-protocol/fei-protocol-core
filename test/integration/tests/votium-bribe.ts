@@ -1,10 +1,9 @@
+import { NamedContracts } from '@custom-types/types';
+import proposals from '@protocol/proposalsConfig';
+import { expectRevert, getImpersonatedSigner, time } from '@test/helpers';
+import { TestEndtoEndCoordinator } from '@test/integration/setup';
 import { expect } from 'chai';
 import { ethers } from 'hardhat';
-import { NamedContracts } from '@custom-types/types';
-import { getImpersonatedSigner, time } from '@test/helpers';
-import { TestEndtoEndCoordinator } from '@test/integration/setup';
-import proposals from '@protocol/proposalsConfig';
-import { expectRevert } from '@test/helpers';
 import { forceEth } from '../setup/utils';
 
 const VOTIUM_ADMIN = '0xdC7C7F0bEA8444c12ec98Ec626ff071c6fA27a19'; // tommyg.eth

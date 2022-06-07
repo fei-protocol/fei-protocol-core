@@ -1,18 +1,18 @@
 import { PodAdminGateway, PodFactory } from '@custom-types/contracts';
+import { NamedAddresses, NamedContracts } from '@custom-types/types';
+import Safe from '@gnosis.pm/safe-core-sdk';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
+import { MIN_TIMELOCK_DELAY, TRIBAL_COUNCIL_POD_ID, tribeCouncilPodConfig } from '@protocol/optimisticGovernance';
+import proposals from '@protocol/proposalsConfig';
+import { getImpersonatedSigner, initialiseGnosisSDK, time } from '@test/helpers';
+import { forceEth } from '@test/integration/setup/utils';
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
-import { ethers } from 'hardhat';
-import { NamedAddresses, NamedContracts } from '@custom-types/types';
-import { getImpersonatedSigner, time, initialiseGnosisSDK } from '@test/helpers';
-import proposals from '@protocol/proposalsConfig';
-import { forceEth } from '@test/integration/setup/utils';
-import { TestEndtoEndCoordinator } from '../setup';
 import { BigNumberish, Contract } from 'ethers';
+import { ethers } from 'hardhat';
 import { abi as timelockABI } from '../../../artifacts/@openzeppelin/contracts/governance/TimelockController.sol/TimelockController.json';
-import { MIN_TIMELOCK_DELAY, tribeCouncilPodConfig, TRIBAL_COUNCIL_POD_ID } from '@protocol/optimisticGovernance';
-import Safe from '@gnosis.pm/safe-core-sdk';
+import { TestEndtoEndCoordinator } from '../setup';
 
 function createSafeTxArgs(timelock: Contract, functionSig: string, args: any[]) {
   return {

@@ -30,12 +30,7 @@ async function checkProposal(proposalName: string, doSetup?: string) {
 
   if (doSetup) {
     console.log('Setup');
-    await proposalFuncs.setup(
-      contractAddresses,
-      contracts as unknown as NamedContracts,
-      contracts as unknown as NamedContracts,
-      true
-    );
+    await proposalFuncs.setup(contractAddresses, contracts, contracts, true);
   }
 
   const { feiDAO } = contracts;
