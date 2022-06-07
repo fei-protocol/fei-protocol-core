@@ -62,7 +62,7 @@ describe('lusd PSM', function () {
     dripper = contracts.lusdPCVDripController as PCVDripController;
     await hre.network.provider.send('hardhat_setBalance', [deployAddress.address, '0x21E19E0C9BAB2400000']);
     await fei.mint(deployAddress.address, amount);
-    guardian = await getImpersonatedSigner(contractAddresses.guardian);
+    guardian = await getImpersonatedSigner(contractAddresses.guardianMultisig);
     await hre.network.provider.send('hardhat_setBalance', [guardian.address, '0x21E19E0C9BAB2400000']);
     await overwriteChainlinkAggregator(contractAddresses.chainlinkEthUsdOracle, '400000000000', '8');
   });

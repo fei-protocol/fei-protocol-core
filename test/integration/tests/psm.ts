@@ -410,6 +410,12 @@ describe('e2e-peg-stability-module', function () {
 
         // Set floor to something sufficiently low for tests to pass - RAI price on-chain fluctuates
         await raiPriceBoundPSM.connect(impersonatedSigners[userAddress]).setOracleFloorBasisPoints(25000);
+
+        // Ensure RAI PSM is not paused
+        const isPaused = await raiPriceBoundPSM.paused();
+        if (isPaused) {
+          await raiPriceBoundPSM.connect(impersonatedSigners[userAddress]).unpause();
+        }
       });
 
       it('exchanges 1000 FEI for rai', async () => {
