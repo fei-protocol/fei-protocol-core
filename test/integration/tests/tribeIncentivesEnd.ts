@@ -1,5 +1,6 @@
 import { TribalChief, Tribe } from '@custom-types/contracts';
 import { NamedAddresses, NamedContracts } from '@custom-types/types';
+import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import proposals from '@protocol/proposalsConfig';
 import { getImpersonatedSigner, resetFork, time } from '@test/helpers';
 import { forceEth } from '@test/integration/setup/utils';
@@ -8,7 +9,6 @@ import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
 import { ethers } from 'hardhat';
 import { TestEndtoEndCoordinator } from '../setup';
-import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 
 const toBN = ethers.BigNumber.from;
 chai.use(CBN(ethers.BigNumber));

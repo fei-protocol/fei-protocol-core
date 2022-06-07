@@ -1,14 +1,14 @@
 import { MainnetAddresses } from '@custom-types/contracts';
-import { ProposalDescription } from '@custom-types/types';
+import { ProposalDescription, TemplatedProposalDescription } from '@custom-types/types';
 
-const fip_x: ProposalDescription = {
+const fip_x: TemplatedProposalDescription = {
   title: 'Repay Fuse Bad Debt',
   commands: [
     {
       target: 'pcvGuardianNew',
       values: '0',
       method: 'setSafeAddress(address)',
-      arguments: ['{fuseFixer}'],
+      arguments: (addresses) => [addresses.fuseFixer],
       description: 'Set FuseFixer as a safe address'
     }
   ],

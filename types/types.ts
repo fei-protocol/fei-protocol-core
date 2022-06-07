@@ -90,9 +90,13 @@ export interface TemplatedProposalConfig {
   proposalId: string;
 }
 
-export type ProposalsConfigMap = {
+export interface ProposalsConfigMap {
   [key: string]: ProposalConfig;
-};
+}
+
+export interface TemplatedProposalsConfigMap {
+  [key: string]: TemplatedProposalConfig;
+}
 
 export interface ProposalDescription {
   title: string;
