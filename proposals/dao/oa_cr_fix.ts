@@ -20,8 +20,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   const balancerPool2LensFactory = await ethers.getContractFactory('BalancerPool2Lens');
   const balancerLensBpt30Fei70Weth = await balancerPool2LensFactory.deploy(
     addresses.gaugeLensBpt30Fei70WethGauge, // address _depositAddress
-    addresses.wethERC20, // address _token
-    addresses.balancerFeiWethPool, // IWeightedPool _pool
+    addresses.weth, // address _token
+    addresses.bpt30Fei70Weth, // IWeightedPool _pool
     addresses.chainlinkEthUsdOracleWrapper, // IOracle _reportedOracle
     addresses.oneConstantOracle, // IOracle _otherOracle
     false, // bool _feiIsReportedIn
