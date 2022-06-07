@@ -52,7 +52,7 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
   // 1. Validate withdrawn liquidity destinations
-  const sanityCheckDAIAmount = ethers.constants.WeiPerEther.mul(3_500_000);
+  const sanityCheckDAIAmount = ethers.constants.WeiPerEther.mul(3_200_000);
   const finalDAIDepositBalance = await contracts.compoundDaiPCVDeposit.balance();
   const daiGained = finalDAIDepositBalance.sub(initialDaiPCVBalance);
   expect(daiGained).to.be.bignumber.at.least(sanityCheckDAIAmount);
