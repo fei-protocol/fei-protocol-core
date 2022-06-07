@@ -8,11 +8,14 @@ const tokemak_withdraw: ProposalDescription = {
       values: '0',
       method: 'requestWithdrawal(uint256)',
       arguments: ['10000000000000000000000'],
-      description: 'Request to withdraw WETH from Tokemak in the next cycle'
+      description: 'Request to withdraw 10K WETH from Tokemak in the next cycle'
     }
-    // TODO: Claim TOKE rewards as part of this
   ],
-  description: `Request to withdraw ETH from Tokemak in the next cycle`
+  description: `
+  FIP 111: Request withdrawal from Tokemak
+
+  Request a withdrawal of 10k ETH from Tokemak in the next cycle.
+  `
 };
 
 export default tokemak_withdraw;
