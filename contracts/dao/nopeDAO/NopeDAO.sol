@@ -10,6 +10,13 @@ import {CoreRef} from "../../refs/CoreRef.sol";
 import {TribeRoles} from "../../core/TribeRoles.sol";
 import {GovernorQuickReaction} from "./GovernorQuickReaction.sol";
 
+// NopeDAO V2 features:
+// 1. Should only be able to vote for a veto
+// How to implement approval only voting. Should only be able to vote for the proposal, not against it
+// Can't change the interface, as would break Tally integration. Need to do a require support = 1
+// Cast vote etc. is defined in Governor, want to override
+
+// 2. Should it expose a cancel functionality to the proposer? Probably, in case of making a mistake
 contract NopeDAO is
     Governor,
     GovernorSettings,
@@ -23,6 +30,12 @@ contract NopeDAO is
 
     /// @notice Additional governance events
     event QuorumUpdated(uint256 oldQuorum, uint256 newQuorum);
+
+    /// @notice Enforce only affirmative votes
+    modifier onlyAffirmativeVote(uint8 _support) {
+        require(_support == uint8(VoteType.For), "NopeDAO: Affirmative only votes");
+        _;
+    }
 
     constructor(ERC20VotesComp _tribe, address _core)
         Governor("NopeDAO")
@@ -132,4 +145,19 @@ contract NopeDAO is
     function supportsInterface(bytes4 interfaceId) public view override(Governor) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
+
+    ///////////    Override castVote() calls to ensure affirmative only votes /////////
+
+    /// @notice Cast an affirmative vote for a proposal via a msg.sender
+    function castVote(uint256 proposalId, uint8 support) public virtual override returns (uint256) {
+        address voter = _msgSender();
+        return _castVote(proposalId, voter, support, "");
+    }
+
+    /// @notice Cast an affirmative vote for a proposal with a reason string
+    function castVoteWithReason(
+        uint256 proposalId,
+        uint8 support,
+        string calldata reason
+    ) public virtual override returns (uint256) {}
 }
