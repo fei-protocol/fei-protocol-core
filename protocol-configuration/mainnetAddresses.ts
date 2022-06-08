@@ -2102,17 +2102,17 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     artifactName: 'QuadraticTimelockedDelegator',
     address: '0xba7182c1B6df04bB730f0008BddeD27fc7D13ea2',
     category: AddressCategory.TBD
-  },
-  newRariInfraFeiTimelock: {
-    artifactName: 'LinearTimelockedDelegator',
-    address: '',
-    category: AddressCategory.TBD
-  },
-  newRariInfraTribeTimelock: {
-    artifactName: 'LinearTimelockedDelegator',
-    address: '',
-    category: AddressCategory.TBD
   }
+  // newRariInfraFeiTimelock: {
+  //   artifactName: 'LinearTimelockedDelegator',
+  //   address: '',
+  //   category: AddressCategory.TBD
+  // },
+  // newRariInfraTribeTimelock: {
+  //   artifactName: 'LinearTimelockedDelegator',
+  //   address: '',
+  //   category: AddressCategory.TBD
+  // }
 };
 
 export default MainnetContractsConfig;

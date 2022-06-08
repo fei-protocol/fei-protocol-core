@@ -28,20 +28,30 @@ const clawback: TemplatedProposalDescription = {
         'Accept the beneficiary of the new Rari infra TRIBE vesting contract. Will allow the DAO to claim these funds.'
     },
 
-    /////////  Mint FEI and TRIBE onto newly migrated RARI timelocks
+    /////////  Mint FEI and TRIBE onto new RARI timelocks
     {
       target: 'fei',
       values: '0',
       method: 'mint(address,uint256)',
-      arguments: (addresses) => ['{newRariInfraFeiTimelock}', '3254306506849315068493151'],
+      arguments: (addresses) => [addresses.newRariInfraFeiTimelock, '3254306506849315068493151'],
       description: 'Mint FEI to the new Rari Infra FEI timelock'
     },
+
     {
       target: 'core',
       values: '0',
       method: 'allocateTribe(address,uint256)',
-      arguments: (addresses) => ['{newRariInfraTribeTimelock}', '3254296867072552004058854'],
+      arguments: (addresses) => [addresses.newRariInfraTribeTimelock, '3254296867072552004058854'],
       description: 'Allocate TRIBE to the new Rari Infra TRIBE timelock'
+    },
+
+    //// Mint TRIBE onto the new Jack Lipstone timelock
+    {
+      target: 'core',
+      values: '0',
+      method: 'allocateTribe(address,uint256)',
+      arguments: (addresses) => [addresses.newJackLipstoneTimelock, '5745980204138811377440039'],
+      description: `Allocate TRIBE to Jack Lipstone's new timelock`
     },
 
     ////  Clawbacks
