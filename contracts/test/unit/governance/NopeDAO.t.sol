@@ -41,6 +41,7 @@ contract NopeDAOTest is DSTest {
     uint256 excessQuorumTribe = (11e6) * (10**18);
     address tribeAddress;
     ERC20VotesComp tribe;
+    DummyStorage dummyStorageContract;
 
     Vm public constant vm = Vm(HEVM_ADDRESS);
     NopeDAO private nopeDAO;
@@ -66,6 +67,9 @@ contract NopeDAOTest is DSTest {
 
         // 3. Deploy NopeDAO
         nopeDAO = new NopeDAO(tribe, address(core));
+
+        // 4. Deploy dummy contract which proposals will interact with
+        dummyStorageContract = new DummyStorage();
     }
 
     /// @notice Validate initial state of the NopeDAO
@@ -94,7 +98,6 @@ contract NopeDAOTest is DSTest {
     function testQuickReaction() public {
         vm.roll(1); // Make block number non-zero, for getVotes accounting
 
-        DummyStorage dummyStorageContract = new DummyStorage();
         uint256 newVariable = 10;
         (
             address[] memory targets,
@@ -128,7 +131,6 @@ contract NopeDAOTest is DSTest {
     ///         Specifically, targets a dummy mock contract
     function testProposalExecutes() public {
         vm.roll(block.number + 1); // Make block number non-zero, for getVotes accounting
-        DummyStorage dummyStorageContract = new DummyStorage();
         assertEq(dummyStorageContract.getVariable(), uint256(5));
 
         uint256 newVariable = 10;
@@ -160,5 +162,49 @@ contract NopeDAOTest is DSTest {
         // Validate that dummy test contract was interacted with as expected
         uint256 updatedVariable = dummyStorageContract.getVariable();
         assertEq(updatedVariable, newVariable);
+    }
+
+    /// @notice Validate that cancelling a proposal works
+    function testCancelProposal() public {
+        uint256 newVariable = 10;
+        (
+            address[] memory targets,
+            uint256[] memory values,
+            bytes[] memory calldatas,
+            string memory description,
+            bytes32 descriptionHash
+        ) = createDummyProposal(address(dummyStorageContract), newVariable);
+
+        // 1. Create proposal
+        vm.prank(user);
+        uint256 proposalId = nopeDAO.propose(targets, values, calldatas, description);
+
+        // 2. Validate Guardian can cancel a proposal
+        vm.prank(addresses.guardianAddress);
+        nopeDAO.cancel(targets, values, calldatas, descriptionHash);
+
+        // 3. Verify proposal was cancelled
+        uint8 state = uint8(nopeDAO.state(proposalId));
+        assertEq(state, uint8(2)); // 2 = Canceled
+    }
+
+    /// @notice Validate that cancelling a proposal works rejects for non-Guardian
+    function testCancelProposalAuth() public {
+        uint256 newVariable = 10;
+        (
+            address[] memory targets,
+            uint256[] memory values,
+            bytes[] memory calldatas,
+            string memory description,
+            bytes32 descriptionHash
+        ) = createDummyProposal(address(dummyStorageContract), newVariable);
+
+        // 1. Create proposal
+        vm.prank(user);
+        uint256 proposalId = nopeDAO.propose(targets, values, calldatas, description);
+
+        // 2. Validate Guardian can cancel a proposal
+        vm.expectRevert(bytes("UNAUTHORIZED"));
+        nopeDAO.cancel(targets, values, calldatas, descriptionHash);
     }
 }

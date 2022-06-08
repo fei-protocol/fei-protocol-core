@@ -105,6 +105,17 @@ contract NopeDAO is
         super._execute(proposalId, targets, values, calldatas, descriptionHash);
     }
 
+    /// @notice Cancel a NopeDAO proposal
+    /// @dev Restricted to GUARDIAN Tribe Role
+    function cancel(
+        address[] memory targets,
+        uint256[] memory values,
+        bytes[] memory calldatas,
+        bytes32 descriptionHash
+    ) external onlyTribeRole(TribeRoles.GUARDIAN) {
+        _cancel(targets, values, calldatas, descriptionHash);
+    }
+
     function _cancel(
         address[] memory targets,
         uint256[] memory values,
