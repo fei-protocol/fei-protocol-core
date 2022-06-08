@@ -1,8 +1,8 @@
+import { Core, FeiDAOTimelock } from '@custom-types/contracts';
+import { Signer } from '@ethersproject/abstract-signer';
 import { expectRevert, getAddresses, getCore, getImpersonatedSigner, latestTime } from '@test/helpers';
 import { expect } from 'chai';
 import { ethers } from 'hardhat';
-import { Core, FeiDAOTimelock } from '@custom-types/contracts';
-import { Signer } from '@ethersproject/abstract-signer';
 
 describe('FeiDAOTimelock', function () {
   let userAddress: string;

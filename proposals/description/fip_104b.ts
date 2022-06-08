@@ -1,23 +1,23 @@
-import { ProposalDescription } from '@custom-types/types';
+import { TemplatedProposalDescription } from '@custom-types/types';
 
-const fip_104b: ProposalDescription = {
+const fip_104b: TemplatedProposalDescription = {
   title: 'FIP_104b: Withdraw LBP liquidity',
   commands: [
     {
       target: 'dpiToDaiLBPSwapper',
       values: '0',
       method: 'exitPool(address)',
-      arguments: ['{compoundDaiPCVDeposit}'],
+      arguments: (addresses) => [addresses.compoundDaiPCVDeposit],
       description: 'Withdraw all DAI and DPI from LBP pool to the compoundDAIPCVDeposit (~$3.8m)'
     },
     {
       target: 'ratioPCVControllerV2',
       values: '0',
       method: 'withdrawRatioERC20(address,address,address,uint256)',
-      arguments: [
-        '{compoundDaiPCVDeposit}', // pcvDeposit
-        '{dpi}', // token
-        '{tribalCouncilSafe}', // to
+      arguments: (addresses) => [
+        addresses.compoundDaiPCVDeposit, // pcvDeposit
+        addresses.dpi, // token
+        addresses.tribalCouncilSafe, // to
         '10000' // basisPoints, 100%
       ],
       description:
@@ -27,7 +27,7 @@ const fip_104b: ProposalDescription = {
       target: 'compoundDaiPCVDeposit',
       values: '0',
       method: 'deposit()',
-      arguments: [],
+      arguments: (addresses) => [],
       description: 'Deposit DAI on compoundDAIPCVdeposit into Compound'
     }
   ],

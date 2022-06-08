@@ -1,17 +1,16 @@
-import { expectRevert, getAddresses, getCore, getImpersonatedSigner } from '@test/helpers';
-import { expect } from 'chai';
-import { Signer } from 'ethers';
-import { ethers } from 'hardhat';
 import {
   Core,
+  MockERC20,
   MockERC20__factory,
   MockPCVDepositV2__factory,
   PCVDeposit,
-  PCVGuardian,
-  MockERC20
+  PCVGuardian
 } from '@custom-types/contracts';
-import chai from 'chai';
+import { expectRevert, getAddresses, getCore, getImpersonatedSigner } from '@test/helpers';
 import { forceEth } from '@test/integration/setup/utils';
+import chai, { expect } from 'chai';
+import { Signer } from 'ethers';
+import { ethers } from 'hardhat';
 
 // This will theoretically make the error stack actually print!
 chai.config.includeStack = true;
