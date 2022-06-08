@@ -22,7 +22,7 @@ const proposals: ProposalsConfigMap = {
     proposalId: '',
     affectedContractSignoff: ['core', 'fuseFixer', 'pcvGuardianNew'],
     deprecatedContractSignoff: [],
-    category: ProposalCategory.TC
+    category: ProposalCategory.DAO
   },
   end_tribe_incentives: {
     deploy: false, // deploy flag for whether to run deploy action during e2e tests or use mainnet state
