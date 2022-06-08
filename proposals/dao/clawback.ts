@@ -10,23 +10,32 @@ import {
 import { LinearTimelockedDelegator, QuadraticTimelockedDelegator } from '@custom-types/contracts';
 
 /*
-
 Clawback
-
-
 */
 
 const fipNumber = 'clawback';
 
+const OLD_RARI_TIMELOCK_FEI_AMOUNT = '3254306506849315068493151';
+const OLD_RARI_TIMELOCK_TRIBE_AMOUNT = '3254296867072552004058854';
+
 // Do any deployments
 // This should exclusively include new contract deployments
 const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: NamedAddresses, logging: boolean) => {
+  const rariInfraFeiTimelock = await ethers.getContractAt('LinearTimelockedDelegator', addresses.rariInfraFeiTimelock);
+  const rariInfraTribeTimelock = await ethers.getContractAt(
+    'LinearTimelockedDelegator',
+    addresses.rariInfraTribeTimelock
+  );
+
+  const rariFeiTimelockRemainingTime = await rariInfraFeiTimelock.remainingTime();
+  const rariTribeTimelockRemainingTime = await rariInfraTribeTimelock.remainingTime();
+
   // Deploying new Rari infra vesting contracts because the clawback admins are incorrect
   // 1. Deploy new Rari infra vesting contract
   const LinearTimelockedDelegatorFactory = await ethers.getContractFactory('LinearTimelockedDelegator');
   const newRariInfraFeiTimelock = await LinearTimelockedDelegatorFactory.deploy(
     addresses.fuseMultisig, // beneficiary
-    0, // duration, TODO
+    rariFeiTimelockRemainingTime, // duration, TODO - check this gives expected gradient
     addresses.fei, // token
     0, // secondsUntilCliff - have already passed the cliff
     addresses.feiDAOTimelock, // clawbackAdmin
@@ -38,7 +47,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 
   const newRariInfraTribeTimelock = await LinearTimelockedDelegatorFactory.deploy(
     addresses.fuseMultisig, // beneficiary
-    0, // duration, TODO
+    rariTribeTimelockRemainingTime, // duration, TODO - check this gives expected gradient
     addresses.tribe, // token
     0, // secondsUntilCliff - have already passed the cliff
     addresses.feiDAOTimelock, // clawbackAdmin
@@ -57,7 +66,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 // This could include setting up Hardhat to impersonate accounts,
 // ensuring contracts have a specific state, etc.
 const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  console.log(`No actions to complete in setup for fip${fipNumber}`);
+  expect(await contracts.fei.balanceOf(addresses.rariInfraFeiTimelock)).to.equal(OLD_RARI_TIMELOCK_FEI_AMOUNT);
+  expect(await contracts.tribe.balanceOf(addresses.rariInfraTribeTimelock)).to.equal(OLD_RARI_TIMELOCK_TRIBE_AMOUNT);
 };
 
 // Tears down any changes made in setup() that need to be
@@ -81,8 +91,11 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const clawbackVestingContractB = contracts.clawbackVestingContractB as QuadraticTimelockedDelegator;
   const clawbackVestingContractC = contracts.clawbackVestingContractC as QuadraticTimelockedDelegator;
 
+  const fei = contracts.fei;
+  const tribe = contracts.tribe;
+
   // 1. Lipstone beneficiary set to the DAO timelock
-  expect(await lipstoneVesting.beneficiary()).to.be.equal(await addresses.feiDAOTimelock);
+  expect(await lipstoneVesting.beneficiary()).to.be.equal(addresses.feiDAOTimelock);
 
   // 2. Existing Rari infra timelocks beneficiary set to the DAO timelock - DAO can now pull these funds in the future
   expect(await rariInfraFeiTimelock.beneficiary()).to.be.equal(addresses.feiDAOTimelock);
@@ -99,12 +112,12 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await newRariInfraTribeTimelock.clawbackAdmin()).to.be.equal(addresses.feiDAOTimelock);
   expect(await newRariInfraTribeTimelock.lockedToken()).to.be.equal(addresses.tribe);
 
-  // 4. Beneficiary accepted on Rari's FEI and TRIBE contracts
-
-  // 3. Minted Fei and TRIBE on new contracts
+  // 4. Minted Fei and TRIBE on new contracts
+  expect(await fei.balanceOf(newRariInfraFeiTimelock.address)).to.be.equal(OLD_RARI_TIMELOCK_FEI_AMOUNT);
+  expect(await tribe.balanceOf(newRariInfraTribeTimelock.address)).to.be.equal(OLD_RARI_TIMELOCK_TRIBE_AMOUNT);
 
   // 4. Clawback vesting contracts
-  // TODO: Validate DAO receives it's funds
+  const;
 };
 
 export { deploy, setup, teardown, validate };
