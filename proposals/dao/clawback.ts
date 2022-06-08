@@ -8,6 +8,7 @@ import {
   ValidateUpgradeFunc
 } from '@custom-types/types';
 import { LinearTimelockedDelegator, QuadraticTimelockedDelegator } from '@custom-types/contracts';
+import { BigNumber } from 'ethers';
 
 /*
 Clawback
@@ -17,6 +18,9 @@ const fipNumber = 'clawback';
 
 const OLD_RARI_TIMELOCK_FEI_AMOUNT = '3254306506849315068493151';
 const OLD_RARI_TIMELOCK_TRIBE_AMOUNT = '3254296867072552004058854';
+
+let minimumClawedTribe: BigNumber;
+let initialDAOTribeBalance: BigNumber;
 
 // Do any deployments
 // This should exclusively include new contract deployments
@@ -66,8 +70,29 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 // This could include setting up Hardhat to impersonate accounts,
 // ensuring contracts have a specific state, etc.
 const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
+  const clawbackVestingContractA = contracts.clawbackVestingContractA as QuadraticTimelockedDelegator;
+  const clawbackVestingContractB = contracts.clawbackVestingContractB as QuadraticTimelockedDelegator;
+  const clawbackVestingContractC = contracts.clawbackVestingContractC as QuadraticTimelockedDelegator;
+
   expect(await contracts.fei.balanceOf(addresses.rariInfraFeiTimelock)).to.equal(OLD_RARI_TIMELOCK_FEI_AMOUNT);
   expect(await contracts.tribe.balanceOf(addresses.rariInfraTribeTimelock)).to.equal(OLD_RARI_TIMELOCK_TRIBE_AMOUNT);
+
+  initialDAOTribeBalance = await contracts.tribe.balanceOf(addresses.feiDAOTimelock);
+
+  const clawbackATribe = (await clawbackVestingContractA.totalToken()).sub(
+    await clawbackVestingContractA.availableForRelease()
+  );
+
+  const clawbackBTribe = (await clawbackVestingContractB.totalToken()).sub(
+    await clawbackVestingContractB.availableForRelease()
+  );
+
+  const clawbackCTribe = (await clawbackVestingContractC.totalToken()).sub(
+    await clawbackVestingContractC.availableForRelease()
+  );
+
+  minimumClawedTribe = clawbackATribe.add(clawbackBTribe).add(clawbackCTribe);
+  console.log('Minimum clawed tribe: ', minimumClawedTribe);
 };
 
 // Tears down any changes made in setup() that need to be
@@ -117,7 +142,15 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await tribe.balanceOf(newRariInfraTribeTimelock.address)).to.be.equal(OLD_RARI_TIMELOCK_TRIBE_AMOUNT);
 
   // 4. Clawback vesting contracts
-  const;
+  // Verify clawbacks have no tokens left
+  expect(await tribe.balanceOf(clawbackVestingContractA.address)).to.be.equal(0);
+  expect(await tribe.balanceOf(clawbackVestingContractB.address)).to.be.equal(0);
+  expect(await tribe.balanceOf(clawbackVestingContractC.address)).to.be.equal(0);
+
+  // Verify DAO received it's TRIBE
+  expect(await tribe.balanceOf(addresses.feiDAOTimelock)).to.be.bignumber.at.least(
+    initialDAOTribeBalance.add(minimumClawedTribe)
+  );
 };
 
 export { deploy, setup, teardown, validate };
