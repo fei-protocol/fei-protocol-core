@@ -2088,6 +2088,21 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     address: '0x2E731a002260b15Fc90eC9AdAAd8070a8fa09A9a',
     category: AddressCategory.TBD
   },
+  clawbackVestingContractA: {
+    artifactName: 'QuadraticTimelockedDelegator',
+    address: '0x1b4948248E13dc6Ec2A8e2B5Baa5EB78739d9486',
+    category: AddressCategory.TBD
+  },
+  clawbackVestingContractB: {
+    artifactName: 'QuadraticTimelockedDelegator',
+    address: '0xf2a5872a34E69101f5311A8196EFac8d7B79dcCd',
+    category: AddressCategory.TBD
+  },
+  clawbackVestingContractC: {
+    artifactName: 'QuadraticTimelockedDelegator',
+    address: '0xba7182c1B6df04bB730f0008BddeD27fc7D13ea2',
+    category: AddressCategory.TBD
+  },
   newRariInfraFeiTimelock: {
     artifactName: 'LinearTimelockedDelegator',
     address: '',
