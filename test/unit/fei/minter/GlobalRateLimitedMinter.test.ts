@@ -1,16 +1,15 @@
+import { Core, Fei, GlobalRateLimitedMinter, MockMinter } from '@custom-types/contracts';
 import { expectRevert, getAddresses, getCore, ZERO_ADDRESS } from '@test/helpers';
 import { expect } from 'chai';
-import hre, { ethers } from 'hardhat';
-import { Signer, utils } from 'ethers';
-import { Core, Fei, GlobalRateLimitedMinter, MockMinter } from '@custom-types/contracts';
+import { BigNumber, Signer, utils } from 'ethers';
 import { keccak256 } from 'ethers/lib/utils';
+import hre, { ethers } from 'hardhat';
 
-const toBN = ethers.BigNumber.from;
 const scale = ethers.constants.WeiPerEther;
 
 describe('GlobalRateLimitedMinterGovernor', function () {
-  let userAddress;
-  let governorAddress;
+  let userAddress: string;
+  let governorAddress: string;
   let globalRateLimitedMinter: GlobalRateLimitedMinter;
   let authorizedMinter: MockMinter;
   let core: Core;
@@ -148,8 +147,8 @@ describe('GlobalRateLimitedMinterGovernor', function () {
     });
 
     describe('Add Minter Under Caps', function () {
-      let rateLimitPerSecond;
-      let bufferCap;
+      let rateLimitPerSecond: BigNumber;
+      let bufferCap: BigNumber;
 
       beforeEach(async function () {
         rateLimitPerSecond = await globalRateLimitedMinter.individualMaxRateLimitPerSecond();

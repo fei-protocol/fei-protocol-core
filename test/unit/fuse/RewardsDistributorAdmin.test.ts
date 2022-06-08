@@ -1,9 +1,9 @@
+import { Core, MockRewardsDistributor, RewardsDistributorAdmin } from '@custom-types/contracts';
 import { expectRevert, getAddresses, getCore, ZERO_ADDRESS } from '@test/helpers';
 import { expect } from 'chai';
-import hre, { ethers } from 'hardhat';
 import { Signer, utils } from 'ethers';
-import { Core, RewardsDistributorAdmin, MockRewardsDistributor } from '@custom-types/contracts';
 import { keccak256 } from 'ethers/lib/utils';
+import hre, { ethers } from 'hardhat';
 
 const toBN = ethers.BigNumber.from;
 

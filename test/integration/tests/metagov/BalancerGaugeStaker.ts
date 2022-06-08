@@ -3,7 +3,7 @@ import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
 import { ethers } from 'hardhat';
 import { NamedContracts } from '@custom-types/types';
-import proposals from '@test/integration/proposals_config';
+import proposals from '@protocol/proposalsConfig';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
 import { getImpersonatedSigner, expectRevert, expectEvent } from '@test/helpers';
 import { forceEth } from '@test/integration/setup/utils';
@@ -155,7 +155,7 @@ describe('e2e-metagov', function () {
       it('should work if user has PCV_CONTROLLER_ROLE role', async function () {
         const balanceBefore = await contracts.bal.balanceOf(daoSigner.address);
         expectEvent(
-          await staker.connect(daoSigner).withdrawERC20(contracts.bal.address, daoSigner.address, '10'),
+          staker.connect(daoSigner).withdrawERC20(contracts.bal.address, daoSigner.address, '10'),
           staker,
           'WithdrawERC20',
           [daoSigner.address, contracts.bal.address, daoSigner.address, '10']

@@ -1,7 +1,7 @@
-import { expectRevert, getAddresses, getCore } from '../../helpers';
 import { expect } from 'chai';
-import hre, { ethers } from 'hardhat';
 import { Signer } from 'ethers';
+import hre, { ethers } from 'hardhat';
+import { expectRevert, getAddresses, getCore } from '../../helpers';
 
 describe('CompositeOracle', function () {
   let governorAddress: string;

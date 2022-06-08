@@ -1,19 +1,20 @@
+import { MockTribe, QuadraticTimelockedDelegator } from '@custom-types/contracts';
 import { expectEvent, expectRevert, getAddresses, getImpersonatedSigner, time } from '@test/helpers';
 import { expect } from 'chai';
+import { BigNumber, Signer } from 'ethers';
 import { ethers } from 'hardhat';
-import { Signer } from 'ethers';
 import { forceEth } from '../../integration/setup/utils';
 
 const toBN = ethers.BigNumber.from;
 
 describe('QuadraticTimelockedDelegator', function () {
-  let userAddress;
-  let secondUserAddress;
-  let beneficiaryAddress1;
-  let delegator;
-  let tribe;
-  let window;
-  let totalTribe;
+  let userAddress: string;
+  let secondUserAddress: string;
+  let beneficiaryAddress1: string;
+  let delegator: QuadraticTimelockedDelegator;
+  let tribe: MockTribe;
+  let window: BigNumber;
+  let totalTribe: BigNumber;
 
   const impersonatedSigners: { [key: string]: Signer } = {};
 
@@ -80,10 +81,10 @@ describe('QuadraticTimelockedDelegator', function () {
     });
 
     describe('One Quarter (1/4)', function () {
-      let quarter;
-      let alreadyClaimed;
-      let available;
-      let remainingBalance;
+      let quarter: BigNumber;
+      let alreadyClaimed: BigNumber;
+      let available: BigNumber;
+      let remainingBalance: BigNumber;
 
       beforeEach(async function () {
         quarter = window.div(toBN(4));
@@ -91,7 +92,7 @@ describe('QuadraticTimelockedDelegator', function () {
         alreadyClaimed = toBN(0); // 0
         available = totalTribe.div(toBN(16)); // (1*1)/(4*4)
         remainingBalance = totalTribe.sub(available);
-        expectEvent(await delegator.release(userAddress, available), delegator, 'Release', [
+        expectEvent(delegator.release(userAddress, available), delegator, 'Release', [
           userAddress,
           userAddress,
           available
@@ -160,7 +161,7 @@ describe('QuadraticTimelockedDelegator', function () {
 
       describe('Total Release', function () {
         beforeEach(async function () {
-          expectEvent(await delegator.release(userAddress, totalTribe), delegator, 'Release', [
+          expectEvent(delegator.release(userAddress, totalTribe), delegator, 'Release', [
             userAddress,
             userAddress,
             totalTribe
@@ -180,7 +181,7 @@ describe('QuadraticTimelockedDelegator', function () {
 
       describe('Release To', function () {
         beforeEach(async function () {
-          expectEvent(await delegator.release(userAddress, totalTribe), delegator, 'Release', [
+          expectEvent(delegator.release(userAddress, totalTribe), delegator, 'Release', [
             userAddress,
             userAddress,
             totalTribe
@@ -199,11 +200,11 @@ describe('QuadraticTimelockedDelegator', function () {
       });
 
       describe('Partial Release', function () {
-        let halfAmount;
+        let halfAmount: BigNumber;
 
         beforeEach(async function () {
           halfAmount = totalTribe.div(toBN(2));
-          expectEvent(await delegator.release(userAddress, halfAmount), delegator, 'Release', [
+          expectEvent(delegator.release(userAddress, halfAmount), delegator, 'Release', [
             userAddress,
             userAddress,
             halfAmount
@@ -236,9 +237,7 @@ describe('QuadraticTimelockedDelegator', function () {
   describe('Access', function () {
     describe('Set Pending Beneficiary', function () {
       it('Beneficiary set succeeds', async function () {
-        expectEvent(await delegator.setPendingBeneficiary(userAddress), delegator, 'PendingBeneficiaryUpdate', [
-          userAddress
-        ]);
+        expectEvent(delegator.setPendingBeneficiary(userAddress), delegator, 'PendingBeneficiaryUpdate', [userAddress]);
         expect(await delegator.pendingBeneficiary()).to.be.equal(userAddress);
       });
 
@@ -253,7 +252,7 @@ describe('QuadraticTimelockedDelegator', function () {
         it('Pending Beneficiary succeeds', async function () {
           await delegator.setPendingBeneficiary(userAddress);
           expectEvent(
-            await delegator.connect(impersonatedSigners[userAddress]).acceptBeneficiary(),
+            delegator.connect(impersonatedSigners[userAddress]).acceptBeneficiary(),
             delegator,
             'BeneficiaryUpdate',
             [userAddress]
@@ -290,7 +289,7 @@ describe('QuadraticTimelockedDelegator', function () {
   });
 
   describe('Clawback', function () {
-    let clawbackAdmin;
+    let clawbackAdmin: string;
 
     beforeEach(async function () {
       clawbackAdmin = await delegator.clawbackAdmin();

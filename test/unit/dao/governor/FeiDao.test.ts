@@ -1,9 +1,9 @@
-import { expectRevert, time, getCore, getAddresses } from '@test/helpers';
-import { expect } from 'chai';
-import hre, { artifacts, ethers, network } from 'hardhat';
-import { Signer } from 'ethers';
-import { TransactionResponse } from '@ethersproject/providers';
 import { Core, FeiDAO, Timelock } from '@custom-types/contracts';
+import { TransactionResponse } from '@ethersproject/providers';
+import { expectRevert, getAddresses, getCore, time } from '@test/helpers';
+import { expect } from 'chai';
+import { Signer } from 'ethers';
+import hre, { artifacts, ethers, network } from 'hardhat';
 
 const Tribe = artifacts.readArtifactSync('Tribe');
 

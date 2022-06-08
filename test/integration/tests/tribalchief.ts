@@ -1,12 +1,12 @@
+import { NamedContracts } from '@custom-types/types';
+import mainnetAddresses from '@protocol/mainnetAddresses';
+import proposals from '@protocol/proposalsConfig';
+import tribalchief from '@protocol/tribalchief';
+import { TestEndtoEndCoordinator } from '@test/integration/setup';
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
 import { ethers } from 'hardhat';
-import { NamedContracts } from '@custom-types/types';
-import { TestEndtoEndCoordinator } from '@test/integration/setup';
-import proposals from '@test/integration/proposals_config';
-import mainnetAddresses from '@protocol/mainnetAddresses';
-import tribalchief from '@protocol/tribalchief';
 
 describe('e2e-tribalchief', function () {
   let contracts: NamedContracts;

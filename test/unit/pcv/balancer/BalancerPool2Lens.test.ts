@@ -1,16 +1,16 @@
-import { getAddresses, getImpersonatedSigner, getCore, expectApproxAbs } from '@test/helpers';
-import chai, { expect } from 'chai';
-import CBN from 'chai-bn';
-import { ethers } from 'hardhat';
-import { Signer } from 'ethers';
 import {
   BalancerPool2Lens,
   MockERC20,
   MockOracle,
-  MockVault,
   MockPCVDepositV2,
+  MockVault,
   MockWeightedPool
 } from '@custom-types/contracts';
+import { expectApproxAbs, getAddresses, getCore, getImpersonatedSigner } from '@test/helpers';
+import chai, { expect } from 'chai';
+import CBN from 'chai-bn';
+import { Signer } from 'ethers';
+import { ethers } from 'hardhat';
 
 before(async () => {
   chai.use(CBN(ethers.BigNumber));

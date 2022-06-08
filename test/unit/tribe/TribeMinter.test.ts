@@ -1,10 +1,9 @@
-import { expectRevert, getAddresses, getCore, getImpersonatedSigner, increaseTime, ZERO_ADDRESS } from '../../helpers';
-import { ethers } from 'hardhat';
-import { expect } from 'chai';
-import { Signer } from 'ethers';
 import { Core, Tribe, TribeMinter } from '@custom-types/contracts';
-import chai from 'chai';
+import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
+import { BigNumber, Signer } from 'ethers';
+import { ethers } from 'hardhat';
+import { expectRevert, getAddresses, getCore, getImpersonatedSigner, increaseTime, ZERO_ADDRESS } from '../../helpers';
 const toBN = ethers.BigNumber.from;
 
 before(() => {
@@ -83,8 +82,8 @@ describe('TribeMinter', function () {
   });
 
   describe('Poke', function () {
-    let mintAmount;
-    let inflationIncrement;
+    let mintAmount: BigNumber;
+    let inflationIncrement: BigNumber;
 
     beforeEach(async function () {
       mintAmount = ethers.constants.WeiPerEther.mul(10_000);
@@ -154,7 +153,7 @@ describe('TribeMinter', function () {
   });
 
   describe('Mint', function () {
-    let mintAmount;
+    let mintAmount: BigNumber;
     beforeEach(async function () {
       mintAmount = ethers.constants.WeiPerEther.mul(10_000);
     });
