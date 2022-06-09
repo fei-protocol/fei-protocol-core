@@ -1,12 +1,12 @@
-import { expectRevert, getAddresses, getCore } from '../../helpers';
 import { expect } from 'chai';
+import { BigNumber, Signer } from 'ethers';
 import hre, { ethers } from 'hardhat';
-import { Signer, BigNumber } from 'ethers';
 import { AutoRewardsDistributor } from '../../../types/contracts/AutoRewardsDistributor';
+import { Core } from '../../../types/contracts/Core';
 import { MockRewardsDistributor } from '../../../types/contracts/MockRewardsDistributor';
 import { MockTribalChief } from '../../../types/contracts/MockTribalChief';
-import { Core } from '../../../types/contracts/Core';
 import { Tribe } from '../../../types/contracts/Tribe';
+import { expectRevert, getAddresses, getCore } from '../../helpers';
 
 const toBN = ethers.BigNumber.from;
 

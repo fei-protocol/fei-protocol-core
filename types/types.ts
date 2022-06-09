@@ -37,13 +37,13 @@ import {
 } from './contracts';
 import { RestrictedPermissions } from './contracts/RestrictedPermissions';
 
-export type Env = {
+export type ContractsAndAddresses = {
   contracts: NamedContracts;
   contractAddresses: NamedAddresses;
 };
 
 export interface TestCoordinator {
-  loadEnvironment(): Promise<Env>;
+  loadEnvironment(): Promise<ContractsAndAddresses>;
 }
 
 export function namedContractsToNamedAddresses(contracts: NamedContracts): NamedAddresses {
@@ -70,7 +70,7 @@ export enum ProposalCategory {
   None
 }
 
-export type ProposalConfig = {
+export interface ProposalConfig {
   deploy: boolean;
   category: ProposalCategory;
   totalValue: number;
@@ -78,28 +78,56 @@ export type ProposalConfig = {
   affectedContractSignoff: string[];
   deprecatedContractSignoff: string[];
   proposalId: string;
-};
+}
 
-export type ProposalsConfigMap = {
+export interface TemplatedProposalConfig {
+  deploy: boolean;
+  category: ProposalCategory;
+  totalValue: number;
+  proposal: TemplatedProposalDescription;
+  affectedContractSignoff: string[];
+  deprecatedContractSignoff: string[];
+  proposalId: string;
+}
+
+export interface ProposalsConfigMap {
   [key: string]: ProposalConfig;
-};
+}
 
-export type ProposalDescription = {
+export interface TemplatedProposalsConfigMap {
+  [key: string]: TemplatedProposalConfig;
+}
+
+export interface ProposalDescription {
   title: string;
   commands: ProposalCommand[];
   description: string;
-};
+}
 
-export type ProposalCommand = {
+export interface TemplatedProposalDescription {
+  title: string;
+  commands: TemplatedProposalCommand[];
+  description: string;
+}
+
+export interface ProposalCommand {
   target: string;
   values: string;
   method: string;
   arguments: any[];
   description: string;
-};
+}
 
-export interface MainnetAddresses {
-  [key: string]: AddressConfig;
+export interface TemplatedProposalCommand {
+  target: string;
+  values: string;
+  method: string;
+  arguments: (namedAddresses: NamedAddresses) => any[];
+  description: string;
+}
+
+export interface MainnetContractsConfig {
+  [key: string]: ContractConfig;
 }
 
 export type TribalChiefPoolConfig = {
@@ -111,7 +139,7 @@ export interface TribalChiefConfig {
   [key: string]: TribalChiefPoolConfig;
 }
 
-export interface AddressConfig {
+export interface ContractConfig {
   artifactName: string;
   address: string;
   category: AddressCategory;

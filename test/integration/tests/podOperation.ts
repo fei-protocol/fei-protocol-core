@@ -1,18 +1,18 @@
 import { PodAdminGateway, PodFactory } from '@custom-types/contracts';
+import { NamedAddresses, NamedContracts } from '@custom-types/types';
+import Safe from '@gnosis.pm/safe-core-sdk';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
+import { MIN_TIMELOCK_DELAY, TRIBAL_COUNCIL_POD_ID, tribeCouncilPodConfig } from '@protocol/optimisticGovernance';
+import proposals from '@protocol/proposalsConfig';
+import { getImpersonatedSigner, initialiseGnosisSDK, time } from '@test/helpers';
+import { forceEth } from '@test/integration/setup/utils';
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
-import { ethers } from 'hardhat';
-import { NamedAddresses, NamedContracts } from '@custom-types/types';
-import { getImpersonatedSigner, time, initialiseGnosisSDK } from '@test/helpers';
-import proposals from '@test/integration/proposals_config';
-import { forceEth } from '@test/integration/setup/utils';
-import { TestEndtoEndCoordinator } from '../setup';
 import { BigNumberish, Contract } from 'ethers';
+import { ethers } from 'hardhat';
 import { abi as timelockABI } from '../../../artifacts/@openzeppelin/contracts/governance/TimelockController.sol/TimelockController.json';
-import { MIN_TIMELOCK_DELAY, tribeCouncilPodConfig, TRIBAL_COUNCIL_POD_ID } from '@protocol/optimisticGovernance';
-import Safe from '@gnosis.pm/safe-core-sdk';
+import { TestEndtoEndCoordinator } from '../setup';
 
 function createSafeTxArgs(timelock: Contract, functionSig: string, args: any[]) {
   return {
@@ -103,8 +103,8 @@ describe('Pod operation and veto', function () {
 
     // 1. Deploy a pod through which a proposal will be executed
     const deployTx = await podFactory.connect(tribalCouncilTimelockSigner).createOptimisticPod(podConfig);
-    const { args } = (await deployTx.wait()).events.find((elem) => elem.event === 'CreatePod');
-
+    const result = (await deployTx.wait()).events!.find((elem) => elem.event === 'CreatePod');
+    const args = result!.args!;
     podId = args.podId;
     const safeAddress = await podFactory.getPodSafe(podId);
     timelockAddress = await podFactory.getPodTimelock(podId);
@@ -213,7 +213,8 @@ describe('Pod operation and veto', function () {
     const values = [0];
 
     const proposeTx = await nopeDAO.propose(targets, values, calldatas, description);
-    const { args } = (await proposeTx.wait()).events.find((elem) => elem.event === 'ProposalCreated');
+    const result = (await proposeTx.wait()).events!.find((elem: any) => elem.event === 'ProposalCreated');
+    const args = result!.args!;
     const nopeDAOProposalId = args.proposalId;
 
     // Use the proposalID to vote for this proposal on the nopeDAO
@@ -317,7 +318,7 @@ describe('Pod operation and veto', function () {
     const values = [0];
 
     const proposeTx = await nopeDAO.propose(targets, values, calldatas, description);
-    const { args } = (await proposeTx.wait()).events.find((elem) => elem.event === 'ProposalCreated');
+    const { args } = (await proposeTx.wait()).events.find((elem: any) => elem.event === 'ProposalCreated');
     const nopeDAOProposalId = args.proposalId;
 
     // Use the proposalID to vote for this proposal on the nopeDAO

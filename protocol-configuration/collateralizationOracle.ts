@@ -1,4 +1,4 @@
-const collateralizationAddresses = {
+const collateralizationAddresses: CollateralizationAddressType = {
   fei: [
     'feiOATimelockWrapper',
     'rariPool6FeiPCVDepositWrapper',
@@ -34,5 +34,7 @@ const collateralizationAddresses = {
   agEUR: ['agEurDepositWrapper', 'uniswapLensAgEurUniswapGauge', 'agEurUniswapPCVDeposit'],
   volt: ['voltDepositWrapper']
 };
+
+export type CollateralizationAddressType = { [key: string]: string[] };
 
 export default collateralizationAddresses;

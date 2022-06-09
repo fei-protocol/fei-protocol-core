@@ -1,14 +1,17 @@
 import { ethers } from 'hardhat';
-import { MainnetContracts, NamedAddresses, ProposalDescription } from '@custom-types/types';
-import format from 'string-template';
+import {
+  MainnetContracts,
+  NamedAddresses,
+  ProposalDescription,
+  TemplatedProposalDescription
+} from '@custom-types/types';
 import { OptimisticTimelock } from '@custom-types/contracts';
 import { getImpersonatedSigner, time } from '@test/helpers';
 import { Contract } from '@ethersproject/contracts';
 import { forceEth } from '@test/integration/setup/utils';
-import { TransactionRequest } from '@ethersproject/abstract-provider';
 
 export async function simulateOAProposal(
-  proposalInfo: ProposalDescription,
+  proposalInfo: TemplatedProposalDescription,
   contracts: MainnetContracts,
   contractAddresses: NamedAddresses,
   logging = false
@@ -19,7 +22,7 @@ export async function simulateOAProposal(
 }
 
 export async function simulateTCProposal(
-  proposalInfo: ProposalDescription,
+  proposalInfo: TemplatedProposalDescription,
   contracts: MainnetContracts,
   contractAddresses: NamedAddresses,
   logging = false
@@ -32,7 +35,7 @@ export async function simulateTCProposal(
 export async function simulateTimelockProposal(
   timelock: OptimisticTimelock,
   multisigAddress: string,
-  proposalInfo: ProposalDescription,
+  proposalInfo: TemplatedProposalDescription,
   contracts: MainnetContracts,
   contractAddresses: NamedAddresses,
   logging = false
@@ -51,13 +54,26 @@ export async function simulateTimelockProposal(
   for (let i = 0; i < proposalInfo.commands.length; i += 1) {
     const command = proposalInfo.commands[i];
 
-    const ethersContract: Contract = contracts[command.target] as Contract;
+    if (contracts[command.target as keyof MainnetContracts] === undefined) {
+      throw new Error(`Unknown contract ${command.target}, cannot parse (from MainnetContracts)`);
+    }
 
+    if (contractAddresses[command.target] === undefined) {
+      throw new Error(`Unknown contract ${command.target}, cannot parse (from NamedAddresses)`);
+    }
+
+    const ethersContract: Contract = contracts[command.target as keyof MainnetContracts] as Contract;
     const target = contractAddresses[command.target];
+
     targets.push(target);
     values.push(command.values);
 
-    const args = replaceArgs(command.arguments, contractAddresses);
+    const generateArgsFunc = command.arguments;
+    if (typeof generateArgsFunc !== 'function') {
+      throw new Error(`Command ${command.target} has no arguments function (cannot use direct assignments)`);
+    }
+    const args = generateArgsFunc(contractAddresses);
+
     const data = ethersContract.interface.encodeFunctionData(command.method, args);
     datas.push(data);
 
@@ -86,21 +102,4 @@ export async function simulateTimelockProposal(
   } else {
     console.log('Operation not ready for execution');
   }
-}
-
-// Recursively interpolate strings in the argument array
-export function replaceArgs(args: any[], contractNames: NamedAddresses) {
-  const result = [];
-  for (let i = 0; i < args.length; i++) {
-    const element = args[i];
-    if (typeof element === typeof '') {
-      const formatted = format(element, contractNames);
-      result.push(formatted);
-    } else if (typeof element === typeof []) {
-      result.push(replaceArgs(element, contractNames));
-    } else {
-      result.push(element);
-    }
-  }
-  return result;
 }

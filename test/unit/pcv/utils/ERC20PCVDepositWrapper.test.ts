@@ -1,13 +1,13 @@
 import { getAddresses } from '@test/helpers';
 import { expect } from 'chai';
+import { Contract, Signer } from 'ethers';
 import hre, { ethers } from 'hardhat';
-import { Signer } from 'ethers';
 
 describe('ERC20PCVDepositWrapper', function () {
   const impersonatedSigners: { [key: string]: Signer } = {};
 
-  let userAddress;
-  let token;
+  let userAddress: string;
+  let token: Contract;
 
   const balance = '2000';
 

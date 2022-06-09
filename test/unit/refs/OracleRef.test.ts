@@ -1,13 +1,13 @@
-import { expectRevert, getAddresses, getCore } from '../../helpers';
 import { expect } from 'chai';
-import hre, { ethers } from 'hardhat';
 import { Signer } from 'ethers';
+import hre, { ethers } from 'hardhat';
+import { expectRevert, getAddresses, getCore } from '../../helpers';
 
 const toBN = ethers.BigNumber.from;
 
 describe('OracleRef', () => {
-  let userAddress;
-  let governorAddress;
+  let userAddress: string;
+  let governorAddress: string;
 
   const impersonatedSigners: { [key: string]: Signer } = {};
 

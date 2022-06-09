@@ -1,7 +1,7 @@
-import { getAddresses, time } from '../../helpers';
 import { expect } from 'chai';
-import hre, { ethers, artifacts } from 'hardhat';
 import { Signer } from 'ethers';
+import hre, { artifacts, ethers } from 'hardhat';
+import { getAddresses, time } from '../../helpers';
 
 const TimelockedDelegator = artifacts.readArtifactSync('TimelockedDelegator');
 const MockTribe = artifacts.readArtifactSync('MockTribe');

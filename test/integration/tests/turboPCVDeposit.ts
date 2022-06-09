@@ -1,12 +1,12 @@
+import { NamedAddresses, NamedContracts } from '@custom-types/types';
+import proposals from '@protocol/proposalsConfig';
+import { expectApprox, getImpersonatedSigner } from '@test/helpers';
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
 import { ethers } from 'hardhat';
-import { NamedAddresses, NamedContracts } from '@custom-types/types';
-import proposals from '@test/integration/proposals_config';
-import { TestEndtoEndCoordinator } from '../setup';
-import { expectApprox, getImpersonatedSigner, resetFork } from '@test/helpers';
 import { abi as PCVDepositAbi } from '../../../artifacts/contracts/pcv/compound/ERC20CompoundPCVDeposit.sol/ERC20CompoundPCVDeposit.json';
+import { TestEndtoEndCoordinator } from '../setup';
 import { forceEth } from '../setup/utils';
 
 describe('Turbo PCV deposit', function () {
