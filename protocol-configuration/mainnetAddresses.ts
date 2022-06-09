@@ -2102,6 +2102,11 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     artifactName: 'QuadraticTimelockedDelegator',
     address: '0xba7182c1B6df04bB730f0008BddeD27fc7D13ea2',
     category: AddressCategory.TBD
+  },
+  clawbackVestingContractBeneficiary: {
+    artifactName: 'unknown',
+    address: '0x4bFa2625D50b68D622D1e71c82ba6Db99BA0d17F',
+    category: AddressCategory.TBD
   }
   // newRariInfraFeiTimelock: {
   //   artifactName: 'LinearTimelockedDelegator',
