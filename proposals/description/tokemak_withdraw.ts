@@ -1,13 +1,13 @@
-import { ProposalDescription } from '@custom-types/types';
+import { TemplatedProposalDescription } from '@custom-types/types';
 
-const tokemak_withdraw: ProposalDescription = {
+const tokemak_withdraw: TemplatedProposalDescription = {
   title: 'Withdraw from Tokemak',
   commands: [
     {
       target: 'ethTokemakPCVDeposit',
       values: '0',
       method: 'requestWithdrawal(uint256)',
-      arguments: ['10000000000000000000000'],
+      arguments: (addresses) => ['10000000000000000000000'],
       description: 'Request to withdraw 10K WETH from Tokemak in the next cycle'
     }
   ],
