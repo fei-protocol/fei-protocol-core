@@ -481,6 +481,16 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     address: '0x0961d2a545e0c1201B313d14C57023682a546b9D',
     category: AddressCategory.PCV
   },
+  tokemakManagerRollover: {
+    artifactName: 'unknown',
+    address: '0x90b6C61B102eA260131aB48377E143D6EB3A9d4B',
+    category: AddressCategory.External
+  },
+  tokemakManager: {
+    artifactName: 'unknown',
+    address: '0xa86e412109f77c45a3bc1c5870b880492fb86a14',
+    category: AddressCategory.External
+  },
   liquityFusePoolLusdPCVDeposit: {
     artifactName: 'ERC20CompoundPCVDeposit',
     address: '0x8C51E4532CC745cF3DFec5CEBd835D07E7BA1002',
