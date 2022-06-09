@@ -12,8 +12,24 @@ import { BigNumber } from 'ethers';
 import { getImpersonatedSigner } from '@test/helpers';
 import { forceEth } from '@test/integration/setup/utils';
 
+const toBN = ethers.BigNumber.from;
 /*
-Clawback
+Migrate the Rari Infra timelocks and return the unvested Jai and David TRIBE tokens
+
+Rari Infra timelocks
+- There is a Fei and a TRIBE timelock
+- Both active from Dec 2021
+- Duration set was 63072000 seconds (730 days, 2 years)
+- They release 2M FEI and 2M TRIBE per year
+- Linear timelocks
+
+Jai and David Vesting contracts
+- 3 vesting contracts with the same terms
+- Active from Dec 2021
+- Quadratic back weighted 5 year vesting
+- There is 17.1M TRIBE total across the 3 vesting contracts
+- The beneficiary of each vesting contract is Gnosis Safe multisig. Owners are unknown
+
 */
 
 const fipNumber = 'clawback';
@@ -23,10 +39,10 @@ const OLD_RARI_TIMELOCK_FEI_AMOUNT = '3254306506849315068493151';
 const OLD_RARI_TIMELOCK_TRIBE_AMOUNT = '3254296867072552004058854';
 
 // Sanity check, minimum amount DAO should receive when clawing back
-const MIN_CLAWED_TRIBE = ethers.constants.WeiPerEther.mul(3_000_000);
+const MIN_CLAWED_TRIBE = ethers.constants.WeiPerEther.mul(15_000_000);
 
 // Sanity check, minimum amount clawback vesting contract beneficiary should receive
-const MIN_BENEFICIARY_CLAWED_TRIBE = ethers.constants.WeiPerEther.mul(1_000);
+const MIN_BENEFICIARY_CLAWED_TRIBE = ethers.constants.WeiPerEther.mul(100_000);
 
 let initialDAOTribeBalance: BigNumber;
 let initialClawbackBeneficiaryBalance: BigNumber;
@@ -159,9 +175,24 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   console.log('Beneficiary clawed TRIBE: ', clawbackBeneficiaryAmount.toString());
   expect(clawbackBeneficiaryAmount).to.be.bignumber.at.least(MIN_BENEFICIARY_CLAWED_TRIBE);
 
-  // Maybe fast forward and claim?
-  const percentageVestedToJaiAndDavid = clawbackBeneficiaryAmount.div(totalClawedTribe).mul(100);
-  console.log('% clawed back: ', percentageVestedToJaiAndDavid.toString());
+  // 5. Verify beneficiary can claim from new Rari infra timelocks
+  const randomAddressReleasingTo = '0xFDFA7223b6A5B00b5eeccfedD3e98FcA65A7F901';
+  const preClaimFeiBalance = await fei.balanceOf(randomAddressReleasingTo);
+  const preClaimTribeBalance = await tribe.balanceOf(randomAddressReleasingTo);
+
+  const fuseMultisigSigner = await getImpersonatedSigner(addresses.fuseMultisig);
+  await newRariInfraFeiTimelock.connect(fuseMultisigSigner).releaseMax(randomAddressReleasingTo);
+  await newRariInfraTribeTimelock.connect(fuseMultisigSigner).releaseMax(randomAddressReleasingTo);
+
+  const postClaimFeiBalance = await fei.balanceOf(randomAddressReleasingTo);
+  const postClaimTribeBalance = await tribe.balanceOf(randomAddressReleasingTo);
+  const claimedFeiAmount = postClaimFeiBalance.sub(preClaimFeiBalance);
+  const claimedTribeAmount = postClaimTribeBalance.sub(preClaimTribeBalance);
+
+  console.log('Claimed FEI: ', claimedFeiAmount.toString());
+  console.log('Claimed TRIBE: ', claimedTribeAmount.toString());
+  expect(claimedFeiAmount).to.be.bignumber.at.least(toBN(1));
+  expect(claimedTribeAmount).to.be.bignumber.at.least(toBN(1));
 };
 
 export { deploy, setup, teardown, validate };
