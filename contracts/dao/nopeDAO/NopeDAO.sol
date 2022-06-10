@@ -4,11 +4,11 @@ pragma solidity ^0.8.4;
 import {Governor, IGovernor} from "@openzeppelin/contracts/governance/Governor.sol";
 import {GovernorSettings} from "@openzeppelin/contracts/governance/extensions/GovernorSettings.sol";
 import {GovernorVotesComp, IERC165} from "@openzeppelin/contracts/governance/extensions/GovernorVotesComp.sol";
-import {GovernorCountingSimple} from "@openzeppelin/contracts/governance/extensions/GovernorCountingSimple.sol";
 import {ERC20VotesComp} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20VotesComp.sol";
 import {CoreRef} from "../../refs/CoreRef.sol";
 import {TribeRoles} from "../../core/TribeRoles.sol";
 import {GovernorQuickReaction} from "./GovernorQuickReaction.sol";
+import {GovernorCountingFor} from "./GovernorCountingFor.sol";
 
 // NopeDAO V2 features:
 // 1. Should only be able to vote for a veto
@@ -17,14 +17,7 @@ import {GovernorQuickReaction} from "./GovernorQuickReaction.sol";
 // Cast vote etc. is defined in Governor, want to override
 
 // 2. Should it expose a cancel functionality to the proposer? Probably, in case of making a mistake
-contract NopeDAO is
-    Governor,
-    GovernorSettings,
-    GovernorVotesComp,
-    GovernorQuickReaction,
-    GovernorCountingSimple,
-    CoreRef
-{
+contract NopeDAO is Governor, GovernorSettings, GovernorVotesComp, GovernorQuickReaction, GovernorCountingFor, CoreRef {
     /// @notice Initial quorum required for a Nope proposal
     uint256 private _quorum = 10_000_000e18;
 
@@ -118,17 +111,6 @@ contract NopeDAO is
         super._execute(proposalId, targets, values, calldatas, descriptionHash);
     }
 
-    /// @notice Cancel a NopeDAO proposal
-    /// @dev Restricted to GUARDIAN Tribe Role
-    function cancel(
-        address[] memory targets,
-        uint256[] memory values,
-        bytes[] memory calldatas,
-        bytes32 descriptionHash
-    ) external onlyTribeRole(TribeRoles.GUARDIAN) {
-        _cancel(targets, values, calldatas, descriptionHash);
-    }
-
     function _cancel(
         address[] memory targets,
         uint256[] memory values,
@@ -145,19 +127,4 @@ contract NopeDAO is
     function supportsInterface(bytes4 interfaceId) public view override(Governor) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
-
-    ///////////    Override castVote() calls to ensure affirmative only votes /////////
-
-    /// @notice Cast an affirmative vote for a proposal via a msg.sender
-    function castVote(uint256 proposalId, uint8 support) public virtual override returns (uint256) {
-        address voter = _msgSender();
-        return _castVote(proposalId, voter, support, "");
-    }
-
-    /// @notice Cast an affirmative vote for a proposal with a reason string
-    function castVoteWithReason(
-        uint256 proposalId,
-        uint8 support,
-        string calldata reason
-    ) public virtual override returns (uint256) {}
 }
