@@ -1,7 +1,7 @@
 import { TemplatedProposalDescription } from '@custom-types/types';
 
 const clawback: TemplatedProposalDescription = {
-  title: 'FIP-x: Rari vesting end',
+  title: 'FIP-113: End Departed Rari Founders Vesting of TRIBE',
   commands: [
     /////////  Mint FEI and TRIBE onto new RARI timelocks
     {
@@ -44,12 +44,13 @@ const clawback: TemplatedProposalDescription = {
     }
   ],
   description: `
-  FIP-X: End Rari team member vesting and reconfigure
+  FIP-113: End Departed Rari Founders Vesting of TRIBE
 
-  This proposal will clawback the vesting TRIBE of Jai Bhavnani and David Lucidend.
-  
-  It also migrates the Rari infrastructure timelock to a new timelock which has the DAO timelock as the clawback admin. 
-  In addition, it sets accepts the beneficiary of the old RARI timelocks as the DAO timelock.
+  This proposal enacts the steps discussed and detailed in the this forum post: https://tribe.fei.money/t/end-departed-rari-founders-vesting-of-tribe/4355
+
+  Specifically, it:
+  1. Mints FEI and allocates TRIBE to the newly deployed and migrated Rari Infrastructure team timelocks
+  2. Clawback of Jai Bhavnani's and David Lucid's TRIBE vesting contracts
   `
 };
 

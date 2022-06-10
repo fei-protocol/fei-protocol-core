@@ -180,9 +180,9 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const preClaimFeiBalance = await fei.balanceOf(randomAddressReleasingTo);
   const preClaimTribeBalance = await tribe.balanceOf(randomAddressReleasingTo);
 
-  const fuseMultisigSigner = await getImpersonatedSigner(addresses.fuseMultisig);
-  await newRariInfraFeiTimelock.connect(fuseMultisigSigner).releaseMax(randomAddressReleasingTo);
-  await newRariInfraTribeTimelock.connect(fuseMultisigSigner).releaseMax(randomAddressReleasingTo);
+  const rariOpsMultisigSigner = await getImpersonatedSigner(addresses.rariOpsMultisig);
+  await newRariInfraFeiTimelock.connect(rariOpsMultisigSigner).releaseMax(randomAddressReleasingTo);
+  await newRariInfraTribeTimelock.connect(rariOpsMultisigSigner).releaseMax(randomAddressReleasingTo);
 
   const postClaimFeiBalance = await fei.balanceOf(randomAddressReleasingTo);
   const postClaimTribeBalance = await tribe.balanceOf(randomAddressReleasingTo);

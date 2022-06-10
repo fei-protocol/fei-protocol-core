@@ -2098,11 +2098,6 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     address: '0x5346b4ff3e924508d33d93f352d11e392a7a9d3b',
     category: AddressCategory.External
   },
-  lipstoneVesting: {
-    artifactName: 'QuadraticTimelockedDelegator',
-    address: '0x2E731a002260b15Fc90eC9AdAAd8070a8fa09A9a',
-    category: AddressCategory.TBD
-  },
   clawbackVestingContractA: {
     artifactName: 'QuadraticTimelockedDelegator',
     address: '0x1b4948248E13dc6Ec2A8e2B5Baa5EB78739d9486',
