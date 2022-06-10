@@ -182,7 +182,16 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   // 6. Verify that TC timelock has been approved for 20M TRIBE
   const approvedTribeAmount = await tribe.allowance(addresses.feiDAOTimelock, addresses.tribalCouncilTimelock);
   expect(approvedTribeAmount).to.be.bignumber.equal(ethers.constants.WeiPerEther.mul(20_000_000));
-  expect(approvedTribeAmount).to.be.greaterThan(totalClawedTribe);
+  expect(approvedTribeAmount).to.be.bignumber.greaterThan(totalClawedTribe);
+
+  // Verify can transfer
+  const tcTimelockSigner = await getImpersonatedSigner(addresses.tribalCouncilTimelock);
+  const coreBalanceBefore = await tribe.balanceOf(addresses.core);
+  await tribe
+    .connect(tcTimelockSigner)
+    .transferFrom(addresses.feiDAOTimelock, addresses.core, ethers.constants.WeiPerEther.mul(10_000_000));
+  const coreBalanceAfter = await tribe.balanceOf(addresses.core);
+  expect(coreBalanceAfter.sub(coreBalanceBefore)).to.be.bignumber.equal(ethers.constants.WeiPerEther.mul(10_000_000));
 };
 
 export { deploy, setup, teardown, validate };
