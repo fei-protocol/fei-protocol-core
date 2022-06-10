@@ -19,9 +19,18 @@ contract PCVVaultAuthority is Authority, CoreRef {
         // memoize core to save gas
         ICore core = core();
 
+        // setAuthority(address)
+        if (functionSig == 0x7a9e5e4b) return core.hasRole(TribeRoles.GOVERNOR, user);
+        // setOwner(address)
+        if (functionSig == 0x13af4035) return core.hasRole(TribeRoles.GOVERNOR, user);
+        // setName(string)
+        if (functionSig == 0xc47f0027) return core.hasRole(TribeRoles.ENS_MANAGER_ROLE, user);
         // setGnosisSafeAddress(address)
-        if (functionSig == 0x36c56ab2) return core.hasRole(TribeRoles.GOVERNOR, user);
-        // TODO: the above is just an example, add all requiresAuth functions of the PCVVault here
+        if (functionSig == 0x36c56ab2) return core.hasRole(TribeRoles.PCV_CONTROLLER, user);
+        // withdrawERC20(address,address,uint256)
+        if (functionSig == 0x44004cc1) return core.hasRole(TribeRoles.PCV_CONTROLLER, user);
+
+        // TODO: add all requiresAuth functions of the PCVVault here
         // and discuss what roles would be appropriate with the rest of the dev team
 
         // default (everything else is onlyOwner)
