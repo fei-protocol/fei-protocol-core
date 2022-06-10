@@ -83,8 +83,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     addresses.tribalCouncilTimelock, // clawbackAdmin
     0 // startTime
   );
-  await newRariInfraFeiTimelock.deployTransaction.wait();
-  logging && console.log('New Rari infra TRIBE timelock deployed to: ', newRariInfraFeiTimelock.address);
+  await newRariInfraTribeTimelock.deployTransaction.wait();
+  logging && console.log('New Rari infra TRIBE timelock deployed to: ', newRariInfraTribeTimelock.address);
 
   return {
     newRariInfraFeiTimelock,

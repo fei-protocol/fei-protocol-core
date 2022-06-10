@@ -2117,17 +2117,17 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     artifactName: 'unknown',
     address: '0x4bFa2625D50b68D622D1e71c82ba6Db99BA0d17F',
     category: AddressCategory.TBD
+  },
+  newRariInfraFeiTimelock: {
+    artifactName: 'LinearTokenTimelock',
+    address: '0x5d39721BA1c734b395C2CAdbdeeC178F688F6ec9',
+    category: AddressCategory.TBD
+  },
+  newRariInfraTribeTimelock: {
+    artifactName: 'LinearTimelockedDelegator',
+    address: '0x20bC8FE104fadED2D0aD9634D745f1488f9991eF',
+    category: AddressCategory.TBD
   }
-  // newRariInfraFeiTimelock: {
-  //   artifactName: 'LinearTimelockedDelegator',
-  //   address: '',
-  //   category: AddressCategory.TBD
-  // },
-  // newRariInfraTribeTimelock: {
-  //   artifactName: 'LinearTimelockedDelegator',
-  //   address: '',
-  //   category: AddressCategory.TBD
-  // }
 };
 
 export default MainnetContractsConfig;
