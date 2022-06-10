@@ -8,7 +8,7 @@ const clawback: TemplatedProposalDescription = {
       target: 'fei',
       values: '0',
       method: 'mint(address,uint256)',
-      arguments: (addresses) => [addresses.newRariInfraFeiTimelock, '3254306506849315068493151'],
+      arguments: (addresses) => [addresses.newRariInfraFeiTimelock, '3178504756468797564687976'],
       description: 'Mint FEI to the new Rari Infra FEI timelock'
     },
 
@@ -16,7 +16,7 @@ const clawback: TemplatedProposalDescription = {
       target: 'core',
       values: '0',
       method: 'allocateTribe(address,uint256)',
-      arguments: (addresses) => [addresses.newRariInfraTribeTimelock, '3254296867072552004058854'],
+      arguments: (addresses) => [addresses.newRariInfraTribeTimelock, '3178502219685438863521056'],
       description: 'Allocate TRIBE to the new Rari Infra TRIBE timelock'
     },
 

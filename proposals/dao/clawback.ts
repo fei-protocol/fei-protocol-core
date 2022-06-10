@@ -28,15 +28,14 @@ Jai and David Vesting contracts
 - Active from Dec 2021
 - Quadratic back weighted 5 year vesting
 - There is 17.1M TRIBE total across the 3 vesting contracts
-- The beneficiary of each vesting contract is Gnosis Safe multisig. Owners are unknown
+- The beneficiary of each vesting contract is a Gnosis Safe multisig. Owners are unknown
 
 */
 
 const fipNumber = 'FIP-113: End Departed Rari Founders Vesting of TRIBE';
 
-// TODO: Update these based on the final balances
-const OLD_RARI_TIMELOCK_FEI_AMOUNT = '3254306506849315068493151';
-const OLD_RARI_TIMELOCK_TRIBE_AMOUNT = '3254296867072552004058854';
+const OLD_RARI_TIMELOCK_FEI_AMOUNT = '3178504756468797564687976';
+const OLD_RARI_TIMELOCK_TRIBE_AMOUNT = '3178502219685438863521056';
 
 // Sanity check, minimum amount DAO should receive when clawing back
 const MIN_CLAWED_TRIBE = ethers.constants.WeiPerEther.mul(15_000_000);
