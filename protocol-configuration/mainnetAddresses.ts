@@ -501,6 +501,11 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     address: '0x6026a1559CDd44a63C5CA9A078CC996a9eb68ABB',
     category: AddressCategory.PCV
   },
+  rariOpsMultisig: {
+    artifactName: 'unknown',
+    address: '0x5A2e3420af551a48a1dB056caC4d6Ba752bF1488',
+    category: AddressCategory.External
+  },
   uniswapPCVDeposit: {
     artifactName: 'UniswapPCVDeposit',
     address: '0x15958381E9E6dc98bD49655e36f524D2203a28bD',

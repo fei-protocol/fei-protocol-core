@@ -64,7 +64,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   // 1. Deploy new Rari infra vesting contract
   const LinearTimelockedDelegatorFactory = await ethers.getContractFactory('LinearTimelockedDelegator'); // change timelock type
   const newRariInfraFeiTimelock = await LinearTimelockedDelegatorFactory.deploy(
-    addresses.fuseMultisig, // beneficiary
+    addresses.rariOpsMultisig, // beneficiary
     rariFeiTimelockRemainingDuration, // duration
     addresses.fei, // token
     0, // secondsUntilCliff - have already passed the cliff
@@ -76,7 +76,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   logging && console.log('New Rari infra FEI timelock deployed to: ', newRariInfraFeiTimelock.address);
 
   const newRariInfraTribeTimelock = await LinearTimelockedDelegatorFactory.deploy(
-    addresses.fuseMultisig, // beneficiary
+    addresses.rariOpsMultisig, // beneficiary
     rariTribeTimelockRemainingDuration, // duration
     addresses.tribe, // token
     0, // secondsUntilCliff - have already passed the cliff
@@ -141,14 +141,14 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 
   // 2. New Rari infra timelocks configured correctly
   // Fei
-  expect(await newRariInfraFeiTimelock.beneficiary()).to.be.equal(addresses.fuseMultisig);
+  expect(await newRariInfraFeiTimelock.beneficiary()).to.be.equal(addresses.rariOpsMultisig);
   expect(await newRariInfraFeiTimelock.clawbackAdmin()).to.be.equal(addresses.tribalCouncilTimelock);
   expect(await newRariInfraFeiTimelock.lockedToken()).to.be.equal(addresses.fei);
   expect(await newRariInfraFeiTimelock.duration()).to.be.equal(rariFeiTimelockRemainingDuration);
   expect(await newRariInfraFeiTimelock.cliffSeconds()).to.be.equal(0);
 
   // Tribe
-  expect(await newRariInfraTribeTimelock.beneficiary()).to.be.equal(addresses.fuseMultisig);
+  expect(await newRariInfraTribeTimelock.beneficiary()).to.be.equal(addresses.rariOpsMultisig);
   expect(await newRariInfraTribeTimelock.clawbackAdmin()).to.be.equal(addresses.tribalCouncilTimelock);
   expect(await newRariInfraTribeTimelock.lockedToken()).to.be.equal(addresses.tribe);
   expect(await newRariInfraTribeTimelock.duration()).to.be.equal(rariTribeTimelockRemainingDuration);
