@@ -204,12 +204,12 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   ethToDaiLensDai: {
     artifactName: 'BPTLens',
     address: '0xdF9Ff5c077d9F3427ade67AC2d27a864Be6F3187',
-    category: AddressCategory.PCV
+    category: AddressCategory.TBD
   },
   ethToDaiLensEth: {
     artifactName: 'BPTLens',
     address: '0xf24401F6992FaEAcbc5d6C6991db15B5F8364A1B',
-    category: AddressCategory.PCV
+    category: AddressCategory.TBD
   },
   ethToDaiLBPPool: {
     artifactName: 'IWeightedPool',
