@@ -62,8 +62,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   rariTribeTimelockRemainingDuration = await rariInfraTribeTimelock.remainingTime();
 
   // 1. Deploy new Rari infra vesting contract
-  const LinearTimelockedDelegatorFactory = await ethers.getContractFactory('LinearTimelockedDelegator'); // change timelock type
-  const newRariInfraFeiTimelock = await LinearTimelockedDelegatorFactory.deploy(
+  const LinearTokenTimelockedFactory = await ethers.getContractFactory('LinearTokenTimelock'); // change timelock type
+  const newRariInfraFeiTimelock = await LinearTokenTimelockedFactory.deploy(
     addresses.rariOpsMultisig, // beneficiary
     rariFeiTimelockRemainingDuration, // duration
     addresses.fei, // token
@@ -75,7 +75,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 
   logging && console.log('New Rari infra FEI timelock deployed to: ', newRariInfraFeiTimelock.address);
 
-  const newRariInfraTribeTimelock = await LinearTimelockedDelegatorFactory.deploy(
+  const LinearTokenTimelockedDelegatorFactory = await ethers.getContractFactory('LinearTimelockedDelegator');
+  const newRariInfraTribeTimelock = await LinearTokenTimelockedDelegatorFactory.deploy(
     addresses.rariOpsMultisig, // beneficiary
     rariTribeTimelockRemainingDuration, // duration
     addresses.tribe, // token
