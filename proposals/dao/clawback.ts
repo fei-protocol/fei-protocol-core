@@ -32,7 +32,7 @@ Jai and David Vesting contracts
 
 */
 
-const fipNumber = 'clawback';
+const fipNumber = 'FIP-113: End Departed Rari Founders Vesting of TRIBE';
 
 // TODO: Update these based on the final balances
 const OLD_RARI_TIMELOCK_FEI_AMOUNT = '3254306506849315068493151';
@@ -96,21 +96,11 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 // This could include setting up Hardhat to impersonate accounts,
 // ensuring contracts have a specific state, etc.
 const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  const rariInfraFeiTimelock = contracts.rariInfraFeiTimelock as LinearTokenTimelock;
-  const rariInfraTribeTimelock = contracts.rariInfraTribeTimelock as LinearTimelockedDelegator;
-
   initialDAOTribeBalance = await contracts.tribe.balanceOf(addresses.feiDAOTimelock);
   initialClawbackBeneficiaryBalance = await contracts.tribe.balanceOf(addresses.clawbackVestingContractBeneficiary);
 
   expect(await contracts.fei.balanceOf(addresses.rariInfraFeiTimelock)).to.equal(OLD_RARI_TIMELOCK_FEI_AMOUNT);
   expect(await contracts.tribe.balanceOf(addresses.rariInfraTribeTimelock)).to.equal(OLD_RARI_TIMELOCK_TRIBE_AMOUNT);
-
-  // Set pending beneficiary on old RARI timelocks
-  const rariInfraTimelockSigner = await getImpersonatedSigner(addresses.fuseMultisig);
-  await forceEth(addresses.fuseMultisig);
-
-  await rariInfraFeiTimelock.connect(rariInfraTimelockSigner).setPendingBeneficiary(addresses.tribalCouncilTimelock);
-  await rariInfraTribeTimelock.connect(rariInfraTimelockSigner).setPendingBeneficiary(addresses.tribalCouncilTimelock);
 };
 
 // Tears down any changes made in setup() that need to be
@@ -122,9 +112,6 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // Run any validations required on the fip using mocha or console logging
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  const rariInfraFeiTimelock = contracts.rariInfraFeiTimelock as LinearTokenTimelock;
-  const rariInfraTribeTimelock = contracts.rariInfraTribeTimelock as LinearTimelockedDelegator;
-
   const newRariInfraFeiTimelock = contracts.newRariInfraFeiTimelock as LinearTokenTimelock;
   const newRariInfraTribeTimelock = contracts.newRariInfraTribeTimelock as LinearTimelockedDelegator;
 
@@ -135,11 +122,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const fei = contracts.fei;
   const tribe = contracts.tribe;
 
-  // 1. Existing Rari infra timelocks beneficiary set to the Tribal Council timelock
-  expect(await rariInfraFeiTimelock.beneficiary()).to.be.equal(addresses.tribalCouncilTimelock);
-  expect(await rariInfraTribeTimelock.beneficiary()).to.be.equal(addresses.tribalCouncilTimelock);
-
-  // 2. New Rari infra timelocks configured correctly
+  // 1. New Rari infra timelocks configured correctly
   // Fei
   expect(await newRariInfraFeiTimelock.beneficiary()).to.be.equal(addresses.rariOpsMultisig);
   expect(await newRariInfraFeiTimelock.clawbackAdmin()).to.be.equal(addresses.tribalCouncilTimelock);
@@ -154,11 +137,11 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await newRariInfraTribeTimelock.duration()).to.be.equal(rariTribeTimelockRemainingDuration);
   expect(await newRariInfraTribeTimelock.cliffSeconds()).to.be.equal(0);
 
-  // 3. Minted Fei and TRIBE on new Rari contracts
+  // 2. Minted Fei and TRIBE on new Rari contracts
   expect(await fei.balanceOf(newRariInfraFeiTimelock.address)).to.be.equal(OLD_RARI_TIMELOCK_FEI_AMOUNT);
   expect(await tribe.balanceOf(newRariInfraTribeTimelock.address)).to.be.equal(OLD_RARI_TIMELOCK_TRIBE_AMOUNT);
 
-  // 4. Clawback vesting contracts
+  // 3. Clawback vesting contracts
   // Verify clawbacks have no tokens left
   expect(await tribe.balanceOf(clawbackVestingContractA.address)).to.be.equal(0);
   expect(await tribe.balanceOf(clawbackVestingContractB.address)).to.be.equal(0);
@@ -169,7 +152,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   console.log('Clawed TRIBE: ', totalClawedTribe.toString());
   expect(totalClawedTribe).to.be.bignumber.at.least(MIN_CLAWED_TRIBE);
 
-  // Verify clawbackVesting contracts, a multisig, received TRIBE
+  // 4. Verify clawbackVesting contracts, a multisig, received TRIBE
   const clawbackBeneficiaryBalance = await tribe.balanceOf(addresses.clawbackVestingContractBeneficiary);
   const clawbackBeneficiaryAmount = clawbackBeneficiaryBalance.sub(initialClawbackBeneficiaryBalance);
   console.log('Beneficiary clawed TRIBE: ', clawbackBeneficiaryAmount.toString());
