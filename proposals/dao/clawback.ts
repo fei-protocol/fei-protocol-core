@@ -68,7 +68,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     rariFeiTimelockRemainingDuration, // duration
     addresses.fei, // token
     0, // secondsUntilCliff - have already passed the cliff
-    addresses.feiDAOTimelock, // clawbackAdmin
+    addresses.tribalCouncilTimelock, // clawbackAdmin
     0 // startTime
   );
   await newRariInfraFeiTimelock.deployTransaction.wait();
@@ -80,7 +80,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     rariTribeTimelockRemainingDuration, // duration
     addresses.tribe, // token
     0, // secondsUntilCliff - have already passed the cliff
-    addresses.feiDAOTimelock, // clawbackAdmin
+    addresses.tribalCouncilTimelock, // clawbackAdmin
     0 // startTime
   );
   await newRariInfraFeiTimelock.deployTransaction.wait();
@@ -109,8 +109,8 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
   const rariInfraTimelockSigner = await getImpersonatedSigner(addresses.fuseMultisig);
   await forceEth(addresses.fuseMultisig);
 
-  await rariInfraFeiTimelock.connect(rariInfraTimelockSigner).setPendingBeneficiary(addresses.feiDAOTimelock);
-  await rariInfraTribeTimelock.connect(rariInfraTimelockSigner).setPendingBeneficiary(addresses.feiDAOTimelock);
+  await rariInfraFeiTimelock.connect(rariInfraTimelockSigner).setPendingBeneficiary(addresses.tribalCouncilTimelock);
+  await rariInfraTribeTimelock.connect(rariInfraTimelockSigner).setPendingBeneficiary(addresses.tribalCouncilTimelock);
 };
 
 // Tears down any changes made in setup() that need to be
@@ -135,21 +135,21 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const fei = contracts.fei;
   const tribe = contracts.tribe;
 
-  // 1. Existing Rari infra timelocks beneficiary set to the DAO timelock - DAO can now pull these funds in the future
-  expect(await rariInfraFeiTimelock.beneficiary()).to.be.equal(addresses.feiDAOTimelock);
-  expect(await rariInfraTribeTimelock.beneficiary()).to.be.equal(addresses.feiDAOTimelock);
+  // 1. Existing Rari infra timelocks beneficiary set to the Tribal Council timelock
+  expect(await rariInfraFeiTimelock.beneficiary()).to.be.equal(addresses.tribalCouncilTimelock);
+  expect(await rariInfraTribeTimelock.beneficiary()).to.be.equal(addresses.tribalCouncilTimelock);
 
   // 2. New Rari infra timelocks configured correctly
   // Fei
   expect(await newRariInfraFeiTimelock.beneficiary()).to.be.equal(addresses.fuseMultisig);
-  expect(await newRariInfraFeiTimelock.clawbackAdmin()).to.be.equal(addresses.feiDAOTimelock);
+  expect(await newRariInfraFeiTimelock.clawbackAdmin()).to.be.equal(addresses.tribalCouncilTimelock);
   expect(await newRariInfraFeiTimelock.lockedToken()).to.be.equal(addresses.fei);
   expect(await newRariInfraFeiTimelock.duration()).to.be.equal(rariFeiTimelockRemainingDuration);
   expect(await newRariInfraFeiTimelock.cliffSeconds()).to.be.equal(0);
 
   // Tribe
   expect(await newRariInfraTribeTimelock.beneficiary()).to.be.equal(addresses.fuseMultisig);
-  expect(await newRariInfraTribeTimelock.clawbackAdmin()).to.be.equal(addresses.feiDAOTimelock);
+  expect(await newRariInfraTribeTimelock.clawbackAdmin()).to.be.equal(addresses.tribalCouncilTimelock);
   expect(await newRariInfraTribeTimelock.lockedToken()).to.be.equal(addresses.tribe);
   expect(await newRariInfraTribeTimelock.duration()).to.be.equal(rariTribeTimelockRemainingDuration);
   expect(await newRariInfraTribeTimelock.cliffSeconds()).to.be.equal(0);

@@ -3,24 +3,6 @@ import { TemplatedProposalDescription } from '@custom-types/types';
 const clawback: TemplatedProposalDescription = {
   title: 'FIP-x: Rari vesting end',
   commands: [
-    /////   Accept beneficiary of old timelocks
-    {
-      target: 'rariInfraFeiTimelock',
-      values: '0',
-      method: 'acceptBeneficiary()',
-      arguments: (addresses) => [],
-      description:
-        'Accept the beneficiary of the old Rari Infra FEI vesting contract. Will allow the DAO to claim these funds.'
-    },
-    {
-      target: 'rariInfraTribeTimelock',
-      values: '0',
-      method: 'acceptBeneficiary()',
-      arguments: (addresses) => [],
-      description:
-        'Accept the beneficiary of the new Rari infra TRIBE vesting contract. Will allow the DAO to claim these funds.'
-    },
-
     /////////  Mint FEI and TRIBE onto new RARI timelocks
     {
       target: 'fei',
