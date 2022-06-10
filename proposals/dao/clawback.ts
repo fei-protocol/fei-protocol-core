@@ -45,26 +45,27 @@ const MIN_BENEFICIARY_CLAWED_TRIBE = ethers.constants.WeiPerEther.mul(100_000);
 
 let initialDAOTribeBalance: BigNumber;
 let initialClawbackBeneficiaryBalance: BigNumber;
-let rariFeiTimelockRemainingDuration: BigNumber;
-let rariTribeTimelockRemainingDuration: BigNumber;
+
+const RARI_FEI_TIMELOCK_REMAINING_DURATION = 50110581;
+const RARI_TRIBE_TIMELOCK_REMAINING_DURATION = 50110608;
 
 // Do any deployments
 // This should exclusively include new contract deployments
 const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: NamedAddresses, logging: boolean) => {
-  const rariInfraFeiTimelock = await ethers.getContractAt('LinearTokenTimelock', addresses.rariInfraFeiTimelock);
-  const rariInfraTribeTimelock = await ethers.getContractAt(
-    'LinearTimelockedDelegator',
-    addresses.rariInfraTribeTimelock
-  );
+  // const rariInfraFeiTimelock = await ethers.getContractAt('LinearTokenTimelock', addresses.rariInfraFeiTimelock);
+  // const rariInfraTribeTimelock = await ethers.getContractAt(
+  //   'LinearTimelockedDelegator',
+  //   addresses.rariInfraTribeTimelock
+  // );
 
-  rariFeiTimelockRemainingDuration = await rariInfraFeiTimelock.remainingTime();
-  rariTribeTimelockRemainingDuration = await rariInfraTribeTimelock.remainingTime();
+  // rariFeiTimelockRemainingDuration = await rariInfraFeiTimelock.remainingTime();
+  // rariTribeTimelockRemainingDuration = await rariInfraTribeTimelock.remainingTime();
 
   // 1. Deploy new Rari infra vesting contract
   const LinearTokenTimelockedFactory = await ethers.getContractFactory('LinearTokenTimelock'); // change timelock type
   const newRariInfraFeiTimelock = await LinearTokenTimelockedFactory.deploy(
     addresses.rariOpsMultisig, // beneficiary
-    rariFeiTimelockRemainingDuration, // duration
+    RARI_FEI_TIMELOCK_REMAINING_DURATION, // duration
     addresses.fei, // token
     0, // secondsUntilCliff - have already passed the cliff
     addresses.tribalCouncilTimelock, // clawbackAdmin
@@ -77,7 +78,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   const LinearTokenTimelockedDelegatorFactory = await ethers.getContractFactory('LinearTimelockedDelegator');
   const newRariInfraTribeTimelock = await LinearTokenTimelockedDelegatorFactory.deploy(
     addresses.rariOpsMultisig, // beneficiary
-    rariTribeTimelockRemainingDuration, // duration
+    RARI_TRIBE_TIMELOCK_REMAINING_DURATION, // duration
     addresses.tribe, // token
     0, // secondsUntilCliff - have already passed the cliff
     addresses.tribalCouncilTimelock, // clawbackAdmin
@@ -127,14 +128,14 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await newRariInfraFeiTimelock.beneficiary()).to.be.equal(addresses.rariOpsMultisig);
   expect(await newRariInfraFeiTimelock.clawbackAdmin()).to.be.equal(addresses.tribalCouncilTimelock);
   expect(await newRariInfraFeiTimelock.lockedToken()).to.be.equal(addresses.fei);
-  expect(await newRariInfraFeiTimelock.duration()).to.be.equal(rariFeiTimelockRemainingDuration);
+  expect(await newRariInfraFeiTimelock.duration()).to.be.equal(RARI_FEI_TIMELOCK_REMAINING_DURATION);
   expect(await newRariInfraFeiTimelock.cliffSeconds()).to.be.equal(0);
 
   // Tribe
   expect(await newRariInfraTribeTimelock.beneficiary()).to.be.equal(addresses.rariOpsMultisig);
   expect(await newRariInfraTribeTimelock.clawbackAdmin()).to.be.equal(addresses.tribalCouncilTimelock);
   expect(await newRariInfraTribeTimelock.lockedToken()).to.be.equal(addresses.tribe);
-  expect(await newRariInfraTribeTimelock.duration()).to.be.equal(rariTribeTimelockRemainingDuration);
+  expect(await newRariInfraTribeTimelock.duration()).to.be.equal(RARI_TRIBE_TIMELOCK_REMAINING_DURATION);
   expect(await newRariInfraTribeTimelock.cliffSeconds()).to.be.equal(0);
 
   // 2. Minted Fei and TRIBE on new Rari contracts
