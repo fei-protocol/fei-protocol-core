@@ -59,17 +59,6 @@ describe('e2e-end-tribe-incentives', function () {
     await forceEth(curve3LPWhale);
   });
 
-  it('should be able to harvest existing TRIBE rewards and withdraw principle from an LP pool', async () => {
-    const curveLPToken = await ethers.getContractAt('ERC20', curve3Metapool);
-
-    // Withdraw principle from staked pool
-    const receiverBalanceBefore = await curveLPToken.balanceOf(receiver);
-    await tribalChief.connect(curveLPStaker).withdrawAllAndHarvest(curvePoolId, receiver);
-    const receiverBalanceAfter = await curveLPToken.balanceOf(receiver);
-    const withdrawnPrinciple = receiverBalanceAfter.sub(receiverBalanceBefore);
-    expect(withdrawnPrinciple).to.be.bignumber.at.least(toBN(1));
-  });
-
   it('should NOT be able to harvest future TRIBE rewards from an LP pool', async () => {
     // Advance time, to check that rewards aren't accruing
     await time.increase(86400);
