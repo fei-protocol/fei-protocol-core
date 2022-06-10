@@ -501,6 +501,11 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     address: '0x6026a1559CDd44a63C5CA9A078CC996a9eb68ABB',
     category: AddressCategory.PCV
   },
+  rariOpsMultisig: {
+    artifactName: 'unknown',
+    address: '0x5A2e3420af551a48a1dB056caC4d6Ba752bF1488',
+    category: AddressCategory.External
+  },
   uniswapPCVDeposit: {
     artifactName: 'UniswapPCVDeposit',
     address: '0x15958381E9E6dc98bD49655e36f524D2203a28bD',
@@ -2092,6 +2097,36 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     artifactName: 'unknown',
     address: '0x5346b4ff3e924508d33d93f352d11e392a7a9d3b',
     category: AddressCategory.External
+  },
+  clawbackVestingContractA: {
+    artifactName: 'QuadraticTimelockedDelegator',
+    address: '0x1b4948248E13dc6Ec2A8e2B5Baa5EB78739d9486',
+    category: AddressCategory.TBD
+  },
+  clawbackVestingContractB: {
+    artifactName: 'QuadraticTimelockedDelegator',
+    address: '0xf2a5872a34E69101f5311A8196EFac8d7B79dcCd',
+    category: AddressCategory.TBD
+  },
+  clawbackVestingContractC: {
+    artifactName: 'QuadraticTimelockedDelegator',
+    address: '0xba7182c1B6df04bB730f0008BddeD27fc7D13ea2',
+    category: AddressCategory.TBD
+  },
+  clawbackVestingContractBeneficiary: {
+    artifactName: 'unknown',
+    address: '0x4bFa2625D50b68D622D1e71c82ba6Db99BA0d17F',
+    category: AddressCategory.TBD
+  },
+  newRariInfraFeiTimelock: {
+    artifactName: 'LinearTokenTimelock',
+    address: '0x5d39721BA1c734b395C2CAdbdeeC178F688F6ec9',
+    category: AddressCategory.TBD
+  },
+  newRariInfraTribeTimelock: {
+    artifactName: 'LinearTimelockedDelegator',
+    address: '0x20bC8FE104fadED2D0aD9634D745f1488f9991eF',
+    category: AddressCategory.TBD
   }
 };
 
