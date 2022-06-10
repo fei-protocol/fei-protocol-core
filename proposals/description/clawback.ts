@@ -41,6 +41,17 @@ const clawback: TemplatedProposalDescription = {
       method: 'clawback()',
       arguments: (addresses) => [],
       description: 'Clawback the TRIBE of Jai Bhavnani and David Lucid'
+    },
+
+    //// Approve the Tribal Council Timelock for 20M TRIBE
+
+    {
+      target: 'tribe',
+      values: '0',
+      method: 'approve(address,uint256)',
+      arguments: (addresses) => [addresses.tribalCouncilTimelock, '20000000000000000000000000'],
+      description:
+        'Approve the Tribal Council Timelock for 20M TRIBE. It will later transfer the TRIBE to the Core Treasury'
     }
   ],
   description: `
@@ -51,6 +62,7 @@ const clawback: TemplatedProposalDescription = {
   Specifically, it:
   1. Mints FEI and allocates TRIBE to the newly deployed and migrated Rari Infrastructure team timelocks
   2. Clawback of Jai Bhavnani's and David Lucid's TRIBE vesting contracts
+  3. Approves the Tribal Council timelock for 20M TRIBE, which it will later transfer to the Core Treasury
   `
 };
 
