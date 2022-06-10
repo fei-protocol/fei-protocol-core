@@ -15,20 +15,12 @@ import {GovernorCountingFor} from "./GovernorCountingFor.sol";
 // How to implement approval only voting. Should only be able to vote for the proposal, not against it
 // Can't change the interface, as would break Tally integration. Need to do a require support = 1
 // Cast vote etc. is defined in Governor, want to override
-
-// 2. Should it expose a cancel functionality to the proposer? Probably, in case of making a mistake
 contract NopeDAO is Governor, GovernorSettings, GovernorVotesComp, GovernorQuickReaction, GovernorCountingFor, CoreRef {
     /// @notice Initial quorum required for a Nope proposal
     uint256 private _quorum = 10_000_000e18;
 
     /// @notice Additional governance events
     event QuorumUpdated(uint256 oldQuorum, uint256 newQuorum);
-
-    /// @notice Enforce only affirmative votes
-    modifier onlyAffirmativeVote(uint8 _support) {
-        require(_support == uint8(VoteType.For), "NopeDAO: Affirmative only votes");
-        _;
-    }
 
     constructor(ERC20VotesComp _tribe, address _core)
         Governor("NopeDAO")

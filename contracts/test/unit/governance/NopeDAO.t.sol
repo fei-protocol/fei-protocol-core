@@ -37,7 +37,10 @@ function createDummyProposal(address dummyContract, uint256 newVariable)
 }
 
 contract NopeDAOTest is DSTest {
-    address user = address(0x1);
+    address userWithTribe = address(0x1);
+    address userWithInsufficientTribe = address(0x2);
+    address userWithZeroTribe = address(0x3);
+
     uint256 excessQuorumTribe = (11e6) * (10**18);
     address tribeAddress;
     ERC20VotesComp tribe;
@@ -57,19 +60,23 @@ contract NopeDAOTest is DSTest {
         // 2. Setup Tribe and transfer some to a test address
         tribeAddress = address(core.tribe());
 
-        vm.prank(addresses.governorAddress);
-        core.allocateTribe(user, excessQuorumTribe);
+        vm.startPrank(addresses.governorAddress);
+        core.allocateTribe(userWithTribe, excessQuorumTribe);
+        core.allocateTribe(userWithInsufficientTribe, 5e6 * (10**18));
+        vm.stopPrank();
 
         tribe = ERC20VotesComp(tribeAddress);
 
-        vm.prank(user);
-        tribe.delegate(user);
+        vm.prank(userWithTribe);
+        tribe.delegate(userWithTribe);
 
         // 3. Deploy NopeDAO
         nopeDAO = new NopeDAO(tribe, address(core));
 
         // 4. Deploy dummy contract which proposals will interact with
         dummyStorageContract = new DummyStorage();
+
+        vm.roll(block.number + 1); // Make block number non-zero, for getVotes accounting
     }
 
     /// @notice Validate initial state of the NopeDAO
@@ -90,14 +97,12 @@ contract NopeDAOTest is DSTest {
         address token = address(nopeDAO.token());
         assertEq(token, tribeAddress);
 
-        uint256 userVoteWeight = tribe.getCurrentVotes(user);
-        assertEq(userVoteWeight, excessQuorumTribe);
+        uint256 userWithTribeVoteWeight = tribe.getCurrentVotes(userWithTribe);
+        assertEq(userWithTribeVoteWeight, excessQuorumTribe);
     }
 
     /// @notice Validate the quick reaction governor and that state is set to SUCCEEDED as soon as quorum is reached
     function testQuickReaction() public {
-        vm.roll(1); // Make block number non-zero, for getVotes accounting
-
         uint256 newVariable = 10;
         (
             address[] memory targets,
@@ -121,7 +126,7 @@ contract NopeDAOTest is DSTest {
         vm.roll(block.number + 1);
 
         // 3. Validate Succeeded, without a need for fast forwarding in time. Quorum reached when pass vote
-        vm.prank(user);
+        vm.prank(userWithTribe);
         nopeDAO.castVote(proposalId, 1);
         uint8 stateSucceeded = uint8(nopeDAO.state(proposalId));
         assertEq(stateSucceeded, uint8(4)); // succeeded
@@ -130,7 +135,6 @@ contract NopeDAOTest is DSTest {
     /// @notice Validate that a DAO proposal can be executed.
     ///         Specifically, targets a dummy mock contract
     function testProposalExecutes() public {
-        vm.roll(block.number + 1); // Make block number non-zero, for getVotes accounting
         assertEq(dummyStorageContract.getVariable(), uint256(5));
 
         uint256 newVariable = 10;
@@ -142,14 +146,14 @@ contract NopeDAOTest is DSTest {
             bytes32 descriptionHash
         ) = createDummyProposal(address(dummyStorageContract), newVariable);
 
-        vm.prank(user);
+        vm.prank(userWithTribe);
         uint256 proposalId = nopeDAO.propose(targets, values, calldatas, description);
 
         // Advance past the 1 voting block
         vm.roll(block.number + 1);
 
         // Cast a vote for the proposal, in excess of quorum
-        vm.prank(user);
+        vm.prank(userWithTribe);
         nopeDAO.castVote(proposalId, 1);
 
         // Validate proposal is now successful
@@ -164,47 +168,71 @@ contract NopeDAOTest is DSTest {
         assertEq(updatedVariable, newVariable);
     }
 
-    /// @notice Validate that cancelling a proposal works
-    function testCancelProposal() public {
-        uint256 newVariable = 10;
+    /// @notice Validate that a user with no Tribe can propose on the NopeDAO
+    function testProposeWithNoTribe() public {
         (
             address[] memory targets,
             uint256[] memory values,
             bytes[] memory calldatas,
             string memory description,
             bytes32 descriptionHash
-        ) = createDummyProposal(address(dummyStorageContract), newVariable);
+        ) = createDummyProposal(address(dummyStorageContract), uint256(10));
 
-        // 1. Create proposal
-        vm.prank(user);
+        vm.prank(userWithZeroTribe);
         uint256 proposalId = nopeDAO.propose(targets, values, calldatas, description);
 
-        // 2. Validate Guardian can cancel a proposal
-        vm.prank(addresses.guardianAddress);
-        nopeDAO.cancel(targets, values, calldatas, descriptionHash);
-
-        // 3. Verify proposal was cancelled
-        uint8 state = uint8(nopeDAO.state(proposalId));
-        assertEq(state, uint8(2)); // 2 = Canceled
+        // Validate proposal exists
+        uint256 proposalEndTimestamp = nopeDAO.proposalDeadline(proposalId);
+        assertGt(proposalEndTimestamp, 0);
     }
 
-    /// @notice Validate that cancelling a proposal works rejects for non-Guardian
-    function testCancelProposalAuth() public {
-        uint256 newVariable = 10;
+    /// @notice Validate that a proposal can not be executed if has not met quorum
+    function testProposalRejectsIfNotQuorum() public {
         (
             address[] memory targets,
             uint256[] memory values,
             bytes[] memory calldatas,
             string memory description,
             bytes32 descriptionHash
-        ) = createDummyProposal(address(dummyStorageContract), newVariable);
+        ) = createDummyProposal(address(dummyStorageContract), uint256(10));
 
-        // 1. Create proposal
-        vm.prank(user);
+        vm.prank(userWithInsufficientTribe);
         uint256 proposalId = nopeDAO.propose(targets, values, calldatas, description);
 
-        // 2. Validate Guardian can cancel a proposal
-        vm.expectRevert(bytes("UNAUTHORIZED"));
-        nopeDAO.cancel(targets, values, calldatas, descriptionHash);
+        // Advance past the 1 voting block
+        vm.roll(block.number + 1);
+
+        // Cast a vote for the proposal, in excess of quorum
+        vm.prank(userWithInsufficientTribe);
+        nopeDAO.castVote(proposalId, 1);
+
+        // Validate execution fails
+        vm.expectRevert(bytes("Governor: proposal not successful"));
+        nopeDAO.execute(targets, values, calldatas, descriptionHash);
+    }
+
+    /// @notice Validate that only FOR votes are possible
+    function testOnlyForVotesPossible() public {
+        (
+            address[] memory targets,
+            uint256[] memory values,
+            bytes[] memory calldatas,
+            string memory description,
+            bytes32 descriptionHash
+        ) = createDummyProposal(address(dummyStorageContract), uint256(10));
+
+        vm.prank(userWithInsufficientTribe);
+        uint256 proposalId = nopeDAO.propose(targets, values, calldatas, description);
+
+        // Advance past the 1 voting block
+        vm.roll(block.number + 1);
+
+        // Cast a vote for the proposal, in excess of quorum
+        vm.prank(userWithTribe);
+        nopeDAO.castVote(proposalId, 0);
+
+        // Validate execution fails
+        vm.expectRevert(bytes("Governor: proposal not successful"));
+        nopeDAO.execute(targets, values, calldatas, descriptionHash);
     }
 }
