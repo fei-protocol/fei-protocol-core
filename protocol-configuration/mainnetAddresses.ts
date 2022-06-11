@@ -1373,6 +1373,11 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     address: '0xBaaa1F5DbA42C3389bDbc2c9D2dE134F5cD0Dc89',
     category: AddressCategory.External
   },
+  curveStethPool: {
+    artifactName: 'IStableSwapSTETH',
+    address: '0xDC24316b9AE028F1497c275EB9192a3Ea0f67022',
+    category: AddressCategory.External
+  },
   curveFei3crvMetapool: {
     artifactName: 'IERC20',
     address: '0x06cb22615BA53E60D67Bf6C341a0fD5E718E1655',
