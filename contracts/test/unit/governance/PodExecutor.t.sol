@@ -10,28 +10,32 @@ import {TribeRoles} from "../../../core/TribeRoles.sol";
 import {Core} from "../../../core/Core.sol";
 
 /// @notice Fixture to create a dummy proposal. Sends ETH to an address
-function dummyBatchProposal(address[] calldata ethReceivers, uint256[] calldata amounts)
+function dummyBatchProposals(address[] memory ethReceivers, uint256[] memory amounts)
     returns (
-        address[] memory targets,
-        uint256[] memory values,
-        bytes[] memory payloads,
-        bytes32 predecessor,
-        bytes32 salt,
-        uint256 delay
+        address[] memory,
+        uint256[] memory,
+        bytes[] memory,
+        bytes32,
+        bytes32,
+        uint256
     )
 {
+    address[] memory targets = new address[](2);
     targets[0] = ethReceivers[0];
     targets[1] = ethReceivers[1];
 
+    uint256[] memory values = new uint256[](2);
     values[0] = amounts[0];
     values[1] = amounts[1];
 
+    bytes[] memory payloads = new bytes[](2);
     payloads[0] = abi.encodePacked(bytes4(keccak256(bytes("transfer(uint256)"))), amounts[0]);
     payloads[1] = abi.encodePacked(bytes4(keccak256(bytes("transfer(uint256)"))), amounts[1]);
 
-    predecessor = bytes32(0);
-    salt = bytes32(0);
-    delay = 1;
+    bytes32 predecessor = bytes32(0);
+    bytes32 salt = bytes32(0);
+    uint256 delay = 1;
+    return (targets, values, payloads, predecessor, salt, delay);
 }
 
 /// @notice Dummy proposal that transfers ETH to a target
@@ -84,7 +88,7 @@ contract PodExecutorTest is DSTest {
         timelock = new TimelockController(minDelay, proposers, executors);
 
         // 3. Give timelock some ETH to transfer in proposal
-        vm.deal(address(timelock), 2 ether);
+        vm.deal(address(timelock), 10 ether);
     }
 
     /// @notice Validate can pause execution
@@ -140,6 +144,9 @@ contract PodExecutorTest is DSTest {
         // 3. Execute proposal through PodExecutor
         podExecutor.execute(address(timelock), target, value, payload, predecessor, salt);
 
+        // TODO: Verify proposalId is emitted in the event as expected
+        // TODO: (maybe) Verify CallExecuted event is emitted
+
         // Verfiy state
         assertTrue(timelock.isOperation(proposalId));
         assertFalse(timelock.isOperationPending(proposalId));
@@ -152,5 +159,61 @@ contract PodExecutorTest is DSTest {
     }
 
     /// @notice Validate that can batch execute queued proposals
-    function testCanBatchExecute() public {}
+    function testCanBatchExecute() public {
+        // 1. Queue a proposal on the timelock
+        address[] memory receivers = new address[](2);
+        receivers[0] = address(2);
+        receivers[1] = address(3);
+
+        uint256[] memory amounts = new uint256[](2);
+        amounts[0] = 1;
+        amounts[1] = 2;
+
+        (
+            address[] memory targets,
+            uint256[] memory values,
+            bytes[] memory payloads,
+            bytes32 predecessor,
+            bytes32 salt,
+            uint256 delay
+        ) = dummyBatchProposals(receivers, amounts);
+
+        timelock.scheduleBatch(targets, values, payloads, predecessor, salt, delay);
+
+        bytes32 proposalId = timelock.hashOperationBatch(targets, values, payloads, predecessor, salt);
+
+        // Verify state of queued operation
+        assertTrue(timelock.isOperation(proposalId));
+        assertTrue(timelock.isOperationPending(proposalId));
+        assertFalse(timelock.isOperationReady(proposalId));
+        assertFalse(timelock.isOperationDone(proposalId));
+        assertGt(timelock.getTimestamp(proposalId), 0);
+
+        // 2. Fast forward time
+        vm.warp(block.timestamp + 1);
+
+        // Verify state of now ready operation
+        assertTrue(timelock.isOperation(proposalId));
+        assertTrue(timelock.isOperationPending(proposalId));
+        assertTrue(timelock.isOperationReady(proposalId));
+        assertFalse(timelock.isOperationDone(proposalId));
+        assertGt(timelock.getTimestamp(proposalId), 0);
+
+        // 3. Execute proposal through PodExecutor
+        podExecutor.executeBatch(address(timelock), targets, values, payloads, predecessor, salt);
+
+        // TODO: Verify proposalId is emitted in the event as expected
+        // TODO: (maybe) Verify CallExecuted event is emitted
+
+        // Verfiy state
+        assertTrue(timelock.isOperation(proposalId));
+        assertFalse(timelock.isOperationPending(proposalId));
+        assertFalse(timelock.isOperationReady(proposalId));
+        assertTrue(timelock.isOperationDone(proposalId));
+        assertGt(timelock.getTimestamp(proposalId), 0);
+
+        // Verify proposal affect occurred
+        assertEq(receivers[0].balance, amounts[0]);
+        assertEq(receivers[1].balance, amounts[1]);
+    }
 }

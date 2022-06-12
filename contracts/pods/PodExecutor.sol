@@ -32,17 +32,23 @@ contract PodExecutor is CoreRef {
         emit ExecuteTransaction(timelock, proposalId);
     }
 
-    /// @notice Batch execute transactions on a set of timelocks. Must have EXECUTE_ROLE on the appropriate timelocks
+    /// @notice Execute a transaction which contains a set of actions which were batch scheduled on a timelock
     function executeBatch(
-        address[] memory timelock,
-        address[] memory target,
-        uint256[] memory value,
-        bytes[] calldata data,
-        bytes32[] memory predecessor,
-        bytes32[] memory salt
+        address timelock,
+        address[] calldata targets,
+        uint256[] calldata values,
+        bytes[] calldata payloads,
+        bytes32 predecessor,
+        bytes32 salt
     ) external payable whenNotPaused {
-        for (uint256 i = 0; i < timelock.length; i += 1) {
-            execute(timelock[i], target[i], value[i], data[i], predecessor[i], salt[i]);
-        }
+        bytes32 proposalId = TimelockController(payable(timelock)).hashOperationBatch(
+            targets,
+            values,
+            payloads,
+            predecessor,
+            salt
+        );
+        TimelockController(payable(timelock)).executeBatch(targets, values, payloads, predecessor, salt);
+        emit ExecuteTransaction(timelock, proposalId);
     }
 }
