@@ -7,6 +7,7 @@ import {
   TeardownUpgradeFunc,
   ValidateUpgradeFunc
 } from '@custom-types/types';
+import { getImpersonatedSigner } from '@test/helpers';
 
 /*
 
@@ -23,12 +24,12 @@ const fipNumber = 'pod_executor_v2';
 // This should exclusively include new contract deployments
 const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: NamedAddresses, logging: boolean) => {
   const PodExecutorFactory = await ethers.getContractFactory('PodExecutor');
-  const podExecutor = await PodExecutorFactory.deploy(addresses.core);
-  await podExecutor.deployTransaction.wait();
-  logging && console.log('Pod Executor deployed to: ', podExecutor.address);
+  const newPodExecutor = await PodExecutorFactory.deploy(addresses.core);
+  await newPodExecutor.deployTransaction.wait();
+  logging && console.log('Pod Executor deployed to: ', newPodExecutor.address);
 
   return {
-    podExecutor
+    newPodExecutor
   };
 };
 
@@ -48,9 +49,14 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // Run any validations required on the fip using mocha or console logging
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
+  const tribalCouncilTimelock = contracts.tribalCouncilTimelock;
+
   // 1. Validate has EXECUTOR role
-  // 2. Validate can executeBatch a transaction
-  // 3. Validate can execute a transaction
+  const EXECUTOR_ROLE = await tribalCouncilTimelock.EXECUTOR_ROLE();
+  expect(await tribalCouncilTimelock.hasRole(EXECUTOR_ROLE, addresses.newPodExecutor)).to.be.true;
+
+  // 2. Revoke old podExecutor EXECUTOR_ROLE
+  expect(await tribalCouncilTimelock.hasRole(EXECUTOR_ROLE, addresses.podExecutor)).to.be.false;
 };
 
 export { deploy, setup, teardown, validate };
