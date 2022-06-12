@@ -141,7 +141,7 @@ contract PodOperationIntegrationTest is DSTest {
         vm.roll(podConfig.minDelay + 10);
 
         // 6. Execute transaction and validate state is updated
-        podExecutor.executeBatch(podTimelock, targets, values, txDatas, predecessor, salt);
+        podExecutor.executeBatch(podTimelock, targets, values, payloads, predecessor, salt);
 
         assertTrue(timelockContract.isOperationDone(proposalId));
 
