@@ -3,6 +3,7 @@ import repay_fuse_bad_debt from '@proposals/description/repay_fuse_bad_debt';
 import tokemak_withdraw from '@proposals/description/tokemak_withdraw';
 import fip_104b from '@proposals/description/fip_104b';
 import clawback from '@proposals/description/clawback';
+import pod_exec_v2 from '@proposals/description/pod_exec_v2';
 
 const proposals: TemplatedProposalsConfigMap = {
   repay_fuse_bad_debt: {
@@ -43,6 +44,15 @@ const proposals: TemplatedProposalsConfigMap = {
     proposal: tokemak_withdraw, // full proposal file, imported from '@proposals/description/fip_xx.ts'
     proposalId: '',
     affectedContractSignoff: ['ethTokemakPCVDeposit'],
+    deprecatedContractSignoff: [],
+    category: ProposalCategory.TC
+  },
+  pod_exec_v2: {
+    deploy: true, // deploy flag for whether to run deploy action during e2e tests or use mainnet state
+    totalValue: 0, // amount of ETH to send to DAO execution
+    proposal: pod_exec_v2, // full proposal file, imported from '@proposals/description/fip_xx.ts'
+    proposalId: '',
+    affectedContractSignoff: [],
     deprecatedContractSignoff: [],
     category: ProposalCategory.TC
   }

@@ -2043,6 +2043,11 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     address: '0x99d8b669F48A708f7C0373AF6CE31F0726ab6CaD',
     category: AddressCategory.Governance
   },
+  // newPodExecutor: {
+  //   artifactName: 'PodExecutor',
+  //   address: '',
+  //   category: AddressCategory.Governance
+  // },
   podAdminGateway: {
     artifactName: 'PodAdminGateway',
     address: '0xDDe8AA537c5b289De9cede462E6F0ec3a3a99e39',
