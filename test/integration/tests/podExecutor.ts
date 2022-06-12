@@ -33,7 +33,7 @@ const dummyBatchProposal = (dai: ERC20, receiverA: string, receiverB: string, am
   };
 };
 
-describe('Tribal Council', function () {
+describe('Pod executor', function () {
   let contracts: NamedContracts;
   let contractAddresses: NamedAddresses;
   let e2eCoord: TestEndtoEndCoordinator;

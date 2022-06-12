@@ -33,7 +33,7 @@ function dummyBatchProposals(address[] memory ethReceivers, uint256[] memory amo
     payloads[1] = abi.encodePacked(bytes4(keccak256(bytes("transfer(uint256)"))), amounts[1]);
 
     bytes32 predecessor = bytes32(0);
-    bytes32 salt = bytes32(0);
+    bytes32 salt = bytes32(uint256(1));
     uint256 delay = 1;
     return (targets, values, payloads, predecessor, salt, delay);
 }
@@ -142,10 +142,8 @@ contract PodExecutorTest is DSTest {
         assertGt(timelock.getTimestamp(proposalId), 0);
 
         // 3. Execute proposal through PodExecutor
-        podExecutor.execute(address(timelock), target, value, payload, predecessor, salt);
-
-        // TODO: Verify proposalId is emitted in the event as expected
-        // TODO: (maybe) Verify CallExecuted event is emitted
+        bytes32 executedProposalId = podExecutor.execute(address(timelock), target, value, payload, predecessor, salt);
+        assertEq(executedProposalId, proposalId);
 
         // Verfiy state
         assertTrue(timelock.isOperation(proposalId));
@@ -200,10 +198,15 @@ contract PodExecutorTest is DSTest {
         assertGt(timelock.getTimestamp(proposalId), 0);
 
         // 3. Execute proposal through PodExecutor
-        podExecutor.executeBatch(address(timelock), targets, values, payloads, predecessor, salt);
-
-        // TODO: Verify proposalId is emitted in the event as expected
-        // TODO: (maybe) Verify CallExecuted event is emitted
+        bytes32 executedProposalId = podExecutor.executeBatch(
+            address(timelock),
+            targets,
+            values,
+            payloads,
+            predecessor,
+            salt
+        );
+        assertEq(executedProposalId, proposalId);
 
         // Verfiy state
         assertTrue(timelock.isOperation(proposalId));

@@ -20,7 +20,7 @@ contract PodExecutor is CoreRef {
         bytes calldata data,
         bytes32 predecessor,
         bytes32 salt
-    ) public payable whenNotPaused {
+    ) public payable whenNotPaused returns (bytes32) {
         bytes32 proposalId = TimelockController(payable(timelock)).hashOperation(
             target,
             value,
@@ -30,6 +30,7 @@ contract PodExecutor is CoreRef {
         );
         TimelockController(payable(timelock)).execute(target, value, data, predecessor, salt);
         emit ExecuteTransaction(timelock, proposalId);
+        return proposalId;
     }
 
     /// @notice Execute a transaction which contains a set of actions which were batch scheduled on a timelock
@@ -40,7 +41,7 @@ contract PodExecutor is CoreRef {
         bytes[] calldata payloads,
         bytes32 predecessor,
         bytes32 salt
-    ) external payable whenNotPaused {
+    ) external payable whenNotPaused returns (bytes32) {
         bytes32 proposalId = TimelockController(payable(timelock)).hashOperationBatch(
             targets,
             values,
@@ -50,5 +51,6 @@ contract PodExecutor is CoreRef {
         );
         TimelockController(payable(timelock)).executeBatch(targets, values, payloads, predecessor, salt);
         emit ExecuteTransaction(timelock, proposalId);
+        return proposalId;
     }
 }

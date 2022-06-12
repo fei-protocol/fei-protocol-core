@@ -127,7 +127,7 @@ contract PodOperationIntegrationTest is DSTest {
         values[1] = 0;
 
         bytes32 predecessor = bytes32(0);
-        bytes32 salt = bytes32(1);
+        bytes32 salt = bytes32(uint256(1));
 
         vm.prank(safe);
         timelockContract.scheduleBatch(targets, values, payloads, predecessor, salt, podConfig.minDelay);
