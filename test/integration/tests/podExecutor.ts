@@ -3,15 +3,11 @@ import { NamedAddresses, NamedContracts } from '@custom-types/types';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import proposals from '@protocol/proposalsConfig';
 import { getImpersonatedSigner, time } from '@test/helpers';
-import { forceEth } from '@test/integration/setup/utils';
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
-import { BigNumber } from 'ethers';
 import { ethers } from 'hardhat';
 import { TestEndtoEndCoordinator } from '../setup';
-
-const toBN = ethers.BigNumber.from;
 
 // Send DAI to a target address
 const dummyProposal = (dai: ERC20, receiver: string, amount: number) => {
@@ -77,7 +73,7 @@ describe('Tribal Council', function () {
 
     tcMultisigSigner = await getImpersonatedSigner(contractAddresses.tribalCouncilSafe);
     tribalCouncilTimelock = contracts.tribalCouncilTimelock as TimelockController;
-    podExecutor = contracts.podExecutor as PodExecutor;
+    podExecutor = contracts.newPodExecutor as PodExecutor;
 
     // Setup Tribal Council timelock with DAI
     const daiWhaleSigner = await getImpersonatedSigner('');
@@ -136,5 +132,9 @@ describe('Tribal Council', function () {
     expect(await contracts.dai.balanceOf(receiverB)).to.be.bignumber.equal(daiAmount);
   });
 
-  it('guardian should be able to pause PodExecutor', async () => {});
+  it('guardian should be able to pause PodExecutor', async () => {
+    const guardianSigner = await getImpersonatedSigner(contractAddresses.guardianMultisig);
+    await podExecutor.connect(guardianSigner).pause();
+    expect(await podExecutor.paused()).to.be.true;
+  });
 });
