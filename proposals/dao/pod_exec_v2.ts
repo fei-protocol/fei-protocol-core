@@ -1,4 +1,4 @@
-import hre, { ethers, artifacts } from 'hardhat';
+import { ethers } from 'hardhat';
 import { expect } from 'chai';
 import {
   DeployUpgradeFunc,
@@ -7,7 +7,6 @@ import {
   TeardownUpgradeFunc,
   ValidateUpgradeFunc
 } from '@custom-types/types';
-import { getImpersonatedSigner } from '@test/helpers';
 
 /*
 
@@ -51,7 +50,7 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
   const tribalCouncilTimelock = contracts.tribalCouncilTimelock;
 
-  // 1. Validate has EXECUTOR role
+  // 1. Validate new podExecutor has EXECUTOR role
   const EXECUTOR_ROLE = await tribalCouncilTimelock.EXECUTOR_ROLE();
   expect(await tribalCouncilTimelock.hasRole(EXECUTOR_ROLE, addresses.newPodExecutor)).to.be.true;
 
