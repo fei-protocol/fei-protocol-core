@@ -71,8 +71,9 @@ const eth_lbp: TemplatedProposalDescription = {
       description: 'Swap old & new Lido ETH PCVDeposits in CR Oracle'
     }
   ],
-  description: `
-This on-chain perform will perform the following actions :
+  description: `TIP-111: Increase FEI Stable backing to 90-100%
+
+This on-chain proposal will perform the following actions :
 - Migrate stETH (Lido staked ETH) to a PCVDeposit where the Chainlink oracle is used to check for slippage, instead of a hardcoded 1:1 peg (the parameter for slippage check keeps the same behavior, but will tolerate a slippage vs the Chainlink oracle price, and not vs a theorhetical 1:1 peg).
 - Unstake all B-70WETH-30FEI from Balancer gauge, remove FEI/WETH liquidity from Balancer, burn the FEI, and move WETH to Aave (where it can be dripped to the PSMs or moved by the Guardian)
 

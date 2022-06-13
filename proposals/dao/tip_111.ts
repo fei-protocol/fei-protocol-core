@@ -130,6 +130,8 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(stethSpent).to.be.at.most(1.001);
   expect(ethReceived).to.be.at.least(0.9);
   expect(ethReceived).to.be.at.most(1);
+  expect(stethBalanceBefore).to.be.at.least(49000);
+  expect(stethBalanceBefore).to.be.at.most(51000);
 
   // display pcvStats
   console.log('----------------------------------------------------');

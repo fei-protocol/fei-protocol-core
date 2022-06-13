@@ -16,7 +16,7 @@ contract CompositeOracle is IOracle, CoreRef {
     IOracle public oracleB;
     /// @notice true if oracles should be multiplied,
     /// false if oracles should be divided
-    bool public multiplyOrDivide;
+    bool public immutable multiplyOrDivide;
 
     /// @notice CompositeOracle constructor
     /// @param _oracleA first referenced oracle

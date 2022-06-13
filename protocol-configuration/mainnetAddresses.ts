@@ -244,7 +244,7 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   ethLidoPCVDepositOld: {
     artifactName: 'EthLidoPCVDeposit',
     address: '0xac38ee05c0204a1e119c625d0a560d6731478880',
-    category: AddressCategory.PCV_V1
+    category: AddressCategory.Deprecated
   },
   indexDelegator: {
     artifactName: 'SnapshotDelegatorPCVDeposit',
@@ -544,7 +544,7 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   ethLidoPCVDepositOldWrapper: {
     artifactName: 'PCVDepositWrapper',
     address: '0xA271fF86426c7fdAaAE72603e6Ce68c892d69ED7',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
   ethReserveStabilizerWrapper: {
     artifactName: 'PCVDepositWrapper',
