@@ -7,14 +7,17 @@ import {
   TeardownUpgradeFunc,
   ValidateUpgradeFunc
 } from '@custom-types/types';
-import { getImpersonatedSigner, overwriteChainlinkAggregator, ZERO_ADDRESS, balance } from '@test/helpers';
+import { getImpersonatedSigner, overwriteChainlinkAggregator, ZERO_ADDRESS, balance, time } from '@test/helpers';
 import { forceEth } from '@test/integration/setup/utils';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
-import { BigNumberish } from 'ethers';
+import { BigNumber } from 'ethers';
 
 let pcvStatsBefore: any; // sorry klob
 let aaveBalanceBefore: any;
 let balancerBalanceBefore: any;
+
+let initialDaiPCVBalance: BigNumber;
+let initialTCDpiBalance: BigNumber;
 
 const fipNumber = 'tip_111';
 
@@ -83,6 +86,18 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
 
   // read pcvStats before proposal execution
   pcvStatsBefore = await contracts.collateralizationOracle.pcvStats();
+
+  // ------------------------------------------------------
+  // fip_104b
+  // ------------------------------------------------------
+  const dpi = contracts.dpi;
+  initialTCDpiBalance = await dpi.balanceOf(addresses.tribalCouncilSafe);
+  initialDaiPCVBalance = await contracts.compoundDaiPCVDeposit.balance();
+  logging && console.log('Initial dai balance: ', initialDaiPCVBalance.toString());
+
+  // Fast forward to end of LPB
+  const timeRemaining = await contracts.dpiToDaiLBPSwapper.remainingTime();
+  await time.increase(timeRemaining);
 };
 
 // Tears down any changes made in setup() that need to be
@@ -132,6 +147,21 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(ethReceived).to.be.at.most(1);
   expect(stethBalanceBefore).to.be.at.least(49000);
   expect(stethBalanceBefore).to.be.at.most(51000);
+
+  // --------------------------------------------------------------
+  // FIP_104b validation
+  // --------------------------------------------------------------
+  // 1. Validate withdrawn liquidity destinations
+  const sanityCheckDAIAmount = ethers.constants.WeiPerEther.mul(3_200_000);
+  const finalDAIDepositBalance = await contracts.compoundDaiPCVDeposit.balance();
+  const daiGained = finalDAIDepositBalance.sub(initialDaiPCVBalance);
+  expect(daiGained).to.be.bignumber.at.least(sanityCheckDAIAmount);
+
+  const dpi = contracts.dpi;
+  const sanityCheckDPIAmount = ethers.constants.WeiPerEther.mul(1500);
+  const finalTCDpiBalance = await dpi.balanceOf(addresses.tribalCouncilSafe);
+  const dpiGained = finalTCDpiBalance.sub(initialTCDpiBalance);
+  expect(dpiGained).to.be.bignumber.at.least(sanityCheckDPIAmount);
 
   // display pcvStats
   console.log('----------------------------------------------------');

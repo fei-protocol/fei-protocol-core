@@ -69,6 +69,33 @@ const eth_lbp: TemplatedProposalDescription = {
       method: 'swapDeposit(address,address)',
       arguments: (addresses) => [addresses.ethLidoPCVDepositOldWrapper, addresses.ethLidoPCVDeposit],
       description: 'Swap old & new Lido ETH PCVDeposits in CR Oracle'
+    },
+    {
+      target: 'dpiToDaiLBPSwapper',
+      values: '0',
+      method: 'exitPool(address)',
+      arguments: (addresses) => [addresses.compoundDaiPCVDeposit],
+      description: 'Withdraw all DAI and DPI from LBP pool to the compoundDAIPCVDeposit (~$3.8m)'
+    },
+    {
+      target: 'ratioPCVControllerV2',
+      values: '0',
+      method: 'withdrawRatioERC20(address,address,address,uint256)',
+      arguments: (addresses) => [
+        addresses.compoundDaiPCVDeposit, // pcvDeposit
+        addresses.dpi, // token
+        addresses.tribalCouncilSafe, // to
+        '10000' // basisPoints, 100%
+      ],
+      description:
+        'Withdraw all DPI from the Compound DAI PCV deposit (~$200k) to the TribalCouncil multisig, where it will be liquidated'
+    },
+    {
+      target: 'compoundDaiPCVDeposit',
+      values: '0',
+      method: 'deposit()',
+      arguments: (addresses) => [],
+      description: 'Deposit DAI on compoundDAIPCVdeposit into Compound'
     }
   ],
   description: `TIP-111: Increase FEI Stable backing to 90-100%
@@ -78,6 +105,18 @@ This on-chain proposal will perform the following actions :
 - Unstake all B-70WETH-30FEI from Balancer gauge, remove FEI/WETH liquidity from Balancer, burn the FEI, and move WETH to Aave (where it can be dripped to the PSMs or moved by the Guardian)
 
 These actions are part of TIP-111 and will allow Guardian to perform actions to defend the FEI peg and continue to increase the stable backing (percentage of stable assets in the PCV).
+
+-------------------------------
+Also contains code from FIP_104b: Withdraw all liquidity from the DPI LBP. 
+
+This FIP cleans up and finishes elements of the PCV reinforcement process snapshotted here:
+https://snapshot.fei.money/#/proposal/0x2fd5bdda0067098f6c0520fe309dfe90ca403758f0ce98c1854a00bf38999674  
+and discussed here: https://tribe.fei.money/t/fip-104-fei-pcv-reinforcement-proposal/4162 .
+
+Specifically it:
+- Exits the LBP pool and withdraws all liquidity to the compound DAI deposit
+- Withdraws the DPI from the deposit to the TribalCouncil multisig, using the ratioPCVController
+- Deposits the DAI on the deposit into Compound
 `
 };
 
