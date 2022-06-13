@@ -6,6 +6,7 @@ import { utils } from 'ethers';
 import { getAllContractAddresses, getAllContracts } from '@test/integration/setup/loadContracts';
 import { ProposalCategory, ProposalDescription, TemplatedProposalDescription } from '@custom-types/types';
 import proposals from '@protocol/proposalsConfig';
+import { TRIBAL_COUNCIL_POD_ID } from '@protocol/optimisticGovernance';
 
 type ExtendedAlphaProposal = {
   targets: string[];
@@ -13,6 +14,10 @@ type ExtendedAlphaProposal = {
   signatures: string[];
   calldatas: string[];
   description: string;
+};
+
+type PodConfig = {
+  id: number;
 };
 
 /**
@@ -28,10 +33,10 @@ export async function constructProposalCalldata(proposalName: string): Promise<s
   const proposal = (await constructProposal(proposalInfo, contracts, contractAddresses)) as ExtendedAlphaProposal;
 
   console.log(proposals[proposalName].category);
-  if (
-    proposals[proposalName].category === ProposalCategory.OA ||
-    proposals[proposalName].category === ProposalCategory.TC
-  ) {
+  if (proposals[proposalName].category === ProposalCategory.TC) {
+    const podConfig: PodConfig = { id: TRIBAL_COUNCIL_POD_ID };
+    return getTimelockCalldata(proposal, proposalInfo, podConfig);
+  } else if (proposals[proposalName].category === ProposalCategory.OA) {
     return getTimelockCalldata(proposal, proposalInfo);
   }
 
@@ -59,11 +64,17 @@ function getDAOCalldata(proposal: ExtendedAlphaProposal): string {
   return calldata;
 }
 
-function getTimelockCalldata(proposal: ExtendedAlphaProposal, proposalInfo: TemplatedProposalDescription): string {
+function getTimelockCalldata(
+  proposal: ExtendedAlphaProposal,
+  proposalInfo: TemplatedProposalDescription,
+  podConfig?: PodConfig
+): string {
   const proposeFuncFrag = new Interface([
     'function scheduleBatch(address[] calldata targets,uint256[] calldata values,bytes[] calldata data,bytes32 predecessor,bytes32 salt,uint256 delay) public',
     'function executeBatch(address[] calldata targets,uint256[] calldata values,bytes[] calldata data,bytes32 predecessor,bytes32 salt) public'
   ]);
+
+  const metadataFuncFrag = new Interface(['function registerProposal(uint256,uint256,string) external']);
 
   const combinedCalldatas = [];
   for (let i = 0; i < proposal.targets.length; i++) {
@@ -91,5 +102,25 @@ function getTimelockCalldata(proposal: ExtendedAlphaProposal, proposalInfo: Temp
     salt
   ]);
 
-  return `Calldata: ${calldata}\nExecute Calldata: ${executeCalldata}`;
+  if (podConfig) {
+    const proposalId = calcProposalId(proposal.targets, proposal.values, combinedCalldatas, predecessor, salt);
+    const registerMetadataCalldata = metadataFuncFrag.encodeFunctionData('registerProposal', [
+      podConfig.id,
+      proposalId,
+      proposal.description
+    ]);
+    return `Calldata: ${calldata}\nRegister Metadata Calldata: ${registerMetadataCalldata}\nExecute Calldata: ${executeCalldata}`;
+  } else {
+    return `Calldata: ${calldata}\nExecute Calldata: ${executeCalldata}`;
+  }
+}
+
+function calcProposalId(
+  targets: string[],
+  values: BigNumber[],
+  payloads: string[],
+  predecessor: string,
+  salt: string
+): string {
+  return '0x123';
 }

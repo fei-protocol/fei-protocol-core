@@ -7,7 +7,7 @@ import { forceEth } from '@test/integration/setup/utils';
 import { TRIBAL_COUNCIL_POD_ID } from '@protocol/optimisticGovernance';
 
 type PodConfig = {
-  podId: number;
+  id: number;
 };
 
 export async function simulateOAProposal(
@@ -30,7 +30,7 @@ export async function simulateTCProposal(
   const timelockTC = contracts.tribalCouncilTimelock as OptimisticTimelock;
   const multisigAddressTC = contractAddresses.tribalCouncilSafe as string;
   const podConfig = {
-    podId: TRIBAL_COUNCIL_POD_ID
+    id: TRIBAL_COUNCIL_POD_ID
   };
   // Need to also register the metadata. Need podID.
   await simulateTimelockProposal(
@@ -104,12 +104,8 @@ export async function simulateTimelockProposal(
 
     // If this proposal is for a pod, then register the metadata
     if (podConfig) {
-      console.log(`Registering proposal ${proposalId} of pod ${podConfig.podId}`);
-      await contracts.governanceMetadataRegistry.registerProposal(
-        podConfig.podId,
-        proposalId,
-        proposalInfo.description
-      );
+      console.log(`Registering proposal ${proposalId} of pod ${podConfig.id}`);
+      await contracts.governanceMetadataRegistry.registerProposal(podConfig.id, proposalId, proposalInfo.description);
     }
   } else {
     console.log('Already scheduled proposal');
