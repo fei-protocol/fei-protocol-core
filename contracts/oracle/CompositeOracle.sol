@@ -14,6 +14,9 @@ contract CompositeOracle is IOracle, CoreRef {
     IOracle public oracleA;
     /// @notice the second referenced oracle
     IOracle public oracleB;
+    /// @notice true if oracles should be multiplied,
+    /// false if oracles should be divided
+    bool public multiplyOrDivide;
 
     /// @notice CompositeOracle constructor
     /// @param _oracleA first referenced oracle
@@ -21,10 +24,12 @@ contract CompositeOracle is IOracle, CoreRef {
     constructor(
         address _core,
         IOracle _oracleA,
-        IOracle _oracleB
+        IOracle _oracleB,
+        bool _multiplyOrDivide
     ) CoreRef(_core) {
         oracleA = _oracleA;
         oracleB = _oracleB;
+        multiplyOrDivide = _multiplyOrDivide;
     }
 
     /// @notice updates the oracle price
@@ -47,6 +52,7 @@ contract CompositeOracle is IOracle, CoreRef {
         (Decimal.D256 memory priceB, bool validB) = oracleB.read();
         bool valid = !paused() && validA && validB;
 
-        return (priceA.mul(priceB), valid);
+        if (multiplyOrDivide) return (priceA.mul(priceB), valid);
+        else return (priceA.div(priceB), valid);
     }
 }

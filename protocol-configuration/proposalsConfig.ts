@@ -4,17 +4,17 @@ import tokemak_withdraw from '@proposals/description/tokemak_withdraw';
 import eth_lbp from '@proposals/description/eth_lbp';
 import fip_104b from '@proposals/description/fip_104b';
 import clawback from '@proposals/description/clawback';
-import migrate_lido_steth from '@proposals/description/migrate_lido_steth';
+import tip_111 from '@proposals/description/tip_111';
 
 const proposals: TemplatedProposalsConfigMap = {
-  migrate_lido_steth: {
+  tip_111: {
     deploy: true, // deploy flag for whether to run deploy action during e2e tests or use mainnet state
     totalValue: 0, // amount of ETH to send to DAO execution
-    proposal: migrate_lido_steth, // full proposal file, imported from '@proposals/description/fip_xx.ts'
+    proposal: tip_111, // full proposal file, imported from '@proposals/description/fip_xx.ts'
     proposalId: '',
     affectedContractSignoff: [],
     deprecatedContractSignoff: [],
-    category: ProposalCategory.TC
+    category: ProposalCategory.DAO
   },
   eth_lbp: {
     deploy: false, // deploy flag for whether to run deploy action during e2e tests or use mainnet state
