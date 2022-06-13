@@ -1,18 +1,17 @@
-import { ZERO_ADDRESS, expectRevert, time, getAddresses, getCore, expectApprox } from '@test/helpers';
+import { expectApprox, expectRevert, getAddresses, getCore, time, ZERO_ADDRESS } from '@test/helpers';
 import chai, { expect } from 'chai';
-import hre, { ethers } from 'hardhat';
-import { Signer } from 'ethers';
-
 import CBN from 'chai-bn';
+import { Signer } from 'ethers';
+import hre, { ethers } from 'hardhat';
 
 before(() => {
   chai.use(CBN(ethers.BigNumber));
 });
 
 describe('FeiTimedMinter', function () {
-  let userAddress;
-  let secondUserAddress;
-  let governorAddress;
+  let userAddress: string;
+  let secondUserAddress: string;
+  let governorAddress: string;
 
   const impersonatedSigners: { [key: string]: Signer } = {};
 

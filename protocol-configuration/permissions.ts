@@ -58,3 +58,5 @@ export const permissions = {
   PCV_MINOR_PARAM_ROLE: ['feiDAOTimelock', 'optimisticTimelock', 'tribalCouncilTimelock'],
   TOKEMAK_DEPOSIT_ADMIN_ROLE: ['optimisticTimelock', 'feiDAOTimelock', 'tribalCouncilTimelock']
 };
+
+export type PermissionsType = keyof typeof permissions;

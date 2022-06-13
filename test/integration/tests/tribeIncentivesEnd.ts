@@ -1,14 +1,14 @@
+import { TribalChief, Tribe } from '@custom-types/contracts';
+import { NamedAddresses, NamedContracts } from '@custom-types/types';
+import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
+import proposals from '@protocol/proposalsConfig';
+import { getImpersonatedSigner, resetFork, time } from '@test/helpers';
+import { forceEth } from '@test/integration/setup/utils';
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
 import { ethers } from 'hardhat';
-import { NamedAddresses, NamedContracts } from '@custom-types/types';
-import { getImpersonatedSigner, resetFork, time } from '@test/helpers';
-import proposals from '@test/integration/proposals_config';
 import { TestEndtoEndCoordinator } from '../setup';
-import { forceEth } from '@test/integration/setup/utils';
-import { TribalChief, Tribe } from '@custom-types/contracts';
-import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 
 const toBN = ethers.BigNumber.from;
 chai.use(CBN(ethers.BigNumber));
@@ -59,31 +59,7 @@ describe('e2e-end-tribe-incentives', function () {
     await forceEth(curve3LPWhale);
   });
 
-  it('should be able to harvest existing TRIBE rewards and withdraw principle from an LP pool', async () => {
-    const initialBalance = await tribe.balanceOf(receiver);
-    const curveLPToken = await ethers.getContractAt('ERC20', curve3Metapool);
-
-    // Harvest already earnt TRIBE rewards
-    await tribalChief.connect(curveLPStaker).harvest(curvePoolId, receiver);
-    const finalBalance = await tribe.balanceOf(receiver);
-    const harvestedTribe = finalBalance.sub(initialBalance);
-    expect(harvestedTribe).to.be.bignumber.at.least(toBN(1));
-
-    // Withdraw principle from staked pool
-    const receiverBalanceBefore = await curveLPToken.balanceOf(receiver);
-    await tribalChief.connect(curveLPStaker).withdrawAllAndHarvest(curvePoolId, receiver);
-    const receiverBalanceAfter = await curveLPToken.balanceOf(receiver);
-    const withdrawnPrinciple = receiverBalanceAfter.sub(receiverBalanceBefore);
-    expect(withdrawnPrinciple).to.be.bignumber.at.least(toBN(1));
-  });
-
   it('should NOT be able to harvest future TRIBE rewards from an LP pool', async () => {
-    // Harvest, to zero out already earned rewards
-    const firstHarvestInitial = await tribe.balanceOf(receiver);
-    await tribalChief.connect(curveLPStaker).harvest(curvePoolId, receiver);
-    const firstHarvestFinal = await tribe.balanceOf(receiver);
-    expect(firstHarvestFinal.sub(firstHarvestInitial)).to.be.bignumber.greaterThan(toBN(1));
-
     // Advance time, to check that rewards aren't accruing
     await time.increase(86400);
 

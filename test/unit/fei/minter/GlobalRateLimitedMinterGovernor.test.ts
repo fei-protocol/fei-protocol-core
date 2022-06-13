@@ -1,14 +1,14 @@
-import { time, expectRevert, expectApprox, getAddresses, getCore } from '@test/helpers';
-import { expect } from 'chai';
-import hre, { ethers } from 'hardhat';
-import { Contract, Signer } from 'ethers';
 import { Core, Fei, GlobalRateLimitedMinter } from '@custom-types/contracts';
+import { expectApprox, expectRevert, getAddresses, getCore, time } from '@test/helpers';
+import { expect } from 'chai';
+import { Contract, Signer } from 'ethers';
+import hre, { ethers } from 'hardhat';
 
 const scale = ethers.constants.WeiPerEther;
 
 describe('GlobalRateLimitedMinterBuffer', function () {
-  let userAddress;
-  let governorAddress;
+  let userAddress: string;
+  let governorAddress: string;
   let globalRateLimitedMinter: GlobalRateLimitedMinter;
   let authorizedMinter: Contract;
   let core: Core;

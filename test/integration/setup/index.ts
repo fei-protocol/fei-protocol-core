@@ -1,11 +1,12 @@
-import { permissions } from '@protocol/permissions';
+import { permissions, PermissionsType } from '@protocol/permissions';
 import { getAllContractAddresses, getAllContracts } from './loadContracts';
 import {
   Config,
   ContractAccessRights,
   TestCoordinator,
-  Env,
+  ContractsAndAddresses,
   ProposalConfig,
+  TemplatedProposalConfig,
   namedContractsToNamedAddresses,
   NamedAddresses,
   NamedContracts,
@@ -39,6 +40,10 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
 
   constructor(private config: Config, proposals?: any) {
     this.proposals = proposals;
+
+    this.mainnetContracts = {};
+    this.afterUpgradeAddresses = {};
+    this.afterUpgradeContracts = {};
   }
 
   public async initMainnetContracts(): Promise<void> {
@@ -55,7 +60,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
    * 3) Apply appropriate permissions to the contracts e.g. minter, burner priviledges
    *
    */
-  public async loadEnvironment(): Promise<Env> {
+  public async loadEnvironment(): Promise<ContractsAndAddresses> {
     await resetFork();
     await this.initMainnetContracts();
     let existingContracts = this.mainnetContracts;
@@ -95,7 +100,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
   async applyUpgrade(
     existingContracts: NamedContracts,
     proposalName: string,
-    config: ProposalConfig
+    config: TemplatedProposalConfig
   ): Promise<NamedContracts> {
     let deployedUpgradedContracts = {};
 
@@ -243,16 +248,22 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
    * permissions contract
    */
   getAccessControlMapping(): ContractAccessRights {
-    const accessControlRoles = {};
+    const accessControlRoles: ContractAccessRights = {
+      minter: [],
+      burner: [],
+      pcvController: [],
+      governor: [],
+      guardian: []
+    };
 
     // Array of all deployed contracts
     Object.keys(permissions).map((role) => {
-      const contracts = permissions[role];
+      const contracts = permissions[role as PermissionsType];
       const addresses = contracts.map((contractName) => {
         return this.afterUpgradeAddresses[contractName];
       });
 
-      accessControlRoles[role] = addresses;
+      accessControlRoles[role as keyof ContractAccessRights] = addresses;
     });
 
     return accessControlRoles as ContractAccessRights;

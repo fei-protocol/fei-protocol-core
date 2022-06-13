@@ -1,8 +1,8 @@
-import { getCore, getAddresses } from '@test/helpers';
-import { expect } from 'chai';
-import hre, { ethers } from 'hardhat';
-import { Signer } from 'ethers';
 import { Core, MockERC20, MockPCVDepositV2 } from '@custom-types/contracts';
+import { getAddresses, getCore } from '@test/helpers';
+import { expect } from 'chai';
+import { Signer } from 'ethers';
+import hre, { ethers } from 'hardhat';
 
 describe('PCVDepositWrapper', function () {
   const impersonatedSigners: { [key: string]: Signer } = {};

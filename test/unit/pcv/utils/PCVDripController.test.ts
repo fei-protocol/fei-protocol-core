@@ -1,13 +1,13 @@
-import { expectRevert, time, balance, getAddresses, getCore } from '@test/helpers';
+import { balance, expectRevert, getAddresses, getCore, time } from '@test/helpers';
 import { expect } from 'chai';
-import hre, { ethers } from 'hardhat';
 import { Signer } from 'ethers';
+import hre, { ethers } from 'hardhat';
 
 const toBN = ethers.BigNumber.from;
 
 describe('PCVDripController', function () {
-  let userAddress;
-  let governorAddress;
+  let userAddress: string;
+  let governorAddress: string;
   let beneficiaryAddress1;
 
   const impersonatedSigners: { [key: string]: Signer } = {};

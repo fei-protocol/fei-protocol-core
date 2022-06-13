@@ -1,19 +1,18 @@
-import chai, { expect } from 'chai';
-import CBN from 'chai-bn';
-import { solidity } from 'ethereum-waffle';
-import { ethers } from 'hardhat';
+import { CollateralizationOracle } from '@custom-types/contracts';
 import { NamedAddresses, NamedContracts } from '@custom-types/types';
+import proposals from '@protocol/proposalsConfig';
 import {
   expectApprox,
   getImpersonatedSigner,
   increaseTime,
   latestTime,
-  resetFork,
   overwriteChainlinkAggregator
 } from '@test/helpers';
-import proposals from '@test/integration/proposals_config';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
-import { CollateralizationOracle } from '@custom-types/contracts';
+import chai, { expect } from 'chai';
+import CBN from 'chai-bn';
+import { solidity } from 'ethereum-waffle';
+import { ethers } from 'hardhat';
 const toBN = ethers.BigNumber.from;
 
 describe('e2e-buybacks', function () {

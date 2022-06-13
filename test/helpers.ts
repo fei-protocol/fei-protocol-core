@@ -2,12 +2,12 @@ import hre, { ethers, artifacts, network } from 'hardhat';
 import chai from 'chai';
 import CBN from 'chai-bn';
 import { Core, Core__factory } from '@custom-types/contracts';
-import { BigNumber, BigNumberish, Contract, Signer } from 'ethers';
+import { BigNumber, BigNumberish, Contract, ContractTransaction, Signer } from 'ethers';
 import { NamedAddresses } from '@custom-types/types';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import EthersAdapter from '@gnosis.pm/safe-ethers-lib';
-import { BN } from 'ethereumjs-util';
 import Safe from '@gnosis.pm/safe-core-sdk';
+import { TransactionDescription } from 'ethers/lib/utils';
 
 // use default BigNumber
 chai.use(CBN(ethers.BigNumber));
@@ -176,17 +176,17 @@ async function expectApproxAbs(
   expect(actualBN).to.be.lte(upperBound);
 }
 
-async function expectEvent(tx, contract: any, event: string, args: any[]): Promise<void> {
+async function expectEvent(tx: any, contract: any, event: string, args: any[]): Promise<void> {
   await expect(tx)
     .to.emit(contract, event)
     .withArgs(...args);
 }
 
-async function expectRevert(tx, errorMessage: string): Promise<void> {
+async function expectRevert(tx: Promise<any>, errorMessage: string): Promise<void> {
   await expect(tx).to.be.revertedWith(errorMessage);
 }
 
-async function expectUnspecifiedRevert(tx): Promise<void> {
+async function expectUnspecifiedRevert(tx: Promise<any>): Promise<void> {
   await expect(tx).to.be.reverted;
 }
 
@@ -200,7 +200,7 @@ const balance = {
   }
 };
 
-async function overwriteChainlinkAggregator(chainlink, value, decimals) {
+async function overwriteChainlinkAggregator(aggregatorAddress: string, value: string, decimals: string) {
   // Deploy new mock aggregator
   const factory = await ethers.getContractFactory('MockChainlinkOracle');
   const mockAggregator = await factory.deploy(value, decimals);
@@ -209,7 +209,7 @@ async function overwriteChainlinkAggregator(chainlink, value, decimals) {
 
   // Overwrite storage at chainlink address to use mock aggregator for updates
   const address = `0x00000000000000000000${mockAggregator.address.slice(2)}0005`;
-  await hre.network.provider.send('hardhat_setStorageAt', [chainlink, '0x2', address]);
+  await hre.network.provider.send('hardhat_setStorageAt', [aggregatorAddress, '0x2', address]);
 }
 
 const time = {
@@ -262,7 +262,7 @@ async function performDAOAction(
   targets: string[],
   values: number[]
 ): Promise<void> {
-  const description = [];
+  const description = '';
 
   await hre.network.provider.request({
     method: 'hardhat_impersonateAccount',
@@ -310,7 +310,7 @@ async function initialiseGnosisSDK(safeOwner: Signer, safeAddress: string): Prom
     ethers,
     signer: safeOwner
   });
-  const { chainId } = await safeOwner.provider.getNetwork();
+  const { chainId } = await safeOwner.provider!.getNetwork();
   const contractNetworks = {
     [chainId]: {
       multiSendAddress: '0x8D29bE29923b68abfDD21e541b9374737B49cdAD',

@@ -1,23 +1,23 @@
 import {
-  expectRevert,
+  Core,
+  MockERC20,
+  MockEthUniswapPCVDeposit,
+  MockPCVDepositV2,
+  RatioPCVControllerV2,
+  WETH9
+} from '@custom-types/contracts';
+import {
   balance,
+  deployDevelopmentWeth,
+  expectRevert,
   getAddresses,
   getCore,
-  getImpersonatedSigner,
-  deployDevelopmentWeth
+  getImpersonatedSigner
 } from '@test/helpers';
 import { forceEth } from '@test/integration/setup/utils';
 import { expect } from 'chai';
-import { ethers } from 'hardhat';
 import { BigNumber, Signer } from 'ethers';
-import {
-  MockEthUniswapPCVDeposit,
-  MockPCVDepositV2,
-  WETH9,
-  Core,
-  RatioPCVControllerV2,
-  MockERC20
-} from '@custom-types/contracts';
+import { ethers } from 'hardhat';
 
 const toBN = ethers.BigNumber.from;
 
