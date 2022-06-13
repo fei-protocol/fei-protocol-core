@@ -8,7 +8,7 @@ import {CoreRef} from "../refs/CoreRef.sol";
 /// @notice Executor gateway contract which exposes the execution of prepared timelock transactions and makes them public
 /// @dev EXECUTOR_ROLE must be granted to this contract by the relevant timelock, in order for this contract to execute
 contract PodExecutor is CoreRef {
-    event ExecuteTransaction(address timelock, bytes32 dataHash);
+    event ExecuteTransaction(address timelock, bytes32 proposalId);
 
     constructor(address _core) CoreRef(_core) {}
 
