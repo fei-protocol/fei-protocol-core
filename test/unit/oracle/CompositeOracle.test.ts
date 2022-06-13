@@ -42,7 +42,7 @@ describe('CompositeOracle', function () {
 
     this.oracle = await (
       await ethers.getContractFactory('CompositeOracle')
-    ).deploy(this.core.address, this.oracleA.address, this.oracleB.address, false);
+    ).deploy(this.core.address, this.oracleA.address, this.oracleB.address, true);
   });
 
   describe('Init', function () {
