@@ -10,11 +10,8 @@ import {TribeRoles} from "../../core/TribeRoles.sol";
 import {GovernorQuickReaction} from "./GovernorQuickReaction.sol";
 import {GovernorCountingFor} from "./GovernorCountingFor.sol";
 
-// NopeDAO V2 features:
-// 1. Should only be able to vote for a veto
-// How to implement approval only voting. Should only be able to vote for the proposal, not against it
-// Can't change the interface, as would break Tally integration. Need to do a require support = 1
-// Cast vote etc. is defined in Governor, want to override
+/// @title Nope DAO
+/// @notice A DAO that is able to veto Tribe optimistic governance proposals
 contract NopeDAO is Governor, GovernorSettings, GovernorVotesComp, GovernorQuickReaction, GovernorCountingFor, CoreRef {
     /// @notice Initial quorum required for a Nope proposal
     uint256 private _quorum = 10_000_000e18;

@@ -37,7 +37,7 @@ function createDummyProposal(address dummyContract, uint256 newVariable)
 }
 
 /// @dev Validates vote counting functionality of the GovernorCountingFor module. Module is abstract
-///      so instantiates as a NopeDAO
+///      so instantiated as a NopeDAO
 contract GovernorCountingFor is DSTest {
     address userWithTribe = address(0x1);
     address userWithInsufficientTribe = address(0x2);
