@@ -1993,6 +1993,11 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     address: '0xf2e513d3b4171bb115cb9ffc45555217fbbbd00c',
     category: AddressCategory.Turbo
   },
+  convexPoolPCVDeposit: {
+    artifactName: 'ERC20CompoundPCVDeposit',
+    address: '0x525eA5983A2e02abA8aA0BE7D15Cd73150812379',
+    category: AddressCategory.PCV_V1
+  },
   convexPoolPCVDepositWrapper: {
     artifactName: 'PCVDepositWrapper',
     address: '0x1370CA8655C255948d6c6110066d78680601B7c2',

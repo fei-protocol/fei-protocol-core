@@ -49,6 +49,7 @@ describe('EthLidoPCVDeposit', function () {
     this.fei = await ethers.getContractAt('Fei', await this.core.fei());
     this.steth = await (await ethers.getContractFactory('MockStEthToken')).deploy();
     this.stableswap = await (await ethers.getContractFactory('MockStEthStableSwap')).deploy(this.steth.address);
+    this.oracle = await (await ethers.getContractFactory('MockOracle')).deploy(1);
     await this.steth.mintAt(this.stableswap.address);
 
     await forceSpecificEth(this.stableswap.address, '10' + ethers.constants.WeiPerEther.toString());
@@ -57,6 +58,12 @@ describe('EthLidoPCVDeposit', function () {
       await ethers.getContractFactory('EthLidoPCVDeposit')
     ).deploy(
       this.core.address,
+      {
+        _oracle: this.oracle.address,
+        _backupOracle: '0x0000000000000000000000000000000000000000',
+        _invertOraclePrice: false,
+        _decimalsNormalizer: '0'
+      },
       this.steth.address,
       this.stableswap.address,
       '100' // maximum 1% slippage tolerated
@@ -72,8 +79,18 @@ describe('EthLidoPCVDeposit', function () {
   });
 
   describe('setMaximumSlippage()', function () {
+    beforeEach(async function () {
+      // grant PCV_MINOR_PARAM_ROLE to governorAddress if it doesn't have it
+      const role = '0x46797b318ce8c2d83979760ef100a5c0fdb980de4b574d6142ce4d0afce307ed';
+      const governorRole = '0x899bd46557473cb80307a9dabc297131ced39608330a2d29b2d52b660c03923e';
+      if (!(await this.core.hasRole(role, governorAddress))) {
+        await this.core.connect(impersonatedSigners[governorAddress]).createRole(role, governorRole);
+        await this.core.connect(impersonatedSigners[governorAddress]).grantRole(role, governorAddress);
+      }
+    });
+
     it('should revert if not governor', async function () {
-      await expectRevert(this.pcvDeposit.setMaximumSlippage('500'), 'CoreRef: Caller is not a governor');
+      await expectRevert(this.pcvDeposit.setMaximumSlippage('500'), 'UNAUTHORIZED');
     });
     it('should revert on invalid value', async function () {
       await expectRevert(
@@ -158,7 +175,7 @@ describe('EthLidoPCVDeposit', function () {
         await this.stableswap.setSlippage(1000, false); // 10% positive slippage (disavantage) for stETH -> ETH
         await expectRevert(
           this.pcvDeposit.connect(impersonatedSigners[pcvControllerAddress]).withdraw(userAddress, `1${e18}`, {}),
-          'EthLidoPCVDeposit: slippage too high.'
+          'MockStableswap/excess-slippage'
         );
       });
 
