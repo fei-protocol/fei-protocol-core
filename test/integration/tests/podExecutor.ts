@@ -8,13 +8,14 @@ import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
 import { ethers } from 'hardhat';
 import { TestEndtoEndCoordinator } from '../setup';
+import { forceEth } from '../setup/utils';
 
 // Send DAI to a target address
 const dummyProposal = (dai: ERC20, receiver: string, amount: number) => {
   return {
     target: dai.address,
     value: 0,
-    payload: dai.interface.encodeFunctionData('transfer()', [receiver, amount]),
+    payload: dai.interface.encodeFunctionData('transfer', [receiver, amount]),
     predecessor: '0x0000000000000000000000000000000000000000000000000000000000000000',
     salt: '0x0000000000000000000000000000000000000000000000000000000000000001'
   };
@@ -25,8 +26,8 @@ const dummyBatchProposal = (dai: ERC20, receiverA: string, receiverB: string, am
     targets: [dai.address, dai.address],
     values: [0, 0],
     payloads: [
-      dai.interface.encodeFunctionData('transfer()', [receiverA, amount]),
-      dai.interface.encodeFunctionData('transfer()', [receiverB, amount])
+      dai.interface.encodeFunctionData('transfer', [receiverA, amount]),
+      dai.interface.encodeFunctionData('transfer', [receiverB, amount])
     ],
     predecessor: '0x0000000000000000000000000000000000000000000000000000000000000000',
     salt: '0x0000000000000000000000000000000000000000000000000000000000000001'
@@ -43,8 +44,9 @@ describe('Pod executor', function () {
   let podExecutor: PodExecutor;
 
   const daiAmount = 10;
-  const receiver = ethers.Wallet.createRandom().address;
+  const receiverA = ethers.Wallet.createRandom().address;
   const receiverB = ethers.Wallet.createRandom().address;
+  const receiverC = ethers.Wallet.createRandom().address;
 
   before(async () => {
     chai.use(CBN(ethers.BigNumber));
@@ -76,7 +78,10 @@ describe('Pod executor', function () {
     podExecutor = contracts.newPodExecutor as PodExecutor;
 
     // Setup Tribal Council timelock with DAI
-    const daiWhaleSigner = await getImpersonatedSigner('');
+    const daiWhale = '0x6B175474E89094C44Da98b954EedeAC495271d0F';
+    const daiWhaleSigner = await getImpersonatedSigner(daiWhale); // Compound cDAI
+    await forceEth(daiWhale);
+
     await contracts.dai
       .connect(daiWhaleSigner)
       .transfer(contractAddresses.tribalCouncilTimelock, ethers.constants.WeiPerEther.mul(1000));
@@ -85,7 +90,7 @@ describe('Pod executor', function () {
   ///////////////   DAO management of Tribal Council  //////////////
   it('should be able to execute scheduled transactions', async () => {
     const minDelay = await tribalCouncilTimelock.getMinDelay();
-    const { target, value, payload, predecessor, salt } = dummyProposal(contracts.dai as ERC20, receiver, daiAmount);
+    const { target, value, payload, predecessor, salt } = dummyProposal(contracts.dai as ERC20, receiverA, daiAmount);
 
     // 1. Schedule a transaction
     await tribalCouncilTimelock.connect(tcMultisigSigner).schedule(target, value, payload, predecessor, salt, minDelay);
@@ -100,7 +105,7 @@ describe('Pod executor', function () {
 
     // Verify operation marked as complete and intended effect happened
     expect(await tribalCouncilTimelock.isOperationDone(proposalId)).to.be.true;
-    expect(await contracts.dai.balanceOf(receiver)).to.be.bignumber.equal(daiAmount);
+    expect(await contracts.dai.balanceOf(receiverA)).to.be.equal(daiAmount);
   });
 
   it('should be able to executeBatch batch scheduled transactions', async () => {
@@ -108,8 +113,8 @@ describe('Pod executor', function () {
 
     const { targets, values, payloads, predecessor, salt } = dummyBatchProposal(
       contracts.dai as ERC20,
-      receiver,
       receiverB,
+      receiverC,
       daiAmount
     );
 
@@ -128,8 +133,8 @@ describe('Pod executor', function () {
 
     // Verify operation executed
     expect(await tribalCouncilTimelock.isOperationDone(proposalId)).to.be.true;
-    expect(await contracts.dai.balanceOf(receiver)).to.be.bignumber.equal(daiAmount);
-    expect(await contracts.dai.balanceOf(receiverB)).to.be.bignumber.equal(daiAmount);
+    expect(await contracts.dai.balanceOf(receiverB)).to.be.equal(daiAmount);
+    expect(await contracts.dai.balanceOf(receiverC)).to.be.equal(daiAmount);
   });
 
   it('guardian should be able to pause PodExecutor', async () => {

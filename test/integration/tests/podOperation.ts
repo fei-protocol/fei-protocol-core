@@ -153,7 +153,7 @@ describe('Pod operation and veto', function () {
     await time.increase(podConfig.minDelay);
 
     // Execute timelocked transaction - need to call via the podExecutor
-    const podExecutor = contracts.podExecutor;
+    const podExecutor = contracts.newPodExecutor;
     const executeTx = await podExecutor.execute(
       timelockAddress,
       contractAddresses.governanceMetadataRegistry,
@@ -257,7 +257,7 @@ describe('Pod operation and veto', function () {
     // Fast forward time on timelock
     await time.increase(tribeCouncilPodConfig.minDelay);
 
-    const podExecutor = contracts.podExecutor;
+    const podExecutor = contracts.newPodExecutor;
     const executeTx = await podExecutor.execute(
       tribalCouncilTimelock.address,
       contractAddresses.roleBastion,
