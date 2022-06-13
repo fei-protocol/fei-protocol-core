@@ -1,5 +1,5 @@
 import { TribalChief, Tribe } from '@custom-types/contracts';
-import { NamedAddresses, NamedContracts } from '@custom-types/types';
+import { NamedContracts } from '@custom-types/types';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import proposals from '@protocol/proposalsConfig';
 import { getImpersonatedSigner, resetFork, time } from '@test/helpers';
@@ -16,7 +16,6 @@ chai.use(solidity);
 
 describe('e2e-end-tribe-incentives', function () {
   let contracts: NamedContracts;
-  let contractAddresses: NamedAddresses;
   let deployAddress: string;
   let e2eCoord: TestEndtoEndCoordinator;
   let doLogging: boolean;
@@ -26,7 +25,6 @@ describe('e2e-end-tribe-incentives', function () {
 
   const receiver = '0xbEA4B2357e8ec53AF60BbcA4bc570332a7C7E232';
   const curvePoolId = 1;
-  const curve3Metapool = '0x06cb22615BA53E60D67Bf6C341a0fD5E718E1655';
   const curve3LPWhale = '0xdc69d4cb5b86388fff0b51885677e258883534ae';
   const pool8User = '0x9544A83A8cB74062c836AA11565d4BB4A54fe40D';
 
@@ -49,7 +47,7 @@ describe('e2e-end-tribe-incentives', function () {
     e2eCoord = new TestEndtoEndCoordinator(config, proposals);
 
     doLogging && console.log(`Loading environment...`);
-    ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment());
+    ({ contracts } = await e2eCoord.loadEnvironment());
     doLogging && console.log(`Environment loaded.`);
 
     tribe = contracts.tribe as Tribe;
@@ -73,15 +71,9 @@ describe('e2e-end-tribe-incentives', function () {
   });
 
   it('should be able to harvest existing TRIBE rewards from an AutoRewardDistributor in a Fuse pool', async () => {
-    const { rariRewardsDistributorDelegator, stakingTokenWrapperRari, tribe } = contracts;
+    const { rariRewardsDistributorDelegator, tribe } = contracts;
 
-    // 1. Harvest Rari staking token wrapper
-    const delegatorBalanceBeforeHarvest = await tribe.balanceOf(rariRewardsDistributorDelegator.address);
-    await stakingTokenWrapperRari.harvest();
-    const delegatorBalanceAfterHarvest = await tribe.balanceOf(rariRewardsDistributorDelegator.address);
-    expect(delegatorBalanceAfterHarvest.sub(delegatorBalanceBeforeHarvest)).to.be.bignumber.at.least(toBN(1));
-
-    // 2. Market participant claims TRIBE rewards
+    // Market participant claims TRIBE rewards
     const userBalanceBefore = await tribe.balanceOf(pool8User);
     await rariRewardsDistributorDelegator['claimRewards(address)'](pool8User);
     const userBalanceAfter = await tribe.balanceOf(pool8User);
