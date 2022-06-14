@@ -2038,12 +2038,12 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     address: '0x84dc71500D504163A87756dB6368CC8bB654592f',
     category: AddressCategory.Volt
   },
-  oldPodExecutor: {
+  podExecutor: {
     artifactName: 'PodExecutor',
     address: '0x99d8b669F48A708f7C0373AF6CE31F0726ab6CaD',
     category: AddressCategory.Deprecated
   },
-  // podExecutor: {
+  // podExecutorV2: {
   //   artifactName: 'PodExecutor',
   //   address: '',
   //   category: AddressCategory.Governance

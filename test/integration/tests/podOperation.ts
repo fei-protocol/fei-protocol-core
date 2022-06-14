@@ -150,7 +150,7 @@ describe('Pod operation and veto', function () {
     // 4.0 Grant new PodExecutor contract the EXECUTOR role
     const podTimelockSigner = await getImpersonatedSigner(podTimelock.address);
     const EXECUTOR_ROLE = await podTimelock.EXECUTOR_ROLE();
-    await podTimelock.connect(podTimelockSigner).grantRole(EXECUTOR_ROLE, contractAddresses.podExecutor);
+    await podTimelock.connect(podTimelockSigner).grantRole(EXECUTOR_ROLE, contractAddresses.podExecutorV2);
   });
 
   it('should allow a proposal to be proposed and executed', async () => {
@@ -158,7 +158,7 @@ describe('Pod operation and veto', function () {
     await time.increase(podConfig.minDelay);
 
     // Execute timelocked transaction - need to call via the podExecutor
-    const podExecutor = contracts.podExecutor;
+    const podExecutor = contracts.podExecutorV2;
     const executeTx = await podExecutor.execute(
       timelockAddress,
       contractAddresses.governanceMetadataRegistry,
@@ -262,7 +262,7 @@ describe('Pod operation and veto', function () {
     // Fast forward time on timelock
     await time.increase(tribeCouncilPodConfig.minDelay);
 
-    const podExecutor = contracts.podExecutor;
+    const podExecutor = contracts.podExecutorV2;
     const executeTx = await podExecutor.execute(
       tribalCouncilTimelock.address,
       contractAddresses.roleBastion,

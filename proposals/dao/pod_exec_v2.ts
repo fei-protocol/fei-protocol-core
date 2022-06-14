@@ -23,12 +23,12 @@ const fipNumber = 'pod_executor_v2';
 // This should exclusively include new contract deployments
 const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: NamedAddresses, logging: boolean) => {
   const PodExecutorFactory = await ethers.getContractFactory('PodExecutor');
-  const podExecutor = await PodExecutorFactory.deploy(addresses.core);
-  await podExecutor.deployTransaction.wait();
-  logging && console.log('Pod Executor deployed to: ', podExecutor.address);
+  const podExecutorV2 = await PodExecutorFactory.deploy(addresses.core);
+  await podExecutorV2.deployTransaction.wait();
+  logging && console.log('Pod Executor V2 deployed to: ', podExecutorV2.address);
 
   return {
-    podExecutor
+    podExecutorV2
   };
 };
 
@@ -52,10 +52,10 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 
   // 1. Validate new podExecutor has EXECUTOR role
   const EXECUTOR_ROLE = await tribalCouncilTimelock.EXECUTOR_ROLE();
-  expect(await tribalCouncilTimelock.hasRole(EXECUTOR_ROLE, addresses.podExecutor)).to.be.true;
+  expect(await tribalCouncilTimelock.hasRole(EXECUTOR_ROLE, addresses.podExecutorV2)).to.be.true;
 
   // 2. Revoke old podExecutor EXECUTOR_ROLE
-  expect(await tribalCouncilTimelock.hasRole(EXECUTOR_ROLE, addresses.oldPodExecutor)).to.be.false;
+  expect(await tribalCouncilTimelock.hasRole(EXECUTOR_ROLE, addresses.podExecutor)).to.be.false;
 };
 
 export { deploy, setup, teardown, validate };

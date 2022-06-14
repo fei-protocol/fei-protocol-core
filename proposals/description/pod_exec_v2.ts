@@ -1,3 +1,4 @@
+import { ethers } from 'ethers';
 import { TemplatedProposalDescription } from '@custom-types/types';
 
 const pod_executor_v2: TemplatedProposalDescription = {
@@ -7,10 +8,7 @@ const pod_executor_v2: TemplatedProposalDescription = {
       target: 'tribalCouncilTimelock',
       values: '0',
       method: 'grantRole(bytes32,address)',
-      arguments: (addresses) => [
-        '0xd8aa0f3194971a2a116679f7c2090f6939c8d4e01a2a8d7e41d55e5351469e63', // EXECUTOR_ROLE
-        addresses.podExecutor
-      ],
+      arguments: (addresses) => [ethers.utils.id('EXECUTOR_ROLE'), addresses.podExecutorV2],
       description: `
       Tribal Council timelock grants the new Pod Executor v2 contract
       EXECUTOR_ROLE
@@ -20,10 +18,7 @@ const pod_executor_v2: TemplatedProposalDescription = {
       target: 'tribalCouncilTimelock',
       values: '0',
       method: 'revokeRole(bytes32,address)',
-      arguments: (addresses) => [
-        '0xd8aa0f3194971a2a116679f7c2090f6939c8d4e01a2a8d7e41d55e5351469e63', // EXECUTOR_ROLE
-        addresses.oldPodExecutor
-      ],
+      arguments: (addresses) => [ethers.utils.id('EXECUTOR_ROLE'), addresses.podExecutor],
       description: `
       Migrate Pod Executor contracts
 

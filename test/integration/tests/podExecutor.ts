@@ -75,7 +75,7 @@ describe('Pod executor', function () {
 
     tcMultisigSigner = await getImpersonatedSigner(contractAddresses.tribalCouncilSafe);
     tribalCouncilTimelock = contracts.tribalCouncilTimelock as TimelockController;
-    podExecutor = contracts.podExecutor as PodExecutor;
+    podExecutor = contracts.podExecutorV2 as PodExecutor;
 
     // Setup Tribal Council timelock with DAI
     const daiWhale = '0x6B175474E89094C44Da98b954EedeAC495271d0F';
