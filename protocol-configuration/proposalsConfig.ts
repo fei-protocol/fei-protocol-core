@@ -17,7 +17,8 @@ const proposals: TemplatedProposalsConfigMap = {
       'tribalCouncilSafe',
       'ratioPCVControllerV2'*/
     ],
-    deprecatedContractSignoff: []
+    deprecatedContractSignoff: [],
+    category: ProposalCategory.DAO
   },
   eth_lbp: {
     deploy: false, // deploy flag for whether to run deploy action during e2e tests or use mainnet state
