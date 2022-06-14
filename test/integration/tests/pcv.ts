@@ -60,13 +60,15 @@ describe('e2e-pcv', function () {
 
       const stabilityPool = '0x66017D22b0f8556afDd19FC67041899Eb65a21bb';
       const signer = await getImpersonatedSigner(stabilityPool);
-      await contracts.lusd.connect(signer).transfer(contracts.bammDeposit.address, ethers.constants.WeiPerEther);
+      await contracts.lusd
+        .connect(signer)
+        .transfer(contracts.bammDeposit.address, ethers.constants.WeiPerEther.mul(10_000));
       await contracts.bammDeposit.deposit();
 
-      await contracts.bammDeposit.withdraw(contractAddresses.feiDAOTimelock, ethers.constants.WeiPerEther);
+      await contracts.bammDeposit.withdraw(contractAddresses.feiDAOTimelock, ethers.constants.WeiPerEther.mul(100));
 
       const lusdBalanceAfter = await contracts.lusd.balanceOf(contracts.feiDAOTimelock.address);
-      expect(lusdBalanceAfter).to.be.bignumber.equal(toBN(1_000_000).mul(tenPow18));
+      expect(lusdBalanceAfter).to.be.bignumber.equal(toBN(100).mul(tenPow18));
     });
   });
 
