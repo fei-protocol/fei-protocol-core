@@ -147,6 +147,8 @@ describe('balancer-weightedpool', function () {
       const tribePrice = (await contracts.tribeUsdCompositeOracle.read())[0] / 1e18; // ~= 1
       const tribePerEth = ethPrice / tribePrice; // ~= 4,000
       const tribeToAllocate = BNe18(Math.round(4 * tribePerEth * 10000)).div(10000); // rounding error < slippage tolerance
+      await forceEth(contracts.aaveEthPCVDeposit.address);
+      await contracts.aaveEthPCVDeposit.deposit();
       await contracts.aaveEthPCVDeposit.connect(daoSigner).withdraw(balancerDepositTribeWeth.address, BNe18('1'));
       await contracts.core.connect(daoSigner).allocateTribe(balancerDepositTribeWeth.address, tribeToAllocate);
       expect(await contracts.weth.balanceOf(balancerDepositTribeWeth.address)).to.be.equal(BNe18('1'));

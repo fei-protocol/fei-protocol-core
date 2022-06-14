@@ -39,7 +39,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     addresses.core,
     chainlinkStEthUsdOracleWrapper.address,
     addresses.chainlinkEthUsdOracleWrapper,
-    false // divide and return A/B, not A*B
+    true // divide and return A/B, not A*B
   );
   await compositeStEthEthOracle.deployed();
   logging && console.log(`compositeStEthEthOracle: ${compositeStEthEthOracle.address}`);
