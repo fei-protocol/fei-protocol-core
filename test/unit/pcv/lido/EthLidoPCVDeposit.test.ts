@@ -81,8 +81,8 @@ describe('EthLidoPCVDeposit', function () {
   describe('setMaximumSlippage()', function () {
     beforeEach(async function () {
       // grant PCV_MINOR_PARAM_ROLE to governorAddress if it doesn't have it
-      const role = '0x46797b318ce8c2d83979760ef100a5c0fdb980de4b574d6142ce4d0afce307ed';
-      const governorRole = '0x899bd46557473cb80307a9dabc297131ced39608330a2d29b2d52b660c03923e';
+      const role = ethers.utils.id('PCV_MINOR_ROLE');
+      const governorRole = ethers.utils.id('GOVERN_ROLE');
       if (!(await this.core.hasRole(role, governorAddress))) {
         await this.core.connect(impersonatedSigners[governorAddress]).createRole(role, governorRole);
         await this.core.connect(impersonatedSigners[governorAddress]).grantRole(role, governorAddress);
