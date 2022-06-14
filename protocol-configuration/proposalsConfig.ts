@@ -18,7 +18,7 @@ const proposals: TemplatedProposalsConfigMap = {
       'ratioPCVControllerV2'*/
     ],
     deprecatedContractSignoff: [],
-    category: ProposalCategory.DEBUG
+    category: ProposalCategory.DAO
   },
   repay_fuse_bad_debt: {
     deploy: false, // deploy flag for whether to run deploy action during e2e tests or use mainnet state
@@ -27,7 +27,7 @@ const proposals: TemplatedProposalsConfigMap = {
     proposalId: '',
     affectedContractSignoff: ['core', 'fuseFixer', 'pcvGuardianNew'],
     deprecatedContractSignoff: [],
-    category: ProposalCategory.TC
+    category: ProposalCategory.DAO
   }
 };
 
