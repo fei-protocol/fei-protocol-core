@@ -18,16 +18,7 @@ const proposals: TemplatedProposalsConfigMap = {
       'ratioPCVControllerV2'*/
     ],
     deprecatedContractSignoff: [],
-    category: ProposalCategory.DAO
-  },
-  eth_lbp: {
-    deploy: false, // deploy flag for whether to run deploy action during e2e tests or use mainnet state
-    totalValue: 0, // amount of ETH to send to DAO execution
-    proposal: eth_lbp, // full proposal file, imported from '@proposals/description/fip_xx.ts'
-    proposalId: '',
-    affectedContractSignoff: [],
-    deprecatedContractSignoff: [],
-    category: ProposalCategory.TC
+    category: ProposalCategory.DEBUG
   },
   repay_fuse_bad_debt: {
     deploy: false, // deploy flag for whether to run deploy action during e2e tests or use mainnet state
@@ -35,24 +26,6 @@ const proposals: TemplatedProposalsConfigMap = {
     proposal: repay_fuse_bad_debt, // full proposal file, imported from '@proposals/description/fip_xx.ts'
     proposalId: '',
     affectedContractSignoff: ['core', 'fuseFixer', 'pcvGuardianNew'],
-    deprecatedContractSignoff: [],
-    category: ProposalCategory.TC
-  },
-  clawback: {
-    deploy: false, // deploy flag for whether to run deploy action during e2e tests or use mainnet state
-    totalValue: 0, // amount of ETH to send to DAO execution
-    proposal: clawback, // full proposal file, imported from '@proposals/description/fip_xx.ts'
-    proposalId: '',
-    affectedContractSignoff: [],
-    deprecatedContractSignoff: [],
-    category: ProposalCategory.DAO
-  },
-  tokemak_withdraw: {
-    deploy: false, // deploy flag for whether to run deploy action during e2e tests or use mainnet state
-    totalValue: 0, // amount of ETH to send to DAO execution
-    proposal: tokemak_withdraw, // full proposal file, imported from '@proposals/description/fip_xx.ts'
-    proposalId: '',
-    affectedContractSignoff: ['ethTokemakPCVDeposit'],
     deprecatedContractSignoff: [],
     category: ProposalCategory.TC
   }
