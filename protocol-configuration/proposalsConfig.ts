@@ -1,11 +1,11 @@
 import { ProposalCategory, TemplatedProposalsConfigMap } from '@custom-types/types';
-import repay_fuse_bad_debt from '@proposals/description/repay_fuse_bad_debt';
+import tip_112 from '@proposals/description/tip_112';
 
 const proposals: TemplatedProposalsConfigMap = {
   repay_fuse_bad_debt: {
     deploy: false, // deploy flag for whether to run deploy action during e2e tests or use mainnet state
     totalValue: 0, // amount of ETH to send to DAO execution
-    proposal: repay_fuse_bad_debt, // full proposal file, imported from '@proposals/description/fip_xx.ts'
+    proposal: tip_112, // full proposal file, imported from '@proposals/description/fip_xx.ts'
     proposalId: '',
     affectedContractSignoff: ['core', 'fuseFixer', 'pcvGuardianNew'],
     deprecatedContractSignoff: [],
