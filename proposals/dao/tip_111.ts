@@ -13,8 +13,8 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { BigNumber } from 'ethers';
 
 let pcvStatsBefore: any; // sorry klob
-let aaveBalanceBefore: any;
-let balancerBalanceBefore: any;
+let ethPsmBalanceBefore: BigNumber;
+let balancerBalanceBefore: BigNumber;
 
 let initialDaiPCVBalance: BigNumber;
 let initialTCDpiBalance: BigNumber;
@@ -72,7 +72,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 // This could include setting up Hardhat to impersonate accounts,
 // ensuring contracts have a specific state, etc.
 const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  aaveBalanceBefore = await contracts.aaveEthPCVDeposit.balance();
+  ethPsmBalanceBefore = await contracts.ethPSM.balance();
   balancerBalanceBefore = await contracts.balancerLensBpt30Fei70Weth.balance();
 
   // make sure TC has enough ETH to run
@@ -118,49 +118,48 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(stethPerEth).to.be.at.most(1);
 
   // check the token movements
-  const aaveBalanceAfter: any = await contracts.aaveEthPCVDeposit.balance();
-  const balancerBalanceAfter: any = await contracts.balancerDepositFeiWeth.balance();
-  const aaveBalanceIncrease: any = aaveBalanceAfter.sub(aaveBalanceBefore) / 1e18;
-  const balancerBalanceDecrease: any = balancerBalanceBefore.sub(balancerBalanceAfter) / 1e18;
-  const ratio: any =
-    aaveBalanceIncrease > balancerBalanceDecrease
-      ? aaveBalanceIncrease / balancerBalanceDecrease
-      : balancerBalanceDecrease / aaveBalanceIncrease;
-  expect(ratio).to.be.at.least(1);
-  expect(ratio).to.be.at.most(1.001);
+  const ethPsmBalanceAfter: BigNumber = await contracts.ethPSM.balance();
+  const balancerBalanceAfter: BigNumber = await contracts.balancerDepositFeiWeth.balance();
+  const ethPsmBalanceIncrease: BigNumber = ethPsmBalanceAfter.sub(ethPsmBalanceBefore);
+  const balancerBalanceDecrease: BigNumber = balancerBalanceBefore.sub(balancerBalanceAfter);
+  // expect less than 0.1% "slippage" when moving funds
+  if (ethPsmBalanceIncrease > balancerBalanceDecrease) {
+    expect(ethPsmBalanceIncrease.mul('10000').div(balancerBalanceDecrease)).to.be.at.least('9990');
+  } else {
+    expect(balancerBalanceDecrease.mul('10000').div(ethPsmBalanceIncrease)).to.be.at.least('9990');
+  }
 
   // check the new contract's state
   expect(await contracts.ethLidoPCVDeposit.oracle()).to.be.equal(contracts.compositeStEthEthOracle.address);
   expect(await contracts.ethLidoPCVDeposit.maximumSlippageBasisPoints()).to.be.equal('100');
 
   // check the withdrawal from steth PCVDeposit
-  const stethBalanceBefore: any = (await contracts.steth.balanceOf(contracts.ethLidoPCVDeposit.address)) / 1e18;
-  const ethBalanceBefore: any = Number((await balance.current(addresses.aaveEthPCVDeposit)).toString()) / 1e18;
+  const stethBalanceBefore: BigNumber = await contracts.steth.balanceOf(contracts.ethLidoPCVDeposit.address);
+  const ethBalanceBefore: BigNumber = await balance.current(addresses.aaveEthPCVDeposit);
   await contracts.ethLidoPCVDeposit.connect(daoSigner).withdraw(addresses.aaveEthPCVDeposit, '1000000000000000000');
-  const stethBalanceAfter: any = (await contracts.steth.balanceOf(contracts.ethLidoPCVDeposit.address)) / 1e18;
-  const ethBalanceAfter: any = Number((await balance.current(addresses.aaveEthPCVDeposit)).toString()) / 1e18;
-  const stethSpent: any = stethBalanceBefore - stethBalanceAfter;
-  const ethReceived: any = ethBalanceAfter - ethBalanceBefore;
-  expect(stethSpent).to.be.at.least(0.999);
-  expect(stethSpent).to.be.at.most(1.001);
-  expect(ethReceived).to.be.at.least(0.9);
-  expect(ethReceived).to.be.at.most(1);
-  expect(stethBalanceBefore).to.be.at.least(49000);
-  expect(stethBalanceBefore).to.be.at.most(51000);
+  const stethBalanceAfter: BigNumber = await contracts.steth.balanceOf(contracts.ethLidoPCVDeposit.address);
+  const ethBalanceAfter: BigNumber = await balance.current(addresses.aaveEthPCVDeposit);
+  const stethSpent: BigNumber = stethBalanceBefore.sub(stethBalanceAfter);
+  const ethReceived: BigNumber = ethBalanceAfter.sub(ethBalanceBefore);
+  expect(stethSpent).to.be.at.least(ethers.constants.WeiPerEther.mul('999').div('1000'));
+  expect(stethSpent).to.be.at.most(ethers.constants.WeiPerEther.mul('1001').div('1000'));
+  expect(ethReceived).to.be.at.least(ethers.constants.WeiPerEther.mul('90').div('100'));
+  expect(ethReceived).to.be.at.most(ethers.constants.WeiPerEther);
+  expect(stethBalanceBefore).to.be.at.least(ethers.constants.WeiPerEther.mul(49000));
+  expect(stethBalanceBefore).to.be.at.most(ethers.constants.WeiPerEther.mul(51000));
 
   // --------------------------------------------------------------
   // FIP_104b validation
   // --------------------------------------------------------------
   // 1. Validate withdrawn liquidity destinations
-  const sanityCheckDAIAmount = ethers.constants.WeiPerEther.mul(3_200_000);
-  const finalDAIDepositBalance = await contracts.compoundDaiPCVDeposit.balance();
-  const daiGained = finalDAIDepositBalance.sub(initialDaiPCVBalance);
+  const sanityCheckDAIAmount: BigNumber = ethers.constants.WeiPerEther.mul(3_200_000);
+  const finalDAIDepositBalance: BigNumber = await contracts.compoundDaiPCVDeposit.balance();
+  const daiGained: BigNumber = finalDAIDepositBalance.sub(initialDaiPCVBalance);
   expect(daiGained).to.be.bignumber.at.least(sanityCheckDAIAmount);
 
-  const dpi = contracts.dpi;
-  const sanityCheckDPIAmount = ethers.constants.WeiPerEther.mul(1500);
-  const finalTCDpiBalance = await dpi.balanceOf(addresses.tribalCouncilSafe);
-  const dpiGained = finalTCDpiBalance.sub(initialTCDpiBalance);
+  const sanityCheckDPIAmount: BigNumber = ethers.constants.WeiPerEther.mul(1500);
+  const finalTCDpiBalance: BigNumber = await contracts.dpi.balanceOf(addresses.tribalCouncilSafe);
+  const dpiGained: BigNumber = finalTCDpiBalance.sub(initialTCDpiBalance);
   expect(dpiGained).to.be.bignumber.at.least(sanityCheckDPIAmount);
 
   // display pcvStats

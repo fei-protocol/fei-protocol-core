@@ -1,6 +1,6 @@
 import { TemplatedProposalDescription } from '@custom-types/types';
 
-const eth_lbp: TemplatedProposalDescription = {
+const proposal: TemplatedProposalDescription = {
   title: 'TIP-111: Increase FEI Stable backing to 90-100%',
   commands: [
     {
@@ -64,6 +64,17 @@ const eth_lbp: TemplatedProposalDescription = {
       description: 'Deposit all WETH in Aave'
     },
     {
+      target: 'ratioPCVControllerV2',
+      values: '0',
+      method: 'withdrawRatio(address,address,uint256)',
+      arguments: (addresses) => [
+        addresses.aaveEthPCVDeposit, // pcvDeposit
+        addresses.ethPSM, // to
+        '10000' // basisPoints, 100%
+      ],
+      description: 'Move all WETH from Aave to ETH PSM'
+    },
+    {
       target: 'collateralizationOracle',
       values: '0',
       method: 'swapDeposit(address,address)',
@@ -102,7 +113,7 @@ const eth_lbp: TemplatedProposalDescription = {
 
 This on-chain proposal will perform the following actions :
 - Migrate stETH (Lido staked ETH) to a PCVDeposit where the Chainlink oracle is used to check for slippage, instead of a hardcoded 1:1 peg (the parameter for slippage check keeps the same behavior, but will tolerate a slippage vs the Chainlink oracle price, and not vs a theorhetical 1:1 peg).
-- Unstake all B-70WETH-30FEI from Balancer gauge, remove FEI/WETH liquidity from Balancer, burn the FEI, and move WETH to Aave (where it can be dripped to the PSMs or moved by the Guardian)
+- Unstake all B-70WETH-30FEI from Balancer gauge, remove FEI/WETH liquidity from Balancer, burn the FEI, and move WETH to PSM
 
 These actions are part of TIP-111 and will allow Guardian to perform actions to defend the FEI peg and continue to increase the stable backing (percentage of stable assets in the PCV).
 
@@ -120,4 +131,4 @@ Specifically it:
 `
 };
 
-export default eth_lbp;
+export default proposal;
