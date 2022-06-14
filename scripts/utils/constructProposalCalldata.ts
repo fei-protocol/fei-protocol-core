@@ -109,13 +109,13 @@ function getTimelockCalldata(
       proposalId,
       proposal.description
     ]);
-    return `Calldata: ${calldata}\nRegister Metadata Calldata: ${registerMetadataCalldata}\nExecute Calldata: ${executeCalldata}`;
+    return `Calldata: ${calldata}\nMetadata Calldata: ${registerMetadataCalldata}\nExecute Calldata: ${executeCalldata}`;
   } else {
     return `Calldata: ${calldata}\nExecute Calldata: ${executeCalldata}`;
   }
 }
 
-function calcProposalId(
+export function calcProposalId(
   targets: string[],
   values: BigNumber[],
   payloads: string[],
