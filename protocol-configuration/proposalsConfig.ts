@@ -1,6 +1,6 @@
 import { ProposalCategory, TemplatedProposalsConfigMap } from '@custom-types/types';
 import tip_112 from '@proposals/description/tip_112';
-import clawback from '@proposals/description/clawback';
+import clawback from '@proposals/description/old/clawback';
 import tokemak_withdraw from '@proposals/description/tokemak_withdraw';
 
 const proposals: TemplatedProposalsConfigMap = {
