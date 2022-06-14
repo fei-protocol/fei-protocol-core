@@ -37,9 +37,10 @@ const pod_executor_v2: TemplatedProposalDescription = {
   description: `
   Pod Executor V2
   
-  Deploys a Pod Executor V2. The Tribal Council timelock the authorises it 
-  with the EXECUTOR role and deprecates the old pod executor by removing 
-  the EXECUTOR role.
+  Deploys a Pod Executor V2 which the Tribal Council timelock then authorises 
+  with the EXECUTOR role. This exposes the execution of proposal to the public.
+  
+  In addition, it deprecates the old pod executor by removing the EXECUTOR role.
   `
 };
 
