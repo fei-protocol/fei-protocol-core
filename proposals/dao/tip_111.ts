@@ -5,14 +5,15 @@ import {
   NamedAddresses,
   SetupUpgradeFunc,
   TeardownUpgradeFunc,
-  ValidateUpgradeFunc
+  ValidateUpgradeFunc,
+  PcvStats
 } from '@custom-types/types';
 import { getImpersonatedSigner, overwriteChainlinkAggregator, ZERO_ADDRESS, balance, time } from '@test/helpers';
 import { forceEth } from '@test/integration/setup/utils';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { BigNumber } from 'ethers';
 
-let pcvStatsBefore: any; // sorry klob
+let pcvStatsBefore: PcvStats;
 let ethPsmBalanceBefore: BigNumber;
 let balancerBalanceBefore: BigNumber;
 
@@ -164,21 +165,21 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 
   // display pcvStats
   console.log('----------------------------------------------------');
-  console.log(' pcvStatsBefore.protocolControlledValue [M]e18 ', pcvStatsBefore.protocolControlledValue / 1e24);
-  console.log(' pcvStatsBefore.userCirculatingFei      [M]e18 ', pcvStatsBefore.userCirculatingFei / 1e24);
-  console.log(' pcvStatsBefore.protocolEquity          [M]e18 ', pcvStatsBefore.protocolEquity / 1e24);
-  const pcvStatsAfter = await contracts.collateralizationOracle.pcvStats();
+  console.log(' pcvStatsBefore.protocolControlledValue [M]e18 ', Number(pcvStatsBefore.protocolControlledValue) / 1e24);
+  console.log(' pcvStatsBefore.userCirculatingFei      [M]e18 ', Number(pcvStatsBefore.userCirculatingFei) / 1e24);
+  console.log(' pcvStatsBefore.protocolEquity          [M]e18 ', Number(pcvStatsBefore.protocolEquity) / 1e24);
+  const pcvStatsAfter: PcvStats = await contracts.collateralizationOracle.pcvStats();
   console.log('----------------------------------------------------');
-  console.log(' pcvStatsAfter.protocolControlledValue  [M]e18 ', pcvStatsAfter.protocolControlledValue / 1e24);
-  console.log(' pcvStatsAfter.userCirculatingFei       [M]e18 ', pcvStatsAfter.userCirculatingFei / 1e24);
-  console.log(' pcvStatsAfter.protocolEquity           [M]e18 ', pcvStatsAfter.protocolEquity / 1e24);
+  console.log(' pcvStatsAfter.protocolControlledValue  [M]e18 ', Number(pcvStatsAfter.protocolControlledValue) / 1e24);
+  console.log(' pcvStatsAfter.userCirculatingFei       [M]e18 ', Number(pcvStatsAfter.userCirculatingFei) / 1e24);
+  console.log(' pcvStatsAfter.protocolEquity           [M]e18 ', Number(pcvStatsAfter.protocolEquity) / 1e24);
   console.log('----------------------------------------------------');
   const pcvDiff = pcvStatsAfter.protocolControlledValue.sub(pcvStatsBefore.protocolControlledValue);
   const cFeiDiff = pcvStatsAfter.userCirculatingFei.sub(pcvStatsBefore.userCirculatingFei);
   const eqDiff = pcvStatsAfter.protocolEquity.sub(pcvStatsBefore.protocolEquity);
-  console.log(' PCV diff                               [M]e18 ', pcvDiff / 1e24);
-  console.log(' Circ FEI diff                          [M]e18 ', cFeiDiff / 1e24);
-  console.log(' Equity diff                            [M]e18 ', eqDiff / 1e24);
+  console.log(' PCV diff                               [M]e18 ', Number(pcvDiff) / 1e24);
+  console.log(' Circ FEI diff                          [M]e18 ', Number(cFeiDiff) / 1e24);
+  console.log(' Equity diff                            [M]e18 ', Number(eqDiff) / 1e24);
   console.log('----------------------------------------------------');
 };
 
