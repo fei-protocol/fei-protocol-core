@@ -4,7 +4,7 @@ import clawback from '@proposals/description/clawback';
 import tokemak_withdraw from '@proposals/description/tokemak_withdraw';
 
 const proposals: TemplatedProposalsConfigMap = {
-  repay_fuse_bad_debt: {
+  tip_112: {
     deploy: false, // deploy flag for whether to run deploy action during e2e tests or use mainnet state
     totalValue: 0, // amount of ETH to send to DAO execution
     proposal: tip_112, // full proposal file, imported from '@proposals/description/fip_xx.ts'
