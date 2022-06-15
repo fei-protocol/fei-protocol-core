@@ -135,6 +135,12 @@ export type TribalChiefPoolConfig = {
   unlocked: boolean;
 };
 
+export interface PcvStats {
+  protocolControlledValue: ethers.BigNumber;
+  userCirculatingFei: ethers.BigNumber;
+  protocolEquity: ethers.BigNumber;
+}
+
 export interface TribalChiefConfig {
   [key: string]: TribalChiefPoolConfig;
 }
