@@ -5,6 +5,8 @@ pragma experimental ABIEncoderV2;
 import "../PCVDeposit.sol";
 import "../../Constants.sol";
 import "../../refs/CoreRef.sol";
+import "../../refs/OracleRef.sol";
+import "../../core/TribeRoles.sol";
 import "../../external/Decimal.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -52,7 +54,7 @@ interface IStableSwapSTETH {
 /// @title implementation for PCV Deposit that can take ETH and get stETH either
 /// by staking on Lido or swapping on Curve, and sell back stETH for ETH on Curve.
 /// @author eswak, realisation
-contract EthLidoPCVDeposit is PCVDeposit {
+contract EthLidoPCVDeposit is PCVDeposit, OracleRef {
     using SafeERC20 for ERC20;
     using Decimal for Decimal.D256;
 
@@ -67,12 +69,28 @@ contract EthLidoPCVDeposit is PCVDeposit {
     // Maximum tolerated slippage
     uint256 public maximumSlippageBasisPoints;
 
+    struct OracleData {
+        address _oracle;
+        address _backupOracle;
+        bool _invertOraclePrice;
+        int256 _decimalsNormalizer;
+    }
+
     constructor(
         address _core,
+        OracleData memory oracleData,
         address _steth,
         address _stableswap,
         uint256 _maximumSlippageBasisPoints
-    ) CoreRef(_core) {
+    )
+        OracleRef(
+            _core,
+            oracleData._oracle,
+            oracleData._backupOracle,
+            oracleData._decimalsNormalizer,
+            oracleData._invertOraclePrice
+        )
+    {
         steth = _steth;
         stableswap = _stableswap;
         maximumSlippageBasisPoints = _maximumSlippageBasisPoints;
@@ -154,11 +172,11 @@ contract EthLidoPCVDeposit is PCVDeposit {
 
         // Compute the minimum accepted amount of ETH out of the trade, based
         // on the slippage settings.
-        Decimal.D256 memory maxSlippage = Decimal.ratio(
-            Constants.BASIS_POINTS_GRANULARITY - maximumSlippageBasisPoints,
-            Constants.BASIS_POINTS_GRANULARITY
-        );
-        uint256 minimumAcceptedAmountOut = maxSlippage.mul(amountIn).asUint256();
+        uint256 minimumAcceptedAmountOut = readOracle()
+            .mul(Constants.BASIS_POINTS_GRANULARITY - maximumSlippageBasisPoints)
+            .div(Constants.BASIS_POINTS_GRANULARITY)
+            .mul(amountIn)
+            .asUint256();
 
         // Swap stETH for ETH on the Curve pool
         uint256 balanceBefore = address(this).balance;
@@ -168,13 +186,8 @@ contract EthLidoPCVDeposit is PCVDeposit {
             _tokenOne == steth ? int128(0) : int128(1),
             _tokenOne == steth ? int128(1) : int128(0),
             amountIn,
-            0 // minimum accepted amount out
+            minimumAcceptedAmountOut
         );
-
-        // Check that we received enough stETH as an output of the trade
-        // This is enforced in this contract, after knowing the output of the trade,
-        // instead of the StableSwap pool's min_dy check.
-        require(actualAmountOut >= minimumAcceptedAmountOut, "EthLidoPCVDeposit: slippage too high.");
 
         // Check the received amount
         uint256 balanceAfter = address(this).balance;
@@ -197,7 +210,10 @@ contract EthLidoPCVDeposit is PCVDeposit {
     // =======================================================================
     /// @notice Sets the maximum slippage vs 1:1 price accepted during withdraw.
     /// @param _maximumSlippageBasisPoints the maximum slippage expressed in basis points (1/10_000)
-    function setMaximumSlippage(uint256 _maximumSlippageBasisPoints) external onlyGovernorOrAdmin {
+    function setMaximumSlippage(uint256 _maximumSlippageBasisPoints)
+        external
+        onlyTribeRole(TribeRoles.PCV_MINOR_PARAM_ROLE)
+    {
         require(
             _maximumSlippageBasisPoints <= Constants.BASIS_POINTS_GRANULARITY,
             "EthLidoPCVDeposit: Exceeds bp granularity."

@@ -62,15 +62,15 @@ describe('e2e-pcv', function () {
 
       const stabilityPool = '0x66017D22b0f8556afDd19FC67041899Eb65a21bb';
       const signer = await getImpersonatedSigner(stabilityPool);
-      await contracts.lusd.connect(signer).transfer(contracts.bammDeposit.address, ethers.constants.WeiPerEther);
-
+      await contracts.lusd
+        .connect(signer)
+        .transfer(contracts.bammDeposit.address, ethers.constants.WeiPerEther.mul(10_000));
       await contracts.bammDeposit.deposit();
-      expect(await contracts.bammDeposit.balance()).to.be.at.least(toBN(1_000_000).mul(tenPow18));
 
-      await contracts.bammDeposit.withdraw(contractAddresses.feiDAOTimelock, toBN(1_000_000).mul(tenPow18));
+      await contracts.bammDeposit.withdraw(contractAddresses.feiDAOTimelock, ethers.constants.WeiPerEther.mul(100));
 
       const lusdBalanceAfter = await contracts.lusd.balanceOf(contracts.feiDAOTimelock.address);
-      expect(lusdBalanceAfter).to.be.bignumber.equal(toBN(1_000_000).mul(tenPow18));
+      expect(lusdBalanceAfter).to.be.bignumber.equal(toBN(100).mul(tenPow18));
     });
   });
 
@@ -115,6 +115,10 @@ describe('e2e-pcv', function () {
       // unpause contracts if needed
       if (await contracts.ethPSM.paused()) await contracts.ethPSM.unpause();
       if (await contracts.aaveEthPCVDripController.paused()) await contracts.aaveEthPCVDripController.unpause();
+
+      // refill drip source to make sure it's filled
+      await forceEth(contracts.aaveEthPCVDeposit.address, '5500000000000000000000');
+      await contracts.aaveEthPCVDeposit.deposit();
     });
 
     // Note: This test is currently broken since we don't have any eth in aave

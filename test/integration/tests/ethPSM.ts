@@ -196,6 +196,10 @@ describe('eth PSM', function () {
         await contracts.weth
           .connect(signer)
           .transfer(await dripper.source(), await contracts.weth.balanceOf(ethPSM.address));
+
+        // refill drip source to make sure it's filled
+        await forceEth(contracts.aaveEthPCVDeposit.address, '5500000000000000000000');
+        await contracts.aaveEthPCVDeposit.deposit();
       });
 
       it('sets ethpsm reserve threshold to 5250 eth', async () => {
