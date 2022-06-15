@@ -104,7 +104,7 @@ function getTimelockCalldata(
     const registerMetadataCalldata = metadataRegistryInterface.encodeFunctionData('registerProposal', [
       podConfig.id,
       proposalId,
-      proposal.description
+      proposalInfo.description
     ]);
     return `Calldata: ${calldata}\nMetadata Calldata: ${registerMetadataCalldata}\nExecute Calldata: ${executeCalldata}`;
   } else {

@@ -101,11 +101,9 @@ export async function simulateTimelockProposal(
     // If this proposal is for a pod, then register the metadata
     if (podConfig) {
       console.log(`Registering proposal ${proposalId} of pod ${podConfig.id}`);
-      const registerTx = await contracts.governanceMetadataRegistry.registerProposal(
-        podConfig.id,
-        proposalId,
-        proposalInfo.description
-      );
+      const registerTx = await contracts.governanceMetadataRegistry
+        .connect(signer)
+        .registerProposal(podConfig.id, proposalId, proposalInfo.description);
       console.log('Metadata tx: ', registerTx.data);
     }
   } else {
