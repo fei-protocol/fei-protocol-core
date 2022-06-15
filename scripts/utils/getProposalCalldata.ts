@@ -3,10 +3,6 @@ import { constructProposalCalldata } from './constructProposalCalldata';
 
 dotenv.config();
 
-// GOAL:
-// 1. When generating calldata for a TC proposal, automatically make the call to the metadata registry
-// 2. Have it output as one of the steps in the calldata
-
 /**
  * Take in a hardhat proposal object and output the proposal calldatas
  * See `proposals/utils/getProposalCalldata.js` on how to construct the proposal calldata
