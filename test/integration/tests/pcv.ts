@@ -54,7 +54,9 @@ describe('e2e-pcv', function () {
   });
 
   describe('BAMM', function () {
-    it('should be able to withdraw LUSD from B.AMM', async function () {
+    // Note: this test is dependent on there being LUSD in the B.AMM to withdraw.
+    // Disabling for now.
+    it.skip('should be able to withdraw LUSD from B.AMM', async function () {
       // set Chainlink ETHUSD to a fixed 4,000$ value
       await overwriteChainlinkAggregator(contractAddresses.chainlinkEthUsdOracle, '400000000000', '8');
 
@@ -119,7 +121,8 @@ describe('e2e-pcv', function () {
       await contracts.aaveEthPCVDeposit.deposit();
     });
 
-    it('drip controller can withdraw from PCV deposit to PSM', async function () {
+    // Note: This test is currently broken since we don't have any eth in aave
+    it.skip('drip controller can withdraw from PCV deposit to PSM', async function () {
       const ethPsm = contracts.ethPSM;
       const aaveEthPCVDeposit = contracts.aaveEthPCVDeposit;
       const pcvDripper = contracts.aaveEthPCVDripController;
@@ -227,8 +230,9 @@ describe('e2e-pcv', function () {
     });
   });
 
-  describe.skip('Aave borrowing', async () => {
-    it('grants rewards', async function () {
+  describe('Aave borrowing', async () => {
+    // Note: This test is currently broken, either because AAVE turned off incentives or because we don't have anything in AAVE atm.
+    it.skip('grants rewards', async function () {
       const { aaveEthPCVDeposit, aaveLendingPool, aaveTribeIncentivesController, fei, tribe } = contracts;
 
       await hre.network.provider.request({
