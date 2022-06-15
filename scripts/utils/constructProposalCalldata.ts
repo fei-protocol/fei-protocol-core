@@ -4,9 +4,12 @@ import { ethers } from 'hardhat';
 import { Interface } from '@ethersproject/abi';
 import { utils } from 'ethers';
 import { getAllContractAddresses, getAllContracts } from '@test/integration/setup/loadContracts';
-import { ProposalCategory, ProposalDescription, TemplatedProposalDescription } from '@custom-types/types';
+import { ProposalCategory, TemplatedProposalDescription } from '@custom-types/types';
 import proposals from '@protocol/proposalsConfig';
 import { TRIBAL_COUNCIL_POD_ID } from '@protocol/optimisticGovernance';
+import { abi as TimelockControllerABI } from '../../artifacts/@openzeppelin/contracts/governance/TimelockController.sol/TimelockController.json';
+import { abi as FeiDAOABI } from '../../artifacts/contracts/dao/governor/FeiDAO.sol/FeiDAO.json';
+import { abi as MetadataRegistryABI } from '../../artifacts/contracts/pods/GovernanceMetadataRegistry.sol/GovernanceMetadataRegistry.json';
 
 type ExtendedAlphaProposal = {
   targets: string[];
@@ -16,9 +19,9 @@ type ExtendedAlphaProposal = {
   description: string;
 };
 
-type PodConfig = {
+export interface PodConfig {
   id: number;
-};
+}
 
 /**
  * Take in a hardhat proposal object and output the proposal calldatas
@@ -44,9 +47,7 @@ export async function constructProposalCalldata(proposalName: string): Promise<s
 }
 
 function getDAOCalldata(proposal: ExtendedAlphaProposal): string {
-  const proposeFuncFrag = new Interface([
-    'function propose(address[] memory targets,uint256[] memory values,bytes[] memory calldatas,string memory description) public returns (uint256)'
-  ]);
+  const feiDAOInterface = new Interface(FeiDAOABI);
 
   const combinedCalldatas = [];
   for (let i = 0; i < proposal.targets.length; i++) {
@@ -54,7 +55,7 @@ function getDAOCalldata(proposal: ExtendedAlphaProposal): string {
     combinedCalldatas.push(`${sighash}${proposal.calldatas[i].slice(2)}`);
   }
 
-  const calldata = proposeFuncFrag.encodeFunctionData('propose', [
+  const calldata = feiDAOInterface.encodeFunctionData('propose', [
     proposal.targets,
     proposal.values,
     combinedCalldatas,
@@ -69,12 +70,8 @@ function getTimelockCalldata(
   proposalInfo: TemplatedProposalDescription,
   podConfig?: PodConfig
 ): string {
-  const proposeFuncFrag = new Interface([
-    'function scheduleBatch(address[] calldata targets,uint256[] calldata values,bytes[] calldata data,bytes32 predecessor,bytes32 salt,uint256 delay) public',
-    'function executeBatch(address[] calldata targets,uint256[] calldata values,bytes[] calldata data,bytes32 predecessor,bytes32 salt) public'
-  ]);
-
-  const metadataFuncFrag = new Interface(['function registerProposal(uint256,uint256,string) external']);
+  const timelockControllerInterface = new Interface(TimelockControllerABI);
+  const metadataRegistryInterface = new Interface(MetadataRegistryABI);
 
   const combinedCalldatas = [];
   for (let i = 0; i < proposal.targets.length; i++) {
@@ -85,7 +82,7 @@ function getTimelockCalldata(
   const salt = ethers.utils.id(proposalInfo.title);
   const predecessor = ethers.constants.HashZero;
 
-  const calldata = proposeFuncFrag.encodeFunctionData('scheduleBatch', [
+  const calldata = timelockControllerInterface.encodeFunctionData('scheduleBatch', [
     proposal.targets,
     proposal.values,
     combinedCalldatas,
@@ -94,7 +91,7 @@ function getTimelockCalldata(
     345600
   ]);
 
-  const executeCalldata = proposeFuncFrag.encodeFunctionData('executeBatch', [
+  const executeCalldata = timelockControllerInterface.encodeFunctionData('executeBatch', [
     proposal.targets,
     proposal.values,
     combinedCalldatas,
@@ -104,7 +101,7 @@ function getTimelockCalldata(
 
   if (podConfig) {
     const proposalId = calcProposalId(proposal.targets, proposal.values, combinedCalldatas, predecessor, salt);
-    const registerMetadataCalldata = metadataFuncFrag.encodeFunctionData('registerProposal', [
+    const registerMetadataCalldata = metadataRegistryInterface.encodeFunctionData('registerProposal', [
       podConfig.id,
       proposalId,
       proposal.description

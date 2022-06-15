@@ -5,10 +5,7 @@ import { getImpersonatedSigner, time } from '@test/helpers';
 import { Contract } from '@ethersproject/contracts';
 import { forceEth } from '@test/integration/setup/utils';
 import { TRIBAL_COUNCIL_POD_ID } from '@protocol/optimisticGovernance';
-
-type PodConfig = {
-  id: number;
-};
+import { PodConfig } from './constructProposalCalldata';
 
 export async function simulateOAProposal(
   proposalInfo: TemplatedProposalDescription,
@@ -32,7 +29,6 @@ export async function simulateTCProposal(
   const podConfig = {
     id: TRIBAL_COUNCIL_POD_ID
   };
-  // Need to also register the metadata. Need podID.
   await simulateTimelockProposal(
     timelockTC,
     multisigAddressTC,
