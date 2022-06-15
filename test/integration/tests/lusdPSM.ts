@@ -111,6 +111,13 @@ describe('lusd PSM', function () {
       if (dripperPaused) await dripper.unpause();
       const skimmerPaused = await skimmer.paused();
       if (skimmerPaused) await skimmer.unpause();
+
+      // fund deposit to make sure it's not empty
+      const lusdHolder = '0x66017D22b0f8556afDd19FC67041899Eb65a21bb';
+      await forceEth(lusdHolder);
+      const signer: SignerWithAddress = await getImpersonatedSigner(lusdHolder);
+      await contracts.lusd.connect(signer).transfer(contracts.bammDeposit.address, '10500000000000000000000000');
+      await contracts.bammDeposit.deposit();
     });
 
     beforeEach(async () => {

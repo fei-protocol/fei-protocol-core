@@ -17,7 +17,7 @@ const collateralizationAddresses: CollateralizationAddressType = {
   usd: ['namedStaticPCVDepositWrapper', 'd3poolCurvePCVDeposit', 'd3poolConvexPCVDeposit'],
   bal: ['balancerDepositBalWeth', 'balancerLensVeBalBal', 'balancerGaugeStaker'],
   weth: [
-    'ethLidoPCVDepositWrapper',
+    'ethLidoPCVDeposit',
     'compoundEthPCVDepositWrapper',
     'aaveEthPCVDepositWrapper',
     'uniswapPCVDeposit',

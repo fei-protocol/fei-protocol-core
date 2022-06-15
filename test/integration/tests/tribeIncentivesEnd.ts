@@ -14,7 +14,7 @@ const toBN = ethers.BigNumber.from;
 chai.use(CBN(ethers.BigNumber));
 chai.use(solidity);
 
-describe('e2e-end-tribe-incentives', function () {
+describe.skip('e2e-end-tribe-incentives', function () {
   let contracts: NamedContracts;
   let contractAddresses: NamedAddresses;
   let deployAddress: string;

@@ -241,10 +241,15 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     address: '0x4fCB1435fD42CE7ce7Af3cB2e98289F79d2962b3',
     category: AddressCategory.PCV_V1
   },
-  ethLidoPCVDeposit: {
+  ethLidoPCVDepositOld: {
     artifactName: 'EthLidoPCVDeposit',
     address: '0xac38ee05c0204a1e119c625d0a560d6731478880',
-    category: AddressCategory.PCV_V1
+    category: AddressCategory.Deprecated
+  },
+  ethLidoPCVDeposit: {
+    artifactName: 'EthLidoPCVDeposit',
+    address: '0x6e5f2745C08249a190239763706473bE0B72816d',
+    category: AddressCategory.PCV
   },
   indexDelegator: {
     artifactName: 'SnapshotDelegatorPCVDeposit',
@@ -541,10 +546,10 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     address: '0x3a1838Ac9EcA864054bebB82C32455Dd7d7Fc89c',
     category: AddressCategory.Deprecated
   },
-  ethLidoPCVDepositWrapper: {
+  ethLidoPCVDepositOldWrapper: {
     artifactName: 'PCVDepositWrapper',
     address: '0xA271fF86426c7fdAaAE72603e6Ce68c892d69ED7',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
   ethReserveStabilizerWrapper: {
     artifactName: 'PCVDepositWrapper',
@@ -759,6 +764,16 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   chainlinkEthUsdOracleWrapper: {
     artifactName: 'ChainlinkOracleWrapper',
     address: '0xCd3c40AE1256922BA16C7872229385E20Bc8351e',
+    category: AddressCategory.Oracle
+  },
+  chainlinkStEthUsdOracleWrapper: {
+    artifactName: 'ChainlinkOracleWrapper',
+    address: '0x011d15600671530C93818FdB1283E20748CB8c73',
+    category: AddressCategory.Oracle
+  },
+  compositeStEthEthOracle: {
+    artifactName: 'CompositeOracle',
+    address: '0x16A26876835cB3b06D948E7D166835aB28896a71',
     category: AddressCategory.Oracle
   },
   chainlinkEurUsdOracleWrapper: {
@@ -1298,6 +1313,11 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     address: '0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419',
     category: AddressCategory.External
   },
+  chainlinkStEthUsdOracle: {
+    artifactName: 'unknown',
+    address: '0xCfE54B5cD566aB89272946F602D76Ea879CAb4a8',
+    category: AddressCategory.External
+  },
   chainlinkEurUsdOracle: {
     artifactName: 'unknown',
     address: '0xb49f677943bc038e9857d61e7d053caa2c1734c1',
@@ -1371,6 +1391,11 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   curveD3pool: {
     artifactName: 'ICurveStableSwap3',
     address: '0xBaaa1F5DbA42C3389bDbc2c9D2dE134F5cD0Dc89',
+    category: AddressCategory.External
+  },
+  curveStethPool: {
+    artifactName: 'IStableSwapSTETH',
+    address: '0xDC24316b9AE028F1497c275EB9192a3Ea0f67022',
     category: AddressCategory.External
   },
   curveFei3crvMetapool: {
@@ -1982,6 +2007,11 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     artifactName: 'unknown',
     address: '0xf2e513d3b4171bb115cb9ffc45555217fbbbd00c',
     category: AddressCategory.Turbo
+  },
+  convexPoolPCVDeposit: {
+    artifactName: 'ERC20CompoundPCVDeposit',
+    address: '0x525eA5983A2e02abA8aA0BE7D15Cd73150812379',
+    category: AddressCategory.PCV_V1
   },
   convexPoolPCVDepositWrapper: {
     artifactName: 'PCVDepositWrapper',
