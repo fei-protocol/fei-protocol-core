@@ -246,6 +246,11 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     address: '0xac38ee05c0204a1e119c625d0a560d6731478880',
     category: AddressCategory.Deprecated
   },
+  ethLidoPCVDeposit: {
+    artifactName: 'EthLidoPCVDeposit',
+    address: '0x6e5f2745C08249a190239763706473bE0B72816d',
+    category: AddressCategory.PCV
+  },
   indexDelegator: {
     artifactName: 'SnapshotDelegatorPCVDeposit',
     address: '0x0ee81df08B20e4f9E0F534e50da437D24491c4ee',
@@ -759,6 +764,16 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   chainlinkEthUsdOracleWrapper: {
     artifactName: 'ChainlinkOracleWrapper',
     address: '0xCd3c40AE1256922BA16C7872229385E20Bc8351e',
+    category: AddressCategory.Oracle
+  },
+  chainlinkStEthUsdOracleWrapper: {
+    artifactName: 'ChainlinkOracleWrapper',
+    address: '0x011d15600671530C93818FdB1283E20748CB8c73',
+    category: AddressCategory.Oracle
+  },
+  compositeStEthEthOracle: {
+    artifactName: 'CompositeOracle',
+    address: '0x16A26876835cB3b06D948E7D166835aB28896a71',
     category: AddressCategory.Oracle
   },
   chainlinkEurUsdOracleWrapper: {
