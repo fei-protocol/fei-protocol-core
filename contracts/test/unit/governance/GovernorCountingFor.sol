@@ -12,7 +12,7 @@ import {Tribe} from "../../../tribe/Tribe.sol";
 import {TribeRoles} from "../../../core/TribeRoles.sol";
 
 /// @notice Fixture to create a dummy proposal
-function createDummyProposal(address dummyContract, uint256 newVariable)
+function createDummyProposal(address ethReceiver, uint256 ethAmount)
     returns (
         address[] memory,
         uint256[] memory,
@@ -22,16 +22,16 @@ function createDummyProposal(address dummyContract, uint256 newVariable)
     )
 {
     address[] memory targets = new address[](1);
-    targets[0] = dummyContract;
+    targets[0] = ethReceiver;
 
     uint256[] memory values = new uint256[](1);
-    values[0] = uint256(0);
+    values[0] = ethAmount;
 
     bytes[] memory calldatas = new bytes[](1);
-    bytes memory data = abi.encodePacked(bytes4(keccak256(bytes("setVariable(uint256)"))), newVariable);
+    bytes memory data = abi.encodePacked(bytes4(keccak256(bytes("transfer(uint256)"))), ethAmount);
     calldatas[0] = data;
 
-    string memory description = "Dummy proposal";
+    string memory description = "Dummy proposal to send ETH";
     bytes32 descriptionHash = keccak256(bytes(description));
     return (targets, values, calldatas, description, descriptionHash);
 }
@@ -39,14 +39,13 @@ function createDummyProposal(address dummyContract, uint256 newVariable)
 /// @dev Validates vote counting functionality of the GovernorCountingFor module. Module is abstract
 ///      so instantiated as a NopeDAO
 contract GovernorCountingFor is DSTest {
-    address userWithTribe = address(0x1);
+    address userWithQuorumTribe = address(0x1);
     address userWithInsufficientTribe = address(0x2);
     address userWithZeroTribe = address(0x3);
 
     uint256 excessQuorumTribe = (11e6) * (10**18);
     address tribeAddress;
     ERC20VotesComp tribe;
-    DummyStorage dummyStorageContract;
 
     Vm public constant vm = Vm(HEVM_ADDRESS);
     NopeDAO private nopeDAO;
@@ -62,23 +61,42 @@ contract GovernorCountingFor is DSTest {
         tribeAddress = address(core.tribe());
 
         vm.startPrank(addresses.governorAddress);
-        core.allocateTribe(userWithTribe, excessQuorumTribe);
+        core.allocateTribe(userWithQuorumTribe, excessQuorumTribe);
         core.allocateTribe(userWithInsufficientTribe, 5e6 * (10**18));
         vm.stopPrank();
 
         tribe = ERC20VotesComp(tribeAddress);
 
-        vm.prank(userWithTribe);
-        tribe.delegate(userWithTribe);
+        vm.prank(userWithQuorumTribe);
+        tribe.delegate(userWithQuorumTribe);
 
         // 3. Deploy NopeDAO
         nopeDAO = new NopeDAO(tribe, address(core));
 
         vm.roll(block.number + 1); // Make block number non-zero, for getVotes accounting
+
+        // 4. Seed NopeDAO with ETH so in theory could execute the proposal
+        vm.deal(address(nopeDAO), 10 ether);
+
+        // 5. Random address creates the nopeDAO proposal
+        (
+            address[] memory targets,
+            uint256[] memory values,
+            bytes[] memory calldatas,
+            string memory description,
+            bytes32 descriptionHash
+        ) = createDummyProposal(address(this), 1 ether);
+
+        nopeDAO.propose(targets, values, calldatas, description);
     }
 
     /// @notice Validate that a FOR vote is counted
-    function testCountForVote() public {}
+    function testCountForVote() public {
+        vm.prank(userWithQuorumTribe);
+        nopeDAO.castVote();
+
+        // Verify proposal state and vote balance
+    }
 
     /// @notice Validate that multiple FOR votes are counted
     function testCountMultipleForVotes() public {}
