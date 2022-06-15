@@ -100,7 +100,7 @@ function getTimelockCalldata(
   ]);
 
   if (podConfig) {
-    const proposalId = calcProposalId(proposal.targets, proposal.values, combinedCalldatas, predecessor, salt);
+    const proposalId = computeBatchProposalId(proposal.targets, proposal.values, combinedCalldatas, predecessor, salt);
     const registerMetadataCalldata = metadataRegistryInterface.encodeFunctionData('registerProposal', [
       podConfig.id,
       proposalId,
@@ -112,12 +112,16 @@ function getTimelockCalldata(
   }
 }
 
-export function calcProposalId(
+export function computeBatchProposalId(
   targets: string[],
   values: BigNumber[],
   payloads: string[],
   predecessor: string,
   salt: string
 ): string {
-  return '0x123';
+  const dataToHash = ethers.utils.defaultAbiCoder.encode(
+    ['address[]', 'uint256[]', 'bytes[]', 'bytes32', 'bytes32'],
+    [targets, values.map((x) => x.toString()), payloads, predecessor, salt]
+  );
+  return ethers.utils.keccak256(dataToHash);
 }

@@ -1,11 +1,11 @@
-import { ethers } from 'hardhat';
-import { calcProposalId } from '@scripts/utils/getProposalCalldata/calcProposalId';
+import { computeBatchProposalId } from '@scripts/utils/constructProposalCalldata';
 import { expect } from 'chai';
+import { BigNumber } from 'ethers';
 
-const toBN = ethers.BigNumber.from;
+const toBN = BigNumber.from;
 
 describe('Compute proposal ID off-chain', () => {
-  it('should compute proposalId for single transaction', () => {
+  it('should compute proposalId for a batched proposal', () => {
     // Fixture is a real-transaction submitted on-chain
     const expectedProposalId = '0x81c419dbb3c44645493c214eee0ceaf273ba870d1e7e1c48422e2762f60e0db4';
     const targets = [
@@ -17,7 +17,7 @@ describe('Compute proposal ID off-chain', () => {
       '0xFF6f59333cfD8f4Ebc14aD0a0E181a83e655d257',
       '0x98E5F5706897074a4664DD3a32eB80242d6E694B'
     ];
-    const values = ['0', '0', '0', '0', '0', '0', '0'];
+    const values = [toBN(0), toBN(0), toBN(0), toBN(0), toBN(0), toBN(0), toBN(0)];
     const payloads = [
       '0x8320357d00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000001000000000000000000000000f7991f4698ffb6716982aec7f78964dd731c4a54',
       '0xfe68d76e0000000000000000000000005b86887e171bae0c2c826e87e34df8d558c079b9000000000000000000000000f7991f4698ffb6716982aec7f78964dd731c4a5400000000000000000000000000000000000000000000043c33c193756480000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
@@ -30,15 +30,7 @@ describe('Compute proposal ID off-chain', () => {
     const predecessor = '0x0000000000000000000000000000000000000000000000000000000000000000';
     const salt = '0x0d0c2b4e41c5fdf9375f2b1601caf0af18e81d6257ea3abb3b72a989fc3698da';
 
-    const proposalId = calcProposalId(targets, values, payloads, predecessor, salt);
+    const proposalId = computeBatchProposalId(targets, values, payloads, predecessor, salt);
     expect(proposalId).to.be.equal(expectedProposalId);
-  });
-
-  it('should compute proposalId for batched transactions', () => {
-    const expectedProposalId = '0xbc8600cbb0c0316c5598c66e8f5dc4995f75863259939b3509fd2865da3f98aa';
-    const target = '';
-    const value = '0';
-    const predecessor = '';
-    const salt = '';
   });
 });
