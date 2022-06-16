@@ -11,45 +11,9 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     address: '0x956F47F50A910163D8BF957Cf5846D573E7f87CA',
     category: AddressCategory.Core
   },
-  feiTribeLBPSwapper: {
-    artifactName: 'BalancerLBPSwapper',
-    address: '0x16ef9601076d45e8cc564cDD91E5dF3Ae83dD3B3',
-    category: AddressCategory.Core
-  },
-  noFeeFeiTribeLBPSwapper: {
-    artifactName: 'BalancerLBPSwapper',
-    address: '0xC05FAF6C5C4bC1bD841AdFC92b3D3f20180F26E8',
-    category: AddressCategory.Core
-  },
-  optimisticMinter: {
-    artifactName: 'OwnableTimedMinter',
-    address: '0xE66c4De480Bd317054B5a3CF8E8689649d0728c9',
-    category: AddressCategory.Core
-  },
-  pcvEquityMinter: {
-    artifactName: 'PCVEquityMinter',
-    address: '0x904Deb2Dac1EdfCBBb69b9c279aE5F75E57Cf5E9',
-    category: AddressCategory.Core
-  },
-
-  pcvGuardianNew: {
-    artifactName: 'PCVGuardian',
-    address: '0x02435948F84d7465FB71dE45ABa6098Fc6eC2993',
-    category: AddressCategory.Core
-  },
-  pcvSentinel: {
-    artifactName: 'PCVSentinel',
-    address: '0xC297705Acf50134d256187c754B92FA37826C019',
-    category: AddressCategory.Core
-  },
   proxyAdmin: {
     artifactName: 'ProxyAdmin',
     address: '0xf8c2b645988b7658E7748BA637fE25bdD46A704A',
-    category: AddressCategory.Core
-  },
-  ratioPCVControllerV2: {
-    artifactName: 'RatioPCVControllerV2',
-    address: '0x221fff24FB66dA3c722c7C5B856956a6a30C0179',
     category: AddressCategory.Core
   },
   tribe: {
@@ -67,22 +31,58 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     address: '0x10ffa0CD36Bc16b355d21A08DF4a552c4A9FEC10',
     category: AddressCategory.Core
   },
-  dpiToDaiLBPSwapper: {
-    artifactName: 'BalancerLBPSwapper',
-    address: '0x05FD907528cf725C6F6d1D28E14619A313513Ba8',
-    category: AddressCategory.Core
+  pcvSentinel: {
+    artifactName: 'PCVSentinel',
+    address: '0xC297705Acf50134d256187c754B92FA37826C019',
+    category: AddressCategory.Security
+  },
+  pcvGuardianNew: {
+    artifactName: 'PCVGuardian',
+    address: '0x02435948F84d7465FB71dE45ABa6098Fc6eC2993',
+    category: AddressCategory.Security
+  },
+  guardianMultisig: {
+    artifactName: 'unknown',
+    address: '0xB8f482539F2d3Ae2C9ea6076894df36D1f632775',
+    category: AddressCategory.Security
   },
 
+  ratioPCVControllerV2: {
+    artifactName: 'RatioPCVControllerV2',
+    address: '0x221fff24FB66dA3c722c7C5B856956a6a30C0179',
+    category: AddressCategory.PCV_Mover
+  },
   ethToDaiLBPSwapper: {
     artifactName: 'BalancerLBPSwapper',
     address: '0xf7991f4698ffb6716982aec7f78964dd731c4a54',
-    category: AddressCategory.Core
+    category: AddressCategory.PCV_Mover
+  },
+  dpiToDaiLBPSwapper: {
+    // TODO: Deprecate
+    artifactName: 'BalancerLBPSwapper',
+    address: '0x05FD907528cf725C6F6d1D28E14619A313513Ba8',
+    category: AddressCategory.PCV_Mover
+  },
+  fuseFixer: {
+    artifactName: 'FuseFixer',
+    address: '0xFE7547F583aAe1212e72e063Aac25057C06c4797',
+    category: AddressCategory.PCV_Mover
   },
 
-  delayedPCVMoverWethUniToBal: {
-    artifactName: 'DelayedPCVMover',
-    address: '0x52B1D5BE5005002afD76193ADd3a827c18e2db99',
-    category: AddressCategory.Core
+  optimisticMinter: {
+    artifactName: 'OwnableTimedMinter',
+    address: '0xE66c4De480Bd317054B5a3CF8E8689649d0728c9',
+    category: AddressCategory.PCV_Mover
+  },
+  noFeeFeiTribeLBPSwapper: {
+    artifactName: 'BalancerLBPSwapper',
+    address: '0xC05FAF6C5C4bC1bD841AdFC92b3D3f20180F26E8',
+    category: AddressCategory.Buybacks
+  },
+  pcvEquityMinter: {
+    artifactName: 'PCVEquityMinter',
+    address: '0x904Deb2Dac1EdfCBBb69b9c279aE5F75E57Cf5E9',
+    category: AddressCategory.Buybacks
   },
 
   feiDAO: {
@@ -96,13 +96,6 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     address: '0xd51dbA7a94e1adEa403553A8235C302cEbF41a3c',
     category: AddressCategory.Governance
   },
-
-  guardianMultisig: {
-    artifactName: 'unknown',
-    address: '0xB8f482539F2d3Ae2C9ea6076894df36D1f632775',
-    category: AddressCategory.Governance
-  },
-
   optimisticMultisig: {
     artifactName: 'unknown',
     address: '0x35ED000468f397AA943009bD60cc6d2d9a7d32fF',
@@ -157,12 +150,6 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     category: AddressCategory.Governance
   },
 
-  fuseFixer: {
-    artifactName: 'FuseFixer',
-    address: '0xFE7547F583aAe1212e72e063Aac25057C06c4797',
-    category: AddressCategory.Governance
-  },
-
   angleDelegatorPCVDeposit: {
     artifactName: 'AngleDelegatorPCVDeposit',
     address: '0xb91F96b7C62fe4a2301219956Cc023fA7892F0C0',
@@ -172,12 +159,6 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   rariGovernanceProxyAdmin: {
     artifactName: 'ProxyAdmin',
     address: '0x1c9aA54a013962C2444ECae06902F31D532c6AD3',
-    category: AddressCategory.Governance
-  },
-
-  rariGovernanceTokenSushiSwapDistributor: {
-    artifactName: 'RariGovernanceTokenUniswapDistributor',
-    address: '0x1fa69a416bcf8572577d3949b742fbb0a9cd98c7',
     category: AddressCategory.Governance
   },
 
@@ -231,35 +212,36 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   aaveEthPCVDripController: {
     artifactName: 'PCVDripController',
     address: '0xb3D63876d95d3a5e591D4DE536dC410b97244086',
-    category: AddressCategory.Peg
+    category: AddressCategory.PCV_Mover
   },
   daiPCVDripController: {
     artifactName: 'PCVDripController',
     address: '0x3e0f66c5687FF917809A3F7fA7096e1Bc409fB03',
-    category: AddressCategory.Peg
+    category: AddressCategory.PCV_Mover
   },
   raiPCVDripController: {
+    // TODO: Deprecate
     artifactName: 'PCVDripController',
     address: '0x64d216dFbe31d0C88BBcAdfF51Ab2aD704A3aAd9',
-    category: AddressCategory.Peg
+    category: AddressCategory.PCV_Mover
   },
-
+  lusdPSMFeiSkimmer: {
+    artifactName: 'FeiSkimmer',
+    address: '0xFc29429D8c8D80320C4AB454131f741F56239c2b',
+    category: AddressCategory.PCV_Mover
+  },
+  lusdPCVDripController: {
+    artifactName: 'PCVDripController',
+    address: '0x59fA1bB4fBd7fcB055476645F228f13ac14754a8',
+    category: AddressCategory.PCV_Mover
+  },
   lusdPSM: {
     artifactName: 'PegStabilityModule',
     address: '0xb0e731F036AdfDeC12da77c15aaB0F90E8e45A0e',
     category: AddressCategory.Peg
   },
-  lusdPSMFeiSkimmer: {
-    artifactName: 'FeiSkimmer',
-    address: '0xFc29429D8c8D80320C4AB454131f741F56239c2b',
-    category: AddressCategory.Peg
-  },
-  lusdPCVDripController: {
-    artifactName: 'PCVDripController',
-    address: '0x59fA1bB4fBd7fcB055476645F228f13ac14754a8',
-    category: AddressCategory.Peg
-  },
   raiPriceBoundPSM: {
+    // TODO: Deprecate
     artifactName: 'PriceBoundPSM',
     address: '0x5ddE9B4b14eDf59CB23c1d4579B279846998205e',
     category: AddressCategory.Peg
@@ -295,12 +277,14 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     category: AddressCategory.Peg
   },
   dpiToDaiLensDai: {
+    // TODO: Deprecate
     artifactName: 'BPTLens',
     address: '0x3AA57FAf7114a9ebEbda73a997A35eAE06008A7B',
     category: AddressCategory.PCV
   },
 
   dpiToDaiLensDpi: {
+    // TODO: Deprecate
     artifactName: 'BPTLens',
     address: '0xaDdB7eBdCA3fa3b72D2e57c8e660C90ec00af7Cc',
     category: AddressCategory.PCV
@@ -331,6 +315,7 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   },
 
   bammDeposit: {
+    // TODO: Deprecate after withdrawing LQTY
     artifactName: 'BAMMDeposit',
     address: '0x374628EBE7Ef6AcA0574e750B618097531A26Ff8',
     category: AddressCategory.PCV
@@ -367,42 +352,49 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   },
 
   d3poolConvexPCVDeposit: {
+    // TODO: Deprecate after withdrawing CVX/CRV
     artifactName: 'ConvexPCVDeposit',
     address: '0x5ae217dE26f6Ff5F481C6e10ec48b2cf2fc857C8',
     category: AddressCategory.PCV
   },
 
   d3poolCurvePCVDeposit: {
+    // TODO: Deprecate after withdrawing 13k FEI
     artifactName: 'CurvePCVDepositPlainPool',
     address: '0x24F663c69Cd4B263cf5685A49013Ff5f1C898D24',
     category: AddressCategory.PCV
   },
 
   ethTokemakPCVDeposit: {
+    // TODO: Deprecate after withdrawing ETH and TOKE
     artifactName: 'EthTokemakPCVDeposit',
     address: '0x0961d2a545e0c1201B313d14C57023682a546b9D',
     category: AddressCategory.PCV
   },
 
   rariPool7LusdPCVDeposit: {
+    // TODO: Deprecate
     artifactName: 'ERC20CompoundPCVDeposit',
     address: '0x6026a1559CDd44a63C5CA9A078CC996a9eb68ABB',
     category: AddressCategory.PCV
   },
 
   uniswapPCVDeposit: {
+    // TODO: Coordinate with compound devs if Uniswap v2 anchor still used, otherwise deprecate
     artifactName: 'UniswapPCVDeposit',
     address: '0x15958381E9E6dc98bD49655e36f524D2203a28bD',
     category: AddressCategory.PCV
   },
 
   aaveEthPCVDepositWrapper: {
+    // TODO: Deprecate
     artifactName: 'PCVDepositWrapper',
     address: '0x43Ef03755991056681F01EE2182234eF6aF1f658',
     category: AddressCategory.PCV
   },
 
   aaveFeiPCVDepositWrapper: {
+    // TODO: Deprecate
     artifactName: 'PCVDepositWrapper',
     address: '0xFAc571b6054619053ac311dA8112939C9a374A85',
     category: AddressCategory.PCV
@@ -1752,6 +1744,21 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     artifactName: 'unknown',
     address: '0x5346b4ff3e924508d33d93f352d11e392a7a9d3b',
     category: AddressCategory.External
+  },
+  feiTribeLBPSwapper: {
+    artifactName: 'BalancerLBPSwapper',
+    address: '0x16ef9601076d45e8cc564cDD91E5dF3Ae83dD3B3',
+    category: AddressCategory.Deprecated
+  },
+  delayedPCVMoverWethUniToBal: {
+    artifactName: 'DelayedPCVMover',
+    address: '0x52B1D5BE5005002afD76193ADd3a827c18e2db99',
+    category: AddressCategory.Deprecated
+  },
+  rariGovernanceTokenSushiSwapDistributor: {
+    artifactName: 'RariGovernanceTokenUniswapDistributor',
+    address: '0x1fa69a416bcf8572577d3949b742fbb0a9cd98c7',
+    category: AddressCategory.Deprecated
   },
   pcvGuardian: {
     artifactName: 'PCVGuardian',

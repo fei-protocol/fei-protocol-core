@@ -154,6 +154,9 @@ export interface ContractConfig {
 export enum AddressCategory {
   Core = 'Core',
   Governance = 'Governance',
+  Buybacks = 'Buybacks',
+  PCV_Mover = 'PCV_Mover',
+  Security = 'Security',
   Peg = 'Peg',
   PCV = 'PCV',
   PCV_V1 = 'PCV_V1',
