@@ -2071,6 +2071,11 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   podExecutor: {
     artifactName: 'PodExecutor',
     address: '0x99d8b669F48A708f7C0373AF6CE31F0726ab6CaD',
+    category: AddressCategory.Deprecated
+  },
+  podExecutorV2: {
+    artifactName: 'PodExecutor',
+    address: '0xC72e814314e79114354F1682111e07015826080D',
     category: AddressCategory.Governance
   },
   podAdminGateway: {

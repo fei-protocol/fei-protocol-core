@@ -240,9 +240,9 @@ describe('e2e-pcv', function () {
         params: [aaveEthPCVDeposit.address]
       });
 
-      await aaveEthPCVDeposit.withdrawERC20(await aaveEthPCVDeposit.aToken(), deployAddress, tenPow18.mul(toBN(10000)));
+      await aaveEthPCVDeposit.withdrawERC20(await aaveEthPCVDeposit.aToken(), deployAddress, tenPow18.mul(toBN(1000)));
 
-      const borrowAmount = tenPow18.mul(toBN(1000000)).toString();
+      const borrowAmount = tenPow18.mul(toBN(100000)).toString();
       const balanceBefore = (await fei.balanceOf(deployAddress)).toString();
 
       // 1. Borrow
@@ -262,7 +262,7 @@ describe('e2e-pcv', function () {
       const rewardAmount: string = (
         await aaveTribeIncentivesController.getRewardsBalance([variableDebtTokenAddress], deployAddress)
       ).toString();
-      expectApprox(rewardAmount, tenPow18.mul(toBN(25000)));
+      expectApprox(rewardAmount, tenPow18.mul(toBN(2500)));
       // 4. Claim reward amount
       await aaveTribeIncentivesController.claimRewards([variableDebtTokenAddress], rewardAmount, deployAddress);
 
