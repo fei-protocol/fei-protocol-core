@@ -1,13 +1,13 @@
-import { ProposalDescription } from '@custom-types/types';
+import { TemplatedProposalDescription } from '@custom-types/types';
 
-const fip_x: ProposalDescription = {
+const fip_x: TemplatedProposalDescription = {
   title: 'FIP-X: Title',
   commands: [
     {
       target: '',
       values: '',
       method: '',
-      arguments: [],
+      arguments: (addresses) => [],
       description: ''
     }
   ],
