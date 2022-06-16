@@ -50,41 +50,71 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   ratioPCVControllerV2: {
     artifactName: 'RatioPCVControllerV2',
     address: '0x221fff24FB66dA3c722c7C5B856956a6a30C0179',
-    category: AddressCategory.PCV_Mover
+    category: AddressCategory.Utility
   },
   ethToDaiLBPSwapper: {
     artifactName: 'BalancerLBPSwapper',
     address: '0xf7991f4698ffb6716982aec7f78964dd731c4a54',
-    category: AddressCategory.PCV_Mover
+    category: AddressCategory.Utility
   },
   dpiToDaiLBPSwapper: {
     // TODO: Deprecate
     artifactName: 'BalancerLBPSwapper',
     address: '0x05FD907528cf725C6F6d1D28E14619A313513Ba8',
-    category: AddressCategory.PCV_Mover
+    category: AddressCategory.Utility
   },
   fuseFixer: {
     artifactName: 'FuseFixer',
     address: '0xFE7547F583aAe1212e72e063Aac25057C06c4797',
-    category: AddressCategory.PCV_Mover
+    category: AddressCategory.Utility
   },
 
   optimisticMinter: {
     artifactName: 'OwnableTimedMinter',
     address: '0xE66c4De480Bd317054B5a3CF8E8689649d0728c9',
-    category: AddressCategory.PCV_Mover
+    category: AddressCategory.Utility
   },
   noFeeFeiTribeLBPSwapper: {
     artifactName: 'BalancerLBPSwapper',
     address: '0xC05FAF6C5C4bC1bD841AdFC92b3D3f20180F26E8',
-    category: AddressCategory.Buybacks
+    category: AddressCategory.Utility
   },
   pcvEquityMinter: {
     artifactName: 'PCVEquityMinter',
     address: '0x904Deb2Dac1EdfCBBb69b9c279aE5F75E57Cf5E9',
-    category: AddressCategory.Buybacks
+    category: AddressCategory.Utility
   },
-
+  aaveEthPCVDripController: {
+    artifactName: 'PCVDripController',
+    address: '0xb3D63876d95d3a5e591D4DE536dC410b97244086',
+    category: AddressCategory.Utility
+  },
+  daiPCVDripController: {
+    artifactName: 'PCVDripController',
+    address: '0x3e0f66c5687FF917809A3F7fA7096e1Bc409fB03',
+    category: AddressCategory.Utility
+  },
+  raiPCVDripController: {
+    // TODO: Deprecate
+    artifactName: 'PCVDripController',
+    address: '0x64d216dFbe31d0C88BBcAdfF51Ab2aD704A3aAd9',
+    category: AddressCategory.Utility
+  },
+  lusdPSMFeiSkimmer: {
+    artifactName: 'FeiSkimmer',
+    address: '0xFc29429D8c8D80320C4AB454131f741F56239c2b',
+    category: AddressCategory.Utility
+  },
+  lusdPCVDripController: {
+    artifactName: 'PCVDripController',
+    address: '0x59fA1bB4fBd7fcB055476645F228f13ac14754a8',
+    category: AddressCategory.Utility
+  },
+  collateralizationOracleKeeper: {
+    artifactName: 'CollateralizationOracleKeeper',
+    address: '0x62378C316a6161A613D02E11F65290aED79B3eD5',
+    category: AddressCategory.Utility
+  },
   feiDAO: {
     artifactName: 'FeiDAO',
     address: '0x0BEF27FEB58e857046d630B2c03dFb7bae567494',
@@ -208,32 +238,6 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     artifactName: 'RoleBastion',
     address: '0x8096314D9014EbB69Fc777ED3791DDE6FFbaFAed',
     category: AddressCategory.Governance
-  },
-  aaveEthPCVDripController: {
-    artifactName: 'PCVDripController',
-    address: '0xb3D63876d95d3a5e591D4DE536dC410b97244086',
-    category: AddressCategory.PCV_Mover
-  },
-  daiPCVDripController: {
-    artifactName: 'PCVDripController',
-    address: '0x3e0f66c5687FF917809A3F7fA7096e1Bc409fB03',
-    category: AddressCategory.PCV_Mover
-  },
-  raiPCVDripController: {
-    // TODO: Deprecate
-    artifactName: 'PCVDripController',
-    address: '0x64d216dFbe31d0C88BBcAdfF51Ab2aD704A3aAd9',
-    category: AddressCategory.PCV_Mover
-  },
-  lusdPSMFeiSkimmer: {
-    artifactName: 'FeiSkimmer',
-    address: '0xFc29429D8c8D80320C4AB454131f741F56239c2b',
-    category: AddressCategory.PCV_Mover
-  },
-  lusdPCVDripController: {
-    artifactName: 'PCVDripController',
-    address: '0x59fA1bB4fBd7fcB055476645F228f13ac14754a8',
-    category: AddressCategory.PCV_Mover
   },
   lusdPSM: {
     artifactName: 'PegStabilityModule',
@@ -736,11 +740,6 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     artifactName: 'NamedStaticPCVDepositWrapper',
     address: '0x06dAcca04e201AD31393754E68dA04Dc14778Fa6',
     category: AddressCategory.Collateralization
-  },
-  collateralizationOracleKeeper: {
-    artifactName: 'CollateralizationOracleKeeper',
-    address: '0x62378C316a6161A613D02E11F65290aED79B3eD5',
-    category: AddressCategory.Keeper
   },
   rariTurboFusePool: {
     artifactName: 'unknown',
