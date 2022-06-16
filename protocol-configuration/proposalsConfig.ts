@@ -54,7 +54,7 @@ const proposals: TemplatedProposalsConfigMap = {
     proposalId: '',
     affectedContractSignoff: [],
     deprecatedContractSignoff: [],
-    category: ProposalCategory.TC
+    category: ProposalCategory.DAO
   }
 };
 
