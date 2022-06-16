@@ -181,9 +181,9 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     category: AddressCategory.Governance
   },
 
-  podExecutor: {
+  podExecutorV2: {
     artifactName: 'PodExecutor',
-    address: '0x99d8b669F48A708f7C0373AF6CE31F0726ab6CaD',
+    address: '0xC72e814314e79114354F1682111e07015826080D',
     category: AddressCategory.Governance
   },
 
@@ -2351,6 +2351,11 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   bbRedeemer: {
     artifactName: 'SmartYieldRedeemer',
     address: '0x2dC77678Be7F900e81c638b056F4835BB7203C96',
+    category: AddressCategory.Deprecated
+  },
+  podExecutor: {
+    artifactName: 'PodExecutor',
+    address: '0x99d8b669F48A708f7C0373AF6CE31F0726ab6CaD',
     category: AddressCategory.Deprecated
   },
   clawbackVestingContractA: {
