@@ -113,7 +113,7 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   collateralizationOracleKeeper: {
     artifactName: 'CollateralizationOracleKeeper',
     address: '0x62378C316a6161A613D02E11F65290aED79B3eD5',
-    category: AddressCategory.Utility
+    category: AddressCategory.Deprecated
   },
   feiDAO: {
     artifactName: 'FeiDAO',
@@ -413,7 +413,7 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   compoundEthPCVDepositWrapper: {
     artifactName: 'PCVDepositWrapper',
     address: '0x0735e14D28eD395048d5Fa4a8dbe6e6EB9fc0470',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
 
   feiBuybackLensNoFee: {
@@ -514,7 +514,7 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   compoundEthPCVDeposit: {
     artifactName: 'EthCompoundPCVDeposit',
     address: '0x4fCB1435fD42CE7ce7Af3cB2e98289F79d2962b3',
-    category: AddressCategory.PCV_V1
+    category: AddressCategory.Deprecated
   },
 
   indexDelegator: {
@@ -721,19 +721,19 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   collateralizationOracleGuardian: {
     artifactName: 'CollateralizationOracleGuardian',
     address: '0x81De6bA8df84A4B679061952E171a27F096F3eAe',
-    category: AddressCategory.Collateralization
+    category: AddressCategory.Deprecated
   },
 
   collateralizationOracleWrapper: {
     artifactName: 'CollateralizationOracleWrapper',
     address: '0xd1866289B4Bd22D453fFF676760961e0898EE9BF',
-    category: AddressCategory.Collateralization
+    category: AddressCategory.Deprecated
   },
 
   collateralizationOracleWrapperImpl: {
     artifactName: 'CollateralizationOracleWrapper',
     address: '0x656aA9c9875eB089b11869d4730d6963D25E76ad',
-    category: AddressCategory.Collateralization
+    category: AddressCategory.Deprecated
   },
 
   namedStaticPCVDepositWrapper: {
@@ -990,8 +990,8 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     address: '0xFeBDf448C8484834bb399d930d7E1bdC773E23bA',
     category: AddressCategory.Volt
   },
-  voltOracle: {
-    artifactName: 'unknown',
+  voltOraclePassthrough: {
+    artifactName: 'IOracle',
     address: '0x84dc71500D504163A87756dB6368CC8bB654592f',
     category: AddressCategory.Volt
   },

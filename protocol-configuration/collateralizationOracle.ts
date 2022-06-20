@@ -1,9 +1,6 @@
 const collateralizationAddresses: CollateralizationAddressType = {
   fei: [
     'feiOATimelockWrapper',
-    'rariPool6FeiPCVDepositWrapper',
-    'rariPool19FeiPCVDepositWrapper',
-    'rariPool24FeiPCVDepositWrapper',
     'aaveFeiPCVDepositWrapper',
     'rariPool79FeiPCVDepositWrapper',
     'rariPool128FeiPCVDepositWrapper',
@@ -12,26 +9,22 @@ const collateralizationAddresses: CollateralizationAddressType = {
     'compoundFeiPCVDepositWrapper',
     'turboFusePCVDeposit'
   ],
-  lusd: ['rariPool7LusdPCVDeposit', 'bammDeposit', 'lusdPSM'],
-  dai: ['compoundDaiPCVDepositWrapper', 'daiFixedPricePSM', 'dpiToDaiLensDai', 'ethToDaiLensDai'],
-  usd: ['namedStaticPCVDepositWrapper', 'd3poolCurvePCVDeposit', 'd3poolConvexPCVDeposit'],
+  lusd: ['lusdPSM'],
+  dai: ['compoundDaiPCVDepositWrapper', 'daiFixedPricePSM', 'ethToDaiLensDai'],
+  usd: ['namedStaticPCVDepositWrapper'],
   bal: ['balancerDepositBalWeth', 'balancerLensVeBalBal', 'balancerGaugeStaker'],
   weth: [
     'ethLidoPCVDeposit',
-    'compoundEthPCVDepositWrapper',
     'aaveEthPCVDepositWrapper',
-    'uniswapPCVDeposit',
     'ethTokemakPCVDeposit',
     'ethPSM',
-    'wethDepositWrapper',
     'balancerDepositFeiWeth',
     'balancerLensBpt30Fei70Weth',
     'balancerLensVeBalWeth',
     'ethToDaiLensEth'
   ],
-  dpi: ['dpiToDaiLensDpi'],
   rai: ['raiPriceBoundPSM'],
-  agEUR: ['agEurDepositWrapper', 'uniswapLensAgEurUniswapGauge', 'agEurUniswapPCVDeposit'],
+  agEUR: ['uniswapLensAgEurUniswapGauge', 'agEurUniswapPCVDeposit'],
   volt: ['voltDepositWrapper']
 };
 

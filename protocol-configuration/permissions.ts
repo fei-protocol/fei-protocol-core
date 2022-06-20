@@ -1,16 +1,5 @@
 export const permissions = {
-  MINTER_ROLE: [
-    'uniswapPCVDeposit',
-    'feiDAOTimelock',
-    'dpiUniswapPCVDeposit',
-    'pcvEquityMinter',
-    'collateralizationOracleKeeper',
-    'optimisticMinter',
-    'daiFixedPricePSM',
-    'ethPSM',
-    'lusdPSM',
-    'balancerDepositFeiWeth'
-  ],
+  MINTER_ROLE: ['feiDAOTimelock', 'pcvEquityMinter', 'daiFixedPricePSM', 'ethPSM', 'lusdPSM', 'balancerDepositFeiWeth'],
   BURNER_ROLE: [],
   GOVERN_ROLE: ['core', 'feiDAOTimelock', 'roleBastion'],
   PCV_CONTROLLER_ROLE: [
@@ -19,18 +8,11 @@ export const permissions = {
     'aaveEthPCVDripController',
     'pcvGuardianNew',
     'daiPCVDripController',
-    'lusdPCVDripController',
     'ethPSMFeiSkimmer',
-    'lusdPSMFeiSkimmer',
-    'raiPCVDripController'
+    'lusdPSMFeiSkimmer'
   ],
   GUARDIAN_ROLE: ['guardianMultisig', 'pcvGuardianNew', 'pcvSentinel'],
-  ORACLE_ADMIN_ROLE: [
-    'collateralizationOracleGuardian',
-    'optimisticTimelock',
-    'opsOptimisticTimelock',
-    'tribalCouncilTimelock'
-  ],
+  ORACLE_ADMIN_ROLE: ['optimisticTimelock', 'opsOptimisticTimelock', 'tribalCouncilTimelock'],
   SWAP_ADMIN_ROLE: ['pcvEquityMinter', 'optimisticTimelock', 'tribalCouncilTimelock'],
   BALANCER_MANAGER_ADMIN_ROLE: [],
   RATE_LIMITED_MINTER_ADMIN: [],
