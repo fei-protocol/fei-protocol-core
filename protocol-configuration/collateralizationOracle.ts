@@ -23,7 +23,6 @@ const collateralizationAddresses: CollateralizationAddressType = {
     'balancerLensVeBalWeth',
     'ethToDaiLensEth'
   ],
-  rai: ['raiPriceBoundPSM'],
   agEUR: ['uniswapLensAgEurUniswapGauge', 'agEurUniswapPCVDeposit'],
   volt: ['voltDepositWrapper']
 };

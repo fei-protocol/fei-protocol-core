@@ -89,6 +89,20 @@ const proposal: TemplatedProposalDescription = {
       arguments: (addresses) => [addresses.uniswapPCVDeposit, addresses.voltOracle],
       description: 'Replace VOLT oracle in CR oracle'
     },
+    /*{
+      target: 'raiPriceBoundPSM',
+      values: '0',
+      method: 'unpause()',
+      arguments: (addresses) => [],
+      description: 'Unpause RAI PSM'
+    },*/
+    /*{
+      target: 'ratioPCVControllerV2',
+      values: '0',
+      method: 'withdrawRatio(address,address,uint256)',
+      arguments: (addresses) => [addresses.ethTokemakPCVDeposit, addresses.ethPSM, '10000'],
+      description: 'Withdraw all ETH from Tokemak'
+    },*/
     {
       target: 'collateralizationOracle',
       values: '0',
@@ -107,8 +121,9 @@ const proposal: TemplatedProposalDescription = {
           addresses.d3poolConvexPCVDeposit, // 0$ left in Convex d3
           addresses.d3poolCurvePCVDeposit, // 1034$ left in Curve d3
           addresses.uniswapPCVDeposit, // 0$ left in FEI/ETH Uniswap v2
-          addresses.compoundEthPCVDepositWrapper // 0 ETH left in Compound
-          //addresses.ethTokemakPCVDeposit, // will be 0$ by the time this executes
+          addresses.compoundEthPCVDepositWrapper, // 0 ETH left in Compound
+          addresses.raiPriceBoundPSM, // Assuming RAI PSM has been unpaused & emptied
+          addresses.ethTokemakPCVDeposit // Assuming this has been emptied
         ]
       ],
       description: 'Remove deprecated/empty deposits from CR oracle'
