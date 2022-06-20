@@ -3,7 +3,84 @@ import { TemplatedProposalDescription } from '@custom-types/types';
 const deprecate_incentives: TemplatedProposalDescription = {
   title: 'TIP-114: Deprecate TRIBE Incentives system',
   commands: [
-    // Harvest staking token wrappers
+    // Harvest staking token wrappers so the ARDs are fully funded
+    {
+      target: 'stakingTokenWrapperRari',
+      values: '0',
+      method: 'harvest()',
+      arguments: (addresses) => [],
+      description: 'Harvest the FeiRari staking token wrapper to fund deposit'
+    },
+    {
+      target: 'stakingTokenWrapperFOXLaaS',
+      values: '0',
+      method: 'harvest()',
+      arguments: (addresses) => [],
+      description: 'Harvest the LaaS: FOX staking token wrapper to fund deposit'
+    },
+    {
+      target: 'stakingTokenWrapperUMALaaS',
+      values: '0',
+      method: 'harvest()',
+      arguments: (addresses) => [],
+      description: 'Harvest the LaaS: UMA staking token wrapper to fund deposit'
+    },
+    {
+      target: 'stakingTokenWrapperSYNLaaS',
+      values: '0',
+      method: 'harvest()',
+      arguments: (addresses) => [],
+      description: 'Harvest the LaaS: SYN staking token wrapper to fund deposit'
+    },
+    {
+      target: 'stakingTokenWrapperNEARLaaS',
+      values: '0',
+      method: 'harvest()',
+      arguments: (addresses) => [],
+      description: 'Harvest the LaaS: NEAR staking token wrapper to fund deposit'
+    },
+    {
+      target: 'stakingTokenWrapperMStableLaaS',
+      values: '0',
+      method: 'harvest()',
+      arguments: (addresses) => [],
+      description: 'Harvest the LaaS: MStable staking token wrapper to fund deposit'
+    },
+    {
+      target: 'stakingTokenWrapperPoolTogetherLaaS',
+      values: '0',
+      method: 'harvest()',
+      arguments: (addresses) => [],
+      description: 'Harvest the LaaS: PoolTogether staking token wrapper to fund deposit'
+    },
+    {
+      target: 'd3StakingTokenWrapper',
+      values: '0',
+      method: 'harvest()',
+      arguments: (addresses) => [],
+      description: 'Harvest the FeiRari: d3Pool LP staking token wrapper to fund deposit'
+    },
+    {
+      target: 'fei3CrvStakingtokenWrapper',
+      values: '0',
+      method: 'harvest()',
+      arguments: (addresses) => [],
+      description: 'Harvest the FeiRari: 3crv-FEI metapool LP staking token wrapper to fund deposit'
+    },
+    {
+      target: 'feiDaiStakingTokenWrapper',
+      values: '0',
+      method: 'harvest()',
+      arguments: (addresses) => [],
+      description: 'Harvest the FeiRari: G-UNI DAI/FEI 0.05% fee tier staking token wrapper to fund deposit'
+    },
+    {
+      target: 'feiUsdcStakingTokenWrapper',
+      values: '0',
+      method: 'harvest()',
+      arguments: (addresses) => [],
+      description: 'Harvest the FeiRari: G-UNI USDC/FEI 0.01% fee tier staking token wrapper to fund deposit'
+    },
 
     // Withdraw excess TRIBE from reward system
 
@@ -21,6 +98,7 @@ const deprecate_incentives: TemplatedProposalDescription = {
       arguments: (addresses) => [addresses.tribe, addresses.core, '200891359701492537313432'],
       description: 'Withdraw 200k TRIBE from 3CRV Votium briber contract to the Core Treasury'
     },
+    // Can I harvest everything and then withdraw from the contracts they end up on?
 
     {
       target: 'tribalChief',
