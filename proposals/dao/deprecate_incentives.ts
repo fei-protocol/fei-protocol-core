@@ -51,6 +51,7 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
   const tribe = contracts.tribe;
+  const core = contracts.core;
 
   const expectedTribeRecovery = ethers.constants.WeiPerEther.mul(40_000_000);
   const remainingTRIBELPRewards = ethers.constants.WeiPerEther.mul(100_000);
@@ -86,6 +87,10 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(
     await aaveTribeIncentivesControllerAsProxy.connect(aaveLendingPoolAddressesProviderSigner).callStatic.admin()
   ).to.be.equal(addresses.aaveLendingPoolAddressesProvider);
+
+  // 6. Validate TRIBAL_CHIEF_ADMIN_ROLE is revoked
+  expect(await core.hasRole(ethers.utils.id('TRIBAL_CHIEF_ADMIN_ROLE'), addresses.tribalCouncilTimelock)).to.be.false;
+  expect(await core.hasRole(ethers.utils.id('TRIBAL_CHIEF_ADMIN_ROLE'), addresses.optimisticTimelock)).to.be.false;
 };
 
 export { deploy, setup, teardown, validate };

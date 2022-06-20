@@ -790,37 +790,35 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   erc20Dripper: {
     artifactName: 'ERC20Dripper',
     address: '0x3Fe0EAD3500e767F0F8bC2d3B5AF7755B1b21A6a',
-    category: AddressCategory.Rewards
+    category: AddressCategory.Deprecated
   },
 
   rariRewardsDistributorDelegate: {
     artifactName: 'IRewardsDistributorAdmin',
     address: '0x220f93183a69d1598e8405310cB361CFF504146F',
-    category: AddressCategory.Rewards
+    category: AddressCategory.Deprecated
   },
-  // TODO: This has ~$1.5M TRIBE on it
   rariRewardsDistributorDelegator: {
     artifactName: 'IRewardsDistributorDelegator',
     address: '0x73F16f0c0Cd1A078A54894974C5C054D8dC1A3d7',
-    category: AddressCategory.Rewards
+    category: AddressCategory.Deprecated
   },
 
   tribalChief: {
     artifactName: 'TribalChief',
     address: '0x9e1076cC0d19F9B0b8019F384B0a29E48Ee46f7f',
-    category: AddressCategory.Rewards
+    category: AddressCategory.Deprecated
   },
 
   tribalChiefImpl: {
     artifactName: 'TribalChief',
     address: '0x2d91362e8bcAA8826b482B531dcb170FC9d17777',
-    category: AddressCategory.Rewards
+    category: AddressCategory.Deprecated
   },
-  // TODO: This has $50k TRIBE on it, should withdraw
   votiumBriber3Crvpool: {
     artifactName: 'VotiumBriber',
     address: '0x8B6A295a35171E2F05B1579E485017B999810dcb',
-    category: AddressCategory.Rewards
+    category: AddressCategory.Deprecated
   },
   fuseERC4626Pool8Fei: {
     artifactName: 'unknown',

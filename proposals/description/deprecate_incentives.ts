@@ -1,3 +1,4 @@
+import { ethers } from 'ethers';
 import { TemplatedProposalDescription } from '@custom-types/types';
 
 const deprecate_incentives: TemplatedProposalDescription = {
@@ -182,6 +183,22 @@ const deprecate_incentives: TemplatedProposalDescription = {
       description: 'Transfer TRIBE clawed back by FIP-113 to the Core Treasury'
     },
 
+    ////  Revoke roles from contracts that interacted with Tribal Chief and rewards system
+    {
+      target: 'core',
+      values: '0',
+      method: 'revokeRole(bytes32,address)',
+      arguments: (addresses) => [ethers.utils.id('TRIBAL_CHIEF_ADMIN_ROLE'), addresses.optimisticTimelock],
+      description: ' Revoke TRIBAL_CHIEF_ADMIN_ROLE from OptimisticTimelock'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'revokeRole(bytes32,address)',
+      arguments: (addresses) => [ethers.utils.id('TRIBAL_CHIEF_ADMIN_ROLE'), addresses.tribalCouncilTimelock],
+      description: ' Revoke TRIBAL_CHIEF_ADMIN_ROLE from Tribal Council timelock'
+    },
+
     //// Transfer the admin of the Aave Tribe Incentives Controller Proxy to Aave governance
     {
       target: 'proxyAdmin',
@@ -205,6 +222,7 @@ const deprecate_incentives: TemplatedProposalDescription = {
   - Withdraws all TRIBE from 3Crv and D3 Votium briber contracts
   - Withdraws remaining TRIBE from ERC20 Dripper
   - Moves previously clawed back TRIBE from the TRIBE DAO timelock to the Core Treasury
+  - Revokes no longer needed TRIBAL_CHIEF_ADMIN_ROLE roles
   - Transfers the admin of the Aave Fei Incentives Controller Proxy to Aave Governance
   `
 };
