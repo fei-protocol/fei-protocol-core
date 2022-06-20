@@ -56,6 +56,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const expectedTribeRecovery = ethers.constants.WeiPerEther.mul(40_000_000);
   const remainingTRIBELPRewards = ethers.constants.WeiPerEther.mul(564_000);
   const excessRariTribeToExtract = ethers.constants.WeiPerEther.mul(164_000);
+  const maxRemainingExtraChiefBalance = ethers.constants.WeiPerEther.mul(30_000);
 
   // 1. Validate all the locations TRIBE was withdrawn from are empty
   expect(await tribe.balanceOf(addresses.votiumBriber3Crvpool)).to.equal(0);
@@ -65,6 +66,11 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 
   // 2. Validate TribalChief has sufficient TRIBE to fund LP staking deposits
   expect(await tribe.balanceOf(addresses.tribalChief)).to.be.bignumber.at.least(remainingTRIBELPRewards);
+
+  // Validate remaining balance of TribalChief is small
+  const finalTribalChiefBalance = await tribe.balanceOf(addresses.tribalChief);
+  console.log('Final TribalChief balance:', finalTribalChiefBalance.toString());
+  expect(finalTribalChiefBalance).to.be.bignumber.lessThan(maxRemainingExtraChiefBalance.add(remainingTRIBELPRewards));
 
   // 3. Validate excess TRIBE was pulled from Rari rewards delegate
   const finalRariDelegatorBalance = await tribe.balanceOf(addresses.rariRewardsDistributorDelegator);
