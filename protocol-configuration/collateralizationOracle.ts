@@ -16,7 +16,6 @@ const collateralizationAddresses: CollateralizationAddressType = {
   weth: [
     'ethLidoPCVDeposit',
     'aaveEthPCVDepositWrapper',
-    'ethTokemakPCVDeposit',
     'ethPSM',
     'balancerDepositFeiWeth',
     'balancerLensBpt30Fei70Weth',
