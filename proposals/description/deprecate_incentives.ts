@@ -165,7 +165,7 @@ const deprecate_incentives: TemplatedProposalDescription = {
           - staking token wrapper harvested TRIBE
             - (pending rewards, Uniswap-v2 FEI/TRIBE LP + Curve 3crv-FEI metapool LP + G-UNI DAI/FEI 0.05% fee tier)
       
-      Withdrawal amount = 29M - X - Y
+      Withdrawal amount = 29M - 2.4M - Y
       `
     },
 
@@ -176,6 +176,18 @@ const deprecate_incentives: TemplatedProposalDescription = {
       method: 'transferFrom(address,address,uint256)',
       arguments: (addresses) => [addresses.feiDAOTimelock, addresses.core, '16928757542558284368284929'],
       description: 'Transfer TRIBE clawed back by FIP-113 to the Core Treasury'
+    },
+
+    //// Transfer the admin of the Aave Tribe Incentives Controller Proxy to Aave governance
+    {
+      target: 'proxyAdmin',
+      values: '0',
+      method: 'changeProxyAdmin(address,address)',
+      arguments: (addresses) => [addresses.aaveTribeIncentivesController, addresses.aaveLendingPoolAddressesProvider],
+      description: `
+      Transfer the admin of the Aave Tribe Incentives Controller Proxy to Aave governance, specifically 
+      the LendingPoolAddressesProvider.
+      `
     }
   ],
   description: `

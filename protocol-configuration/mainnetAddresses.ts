@@ -844,12 +844,17 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   aaveTribeIncentivesController: {
     artifactName: 'IAaveIncentivesController',
     address: '0xDee5c1662bBfF8f80f7c572D8091BF251b3B0dAB',
-    category: AddressCategory.Rewards
+    category: AddressCategory.Deprecated
   },
   aaveTribeIncentivesControllerImpl: {
     artifactName: 'IAaveIncentivesController',
     address: '0xFF865335401F12B88fa3FF5A3a51685A7f224191',
-    category: AddressCategory.Rewards
+    category: AddressCategory.Deprecated
+  },
+  aaveLendingPoolAddressesProvider: {
+    artifactName: 'unknown',
+    address: '0xB53C1a33016B2DC2fF3653530bfF1848a515c8c5',
+    category: AddressCategory.External
   },
   autoRewardsDistributor: {
     artifactName: 'AutoRewardsDistributor',

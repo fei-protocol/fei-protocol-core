@@ -66,10 +66,8 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   console.log('Tribe recovered: ', tribeRecovered.toString());
   expect(tribeRecovered).to.be.bignumber.at.least(expectedTribeRecovery);
 
-  // 4. Validate Aave incentives controller proxy admin was changed
-  expect(await contracts.proxyAdmin.getProxyAdmin(addresses.aaveIncentivesController)).to.equal(
-    addresses.aaveLendingPoolAddressesProvider
-  );
+  // 4. Validate Aave incentives controller proxy admin was changed - should revert as DAO no longer proxy admin
+  await expect(contracts.proxyAdmin.getProxyAdmin(addresses.aaveIncentivesController)).to.be.reverted;
 };
 
 export { deploy, setup, teardown, validate };
