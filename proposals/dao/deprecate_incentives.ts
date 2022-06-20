@@ -49,11 +49,27 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const tribe = contracts.tribe;
 
   const expectedTribeRecovery = ethers.constants.WeiPerEther.mul(10_000_000);
+  const remainingTRIBELPRewards = ethers.constants.WeiPerEther.mul(100_000);
 
+  // 1. Validate all the locations TRIBE was withdrawn from are empty
+  expect(await tribe.balanceOf(addresses.votiumBriber3Crvpool)).to.equal(0);
+  expect(await tribe.balanceOf(addresses.erc20Dripper)).to.equal(0);
+  expect(await tribe.balanceOf(addresses.votiumBriberD3pool)).to.equal(0);
+  expect(await tribe.balanceOf(addresses.feiDAOTimelock)).to.equal(0);
+
+  // 2. Validate TribalChief has sufficient TRIBE to fund LP staking deposits
+  expect(await tribe.balanceOf(addresses.tribalChief)).to.be.bignumber.at.least(remainingTRIBELPRewards);
+
+  // 3. Validate expected TRIBE recovery amount was retrieved
   const finalCoreTribeBalance = await tribe.balanceOf(addresses.core);
   const tribeRecovered = finalCoreTribeBalance.sub(initialCoreTribeBalance);
   console.log('Tribe recovered: ', tribeRecovered.toString());
   expect(tribeRecovered).to.be.bignumber.at.least(expectedTribeRecovery);
+
+  // 4. Validate Aave incentives controller proxy admin was changed
+  expect(await contracts.proxyAdmin.getProxyAdmin(addresses.aaveIncentivesController)).to.equal(
+    addresses.aaveLendingPoolAddressesProvider
+  );
 };
 
 export { deploy, setup, teardown, validate };

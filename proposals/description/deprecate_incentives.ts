@@ -140,6 +140,17 @@ const deprecate_incentives: TemplatedProposalDescription = {
       `
     },
     {
+      target: 'votiumBriberD3pool',
+      values: '0',
+      method: 'withdrawERC20(address,address,uint256)',
+      arguments: (addresses) => [addresses.tribe, addresses.core, '232096077769383622085234'],
+      description: `
+      Withdraw all TRIBE from D3 Votium briber contract to the Core Treasury. 
+      
+      Withdraw is made up of 230k TRIBE that was harvested from the stakingTokenWrapperBribeD3pool.
+      `
+    },
+    {
       target: 'tribalChief',
       values: '0',
       method: 'governorWithdrawTribe(uint256)',
