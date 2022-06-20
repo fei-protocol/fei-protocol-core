@@ -156,48 +156,6 @@ describe('e2e-dao', function () {
       const admin = await optimisticTimelock.TIMELOCK_ADMIN_ROLE();
       expect(await optimisticTimelock.hasRole(admin, feiDAOTimelock)).to.be.true;
     });
-
-    it('proposal can execute on tribalChief', async () => {
-      const { optimisticMultisig } = contractAddresses;
-      const { optimisticTimelock, tribalChief } = contracts;
-
-      const oldBlockReward = await tribalChief.tribePerBlock();
-      await optimisticTimelock
-        .connect(await ethers.getSigner(optimisticMultisig))
-        .schedule(
-          tribalChief.address,
-          0,
-          '0xf580ffcb0000000000000000000000000000000000000000000000000000000000000001',
-          '0x0000000000000000000000000000000000000000000000000000000000000000',
-          '0x0000000000000000000000000000000000000000000000000000000000000001',
-          '500000'
-        );
-
-      const hash = await optimisticTimelock.hashOperation(
-        tribalChief.address,
-        0,
-        '0xf580ffcb0000000000000000000000000000000000000000000000000000000000000001',
-        '0x0000000000000000000000000000000000000000000000000000000000000000',
-        '0x0000000000000000000000000000000000000000000000000000000000000001'
-      );
-      expect(await optimisticTimelock.isOperationPending(hash)).to.be.true;
-
-      await increaseTime(500000);
-      await optimisticTimelock
-        .connect(await ethers.getSigner(optimisticMultisig))
-        .execute(
-          tribalChief.address,
-          0,
-          '0xf580ffcb0000000000000000000000000000000000000000000000000000000000000001',
-          '0x0000000000000000000000000000000000000000000000000000000000000000',
-          '0x0000000000000000000000000000000000000000000000000000000000000001'
-        );
-
-      expect(await tribalChief.tribePerBlock()).to.be.bignumber.equal(toBN('1'));
-      expect(await optimisticTimelock.isOperationDone(hash)).to.be.true;
-
-      await tribalChief.updateBlockReward(oldBlockReward);
-    });
   });
 
   describe('Access control', async () => {

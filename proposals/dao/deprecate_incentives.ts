@@ -54,7 +54,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const core = contracts.core;
 
   const expectedTribeRecovery = ethers.constants.WeiPerEther.mul(40_000_000);
-  const remainingTRIBELPRewards = ethers.constants.WeiPerEther.mul(100_000);
+  const remainingTRIBELPRewards = ethers.constants.WeiPerEther.mul(564_000);
   const excessRariTribeToExtract = ethers.constants.WeiPerEther.mul(164_000);
 
   // 1. Validate all the locations TRIBE was withdrawn from are empty
@@ -77,7 +77,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   console.log('Tribe recovered: ', tribeRecovered.toString());
   expect(tribeRecovered).to.be.bignumber.at.least(expectedTribeRecovery);
 
-  // 5. Validate Aave incentives controller proxy admin was changed - should revert as DAO no longer proxy admin
+  // 5. Validate Aave incentives controller proxy admin was changed
   const aaveLendingPoolAddressesProviderSigner = await getImpersonatedSigner(
     addresses.aaveLendingPoolAddressesProvider
   );
