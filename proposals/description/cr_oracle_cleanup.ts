@@ -55,6 +55,55 @@ const proposal: TemplatedProposalDescription = {
         'Revoke ORACLE_ADMIN_ROLE from collateralizationOracleGuardian (no more guardian updates of cached CR Oracle)'
     },
     {
+      target: 'core',
+      values: '0',
+      method: 'revokeRole(bytes32,address)',
+      arguments: (addresses) => [ethers.utils.id('ORACLE_ADMIN_ROLE'), addresses.optimisticTimelock],
+      description: 'Revoke ORACLE_ADMIN_ROLE from optimisticTimelock (OA is deprecated)'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'revokeRole(bytes32,address)',
+      arguments: (addresses) => [ethers.utils.id('SWAP_ADMIN_ROLE'), addresses.optimisticTimelock],
+      description: 'Revoke SWAP_ADMIN_ROLE from optimisticTimelock (OA is deprecated)'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'revokeRole(bytes32,address)',
+      arguments: (addresses) => [ethers.utils.id('FUSE_ADMIN'), addresses.optimisticTimelock],
+      description: 'Revoke FUSE_ADMIN from optimisticTimelock (OA is deprecated)'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'revokeRole(bytes32,address)',
+      arguments: (addresses) => [ethers.utils.id('PCV_GUARDIAN_ADMIN_ROLE'), addresses.optimisticTimelock],
+      description: 'Revoke PCV_GUARDIAN_ADMIN_ROLE from optimisticTimelock (OA is deprecated)'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'revokeRole(bytes32,address)',
+      arguments: (addresses) => [ethers.utils.id('METAGOVERNANCE_GAUGE_ADMIN'), addresses.optimisticTimelock],
+      description: 'Revoke METAGOVERNANCE_GAUGE_ADMIN from optimisticTimelock (OA is deprecated)'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'revokeRole(bytes32,address)',
+      arguments: (addresses) => [ethers.utils.id('PCV_MINOR_PARAM_ROLE'), addresses.optimisticTimelock],
+      description: 'Revoke PCV_MINOR_PARAM_ROLE from optimisticTimelock (OA is deprecated)'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'revokeRole(bytes32,address)',
+      arguments: (addresses) => [ethers.utils.id('TOKEMAK_DEPOSIT_ADMIN_ROLE'), addresses.optimisticTimelock],
+      description: 'Revoke TOKEMAK_DEPOSIT_ADMIN_ROLE from optimisticTimelock (OA is deprecated)'
+    },
+    {
       target: 'tribeReserveStabilizer',
       values: '0',
       method: 'setCollateralizationOracle(address)',
@@ -129,15 +178,15 @@ const proposal: TemplatedProposalDescription = {
       description: 'Remove deprecated/empty deposits from CR oracle'
     }
   ],
-  description: `CR Oracle cleanup
+  description: `CR Oracle & Optimistic Approval Cleanup
 
-Deprecate old CR oracle caching features :
+Deprecate Old CR Oracle Caching Features :
  - collateralizationOracle is now read directly by pcvEquityMinter (buybacks) and tribeReserveStabilizer (backstop)
  - collateralizationOracleWrapper and collateralizationOracleWrapperImpl are no longer used anywhere in the system
  - collateralizationOracleGuardian (used to update the cache) is no longer used (revoked ORACLE_ADMIN_ROLE role)
  - collateralizationOracleKeeper (used to incentivize updates of the cache) is no longer used (revoked MINTER_ROLE role)
 
-Remove empty or deprecated PCV Deposits from CR oracle :
+Remove Empty or Deprecated PCV Deposits from CR Oracle :
  - DPI->DAI LBP lenses
  - B.AMM LUSD Deposit (deprecated, would need to redeploy to use the new B.AMM)
  - Fuse pool 7 (Tetranode) LUSD deposit (0$ left)
@@ -146,6 +195,15 @@ Remove empty or deprecated PCV Deposits from CR oracle :
  - Curve/Convex d3 deposits (1034$ left in Curve)
  - ETH in Tokemak (0$ left)
  - Withdraw remaining ETH/FEI liquidity from Uniswap v2
+
+Deprecate OA Roles:
+ - ORACLE_ADMIN ROLE
+ - SWAP_ADMIN_ROLE
+ - FUSE_ADMIN
+ - PCV_GUARDIAN_ADMIN_ROLE
+ - METAGOVERNANCE_GAUGE_ADMIN
+ - PCV_MINOR_PARAM_ROLE
+ - TOKEMAK_DEPOSIT_ADMIN_ROLE
 `
 };
 

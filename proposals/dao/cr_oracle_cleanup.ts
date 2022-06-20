@@ -115,7 +115,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   // check the pcv equity minter when FEI is undercollateralized
   await expectRevert(contracts.pcvEquityMinter.mintAmount(), 'PCVEquityMinter: Equity is nonpositive');
 
-  // simulate a tribe reserve stabilizier trigger
+  // simulate a tribe reserve stabilizer trigger
   const amountFei: BigNumber = ethers.constants.WeiPerEther.mul('40000000'); // redeem 40M FEI
   const feiHolderSigner: SignerWithAddress = await getImpersonatedSigner(addresses.feiTribePair);
   await forceEth(addresses.feiTribePair);
