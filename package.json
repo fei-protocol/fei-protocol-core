@@ -68,7 +68,7 @@
     "hardhat": "^2.9.9",
     "hardhat-contract-sizer": "^2.5.1",
     "hardhat-gas-reporter": "^1.0.8",
-    "merkletreejs": "^0.2.31",
+    "merkletreejs": "^0.2.32",
     "string-template": "^1.0.0"
   },
   "devDependencies": {
