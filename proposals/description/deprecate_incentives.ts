@@ -4,12 +4,21 @@ const deprecate_incentives: TemplatedProposalDescription = {
   title: 'TIP-114: Deprecate TRIBE Incentives system',
   commands: [
     // Harvest staking token wrappers so the ARDs are fully funded
+
+    ///////////////  PERFORM OUTSIDE OF PROPOSAL FIRST /////////////////
     {
       target: 'stakingTokenWrapperRari',
       values: '0',
       method: 'harvest()',
       arguments: (addresses) => [],
-      description: 'Harvest the FeiRari staking token wrapper to fund deposit'
+      description: 'Harvest the FeiRari: TRIBE staking token wrapper to fund deposit'
+    },
+    {
+      target: 'stakingTokenWrapperGROLaaS',
+      values: '0',
+      method: 'harvest()',
+      arguments: (addresses) => [],
+      description: 'Harvest the LaaS: GRO staking token wrapper to fund deposit'
     },
     {
       target: 'stakingTokenWrapperFOXLaaS',
@@ -40,6 +49,13 @@ const deprecate_incentives: TemplatedProposalDescription = {
       description: 'Harvest the LaaS: NEAR staking token wrapper to fund deposit'
     },
     {
+      target: 'stakingTokenWrapperKYLINLaaS',
+      values: '0',
+      method: 'harvest()',
+      arguments: (addresses) => [],
+      description: 'Harvest the LaaS: KYLIN staking token wrapper to fund deposit'
+    },
+    {
       target: 'stakingTokenWrapperMStableLaaS',
       values: '0',
       method: 'harvest()',
@@ -52,6 +68,13 @@ const deprecate_incentives: TemplatedProposalDescription = {
       method: 'harvest()',
       arguments: (addresses) => [],
       description: 'Harvest the LaaS: PoolTogether staking token wrapper to fund deposit'
+    },
+    {
+      target: 'stakingTokenWrapperBribeD3pool',
+      values: '0',
+      method: 'harvest()',
+      arguments: (addresses) => [],
+      description: 'Harvest the Votium bribes: d3pool staking token wrapper to fund deposit'
     },
     {
       target: 'd3StakingTokenWrapper',
@@ -81,9 +104,22 @@ const deprecate_incentives: TemplatedProposalDescription = {
       arguments: (addresses) => [],
       description: 'Harvest the FeiRari: G-UNI USDC/FEI 0.01% fee tier staking token wrapper to fund deposit'
     },
+    {
+      target: 'stakingTokenWrapperBribe3Crvpool',
+      values: '0',
+      method: 'harvest()',
+      arguments: (addresses) => [],
+      description: `
+      Harvest the Votium bribes: 3crv-FEI metapool staking token wrapper to fund deposit. This will
+      harvest 1.5M TRIBE and send it to the votiumBriber contract for the 3Crv-pool. This will then later be harvested.
+
+      Harvested here to remove any possibility that the harvest is conducted during the DAO vote and the withdrawal amount is 
+      incorrect. Later withdrawn from the VotiumBriber contract.
+      `
+    },
+    ////////////   END OF PERFORM OUTSIDE OF PROPOSAL FIRST  ///////////////////
 
     // Withdraw excess TRIBE from reward system
-
     {
       target: 'erc20Dripper',
       values: '0',
@@ -95,11 +131,14 @@ const deprecate_incentives: TemplatedProposalDescription = {
       target: 'votiumBriber3Crvpool',
       values: '0',
       method: 'withdrawERC20(address,address,uint256)',
-      arguments: (addresses) => [addresses.tribe, addresses.core, '200891359701492537313432'],
-      description: 'Withdraw 200k TRIBE from 3CRV Votium briber contract to the Core Treasury'
+      arguments: (addresses) => [addresses.tribe, addresses.core, '1725076846586787179639648'],
+      description: `
+      Withdraw all TRIBE from 3CRV Votium briber contract to the Core Treasury. 
+      
+      Withdraw is made up of 200k TRIBE pre-existing on this contract and then an additional 1.5M TRIBE 
+      that was harvested from the stakingTokenWrapperBribe3Crvpool.
+      `
     },
-    // Can I harvest everything and then withdraw from the contracts they end up on?
-
     {
       target: 'tribalChief',
       values: '0',
@@ -107,16 +146,25 @@ const deprecate_incentives: TemplatedProposalDescription = {
       arguments: (addresses) => [
         '10000000000000000000000000' // TODO: Update number with correct figure
       ],
-      description: 'Withdraw 10M TRIBE from the Tribal Chief to the Tribal Council timelock'
+      description: `
+      Withdraw remaining TRIBE from the Tribal Chief to the Core Treasury. 
+      
+      Withdrawal amount = 
+      (Tribal Chief balance before harvest 
+          - staking token wrapper harvested TRIBE
+            - (pending rewards, Uniswap-v2 FEI/TRIBE LP + Curve 3crv-FEI metapool LP + G-UNI DAI/FEI 0.05% fee tier)
+      
+      Withdrawal amount = 29M - X - Y
+      `
     },
 
-    /// Transfer claimed TRIBE to the Core Treasury
+    /// Transfer TRIBE clawed back by DAO in FIP-113 to the Core Treasury
     {
       target: 'tribe',
       values: '0',
       method: 'transferFrom(address,address,uint256)',
       arguments: (addresses) => [addresses.feiDAOTimelock, addresses.core, '16928757542558284368284929'],
-      description: 'Transfer previously clawed back TRIBE from TRIBE DAO timelock to the Core Treasury'
+      description: 'Transfer TRIBE clawed back by FIP-113 to the Core Treasury'
     }
   ],
   description: `
