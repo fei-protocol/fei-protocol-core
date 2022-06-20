@@ -5,120 +5,6 @@ const deprecate_incentives: TemplatedProposalDescription = {
   title: 'TIP-114: Deprecate TRIBE Incentives system',
   commands: [
     // Harvest staking token wrappers so the ARDs are fully funded
-    ///////////////  PERFORM OUTSIDE OF PROPOSAL FIRST /////////////////
-    {
-      target: 'stakingTokenWrapperRari',
-      values: '0',
-      method: 'harvest()',
-      arguments: (addresses) => [],
-      description: 'Harvest the FeiRari: TRIBE staking token wrapper to fund deposit'
-    },
-    {
-      target: 'stakingTokenWrapperGROLaaS',
-      values: '0',
-      method: 'harvest()',
-      arguments: (addresses) => [],
-      description: 'Harvest the LaaS: GRO staking token wrapper to fund deposit'
-    },
-    {
-      target: 'stakingTokenWrapperFOXLaaS',
-      values: '0',
-      method: 'harvest()',
-      arguments: (addresses) => [],
-      description: 'Harvest the LaaS: FOX staking token wrapper to fund deposit'
-    },
-    {
-      target: 'stakingTokenWrapperUMALaaS',
-      values: '0',
-      method: 'harvest()',
-      arguments: (addresses) => [],
-      description: 'Harvest the LaaS: UMA staking token wrapper to fund deposit'
-    },
-    {
-      target: 'stakingTokenWrapperSYNLaaS',
-      values: '0',
-      method: 'harvest()',
-      arguments: (addresses) => [],
-      description: 'Harvest the LaaS: SYN staking token wrapper to fund deposit'
-    },
-    {
-      target: 'stakingTokenWrapperNEARLaaS',
-      values: '0',
-      method: 'harvest()',
-      arguments: (addresses) => [],
-      description: 'Harvest the LaaS: NEAR staking token wrapper to fund deposit'
-    },
-    {
-      target: 'stakingTokenWrapperKYLINLaaS',
-      values: '0',
-      method: 'harvest()',
-      arguments: (addresses) => [],
-      description: 'Harvest the LaaS: KYLIN staking token wrapper to fund deposit'
-    },
-    {
-      target: 'stakingTokenWrapperMStableLaaS',
-      values: '0',
-      method: 'harvest()',
-      arguments: (addresses) => [],
-      description: 'Harvest the LaaS: MStable staking token wrapper to fund deposit'
-    },
-    {
-      target: 'stakingTokenWrapperPoolTogetherLaaS',
-      values: '0',
-      method: 'harvest()',
-      arguments: (addresses) => [],
-      description: 'Harvest the LaaS: PoolTogether staking token wrapper to fund deposit'
-    },
-    {
-      target: 'stakingTokenWrapperBribeD3pool',
-      values: '0',
-      method: 'harvest()',
-      arguments: (addresses) => [],
-      description: 'Harvest the Votium bribes: d3pool staking token wrapper to fund deposit'
-    },
-    {
-      target: 'd3StakingTokenWrapper',
-      values: '0',
-      method: 'harvest()',
-      arguments: (addresses) => [],
-      description: 'Harvest the FeiRari: d3Pool LP staking token wrapper to fund deposit'
-    },
-    {
-      target: 'fei3CrvStakingtokenWrapper',
-      values: '0',
-      method: 'harvest()',
-      arguments: (addresses) => [],
-      description: 'Harvest the FeiRari: 3crv-FEI metapool LP staking token wrapper to fund deposit'
-    },
-    {
-      target: 'feiDaiStakingTokenWrapper',
-      values: '0',
-      method: 'harvest()',
-      arguments: (addresses) => [],
-      description: 'Harvest the FeiRari: G-UNI DAI/FEI 0.05% fee tier staking token wrapper to fund deposit'
-    },
-    {
-      target: 'feiUsdcStakingTokenWrapper',
-      values: '0',
-      method: 'harvest()',
-      arguments: (addresses) => [],
-      description: 'Harvest the FeiRari: G-UNI USDC/FEI 0.01% fee tier staking token wrapper to fund deposit'
-    },
-    {
-      target: 'stakingTokenWrapperBribe3Crvpool',
-      values: '0',
-      method: 'harvest()',
-      arguments: (addresses) => [],
-      description: `
-      Harvest the Votium bribes: 3crv-FEI metapool staking token wrapper to fund deposit. This will
-      harvest 1.5M TRIBE and send it to the votiumBriber contract for the 3Crv-pool. This will then later be harvested.
-
-      Harvested here to remove any possibility that the harvest is conducted during the DAO vote and the withdrawal amount is 
-      incorrect. Later withdrawn from the VotiumBriber contract.
-      `
-    },
-    ////////////   END OF PERFORM OUTSIDE OF PROPOSAL FIRST  ///////////////////
-
     // Withdraw excess TRIBE from reward system
     {
       target: 'erc20Dripper',
@@ -172,15 +58,6 @@ const deprecate_incentives: TemplatedProposalDescription = {
       
       Withdrawal amount = 29.2M - 1.8M - 565k = 26.8M
       `
-    },
-
-    /// Transfer TRIBE clawed back by DAO in FIP-113 to the Core Treasury
-    {
-      target: 'tribe',
-      values: '0',
-      method: 'transferFrom(address,address,uint256)',
-      arguments: (addresses) => [addresses.feiDAOTimelock, addresses.core, '16928757542558284368284929'],
-      description: 'Transfer TRIBE clawed back by FIP-113 to the Core Treasury'
     },
 
     ////  Revoke roles from contracts that interacted with Tribal Chief and rewards system

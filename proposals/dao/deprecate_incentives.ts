@@ -53,7 +53,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const tribe = contracts.tribe;
   const core = contracts.core;
 
-  const expectedTribeRecovery = ethers.constants.WeiPerEther.mul(40_000_000);
+  const expectedTribeRecovery = ethers.constants.WeiPerEther.mul(30_000_000);
   const remainingTRIBELPRewards = ethers.constants.WeiPerEther.mul(564_000);
   const excessRariTribeToExtract = ethers.constants.WeiPerEther.mul(164_000);
   const maxRemainingExtraChiefBalance = ethers.constants.WeiPerEther.mul(30_000);
@@ -62,7 +62,6 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await tribe.balanceOf(addresses.votiumBriber3Crvpool)).to.equal(0);
   expect(await tribe.balanceOf(addresses.erc20Dripper)).to.equal(0);
   expect(await tribe.balanceOf(addresses.votiumBriberD3pool)).to.equal(0);
-  expect(await tribe.balanceOf(addresses.feiDAOTimelock)).to.equal(0);
 
   // 2. Validate TribalChief has sufficient TRIBE to fund LP staking deposits
   expect(await tribe.balanceOf(addresses.tribalChief)).to.be.bignumber.at.least(remainingTRIBELPRewards);
