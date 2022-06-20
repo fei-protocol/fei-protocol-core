@@ -53,7 +53,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const tribe = contracts.tribe;
   const core = contracts.core;
 
-  const expectedTribeRecovery = ethers.constants.WeiPerEther.mul(30_000_000);
+  const minExpectedTribeRecovery = ethers.constants.WeiPerEther.mul(30_000_000);
   const remainingTRIBELPRewards = ethers.constants.WeiPerEther.mul(564_000);
   const excessRariTribeToExtract = ethers.constants.WeiPerEther.mul(164_000);
   const maxRemainingExtraChiefBalance = ethers.constants.WeiPerEther.mul(30_000);
@@ -80,7 +80,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const finalCoreTribeBalance = await tribe.balanceOf(addresses.core);
   const tribeRecovered = finalCoreTribeBalance.sub(initialCoreTribeBalance);
   console.log('Tribe recovered: ', tribeRecovered.toString());
-  expect(tribeRecovered).to.be.bignumber.at.least(expectedTribeRecovery);
+  expect(tribeRecovered).to.be.bignumber.at.least(minExpectedTribeRecovery);
 
   // 5. Validate Aave incentives controller proxy admin was changed
   const aaveLendingPoolAddressesProviderSigner = await getImpersonatedSigner(

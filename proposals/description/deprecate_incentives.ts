@@ -40,23 +40,22 @@ const deprecate_incentives: TemplatedProposalDescription = {
       target: 'rewardsDistributorAdmin',
       values: '0',
       method: '_grantComp(address,uint256)',
-      arguments: (addresses) => [addresses.core, '164000000000000000000000'],
+      arguments: (addresses) => [addresses.core, '164000000000000000000000'], // TODO: Confirm and get signoff from Storm before
       description: `Withdraw excess 164k TRIBE from Rari delegator contract`
     },
     {
       target: 'tribalChief',
       values: '0',
       method: 'governorWithdrawTribe(uint256)',
-      arguments: (addresses) => ['26833947775112516867325654'], // TODO: Update if do the harvests before this script
+      arguments: (addresses) => ['26886736168357710755340043'],
       description: `
       Withdraw remaining TRIBE from the Tribal Chief to the Core Treasury. 
       
       Withdrawal amount = 
       (Tribal Chief balance before harvest 
-          - staking token wrapper harvested TRIBE
             - (pending rewards, Uniswap-v2 FEI/TRIBE LP + Curve 3crv-FEI metapool LP + G-UNI DAI/FEI 0.05% fee tier)
       
-      Withdrawal amount = 29.2M - 1.8M - 565k = 26.8M
+      Withdrawal amount = 27.5M - 0.565M = 26.9M
       `
     },
 
@@ -94,7 +93,6 @@ const deprecate_incentives: TemplatedProposalDescription = {
   Deprecates the TRIBE incentives system according to proposal: 
 
   Specifically it:
-  - Fully funds all remaining auto reward distributors via their staking token wrappers
   - Withdraws remaining TRIBE from the TribalChief, leaving enough behind to fully fund existing commitments
   - Withdraws all TRIBE from 3Crv and D3 Votium briber contracts
   - Withdraws remaining TRIBE from ERC20 Dripper
