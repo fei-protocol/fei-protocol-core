@@ -4,7 +4,6 @@ const deprecate_incentives: TemplatedProposalDescription = {
   title: 'TIP-114: Deprecate TRIBE Incentives system',
   commands: [
     // Harvest staking token wrappers so the ARDs are fully funded
-
     ///////////////  PERFORM OUTSIDE OF PROPOSAL FIRST /////////////////
     {
       target: 'stakingTokenWrapperRari',
@@ -151,12 +150,17 @@ const deprecate_incentives: TemplatedProposalDescription = {
       `
     },
     {
+      target: 'rewardsDistributorAdmin',
+      values: '0',
+      method: '_grantComp(address,uint256)',
+      arguments: (addresses) => [addresses.core, '164000000000000000000000'],
+      description: `Withdraw excess 164k TRIBE from Rari delegator contract`
+    },
+    {
       target: 'tribalChief',
       values: '0',
       method: 'governorWithdrawTribe(uint256)',
-      arguments: (addresses) => [
-        '10000000000000000000000000' // TODO: Update number with correct figure
-      ],
+      arguments: (addresses) => ['26833947775112516867325654'], // TODO: Update if do the harvests before this script
       description: `
       Withdraw remaining TRIBE from the Tribal Chief to the Core Treasury. 
       
@@ -165,7 +169,7 @@ const deprecate_incentives: TemplatedProposalDescription = {
           - staking token wrapper harvested TRIBE
             - (pending rewards, Uniswap-v2 FEI/TRIBE LP + Curve 3crv-FEI metapool LP + G-UNI DAI/FEI 0.05% fee tier)
       
-      Withdrawal amount = 29M - 2.4M - Y
+      Withdrawal amount = 29.2M - 1.8M - 565k = 26.8M
       `
     },
 
@@ -198,10 +202,10 @@ const deprecate_incentives: TemplatedProposalDescription = {
   Specifically it:
   - Fully funds all remaining auto reward distributors via their staking token wrappers
   - Withdraws remaining TRIBE from the TribalChief, leaving enough behind to fully fund existing commitments
-  - Withdraws $50k TRIBE from 3Crv Votium briber contract
-  - Withdraws remaining TRIBE from Aave incentives
-  - Withdraws remaining TRIBE from ERC20Dripper
+  - Withdraws all TRIBE from 3Crv and D3 Votium briber contracts
+  - Withdraws remaining TRIBE from ERC20 Dripper
   - Moves previously clawed back TRIBE from the TRIBE DAO timelock to the Core Treasury
+  - Transfers the admin of the Aave Fei Incentives Controller Proxy to Aave Governance
   `
 };
 
