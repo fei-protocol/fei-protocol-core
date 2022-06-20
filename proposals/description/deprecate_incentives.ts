@@ -96,7 +96,6 @@ const deprecate_incentives: TemplatedProposalDescription = {
   - Withdraws remaining TRIBE from the TribalChief, leaving enough behind to fully fund existing commitments
   - Withdraws all TRIBE from 3Crv and D3 Votium briber contracts
   - Withdraws remaining TRIBE from ERC20 Dripper
-  - Moves previously clawed back TRIBE from the TRIBE DAO timelock to the Core Treasury
   - Revokes no longer needed TRIBAL_CHIEF_ADMIN_ROLE roles
   - Transfers the admin of the Aave Fei Incentives Controller Proxy to Aave Governance
   `
