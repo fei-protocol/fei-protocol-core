@@ -56,7 +56,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 
   const minExpectedTribeRecovery = ethers.constants.WeiPerEther.mul(30_000_000);
   const remainingTRIBELPRewards = ethers.constants.WeiPerEther.mul(564_000);
-  const excessRariTribeToExtract = ethers.constants.WeiPerEther.mul(164_000);
+  const excessRariTribeToExtract = ethers.constants.WeiPerEther.mul(150_000);
   const maxRemainingExtraChiefBalance = ethers.constants.WeiPerEther.mul(30_000);
 
   // 0. Verify all staking token wrapper pending rewards are zero
