@@ -58,7 +58,7 @@ describe.skip('e2e-migrate-proxies', function () {
     feiDAO = contracts.feiDAO;
 
     await forceEth(feiDAO.address);
-    await reduceDAOVotingPeriod(feiDAO, contractAddresses.multisig);
+    await reduceDAOVotingPeriod(feiDAO, contractAddresses.guardianMultisig);
   });
 
   it('should give Rari timelock governor and point FEI DAO timelock to oldTimelock (fip_84a)', async () => {
@@ -78,7 +78,7 @@ describe.skip('e2e-migrate-proxies', function () {
     // Multisig address has sufficient TRIBE to pass quorum
     const targets = [contractAddresses.core, contractAddresses.core, feiDAO.address];
     const values = [0, 0, 0];
-    await performDAOAction(feiDAO, contractAddresses.multisig, fip_84aCalldata, targets, values);
+    await performDAOAction(feiDAO, contractAddresses.guardianMultisig, fip_84aCalldata, targets, values);
 
     // 1. Rari timelock granted GOVERN_ROLE role
     const rariTimelockHasRole = await contracts.core.hasRole(GOVERN_ROLE, contractAddresses.rariTimelock);
@@ -108,7 +108,7 @@ describe.skip('e2e-migrate-proxies', function () {
       contractAddresses.timelock,
       contractAddresses.feiDAO
     ];
-    await performDAOAction(feiDAO, contractAddresses.multisig, fip_84bCalldata, targets, values);
+    await performDAOAction(feiDAO, contractAddresses.guardianMultisig, fip_84bCalldata, targets, values);
 
     // 1. Check ProxyAdmin owner changed to newTimelock
     const newTimelockAddress = contractAddresses.feiDAOTimelock;
@@ -136,7 +136,7 @@ describe.skip('e2e-migrate-proxies', function () {
 
     const values = [0];
     const targets = [contractAddresses.timelock];
-    await performDAOAction(feiDAO, contractAddresses.multisig, fip_84cCalldata, targets, values);
+    await performDAOAction(feiDAO, contractAddresses.guardianMultisig, fip_84cCalldata, targets, values);
 
     const oldTimelockAdmin = await oldTimelock.admin();
     expect(oldTimelockAdmin).to.equal(contractAddresses.feiDAOTimelock);
@@ -149,7 +149,7 @@ describe.skip('e2e-migrate-proxies', function () {
 
     const oldIncentivesBehaviour = await proxyAdmin
       .connect(newTimelockSigner)
-      .getProxyImplementation(contractAddresses.aaveTribeIncentivesControllerProxy);
+      .getProxyImplementation(contractAddresses.aaveTribeIncentivesController);
     expect(oldIncentivesBehaviour).to.equal(contractAddresses.aaveTribeIncentivesControllerImpl);
     console.log({ oldIncentivesBehaviour });
 
@@ -160,11 +160,11 @@ describe.skip('e2e-migrate-proxies', function () {
     const upgradeIncentivesCalldata = [
       '0x99a88ec4000000000000000000000000dee5c1662bbff8f80f7c572d8091bf251b3b0dab000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
     ];
-    await performDAOAction(feiDAO, contractAddresses.multisig, upgradeIncentivesCalldata, targets, values);
+    await performDAOAction(feiDAO, contractAddresses.guardianMultisig, upgradeIncentivesCalldata, targets, values);
 
     const newIncentivesBehaviour = await proxyAdmin
       .connect(newTimelockSigner)
-      .getProxyImplementation(contractAddresses.aaveTribeIncentivesControllerProxy);
+      .getProxyImplementation(contractAddresses.aaveTribeIncentivesController);
     expect(newIncentivesBehaviour).to.equal(dummyUpgradeAddress);
   });
 

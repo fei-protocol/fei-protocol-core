@@ -1,8 +1,8 @@
-import { getCore, getAddresses, expectRevert, expectEvent, getImpersonatedSigner } from '@test/helpers';
+import { Core, NamedStaticPCVDepositWrapper } from '@custom-types/contracts';
+import { expectEvent, expectRevert, getAddresses, getCore, getImpersonatedSigner } from '@test/helpers';
 import { expect } from 'chai';
-import hre, { ethers } from 'hardhat';
 import { Signer } from 'ethers';
-import { Core, Fei, NamedStaticPCVDepositWrapper } from '@custom-types/contracts';
+import { ethers } from 'hardhat';
 const toBN = ethers.BigNumber.from;
 
 describe('NamedStaticPCVDepositWrapper', function () {

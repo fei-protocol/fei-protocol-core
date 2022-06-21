@@ -1,6 +1,6 @@
 import { getAllContracts, getAllContractAddresses } from '@test/integration/setup/loadContracts';
 import { NamedContracts, UpgradeFuncs } from '@custom-types/types';
-import proposals from '@test/integration/proposals_config';
+import proposals from '@protocol/proposalsConfig';
 
 import * as dotenv from 'dotenv';
 import { execProposal } from './exec';
@@ -30,19 +30,14 @@ async function checkProposal(proposalName: string, doSetup?: string) {
 
   if (doSetup) {
     console.log('Setup');
-    await proposalFuncs.setup(
-      contractAddresses,
-      contracts as unknown as NamedContracts,
-      contracts as unknown as NamedContracts,
-      true
-    );
+    await proposalFuncs.setup(contractAddresses, contracts, contracts, true);
   }
 
   const { feiDAO } = contracts;
 
   const proposalNo = proposals[proposalName].proposalId;
 
-  await execProposal(voterAddress, feiDAO.address, proposals[proposalName].totalValue, proposalNo);
+  await execProposal(voterAddress, feiDAO.address, proposals[proposalName].totalValue.toString(), proposalNo);
 
   console.log('Teardown');
   await proposalFuncs.teardown(

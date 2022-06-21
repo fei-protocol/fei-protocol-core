@@ -3,7 +3,7 @@ import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
 import { ethers } from 'hardhat';
 import { NamedContracts } from '@custom-types/types';
-import proposals from '@test/integration/proposals_config';
+import proposals from '@protocol/proposalsConfig';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
 import { getImpersonatedSigner, expectRevert, expectEvent } from '@test/helpers';
 import { forceEth } from '@test/integration/setup/utils';
@@ -56,7 +56,7 @@ describe('e2e-metagov', function () {
       const lpTokenHolder = '0x4f9463405f5bc7b4c1304222c1df76efbd81a407';
       const lpTokenSigner = await getImpersonatedSigner(lpTokenHolder);
       await forceEth(lpTokenHolder);
-      await contracts.balancerFeiWethPool.connect(lpTokenSigner).transfer(staker.address, `1000${e18}`);
+      await contracts.bpt30Fei70Weth.connect(lpTokenSigner).transfer(staker.address, `1000${e18}`);
 
       // also airdrop some BAL so that balance is not zero
       const balTokenHolder = '0xBA12222222228d8Ba445958a75a0704d566BF2C8';
@@ -154,8 +154,8 @@ describe('e2e-metagov', function () {
 
       it('should work if user has PCV_CONTROLLER_ROLE role', async function () {
         const balanceBefore = await contracts.bal.balanceOf(daoSigner.address);
-        expectEvent(
-          await staker.connect(daoSigner).withdrawERC20(contracts.bal.address, daoSigner.address, '10'),
+        await expectEvent(
+          staker.connect(daoSigner).withdrawERC20(contracts.bal.address, daoSigner.address, '10'),
           staker,
           'WithdrawERC20',
           [daoSigner.address, contracts.bal.address, daoSigner.address, '10']

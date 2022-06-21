@@ -1,4 +1,4 @@
-import { time, getCore, expectRevert, getAddresses, getImpersonatedSigner } from '@test/helpers';
+import { expectRevert, getAddresses, getCore, getImpersonatedSigner, time } from '@test/helpers';
 import { expect } from 'chai';
 import hre, { artifacts, ethers } from 'hardhat';
 

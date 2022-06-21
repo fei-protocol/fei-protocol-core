@@ -9,17 +9,17 @@ import {
   TribalChiefSyncV2,
   Tribe
 } from '@custom-types/contracts';
+import { NamedAddresses, NamedContracts } from '@custom-types/types';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
+import proposals from '@protocol/proposalsConfig';
+import { expectApprox, getImpersonatedSigner, time } from '@test/helpers';
+import { forceEth } from '@test/integration/setup/utils';
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
 import { BigNumber, Contract } from 'ethers';
 import hre, { ethers } from 'hardhat';
-import { NamedAddresses, NamedContracts } from '@custom-types/types';
-import { expectApprox, getImpersonatedSigner, time } from '@test/helpers';
-import proposals from '@test/integration/proposals_config';
 import { TestEndtoEndCoordinator } from '../setup';
-import { forceEth } from '@test/integration/setup/utils';
 
 const toBN = ethers.BigNumber.from;
 
@@ -59,7 +59,7 @@ const setupIncentivesFixtures = async (
   }
 };
 
-describe('e2e-staking', function () {
+describe.skip('e2e-staking', function () {
   let contracts: NamedContracts;
   let contractAddresses: NamedAddresses;
   let deployAddress: string;
@@ -364,8 +364,8 @@ describe('e2e-staking', function () {
 
     describe('Guardian Disables Supply Rewards', async () => {
       it('does not receive reward when supply incentives are moved to zero', async () => {
-        const { erc20Dripper, multisig, rariRewardsDistributorDelegator } = contractAddresses;
-        const signer = await getImpersonatedSigner(multisig);
+        const { erc20Dripper, guardianMultisig, rariRewardsDistributorDelegator } = contractAddresses;
+        const signer = await getImpersonatedSigner(guardianMultisig);
         const { rariPool8Tribe } = contracts;
         const rewardsDistributorDelegator = await ethers.getContractAt(
           'IRewardsAdmin',

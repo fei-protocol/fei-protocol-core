@@ -1,15 +1,15 @@
-import { ZERO_ADDRESS, expectRevert, getAddresses, getCore } from '../../helpers';
 import { expect } from 'chai';
-import hre, { ethers } from 'hardhat';
 import { Signer } from 'ethers';
+import hre, { ethers } from 'hardhat';
+import { expectRevert, getAddresses, getCore, ZERO_ADDRESS } from '../../helpers';
 
 const toBN = ethers.BigNumber.from;
 
 describe('Fei', function () {
-  let userAddress;
-  let governorAddress;
-  let minterAddress;
-  let burnerAddress;
+  let userAddress: string;
+  let governorAddress: string;
+  let minterAddress: string;
+  let burnerAddress: string;
 
   const impersonatedSigners: { [key: string]: Signer } = {};
 

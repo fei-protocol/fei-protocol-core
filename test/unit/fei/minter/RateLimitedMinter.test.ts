@@ -1,13 +1,13 @@
-import { time, expectRevert, expectApprox, getAddresses, getCore } from '@test/helpers';
+import { expectApprox, expectRevert, getAddresses, getCore, time } from '@test/helpers';
 import { expect } from 'chai';
-import hre, { ethers } from 'hardhat';
 import { Signer } from 'ethers';
+import hre, { ethers } from 'hardhat';
 
 const toBN = ethers.BigNumber.from;
 
 describe('RateLimitedMinter', function () {
-  let userAddress;
-  let governorAddress;
+  let userAddress: string;
+  let governorAddress: string;
 
   const impersonatedSigners: { [key: string]: Signer } = {};
 

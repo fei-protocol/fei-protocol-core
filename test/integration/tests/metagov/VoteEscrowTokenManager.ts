@@ -3,13 +3,13 @@ import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
 import { ethers } from 'hardhat';
 import { NamedContracts } from '@custom-types/types';
-import proposals from '@test/integration/proposals_config';
+import proposals from '@protocol/proposalsConfig';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
 import { getImpersonatedSigner, expectRevert, time } from '@test/helpers';
 import { forceEth } from '@test/integration/setup/utils';
 import { MockVoteEscrowTokenManager } from '@custom-types/contracts';
 
-const e18 = (x) => ethers.constants.WeiPerEther.mul(x);
+const e18 = (x: any) => ethers.constants.WeiPerEther.mul(x);
 
 describe('e2e-metagov', function () {
   let deployAddress: string;

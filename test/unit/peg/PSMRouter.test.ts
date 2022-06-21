@@ -1,24 +1,24 @@
-import hre, { ethers } from 'hardhat';
+import { Core, Fei, MockOracle, MockPCVDepositV2, PegStabilityModule, PSMRouter, WETH9 } from '@custom-types/contracts';
 import {
+  deployDevelopmentWeth,
+  expectRevert,
   getAddresses,
   getCore,
-  deployDevelopmentWeth,
   getImpersonatedSigner,
-  MAX_UINT256,
-  expectRevert
+  MAX_UINT256
 } from '@test/helpers';
 import { expect } from 'chai';
 import { Signer, utils } from 'ethers';
-import { Core, Fei, MockOracle, MockPCVDepositV2, PegStabilityModule, PSMRouter, WETH9 } from '@custom-types/contracts';
 import { keccak256 } from 'ethers/lib/utils';
+import hre, { ethers } from 'hardhat';
 
 const toBN = ethers.BigNumber.from;
 
 describe('PSM Router', function () {
-  let userAddress;
-  let minterAddress;
+  let userAddress: string;
+  let minterAddress: string;
   let psmAdminAddress;
-  let receiver;
+  let receiver: string;
 
   const mintFeeBasisPoints = 30;
   const redeemFeeBasisPoints = 30;

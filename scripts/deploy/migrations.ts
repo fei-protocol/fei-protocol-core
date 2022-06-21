@@ -1,4 +1,4 @@
-import { DeployUpgradeFunc } from '@custom-types/types';
+import { DeployUpgradeFunc, NamedAddresses } from '@custom-types/types';
 import mainnetAddressesV1 from '../../protocol-configuration/mainnetAddresses';
 import { ethers } from 'hardhat';
 
@@ -12,10 +12,9 @@ async function main() {
 
   const deployAddress = (await ethers.getSigners())[0].address;
 
-  const mainnetAddresses = {};
-  Object.keys(mainnetAddressesV1).map((key) => {
+  const mainnetAddresses: NamedAddresses = {};
+  Object.keys(mainnetAddressesV1).forEach((key) => {
     mainnetAddresses[key] = mainnetAddressesV1[key].address;
-    return true;
   });
 
   let deploy: DeployUpgradeFunc;

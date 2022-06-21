@@ -1,25 +1,25 @@
-import hre, { ethers } from 'hardhat';
+import { Core, Fei, MockERC20, MockOracle, MockPCVDepositV2, PriceBoundPSM } from '@custom-types/contracts';
 import {
+  deployDevelopmentWeth,
   expectRevert,
   getAddresses,
   getCore,
-  deployDevelopmentWeth,
-  ZERO_ADDRESS,
-  getImpersonatedSigner
+  getImpersonatedSigner,
+  ZERO_ADDRESS
 } from '@test/helpers';
 import { expect } from 'chai';
 import { Signer, utils } from 'ethers';
-import { Core, MockERC20, Fei, MockOracle, PriceBoundPSM, MockPCVDepositV2 } from '@custom-types/contracts';
 import { keccak256 } from 'ethers/lib/utils';
+import hre, { ethers } from 'hardhat';
 
 const toBN = ethers.BigNumber.from;
 
 describe('PriceBoundPegStabilityModule', function () {
-  let userAddress;
-  let governorAddress;
-  let minterAddress;
-  let pcvControllerAddress;
-  let psmAdminAddress;
+  let userAddress: string;
+  let governorAddress: string;
+  let minterAddress: string;
+  let pcvControllerAddress: string;
+  let psmAdminAddress: string;
 
   const mintFeeBasisPoints = 30;
   const redeemFeeBasisPoints = 30;
