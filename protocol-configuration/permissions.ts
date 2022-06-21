@@ -17,7 +17,7 @@ export const permissions = {
   RATE_LIMITED_MINTER_ADMIN: [],
   PARAMETER_ADMIN: [],
   PSM_ADMIN_ROLE: ['tribalCouncilTimelock'],
-  TRIBAL_CHIEF_ADMIN_ROLE: ['tribalCouncilTimelock'],
+  TRIBAL_CHIEF_ADMIN_ROLE: ['optimisticTimelock', 'tribalCouncilTimelock'],
   FUSE_ADMIN: ['tribalCouncilTimelock'],
   VOTIUM_ADMIN_ROLE: [],
   PCV_GUARDIAN_ADMIN_ROLE: ['tribalCouncilTimelock'],
