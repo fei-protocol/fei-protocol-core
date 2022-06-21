@@ -4,7 +4,6 @@ import { TemplatedProposalDescription } from '@custom-types/types';
 const deprecate_incentives: TemplatedProposalDescription = {
   title: 'TIP-114: Deprecate TRIBE Incentives system',
   commands: [
-    // Harvest staking token wrappers so the ARDs are fully funded
     // Withdraw excess TRIBE from reward system
     {
       target: 'erc20Dripper',
@@ -47,7 +46,7 @@ const deprecate_incentives: TemplatedProposalDescription = {
       target: 'tribalChief',
       values: '0',
       method: 'governorWithdrawTribe(uint256)',
-      arguments: (addresses) => ['26886736168357710755340043'],
+      arguments: (addresses) => ['26833947775112516867325654'],
       description: `
       Withdraw remaining TRIBE from the Tribal Chief to the Core Treasury. 
       
@@ -55,7 +54,7 @@ const deprecate_incentives: TemplatedProposalDescription = {
       (Tribal Chief balance before harvest 
             - (pending rewards, Uniswap-v2 FEI/TRIBE LP + Curve 3crv-FEI metapool LP + G-UNI DAI/FEI 0.05% fee tier)
       
-      Withdrawal amount = 27.5M - 0.565M = 26.9M
+      Withdrawal amount = 27.4M - 0.565M = 26.8M
       `
     },
 
