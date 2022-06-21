@@ -9,10 +9,7 @@ abstract contract Incentivized is CoreRef {
     /// @notice FEI incentive for calling keeper functions
     uint256 public incentiveAmount;
 
-    event IncentiveUpdate(
-        uint256 oldIncentiveAmount,
-        uint256 newIncentiveAmount
-    );
+    event IncentiveUpdate(uint256 oldIncentiveAmount, uint256 newIncentiveAmount);
 
     constructor(uint256 _incentiveAmount) {
         incentiveAmount = _incentiveAmount;
@@ -20,10 +17,7 @@ abstract contract Incentivized is CoreRef {
     }
 
     /// @notice set the incentiveAmount
-    function setIncentiveAmount(uint256 newIncentiveAmount)
-        public
-        onlyGovernor
-    {
+    function setIncentiveAmount(uint256 newIncentiveAmount) public onlyGovernor {
         uint256 oldIncentiveAmount = incentiveAmount;
         incentiveAmount = newIncentiveAmount;
         emit IncentiveUpdate(oldIncentiveAmount, newIncentiveAmount);

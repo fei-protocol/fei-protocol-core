@@ -5,6 +5,8 @@ import "./IVotiumBribe.sol";
 import "../../refs/CoreRef.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
+import {TribeRoles} from "../../core/TribeRoles.sol";
+
 /// @title VotiumBriber: implementation for a contract that can use
 /// tokens to bribe on Votium.
 /// @author Fei Protocol
@@ -32,8 +34,6 @@ contract VotiumBriber is CoreRef {
     ) CoreRef(_core) {
         token = _token;
         votiumBribe = _votiumBribe;
-
-        _setContractAdminRole(keccak256("TRIBAL_CHIEF_ADMIN_ROLE"));
     }
 
     /// @notice Spend tokens on Votium to bribe for a given pool.
@@ -45,7 +45,7 @@ contract VotiumBriber is CoreRef {
     /// vote ends).
     function bribe(bytes32 _proposal, uint256 _choiceIndex)
         public
-        onlyGovernorOrAdmin
+        onlyTribeRole(TribeRoles.VOTIUM_ADMIN_ROLE)
         whenNotPaused
     {
         // fetch the current number of TRIBE

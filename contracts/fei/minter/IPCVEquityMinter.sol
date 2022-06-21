@@ -11,16 +11,11 @@ interface IPCVEquityMinter {
 
     event APRUpdate(uint256 oldAprBasisPoints, uint256 newAprBasisPoints);
 
-    event CollateralizationOracleUpdate(
-        address oldCollateralizationOracle,
-        address newCollateralizationOracle
-    );
+    event CollateralizationOracleUpdate(address oldCollateralizationOracle, address newCollateralizationOracle);
 
     // ----------- Governor only state changing api -----------
 
-    function setCollateralizationOracle(
-        ICollateralizationOracle newCollateralizationOracle
-    ) external;
+    function setCollateralizationOracle(ICollateralizationOracle newCollateralizationOracle) external;
 
     // ----------- Governor or Admin only state changing api -----------
 
@@ -30,10 +25,7 @@ interface IPCVEquityMinter {
 
     function MAX_APR_BASIS_POINTS() external view returns (uint256);
 
-    function collateralizationOracle()
-        external
-        view
-        returns (ICollateralizationOracle);
+    function collateralizationOracle() external view returns (ICollateralizationOracle);
 
     function aprBasisPoints() external view returns (uint256);
 }

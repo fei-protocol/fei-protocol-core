@@ -8,11 +8,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 interface ITokenTimelock {
     // ----------- Events -----------
 
-    event Release(
-        address indexed _beneficiary,
-        address indexed _recipient,
-        uint256 _amount
-    );
+    event Release(address indexed _beneficiary, address indexed _recipient, uint256 _amount);
     event BeneficiaryUpdate(address indexed _beneficiary);
     event PendingBeneficiaryUpdate(address indexed _pendingBeneficiary);
 

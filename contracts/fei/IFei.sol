@@ -8,22 +8,11 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 interface IFei is IERC20 {
     // ----------- Events -----------
 
-    event Minting(
-        address indexed _to,
-        address indexed _minter,
-        uint256 _amount
-    );
+    event Minting(address indexed _to, address indexed _minter, uint256 _amount);
 
-    event Burning(
-        address indexed _to,
-        address indexed _burner,
-        uint256 _amount
-    );
+    event Burning(address indexed _to, address indexed _burner, uint256 _amount);
 
-    event IncentiveContractUpdate(
-        address indexed _incentivized,
-        address indexed _incentiveContract
-    );
+    event IncentiveContractUpdate(address indexed _incentivized, address indexed _incentiveContract);
 
     // ----------- State changing api -----------
 

@@ -1,25 +1,25 @@
-import hre, { ethers } from 'hardhat';
+import { Core, Fei, FixedPricePSM, MockERC20, MockOracle, MockPCVDepositV2 } from '@custom-types/contracts';
 import {
+  deployDevelopmentWeth,
   expectRevert,
   getAddresses,
   getCore,
-  deployDevelopmentWeth,
-  ZERO_ADDRESS,
-  getImpersonatedSigner
+  getImpersonatedSigner,
+  ZERO_ADDRESS
 } from '@test/helpers';
 import { expect } from 'chai';
 import { Signer, utils } from 'ethers';
-import { Core, MockERC20, Fei, MockOracle, MockPCVDepositV2, FixedPricePSM } from '@custom-types/contracts';
 import { keccak256 } from 'ethers/lib/utils';
+import hre, { ethers } from 'hardhat';
 
 const toBN = ethers.BigNumber.from;
 
 describe('FixedPricePSM', function () {
-  let userAddress;
-  let governorAddress;
-  let minterAddress;
-  let pcvControllerAddress;
-  let psmAdminAddress;
+  let userAddress: string;
+  let governorAddress: string;
+  let minterAddress: string;
+  let pcvControllerAddress: string;
+  let psmAdminAddress: string;
 
   const mintFeeBasisPoints = 0;
   const redeemFeeBasisPoints = 30;
@@ -446,13 +446,6 @@ describe('FixedPricePSM', function () {
         await expectRevert(
           psm.connect(impersonatedSigners[userAddress]).mint(userAddress, mintAmt, expectedMintAmountOut),
           'RateLimited: rate limit hit'
-        );
-      });
-
-      it('fails when token is not approved to be spent by the PSM', async () => {
-        await expectRevert(
-          psm.connect(impersonatedSigners[userAddress]).mint(userAddress, mintAmount, 0),
-          'ERC20: insufficient allowance'
         );
       });
 

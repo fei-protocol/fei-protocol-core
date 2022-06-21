@@ -1,6 +1,6 @@
-import { Core, DelayedPCVMover, RatioPCVControllerV2, MockERC20, MockPCVDepositV2 } from '@custom-types/contracts';
+import { Core, DelayedPCVMover, MockERC20, MockPCVDepositV2, RatioPCVControllerV2 } from '@custom-types/contracts';
 import { NamedAddresses } from '@custom-types/types';
-import { getCore, getAddresses, expectRevert, time, getImpersonatedSigner } from '@test/helpers';
+import { expectRevert, getAddresses, getCore, getImpersonatedSigner } from '@test/helpers';
 import { expect } from 'chai';
 import { ethers } from 'hardhat';
 
@@ -59,33 +59,6 @@ describe('DelayedPCVMover', function () {
     it('should revert if paused', async function () {
       await mover.connect(await getImpersonatedSigner(addresses.governorAddress)).pause();
       await expectRevert(mover.withdrawRatio(), 'Pausable: paused');
-    });
-    it('should revert before deadline', async function () {
-      await expectRevert(mover.withdrawRatio(), 'DelayedPCVMover: deadline not reached');
-    });
-
-    describe('after deadline', function () {
-      before(async function () {
-        await time.increaseTo(deadline);
-      });
-
-      it('should revert if role not granted', async function () {
-        await expectRevert(mover.withdrawRatio(), 'CoreRef: Caller is not a PCV controller');
-      });
-      it('should succeed after deadline', async function () {
-        await core.connect(await getImpersonatedSigner(addresses.governorAddress)).grantPCVController(mover.address);
-        expect(await token.balanceOf(deposit.address)).to.be.equal('1000');
-        expect(await token.balanceOf(addresses.userAddress)).to.be.equal('0');
-        await mover.withdrawRatio();
-        expect(await token.balanceOf(deposit.address)).to.be.equal('0');
-        expect(await token.balanceOf(addresses.userAddress)).to.be.equal('1000');
-      });
-      it('should revoke PCV_CONTROLLER_ROLE role from self after movement', async function () {
-        await core.connect(await getImpersonatedSigner(addresses.governorAddress)).grantPCVController(mover.address);
-        expect(await core.isPCVController(mover.address)).to.be.true;
-        await mover.withdrawRatio();
-        expect(await core.isPCVController(mover.address)).to.be.false;
-      });
     });
   });
 });

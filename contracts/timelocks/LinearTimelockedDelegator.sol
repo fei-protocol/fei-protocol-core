@@ -26,16 +26,7 @@ contract LinearTimelockedDelegator is LinearTokenTimelock {
         uint256 _cliff,
         address _clawbackAdmin,
         uint256 _startTime
-    )
-        LinearTokenTimelock(
-            _beneficiary,
-            _duration,
-            _token,
-            _cliff,
-            _clawbackAdmin,
-            _startTime
-        )
-    {}
+    ) LinearTokenTimelock(_beneficiary, _duration, _token, _cliff, _clawbackAdmin, _startTime) {}
 
     /// @notice accept beneficiary role over timelocked TRIBE
     /// @dev _setBeneficiary internal call checks msg.sender == pendingBeneficiary

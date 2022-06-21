@@ -1,7 +1,7 @@
 import { expectRevert, getAddresses, getCore } from '@test/helpers';
 import { expect } from 'chai';
-import hre, { ethers } from 'hardhat';
 import { Signer } from 'ethers';
+import hre, { ethers } from 'hardhat';
 
 describe('ERC20Splitter', function () {
   let userAddress: string;

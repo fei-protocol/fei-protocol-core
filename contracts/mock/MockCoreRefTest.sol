@@ -8,8 +8,5 @@ contract MockCoreRefTest is CoreRef {
         _setContractAdminRole(keccak256("MOCK_CORE_REF_ADMIN"));
     }
 
-    function governorOrGuardianTest()
-        external
-        hasAnyOfTwoRoles(keccak256("GOVERN_ROLE"), keccak256("GUARDIAN_ROLE"))
-    {}
+    function governorOrGuardianTest() external hasAnyOfTwoRoles(keccak256("GOVERN_ROLE"), keccak256("GUARDIAN_ROLE")) {}
 }

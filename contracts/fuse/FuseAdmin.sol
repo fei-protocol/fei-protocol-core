@@ -9,14 +9,9 @@ contract FuseAdmin is FuseGuardian {
 
     /// @param _core address of core contract
     /// @param _comptroller the fuse comptroller
-    constructor(address _core, Unitroller _comptroller)
-        FuseGuardian(_core, _comptroller)
-    {}
+    constructor(address _core, Unitroller _comptroller) FuseGuardian(_core, _comptroller) {}
 
-    function oracleAdd(
-        address[] calldata underlyings,
-        address[] calldata _oracles
-    ) external onlyGovernorOrAdmin {
+    function oracleAdd(address[] calldata underlyings, address[] calldata _oracles) external onlyGovernorOrAdmin {
         IMasterOracle(comptroller.oracle()).add(underlyings, _oracles);
     }
 
@@ -24,64 +19,35 @@ contract FuseAdmin is FuseGuardian {
         IMasterOracle(comptroller.oracle()).changeAdmin(newAdmin);
     }
 
-    function _addRewardsDistributor(address distributor)
+    function _addRewardsDistributor(address distributor) external onlyGovernorOrAdmin {
+        if (comptroller._addRewardsDistributor(distributor) != 0) revert ComptrollerError();
+    }
+
+    function _setWhitelistEnforcement(bool enforce) external onlyGovernorOrAdmin {
+        if (comptroller._setWhitelistEnforcement(enforce) != 0) revert ComptrollerError();
+    }
+
+    function _setWhitelistStatuses(address[] calldata suppliers, bool[] calldata statuses)
         external
         onlyGovernorOrAdmin
     {
-        if (comptroller._addRewardsDistributor(distributor) != 0)
-            revert ComptrollerError();
-    }
-
-    function _setWhitelistEnforcement(bool enforce)
-        external
-        onlyGovernorOrAdmin
-    {
-        if (comptroller._setWhitelistEnforcement(enforce) != 0)
-            revert ComptrollerError();
-    }
-
-    function _setWhitelistStatuses(
-        address[] calldata suppliers,
-        bool[] calldata statuses
-    ) external onlyGovernorOrAdmin {
-        if (comptroller._setWhitelistStatuses(suppliers, statuses) != 0)
-            revert ComptrollerError();
+        if (comptroller._setWhitelistStatuses(suppliers, statuses) != 0) revert ComptrollerError();
     }
 
     function _setPriceOracle(address newOracle) public onlyGovernor {
-        if (comptroller._setPriceOracle(newOracle) != 0)
-            revert ComptrollerError();
+        if (comptroller._setPriceOracle(newOracle) != 0) revert ComptrollerError();
     }
 
-    function _setCloseFactor(uint256 newCloseFactorMantissa)
-        external
-        onlyGovernorOrAdmin
-    {
-        if (comptroller._setCloseFactor(newCloseFactorMantissa) != 0)
-            revert ComptrollerError();
+    function _setCloseFactor(uint256 newCloseFactorMantissa) external onlyGovernorOrAdmin {
+        if (comptroller._setCloseFactor(newCloseFactorMantissa) != 0) revert ComptrollerError();
     }
 
-    function _setCollateralFactor(
-        CToken cToken,
-        uint256 newCollateralFactorMantissa
-    ) public onlyGovernorOrAdmin {
-        if (
-            comptroller._setCollateralFactor(
-                cToken,
-                newCollateralFactorMantissa
-            ) != 0
-        ) revert ComptrollerError();
+    function _setCollateralFactor(CToken cToken, uint256 newCollateralFactorMantissa) public onlyGovernorOrAdmin {
+        if (comptroller._setCollateralFactor(cToken, newCollateralFactorMantissa) != 0) revert ComptrollerError();
     }
 
-    function _setLiquidationIncentive(uint256 newLiquidationIncentiveMantissa)
-        external
-        onlyGovernorOrAdmin
-    {
-        if (
-            comptroller._setLiquidationIncentive(
-                newLiquidationIncentiveMantissa
-            ) != 0
-        ) revert ComptrollerError();
+    function _setLiquidationIncentive(uint256 newLiquidationIncentiveMantissa) external onlyGovernorOrAdmin {
+        if (comptroller._setLiquidationIncentive(newLiquidationIncentiveMantissa) != 0) revert ComptrollerError();
     }
 
     function _deployMarket(
@@ -107,34 +73,19 @@ contract FuseAdmin is FuseGuardian {
             adminFee
         );
 
-        if (
-            comptroller._deployMarket(
-                false,
-                constructorData,
-                collateralFactorMantissa
-            ) != 0
-        ) revert ComptrollerError();
+        if (comptroller._deployMarket(false, constructorData, collateralFactorMantissa) != 0) revert ComptrollerError();
     }
 
     function _unsupportMarket(CToken cToken) external onlyGovernorOrAdmin {
-        if (comptroller._unsupportMarket(cToken) != 0)
-            revert ComptrollerError();
+        if (comptroller._unsupportMarket(cToken) != 0) revert ComptrollerError();
     }
 
-    function _toggleAutoImplementations(bool enabled)
-        public
-        onlyGovernorOrAdmin
-    {
-        if (comptroller._toggleAutoImplementations(enabled) != 0)
-            revert ComptrollerError();
+    function _toggleAutoImplementations(bool enabled) public onlyGovernorOrAdmin {
+        if (comptroller._toggleAutoImplementations(enabled) != 0) revert ComptrollerError();
     }
 
-    function _setPendingAdmin(address newPendingAdmin)
-        public
-        onlyGovernorOrAdmin
-    {
-        if (comptroller._setPendingAdmin(newPendingAdmin) != 0)
-            revert ComptrollerError();
+    function _setPendingAdmin(address newPendingAdmin) public onlyGovernorOrAdmin {
+        if (comptroller._setPendingAdmin(newPendingAdmin) != 0) revert ComptrollerError();
     }
 
     function _acceptAdmin() public {

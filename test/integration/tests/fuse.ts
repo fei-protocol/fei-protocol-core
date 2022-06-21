@@ -1,17 +1,16 @@
+import { NamedAddresses, NamedContracts } from '@custom-types/types';
+import proposals from '@protocol/proposalsConfig';
+import { getImpersonatedSigner, time } from '@test/helpers';
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
 import { ethers } from 'hardhat';
-import { NamedAddresses, NamedContracts } from '@custom-types/types';
-import { getImpersonatedSigner, resetFork, time } from '@test/helpers';
-import proposals from '@test/integration/proposals_config';
 import { TestEndtoEndCoordinator } from '../setup';
 import { forceEth } from '../setup/utils';
 
 before(async () => {
   chai.use(CBN(ethers.BigNumber));
   chai.use(solidity);
-  await resetFork();
 });
 
 describe('e2e-fuse', function () {

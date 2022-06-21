@@ -1,9 +1,9 @@
-import { expectRevert, time, getCore, getAddresses } from '@test/helpers';
-import { expect } from 'chai';
-import hre, { artifacts, ethers, network } from 'hardhat';
-import { Signer } from 'ethers';
-import { TransactionResponse } from '@ethersproject/providers';
 import { Core, FeiDAO, Timelock } from '@custom-types/contracts';
+import { TransactionResponse } from '@ethersproject/providers';
+import { expectRevert, getAddresses, getCore, time } from '@test/helpers';
+import { expect } from 'chai';
+import { Signer } from 'ethers';
+import hre, { artifacts, ethers, network } from 'hardhat';
 
 const Tribe = artifacts.readArtifactSync('Tribe');
 
@@ -138,7 +138,7 @@ describe('FeiDAO', function () {
 
         // advance to end of voting period
         const endBlock = (await feiDAO.proposals(pid)).endBlock;
-        await time.advanceBlockTo(endBlock.toString());
+        await time.advanceBlockTo(endBlock.toNumber());
 
         // queue
         await feiDAO['queue(uint256)'](pid);

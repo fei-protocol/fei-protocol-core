@@ -1,11 +1,12 @@
-import { permissions } from '@protocol/permissions';
+import { permissions, PermissionsType } from '@protocol/permissions';
 import { getAllContractAddresses, getAllContracts } from './loadContracts';
 import {
   Config,
   ContractAccessRights,
   TestCoordinator,
-  Env,
+  ContractsAndAddresses,
   ProposalConfig,
+  TemplatedProposalConfig,
   namedContractsToNamedAddresses,
   NamedAddresses,
   NamedContracts,
@@ -20,7 +21,11 @@ import { sudo } from '@scripts/utils/sudo';
 import constructProposal from '@scripts/utils/constructProposal';
 import '@nomiclabs/hardhat-ethers';
 import { resetFork } from '@test/helpers';
-import simulateOAProposal from '@scripts/utils/simulateOAProposal';
+import { simulateOAProposal } from '@scripts/utils/simulateTimelockProposal';
+import { simulateTCProposal } from '@scripts/utils/simulateTimelockProposal';
+import { simulateDEBUGProposal } from '@scripts/utils/simulateDEBUGProposal';
+import { forceEth } from '@test/integration/setup/utils';
+import { getImpersonatedSigner } from '@test/helpers';
 
 /**
  * Coordinate initialising an end-to-end testing environment
@@ -35,6 +40,10 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
 
   constructor(private config: Config, proposals?: any) {
     this.proposals = proposals;
+
+    this.mainnetContracts = {};
+    this.afterUpgradeAddresses = {};
+    this.afterUpgradeContracts = {};
   }
 
   public async initMainnetContracts(): Promise<void> {
@@ -51,7 +60,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
    * 3) Apply appropriate permissions to the contracts e.g. minter, burner priviledges
    *
    */
-  public async loadEnvironment(): Promise<Env> {
+  public async loadEnvironment(): Promise<ContractsAndAddresses> {
     await resetFork();
     await this.initMainnetContracts();
     let existingContracts = this.mainnetContracts;
@@ -91,7 +100,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
   async applyUpgrade(
     existingContracts: NamedContracts,
     proposalName: string,
-    config: ProposalConfig
+    config: TemplatedProposalConfig
   ): Promise<NamedContracts> {
     let deployedUpgradedContracts = {};
 
@@ -123,6 +132,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
         contractAddressesBefore,
         this.config.logging
       );
+      console.log(`Deployment complete.`);
     }
 
     const contracts: NamedContracts = {
@@ -155,6 +165,16 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
       await proposal.simulate();
     }
 
+    if (config.category === ProposalCategory.TC) {
+      this.config.logging && console.log(`Simulating Tribal Council proposal...`);
+      await simulateTCProposal(
+        config.proposal,
+        contracts as unknown as MainnetContracts,
+        contractAddresses,
+        this.config.logging
+      );
+    }
+
     if (config.category === ProposalCategory.OA) {
       this.config.logging && console.log(`Simulating OA proposal...`);
       await simulateOAProposal(
@@ -163,6 +183,26 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
         contractAddresses,
         this.config.logging
       );
+    }
+
+    if (config.category === ProposalCategory.DEBUG) {
+      console.log('Simulating DAO proposal in DEBUG mode (step by step)...');
+      console.log('  Title: ', config.proposal.title);
+
+      const signer = await getImpersonatedSigner(contracts.feiDAOTimelock.address);
+      await forceEth(contracts.feiDAOTimelock.address);
+
+      await simulateDEBUGProposal(signer, contractAddresses, contracts as unknown as MainnetContracts, config);
+    }
+
+    if (config.category === ProposalCategory.DEBUG_TC) {
+      console.log('Simulating TC proposal in DEBUG mode (step by step)...');
+      console.log('  Title: ', config.proposal.title);
+
+      const signer = await getImpersonatedSigner(contracts.tribalCouncilTimelock.address);
+      await forceEth(contracts.tribalCouncilTimelock.address);
+
+      await simulateDEBUGProposal(signer, contractAddresses, contracts as unknown as MainnetContracts, config);
     }
 
     // teardown the DAO proposal
@@ -208,16 +248,22 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
    * permissions contract
    */
   getAccessControlMapping(): ContractAccessRights {
-    const accessControlRoles = {};
+    const accessControlRoles: ContractAccessRights = {
+      minter: [],
+      burner: [],
+      pcvController: [],
+      governor: [],
+      guardian: []
+    };
 
     // Array of all deployed contracts
     Object.keys(permissions).map((role) => {
-      const contracts = permissions[role];
+      const contracts = permissions[role as PermissionsType];
       const addresses = contracts.map((contractName) => {
         return this.afterUpgradeAddresses[contractName];
       });
 
-      accessControlRoles[role] = addresses;
+      accessControlRoles[role as keyof ContractAccessRights] = addresses;
     });
 
     return accessControlRoles as ContractAccessRights;

@@ -12,10 +12,7 @@ interface IBAMM {
     function fetchPrice() external view returns (uint256);
 
     /// @notice returns amount of ETH received for an LUSD swap
-    function getSwapEthAmount(uint256 lusdQty)
-        external
-        view
-        returns (uint256 ethAmount, uint256 feeEthAmount);
+    function getSwapEthAmount(uint256 lusdQty) external view returns (uint256 ethAmount, uint256 feeEthAmount);
 
     /// @notice LUSD token address
     function LUSD() external view returns (IERC20);

@@ -37,12 +37,7 @@ contract ERC20TokemakPCVDeposit is TokemakPCVDepositBase {
     /// @notice withdraw tokens from the PCV allocation
     /// @param amountUnderlying of tokens withdrawn
     /// @param to the address to send PCV to
-    function withdraw(address to, uint256 amountUnderlying)
-        external
-        override
-        onlyPCVController
-        whenNotPaused
-    {
+    function withdraw(address to, uint256 amountUnderlying) external override onlyPCVController whenNotPaused {
         ITokemakERC20Pool(pool).withdraw(amountUnderlying);
 
         token.transfer(to, amountUnderlying);

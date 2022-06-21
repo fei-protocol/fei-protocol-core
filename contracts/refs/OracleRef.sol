@@ -59,21 +59,13 @@ abstract contract OracleRef is IOracleRef, CoreRef {
 
     /// @notice sets the new decimalsNormalizer
     /// @param newDecimalsNormalizer the new decimalsNormalizer
-    function setDecimalsNormalizer(int256 newDecimalsNormalizer)
-        external
-        override
-        onlyGovernor
-    {
+    function setDecimalsNormalizer(int256 newDecimalsNormalizer) external override onlyGovernor {
         _setDecimalsNormalizer(newDecimalsNormalizer);
     }
 
     /// @notice sets the referenced backup oracle
     /// @param newBackupOracle the new backup oracle to reference
-    function setBackupOracle(address newBackupOracle)
-        external
-        override
-        onlyGovernorOrAdmin
-    {
+    function setBackupOracle(address newBackupOracle) external override onlyGovernorOrAdmin {
         _setBackupOracle(newBackupOracle);
     }
 
@@ -81,12 +73,7 @@ abstract contract OracleRef is IOracleRef, CoreRef {
     /// @param price the peg price to invert
     /// @return the inverted peg as a Decimal
     /// @dev the inverted peg would be X per FEI
-    function invert(Decimal.D256 memory price)
-        public
-        pure
-        override
-        returns (Decimal.D256 memory)
-    {
+    function invert(Decimal.D256 memory price) public pure override returns (Decimal.D256 memory) {
         return Decimal.one().div(price);
     }
 
@@ -105,6 +92,11 @@ abstract contract OracleRef is IOracleRef, CoreRef {
         }
         require(valid, "OracleRef: oracle invalid");
 
+        // Invert the oracle price if necessary
+        if (doInvert) {
+            _peg = invert(_peg);
+        }
+
         // Scale the oracle price by token decimals delta if necessary
         uint256 scalingFactor;
         if (decimalsNormalizer < 0) {
@@ -115,10 +107,6 @@ abstract contract OracleRef is IOracleRef, CoreRef {
             _peg = _peg.mul(scalingFactor);
         }
 
-        // Invert the oracle price if necessary
-        if (doInvert) {
-            _peg = invert(_peg);
-        }
         return _peg;
     }
 
@@ -150,16 +138,12 @@ abstract contract OracleRef is IOracleRef, CoreRef {
     function _setDecimalsNormalizer(int256 newDecimalsNormalizer) internal {
         int256 oldDecimalsNormalizer = decimalsNormalizer;
         decimalsNormalizer = newDecimalsNormalizer;
-        emit DecimalsNormalizerUpdate(
-            oldDecimalsNormalizer,
-            newDecimalsNormalizer
-        );
+        emit DecimalsNormalizerUpdate(oldDecimalsNormalizer, newDecimalsNormalizer);
     }
 
     function _setDecimalsNormalizerFromToken(address token) internal {
         int256 feiDecimals = 18;
-        int256 _decimalsNormalizer = feiDecimals -
-            int256(uint256(IERC20Metadata(token).decimals()));
+        int256 _decimalsNormalizer = feiDecimals - int256(uint256(IERC20Metadata(token).decimals()));
 
         if (doInvert) {
             _decimalsNormalizer = -1 * _decimalsNormalizer;

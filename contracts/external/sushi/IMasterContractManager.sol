@@ -21,8 +21,5 @@ interface IMasterContractManager {
         uint256 shares
     ) external;
 
-    function balanceOf(address token, address owner)
-        external
-        view
-        returns (uint256);
+    function balanceOf(address token, address owner) external view returns (uint256);
 }

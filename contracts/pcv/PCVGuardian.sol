@@ -6,6 +6,7 @@ import "../refs/CoreRef.sol";
 import "./IPCVGuardian.sol";
 import "./IPCVDeposit.sol";
 import "../libs/CoreRefPauseableLib.sol";
+import {TribeRoles} from "../core/TribeRoles.sol";
 
 contract PCVGuardian is IPCVGuardian, CoreRef {
     using CoreRefPauseableLib for address;
@@ -15,8 +16,6 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
     EnumerableSet.AddressSet private safeAddresses;
 
     constructor(address _core, address[] memory _safeAddresses) CoreRef(_core) {
-        _setContractAdminRole(keccak256("PCV_GUARDIAN_ADMIN_ROLE"));
-
         for (uint256 i = 0; i < _safeAddresses.length; i++) {
             _setSafeAddress(_safeAddresses[i]);
         }
@@ -26,33 +25,23 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
 
     /// @notice returns true if the the provided address is a valid destination to withdraw funds to
     /// @param pcvDeposit the address to check
-    function isSafeAddress(address pcvDeposit)
-        public
-        view
-        override
-        returns (bool)
-    {
+    function isSafeAddress(address pcvDeposit) public view override returns (bool) {
         return safeAddresses.contains(pcvDeposit);
     }
 
     /// @notice returns all safe addresses
-    function getSafeAddresses()
-        public
-        view
-        override
-        returns (address[] memory)
-    {
+    function getSafeAddresses() public view override returns (address[] memory) {
         return safeAddresses.values();
     }
 
-    // ---------- Governor-or-Admin-Only State-Changing API ----------
+    // ---------- GOVERNOR-or-PCV_GUARDIAN_ADMIN-Only State-Changing API ----------
 
     /// @notice governor-only method to set an address as "safe" to withdraw funds to
     /// @param pcvDeposit the address to set as safe
     function setSafeAddress(address pcvDeposit)
         external
         override
-        onlyGovernorOrAdmin
+        hasAnyOfTwoRoles(TribeRoles.GOVERNOR, TribeRoles.PCV_GUARDIAN_ADMIN)
     {
         _setSafeAddress(pcvDeposit);
     }
@@ -62,7 +51,7 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
     function setSafeAddresses(address[] calldata _safeAddresses)
         external
         override
-        onlyGovernorOrAdmin
+        hasAnyOfTwoRoles(TribeRoles.GOVERNOR, TribeRoles.PCV_GUARDIAN_ADMIN)
     {
         require(_safeAddresses.length != 0, "empty");
         for (uint256 i = 0; i < _safeAddresses.length; i++) {
@@ -70,14 +59,14 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
         }
     }
 
-    // ---------- Governor-or-Admin-Or-Guardian-Only State-Changing API ----------
+    // ---------- GOVERNOR-or-PCV_GUARDIAN_ADMIN-Or-GUARDIAN-Only State-Changing API ----------
 
     /// @notice governor-or-guardian-only method to un-set an address as "safe" to withdraw funds to
     /// @param pcvDeposit the address to un-set as safe
     function unsetSafeAddress(address pcvDeposit)
         external
         override
-        isGovernorOrGuardianOrAdmin
+        hasAnyOfThreeRoles(TribeRoles.GOVERNOR, TribeRoles.GUARDIAN, TribeRoles.PCV_GUARDIAN_ADMIN)
     {
         _unsetSafeAddress(pcvDeposit);
     }
@@ -87,7 +76,7 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
     function unsetSafeAddresses(address[] calldata _safeAddresses)
         external
         override
-        isGovernorOrGuardianOrAdmin
+        hasAnyOfThreeRoles(TribeRoles.GOVERNOR, TribeRoles.GUARDIAN, TribeRoles.PCV_GUARDIAN_ADMIN)
     {
         require(_safeAddresses.length != 0, "empty");
         for (uint256 i = 0; i < _safeAddresses.length; i++) {
@@ -107,11 +96,8 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
         uint256 amount,
         bool pauseAfter,
         bool depositAfter
-    ) external override isGovernorOrGuardianOrAdmin {
-        require(
-            isSafeAddress(safeAddress),
-            "Provided address is not a safe address!"
-        );
+    ) external override hasAnyOfThreeRoles(TribeRoles.GOVERNOR, TribeRoles.PCV_SAFE_MOVER_ROLE, TribeRoles.GUARDIAN) {
+        require(isSafeAddress(safeAddress), "Provided address is not a safe address!");
 
         pcvDeposit._ensureUnpaused();
 
@@ -140,11 +126,8 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
         uint256 amount,
         bool pauseAfter,
         bool depositAfter
-    ) external override isGovernorOrGuardianOrAdmin {
-        require(
-            isSafeAddress(safeAddress),
-            "Provided address is not a safe address!"
-        );
+    ) external override hasAnyOfThreeRoles(TribeRoles.GOVERNOR, TribeRoles.PCV_SAFE_MOVER_ROLE, TribeRoles.GUARDIAN) {
+        require(isSafeAddress(safeAddress), "Provided address is not a safe address!");
 
         pcvDeposit._ensureUnpaused();
 
@@ -174,11 +157,8 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
         uint256 amount,
         bool pauseAfter,
         bool depositAfter
-    ) external override isGovernorOrGuardianOrAdmin {
-        require(
-            isSafeAddress(safeAddress),
-            "Provided address is not a safe address!"
-        );
+    ) external override hasAnyOfThreeRoles(TribeRoles.GOVERNOR, TribeRoles.PCV_SAFE_MOVER_ROLE, TribeRoles.GUARDIAN) {
+        require(isSafeAddress(safeAddress), "Provided address is not a safe address!");
 
         pcvDeposit._ensureUnpaused();
 

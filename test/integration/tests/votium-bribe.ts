@@ -1,10 +1,9 @@
+import { NamedContracts } from '@custom-types/types';
+import proposals from '@protocol/proposalsConfig';
+import { expectRevert, getImpersonatedSigner, time } from '@test/helpers';
+import { TestEndtoEndCoordinator } from '@test/integration/setup';
 import { expect } from 'chai';
 import { ethers } from 'hardhat';
-import { NamedContracts } from '@custom-types/types';
-import { getImpersonatedSigner, time } from '@test/helpers';
-import { TestEndtoEndCoordinator } from '@test/integration/setup';
-import proposals from '@test/integration/proposals_config';
-import { expectRevert } from '@test/helpers';
 import { forceEth } from '../setup/utils';
 
 const VOTIUM_ADMIN = '0xdC7C7F0bEA8444c12ec98Ec626ff071c6fA27a19'; // tommyg.eth
@@ -43,6 +42,15 @@ describe('votium-bribe', function () {
     await forceEth(contracts.opsOptimisticTimelock.address);
     daoSigner = await getImpersonatedSigner(contracts.feiDAOTimelock.address);
     await forceEth(contracts.feiDAOTimelock.address);
+
+    // Setup TribalChief so that rewards are active
+    await contracts.tribalChief.connect(daoSigner).updateBlockReward('26150000000000000000');
+    await contracts.tribalChief.connect(daoSigner).set(12, 250, ethers.constants.AddressZero, false);
+
+    // Grant bribeSigner role to interact with VotiumBribers
+    await contracts.core
+      .connect(daoSigner)
+      .grantRole(ethers.utils.id('VOTIUM_ADMIN_ROLE'), contracts.opsOptimisticTimelock.address);
   });
 
   describe('When no voting round is active', async function () {

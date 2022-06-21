@@ -31,9 +31,7 @@ contract MockStEthStableSwap {
         uint256 input,
         uint256 min_out
     ) public payable returns (uint256 output) {
-        output = anti
-            ? (input * (10000 + slippage)) / 10000
-            : (input * (10000 - slippage)) / 10000;
+        output = anti ? (input * (10000 + slippage)) / 10000 : (input * (10000 - slippage)) / 10000;
 
         require(output >= min_out, "MockStableswap/excess-slippage");
 
@@ -48,9 +46,7 @@ contract MockStEthStableSwap {
         int128 j,
         uint256 input
     ) public view returns (uint256 output) {
-        output = anti
-            ? (input * (10000 + slippage)) / 10000
-            : (input * (10000 - slippage)) / 10000;
+        output = anti ? (input * (10000 + slippage)) / 10000 : (input * (10000 - slippage)) / 10000;
     }
 
     receive() external payable {}

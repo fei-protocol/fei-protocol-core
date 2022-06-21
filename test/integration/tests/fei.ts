@@ -1,18 +1,18 @@
+import { Fei } from '@custom-types/contracts';
+import { NamedContracts } from '@custom-types/types';
+import { Signer } from '@ethersproject/abstract-signer';
+import proposals from '@protocol/proposalsConfig';
+import { ZERO_ADDRESS } from '@test/helpers';
+import { TestEndtoEndCoordinator } from '@test/integration/setup';
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
 import { ethers } from 'hardhat';
-import { NamedAddresses, NamedContracts } from '@custom-types/types';
-import { getAddresses, getImpersonatedSigner, resetFork, ZERO_ADDRESS } from '@test/helpers';
-import proposals from '@test/integration/proposals_config';
-import { TestEndtoEndCoordinator } from '@test/integration/setup';
-import { Fei } from '@custom-types/contracts';
-import { Signer } from '@ethersproject/abstract-signer';
 const toBN = ethers.BigNumber.from;
 
 describe('e2e-fei', function () {
   let contracts: NamedContracts;
-  let contractAddresses: NamedAddresses;
+  let contractAddresses;
   let deployAddress: string;
   let deploySigner: Signer;
   let e2eCoord: TestEndtoEndCoordinator;
@@ -22,7 +22,6 @@ describe('e2e-fei', function () {
   before(async () => {
     chai.use(CBN(ethers.BigNumber));
     chai.use(solidity);
-    await resetFork();
   });
 
   before(async function () {
@@ -91,15 +90,6 @@ describe('e2e-fei', function () {
       expect(await fei.paused()).to.be.true;
       await fei.connect(deploySigner).unpause();
       expect(await fei.paused()).to.be.false;
-    });
-
-    it('hasAnyOfRoles works', async function () {
-      const addresses = await getAddresses();
-      const mockCoreRefTestFactory = await ethers.getContractFactory('MockCoreRefTest');
-      const mockCoreRefTest = await mockCoreRefTestFactory.deploy(contracts.core.address);
-      await contracts.core.grantGuardian(deployAddress);
-      await mockCoreRefTest.connect(await getImpersonatedSigner(deployAddress)).governorOrGuardianTest();
-      expect(mockCoreRefTest.governorOrGuardianTest()).to.be.revertedWith('UNAUTHORIZED');
     });
   });
 });

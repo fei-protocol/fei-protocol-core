@@ -1,7 +1,7 @@
-import { ZERO_ADDRESS, getCore, getAddresses, expectRevert, expectUnspecifiedRevert } from '../../../helpers';
 import { expect } from 'chai';
-import hre, { ethers } from 'hardhat';
 import { Signer } from 'ethers';
+import hre, { ethers } from 'hardhat';
+import { expectRevert, expectUnspecifiedRevert, getAddresses, getCore, ZERO_ADDRESS } from '../../../helpers';
 
 const e18 = '000000000000000000';
 
@@ -529,7 +529,7 @@ describe('CollateralizationOracle', function () {
     describe('isOvercollateralized()', function () {
       it('should revert if paused', async function () {
         await this.oracle.connect(impersonatedSigners[governorAddress]).pause();
-        await expectRevert(this.oracle.isOvercollateralized(), 'Pausable: paused');
+        await expectUnspecifiedRevert(this.oracle.isOvercollateralized());
       });
       it('should revert if invalid', async function () {
         expect(await this.oracle.isOvercollateralized()).to.be.equal(true);

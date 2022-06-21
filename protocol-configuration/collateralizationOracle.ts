@@ -1,47 +1,40 @@
-const collateralizationAddresses = {
+const collateralizationAddresses: CollateralizationAddressType = {
   fei: [
     'feiOATimelockWrapper',
-    'rariPool8FeiPCVDepositWrapper',
     'rariPool6FeiPCVDepositWrapper',
     'rariPool19FeiPCVDepositWrapper',
     'rariPool24FeiPCVDepositWrapper',
-    'rariPool25FeiPCVDepositWrapper',
-    'rariPool27FeiPCVDepositWrapper',
-    'rariPool18FeiPCVDepositWrapper',
-    'rariPool90FeiPCVDepositWrapper',
     'aaveFeiPCVDepositWrapper',
     'rariPool79FeiPCVDepositWrapper',
-    'rariPool31FeiPCVDepositWrapper',
-    'rariPool72FeiPCVDepositWrapper',
     'rariPool128FeiPCVDepositWrapper',
     'rariPool22FeiPCVDepositWrapper',
-    'feiBuybackLensNoFee'
+    'feiBuybackLensNoFee',
+    'compoundFeiPCVDepositWrapper',
+    'turboFusePCVDeposit'
   ],
-  lusd: [
-    'liquityFusePoolLusdPCVDeposit',
-    'rariPool7LusdPCVDeposit',
-    'bammDeposit',
-    'lusdPSM',
-    'rariPool8LusdPCVDeposit'
-  ],
-  dai: ['compoundDaiPCVDepositWrapper', 'daiFixedPricePSM', 'rariPool8DaiPCVDeposit'],
+  lusd: ['rariPool7LusdPCVDeposit', 'bammDeposit', 'lusdPSM'],
+  dai: ['compoundDaiPCVDepositWrapper', 'daiFixedPricePSM', 'dpiToDaiLensDai', 'ethToDaiLensDai'],
   usd: ['namedStaticPCVDepositWrapper', 'd3poolCurvePCVDeposit', 'd3poolConvexPCVDeposit'],
-  bal: ['balancerDepositBalWeth'],
-  cream: ['creamDepositWrapper'],
+  bal: ['balancerDepositBalWeth', 'balancerLensVeBalBal', 'balancerGaugeStaker'],
   weth: [
-    'ethLidoPCVDepositWrapper',
+    'ethLidoPCVDeposit',
     'compoundEthPCVDepositWrapper',
     'aaveEthPCVDepositWrapper',
     'uniswapPCVDeposit',
     'ethTokemakPCVDeposit',
     'ethPSM',
-    'rariPool146EthPCVDeposit',
     'wethDepositWrapper',
-    'balancerDepositFeiWeth'
+    'balancerDepositFeiWeth',
+    'balancerLensBpt30Fei70Weth',
+    'balancerLensVeBalWeth',
+    'ethToDaiLensEth'
   ],
-  dpi: ['rariPool19DpiPCVDepositWrapper', 'dpiDepositWrapper'],
-  rai: ['rariPool9RaiPCVDepositWrapper', 'aaveRaiPCVDepositWrapper', 'raiDepositWrapper'],
-  agEUR: ['agEurAngleUniswapPCVDeposit', 'agEurDepositWrapper']
+  dpi: ['dpiToDaiLensDpi'],
+  rai: ['raiPriceBoundPSM'],
+  agEUR: ['agEurDepositWrapper', 'uniswapLensAgEurUniswapGauge', 'agEurUniswapPCVDeposit'],
+  volt: ['voltDepositWrapper']
 };
+
+export type CollateralizationAddressType = { [key: string]: string[] };
 
 export default collateralizationAddresses;

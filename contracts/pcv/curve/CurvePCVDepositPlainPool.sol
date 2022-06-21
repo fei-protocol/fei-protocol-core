@@ -73,16 +73,12 @@ contract CurvePCVDepositPlainPool is PCVDeposit {
         }
 
         // require non-empty deposit
-        require(
-            totalBalances > 0,
-            "CurvePCVDepositPlainPool: cannot deposit 0"
-        );
+        require(totalBalances > 0, "CurvePCVDepositPlainPool: cannot deposit 0");
 
         // set maximum allowed slippage
         uint256 virtualPrice = curvePool.get_virtual_price();
         uint256 minLpOut = (totalBalances * 1e18) / virtualPrice;
-        uint256 lpSlippageAccepted = (minLpOut * maxSlippageBasisPoints) /
-            Constants.BASIS_POINTS_GRANULARITY;
+        uint256 lpSlippageAccepted = (minLpOut * maxSlippageBasisPoints) / Constants.BASIS_POINTS_GRANULARITY;
         minLpOut -= lpSlippageAccepted;
 
         // approval
@@ -101,12 +97,7 @@ contract CurvePCVDepositPlainPool is PCVDeposit {
     /// If FEI is in the pool, pull FEI out of the pool. If FEI is not in the pool,
     /// exit in the first token of the pool. To exit without chosing a specific
     /// token, and minimize slippage, use exitPool().
-    function withdraw(address to, uint256 amountUnderlying)
-        public
-        override
-        onlyPCVController
-        whenNotPaused
-    {
+    function withdraw(address to, uint256 amountUnderlying) public override onlyPCVController whenNotPaused {
         withdrawOneCoin(feiIndexInPool, to, amountUnderlying);
     }
 
@@ -121,14 +112,9 @@ contract CurvePCVDepositPlainPool is PCVDeposit {
         // burn LP tokens to get one token out
         uint256 virtualPrice = curvePool.get_virtual_price();
         uint256 maxLpUsed = (amountUnderlying * 1e18) / virtualPrice;
-        uint256 lpSlippageAccepted = (maxLpUsed * maxSlippageBasisPoints) /
-            Constants.BASIS_POINTS_GRANULARITY;
+        uint256 lpSlippageAccepted = (maxLpUsed * maxSlippageBasisPoints) / Constants.BASIS_POINTS_GRANULARITY;
         maxLpUsed += lpSlippageAccepted;
-        curvePool.remove_liquidity_one_coin(
-            maxLpUsed,
-            int128(int256(coinIndexInPool)),
-            amountUnderlying
-        );
+        curvePool.remove_liquidity_one_coin(maxLpUsed, int128(int256(coinIndexInPool)), amountUnderlying);
 
         // send token to destination
         IERC20(curvePool.coins(coinIndexInPool)).transfer(to, amountUnderlying);
@@ -161,21 +147,14 @@ contract CurvePCVDepositPlainPool is PCVDeposit {
                 balances[i] = poolToken.balanceOf(address(curvePool));
                 totalBalances += balances[i];
             }
-            usdBalance -=
-                (usdBalance * balances[feiIndexInPool]) /
-                totalBalances;
+            usdBalance -= (usdBalance * balances[feiIndexInPool]) / totalBalances;
         }
 
         return usdBalance;
     }
 
     /// @notice returns the resistant balance in USD and FEI held by the contract
-    function resistantBalanceAndFei()
-        public
-        view
-        override
-        returns (uint256 resistantBalance, uint256 resistantFei)
-    {
+    function resistantBalanceAndFei() public view override returns (uint256 resistantBalance, uint256 resistantFei) {
         uint256 lpTokens = curvePool.balanceOf(address(this));
         uint256 virtualPrice = curvePool.get_virtual_price();
         resistantBalance = (lpTokens * virtualPrice) / 1e18;
