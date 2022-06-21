@@ -71,13 +71,8 @@ contract VlAuraDelegatorPCVDeposit is DelegatorPCVDeposit {
     function initialize(
         address _aura,
         address _auraLocker,
-        address _auraMerkleDrop,
-        address _initialDelegate
+        address _auraMerkleDrop
     ) external {
-        // the Tribal Council multisig can initialize the state variables,
-        // only once, after contract deployment.
-        require(msg.sender == address(0x2EC598d8e3DF35E5D6F13AE2f05a7bB2704e92Ea), "!TC");
-
         require(
             aura == address(0) ||
                 auraLocker == address(0) ||
@@ -90,7 +85,6 @@ contract VlAuraDelegatorPCVDeposit is DelegatorPCVDeposit {
         auraLocker = _auraLocker;
         auraMerkleDrop = _auraMerkleDrop;
         token = ERC20Votes(_auraLocker);
-        _delegate(_initialDelegate);
     }
 
     /// @notice noop, vlAURA can't be transferred.

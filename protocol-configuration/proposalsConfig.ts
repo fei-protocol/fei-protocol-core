@@ -3,19 +3,24 @@ import tip_111 from '@proposals/description/tip_111';
 import pod_exec_v2 from '@proposals/description/pod_exec_v2';
 import tokemak_withdraw from '@proposals/description/tokemak_withdraw';
 import tip_112 from '@proposals/description/tip_112';
+import aura_airdrop from '@proposals/description/aura_airdrop';
 
 const proposals: TemplatedProposalsConfigMap = {
+  aura_airdrop: {
+    deploy: false, // deploy flag for whether to run deploy action during e2e tests or use mainnet state
+    totalValue: 0, // amount of ETH to send to DAO execution
+    proposal: aura_airdrop, // full proposal file, imported from '@proposals/description/fip_xx.ts'
+    proposalId: '',
+    affectedContractSignoff: [],
+    deprecatedContractSignoff: [],
+    category: ProposalCategory.DEBUG
+  },
   tip_111: {
     deploy: false, // deploy flag for whether to run deploy action during e2e tests or use mainnet state
     totalValue: 0, // amount of ETH to send to DAO execution
     proposal: tip_111, // full proposal file, imported from '@proposals/description/fip_xx.ts'
     proposalId: '',
-    affectedContractSignoff: [
-      /*'dpiToDaiLBPSwapper',
-      'compoundDaiPCVDeposit',
-      'tribalCouncilSafe',
-      'ratioPCVControllerV2'*/
-    ],
+    affectedContractSignoff: [],
     deprecatedContractSignoff: [],
     category: ProposalCategory.DAO
   },

@@ -356,14 +356,30 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   },
 
   vlAuraDelegatorPCVDeposit: {
+    // TODO: show in CR Oracle
     artifactName: 'VlAuraDelegatorPCVDeposit', // actually a TransparentUpgradeableProxy
     address: '0xc44902C03093D52213d20E5b06a0Bda4D9Ce6524',
-    category: AddressCategory.External // will become PCV after airdrop happen
+    category: AddressCategory.TBD
   },
   vlAuraDelegatorPCVDepositImplementation: {
     artifactName: 'VlAuraDelegatorPCVDeposit',
     address: '0xEd47a9519F86a695A212B53B5EBff92aF41741b1',
-    category: AddressCategory.External // not really external but PCV adds e2e tests on CR oracle config
+    category: AddressCategory.TBD
+  },
+  aura: {
+    artifactName: 'IERC20',
+    address: '0xC0c293ce456fF0ED870ADd98a0828Dd4d2903DBF',
+    category: AddressCategory.External
+  },
+  vlAura: {
+    artifactName: 'IAuraLocker',
+    address: '0x3Fa73f1E5d8A792C80F426fc8F84FBF7Ce9bBCAC',
+    category: AddressCategory.External
+  },
+  auraMerkleDrop: {
+    artifactName: 'IAuraMerkleDrop',
+    address: '0x45EB1A004373b1D8457134A2C04a42d69D287724',
+    category: AddressCategory.External
   },
 
   d3poolConvexPCVDeposit: {
