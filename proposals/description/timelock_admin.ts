@@ -1,0 +1,38 @@
+import { TemplatedProposalDescription } from '@custom-types/types';
+
+const timelock_admin: TemplatedProposalDescription = {
+  title: 'Timelock Updates',
+  commands: [
+    {
+      target: 'collateralizationOracle',
+      values: '0',
+      method: 'addDeposit(address)',
+      arguments: (addresses) => [addresses.rariTimelockFeiOldLens],
+      description: 'Add FEI lens to CR oracle for old timelocked FEI'
+    },
+    {
+      target: 'collateralizationOracle',
+      values: '0',
+      method: 'addDeposit(address)',
+      arguments: (addresses) => [addresses.tribalCouncilTimelockFeiLens],
+      description: 'Add FEI lens to CR oracle for tribal council timelock FEI'
+    },
+    {
+      target: 'rariInfraFeiTimelock',
+      values: '0',
+      method: 'acceptBeneficiary()',
+      arguments: (addresses) => [],
+      description: 'Accept beneficiary of rari infra fei timelock'
+    },
+    {
+      target: 'rariInfraTribeTimelock',
+      values: '0',
+      method: 'acceptBeneficiary()',
+      arguments: (addresses) => [],
+      description: 'Accept beneficiary of rari infra tribe timelock'
+    }
+  ],
+  description: `Accept beneficiary of the old rari timelocks to tribal council timelock. Add a FEI lens to the FEI there`
+};
+
+export default timelock_admin;
