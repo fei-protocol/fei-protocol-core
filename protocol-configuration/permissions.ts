@@ -1,11 +1,10 @@
 export const permissions = {
-  MINTER_ROLE: ['feiDAOTimelock', 'pcvEquityMinter', 'daiFixedPricePSM', 'ethPSM', 'lusdPSM', 'balancerDepositFeiWeth'],
+  MINTER_ROLE: ['feiDAOTimelock', 'pcvEquityMinter', 'daiFixedPricePSM', 'ethPSM', 'lusdPSM'],
   BURNER_ROLE: [],
   GOVERN_ROLE: ['core', 'feiDAOTimelock', 'roleBastion'],
   PCV_CONTROLLER_ROLE: [
     'feiDAOTimelock',
     'ratioPCVControllerV2',
-    'aaveEthPCVDripController',
     'pcvGuardianNew',
     'daiPCVDripController',
     'ethPSMFeiSkimmer',
