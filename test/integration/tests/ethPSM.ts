@@ -82,6 +82,10 @@ describe('eth PSM', function () {
     if (paused) {
       await contracts.ethPSM.unpause();
     }
+    const aaveEthPCVDepositPaused = await contracts.aaveEthPCVDeposit.paused();
+    if (aaveEthPCVDepositPaused) {
+      await contracts.aaveEthPCVDeposit.unpause();
+    }
   });
 
   describe('ethPSMFeiSkimmer', async () => {

@@ -13,15 +13,7 @@ const collateralizationAddresses: CollateralizationAddressType = {
   dai: ['compoundDaiPCVDepositWrapper', 'daiFixedPricePSM', 'ethToDaiLensDai'],
   usd: ['namedStaticPCVDepositWrapper'],
   bal: ['balancerDepositBalWeth', 'balancerLensVeBalBal', 'balancerGaugeStaker'],
-  weth: [
-    'ethLidoPCVDeposit',
-    'aaveEthPCVDepositWrapper',
-    'ethPSM',
-    'balancerDepositFeiWeth',
-    'balancerLensBpt30Fei70Weth',
-    'balancerLensVeBalWeth',
-    'ethToDaiLensEth'
-  ],
+  weth: ['ethLidoPCVDeposit', 'ethPSM', 'balancerLensVeBalWeth', 'ethToDaiLensEth'],
   agEUR: ['uniswapLensAgEurUniswapGauge', 'agEurUniswapPCVDeposit'],
   volt: ['voltDepositWrapper']
 };

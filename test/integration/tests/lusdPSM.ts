@@ -65,6 +65,11 @@ describe('lusd PSM', function () {
     guardian = await getImpersonatedSigner(contractAddresses.guardianMultisig);
     await hre.network.provider.send('hardhat_setBalance', [guardian.address, '0x21E19E0C9BAB2400000']);
     await overwriteChainlinkAggregator(contractAddresses.chainlinkEthUsdOracle, '400000000000', '8');
+
+    const bammDepositPaused = await contracts.bammDeposit.paused();
+    if (bammDepositPaused) {
+      await contracts.bammDeposit.unpause();
+    }
   });
 
   before(async function () {

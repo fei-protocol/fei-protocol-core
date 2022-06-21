@@ -45,6 +45,11 @@ describe('balancer-weightedpool', function () {
 
     daoSigner = await getImpersonatedSigner(contracts.feiDAOTimelock.address);
     await forceEth(contracts.feiDAOTimelock.address);
+
+    const aaveEthPCVDepositPaused = await contracts.aaveEthPCVDeposit.paused();
+    if (aaveEthPCVDepositPaused) {
+      await contracts.aaveEthPCVDeposit.unpause();
+    }
   });
 
   describe('80% BAL / 20% WETH [existing pool, report in BAL, no FEI]', function () {

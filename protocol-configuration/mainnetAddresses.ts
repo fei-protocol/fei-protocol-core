@@ -58,10 +58,9 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     category: AddressCategory.Utility
   },
   dpiToDaiLBPSwapper: {
-    // TODO: Deprecate
     artifactName: 'BalancerLBPSwapper',
     address: '0x05FD907528cf725C6F6d1D28E14619A313513Ba8',
-    category: AddressCategory.Utility
+    category: AddressCategory.Deprecated
   },
   fuseFixer: {
     artifactName: 'FuseFixer',
@@ -72,7 +71,7 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   optimisticMinter: {
     artifactName: 'OwnableTimedMinter',
     address: '0xE66c4De480Bd317054B5a3CF8E8689649d0728c9',
-    category: AddressCategory.Utility
+    category: AddressCategory.Deprecated
   },
   noFeeFeiTribeLBPSwapper: {
     artifactName: 'BalancerLBPSwapper',
@@ -87,7 +86,7 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   aaveEthPCVDripController: {
     artifactName: 'PCVDripController',
     address: '0xb3D63876d95d3a5e591D4DE536dC410b97244086',
-    category: AddressCategory.Utility
+    category: AddressCategory.Deprecated
   },
   daiPCVDripController: {
     artifactName: 'PCVDripController',
@@ -95,10 +94,9 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     category: AddressCategory.Utility
   },
   raiPCVDripController: {
-    // TODO: Deprecate
     artifactName: 'PCVDripController',
     address: '0x64d216dFbe31d0C88BBcAdfF51Ab2aD704A3aAd9',
-    category: AddressCategory.Utility
+    category: AddressCategory.Deprecated
   },
   lusdPSMFeiSkimmer: {
     artifactName: 'FeiSkimmer',
@@ -108,7 +106,7 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   lusdPCVDripController: {
     artifactName: 'PCVDripController',
     address: '0x59fA1bB4fBd7fcB055476645F228f13ac14754a8',
-    category: AddressCategory.Utility
+    category: AddressCategory.Deprecated
   },
   collateralizationOracleKeeper: {
     artifactName: 'CollateralizationOracleKeeper',
@@ -245,10 +243,9 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     category: AddressCategory.Peg
   },
   raiPriceBoundPSM: {
-    // TODO: Deprecate
     artifactName: 'PriceBoundPSM',
     address: '0x5ddE9B4b14eDf59CB23c1d4579B279846998205e',
-    category: AddressCategory.Peg
+    category: AddressCategory.Deprecated
   },
   ethPSM: {
     artifactName: 'PegStabilityModule',
@@ -281,17 +278,15 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     category: AddressCategory.Peg
   },
   dpiToDaiLensDai: {
-    // TODO: Deprecate
     artifactName: 'BPTLens',
     address: '0x3AA57FAf7114a9ebEbda73a997A35eAE06008A7B',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
 
   dpiToDaiLensDpi: {
-    // TODO: Deprecate
     artifactName: 'BPTLens',
     address: '0xaDdB7eBdCA3fa3b72D2e57c8e660C90ec00af7Cc',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
 
   ethToDaiLensDai: {
@@ -319,10 +314,9 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   },
 
   bammDeposit: {
-    // TODO: Deprecate after withdrawing LQTY
     artifactName: 'BAMMDeposit',
     address: '0x374628EBE7Ef6AcA0574e750B618097531A26Ff8',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
 
   balancerDepositFeiWeth: {
@@ -356,45 +350,39 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   },
 
   d3poolConvexPCVDeposit: {
-    // TODO: Deprecate after withdrawing CVX/CRV
     artifactName: 'ConvexPCVDeposit',
     address: '0x5ae217dE26f6Ff5F481C6e10ec48b2cf2fc857C8',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
 
   d3poolCurvePCVDeposit: {
-    // TODO: Deprecate after withdrawing 13k FEI
     artifactName: 'CurvePCVDepositPlainPool',
     address: '0x24F663c69Cd4B263cf5685A49013Ff5f1C898D24',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
 
   ethTokemakPCVDeposit: {
-    // TODO: Deprecate after withdrawing ETH and TOKE
     artifactName: 'EthTokemakPCVDeposit',
     address: '0x0961d2a545e0c1201B313d14C57023682a546b9D',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
 
   rariPool7LusdPCVDeposit: {
-    // TODO: Deprecate
     artifactName: 'ERC20CompoundPCVDeposit',
     address: '0x6026a1559CDd44a63C5CA9A078CC996a9eb68ABB',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
 
   uniswapPCVDeposit: {
-    // TODO: Coordinate with compound devs if Uniswap v2 anchor still used, otherwise deprecate
     artifactName: 'UniswapPCVDeposit',
     address: '0x15958381E9E6dc98bD49655e36f524D2203a28bD',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
 
   aaveEthPCVDepositWrapper: {
-    // TODO: Deprecate
     artifactName: 'PCVDepositWrapper',
     address: '0x43Ef03755991056681F01EE2182234eF6aF1f658',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
 
   aaveFeiPCVDepositWrapper: {
@@ -431,19 +419,19 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   rariPool19FeiPCVDepositWrapper: {
     artifactName: 'PCVDepositWrapper',
     address: '0x7e39bBA9D0d967Ee55524fAe9e54900B02d9889a',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
 
   rariPool24FeiPCVDepositWrapper: {
     artifactName: 'PCVDepositWrapper',
     address: '0x508f6fbd78B6569C29E9D75986a51558dE9E5865',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
 
   rariPool6FeiPCVDepositWrapper: {
     artifactName: 'PCVDepositWrapper',
     address: '0x7aA4b1558C3e219cFFFd6a356421C071F71966e7',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
 
   rariPool79FeiPCVDepositWrapper: {
@@ -467,13 +455,13 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   wethDepositWrapper: {
     artifactName: 'ERC20PCVDepositWrapper',
     address: '0x5E9fA7d783A7F7d4626cE450C8Bd2EbBB26dfdB2',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
 
   agEurDepositWrapper: {
     artifactName: 'ERC20PCVDepositWrapper',
     address: '0x485d23ce5725ecdE46ca9033012984D90b514FFd',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
 
   voltDepositWrapper: {
@@ -496,7 +484,7 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   aaveEthPCVDeposit: {
     artifactName: 'AavePCVDeposit',
     address: '0x5B86887e171bAE0C2C826e87E34Df8D558C079B9',
-    category: AddressCategory.PCV_V1
+    category: AddressCategory.Deprecated
   },
 
   aaveFeiPCVDeposit: {
@@ -532,7 +520,7 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   rariPool24FeiPCVDeposit: {
     artifactName: 'ERC20CompoundPCVDeposit',
     address: '0x1434F99EDB2bD03DECCCFe21288767b8324B7403',
-    category: AddressCategory.PCV_V1
+    category: AddressCategory.Deprecated
   },
 
   rariPool128FeiPCVDeposit: {
@@ -544,13 +532,13 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   rariPool19FeiPCVDeposit: {
     artifactName: 'ERC20CompoundPCVDeposit',
     address: '0xD6960adba53212bBE96E54a7AFeDA2066437D000',
-    category: AddressCategory.PCV_V1
+    category: AddressCategory.Deprecated
   },
 
   rariPool6FeiPCVDeposit: {
     artifactName: 'ERC20CompoundPCVDeposit',
     address: '0xB51f09B6F103D697dc5d64DC904Ad6a2Dad39987',
-    category: AddressCategory.PCV_V1
+    category: AddressCategory.Deprecated
   },
 
   rariPool8FeiPCVDeposit: {
