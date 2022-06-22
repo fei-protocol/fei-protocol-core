@@ -51,6 +51,11 @@ describe('e2e-pcv', function () {
     doLogging && console.log(`Loading environment...`);
     ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment());
     doLogging && console.log(`Environment loaded.`);
+
+    const aaveEthPCVDepositPaused = await contracts.aaveEthPCVDeposit.paused();
+    if (aaveEthPCVDepositPaused) {
+      await contracts.aaveEthPCVDeposit.unpause();
+    }
   });
 
   describe('BAMM', function () {

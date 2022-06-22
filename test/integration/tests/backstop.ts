@@ -59,13 +59,13 @@ describe('e2e-backstop', function () {
   });
   describe('TribeReserveStabilizer', async function () {
     it('exchangeFei', async function () {
-      const { fei, staticPcvDepositWrapper, tribe, tribeReserveStabilizer, collateralizationOracleWrapper } = contracts;
+      const { fei, staticPcvDepositWrapper, tribe, tribeReserveStabilizer, collateralizationOracle } = contracts;
 
       // set Chainlink ETHUSD to a fixed 4,000$ value
       await overwriteChainlinkAggregator(contractAddresses.chainlinkEthUsdOracle, '400000000000', '8');
 
       await fei.mint(deployAddress, tenPow18.mul(tenPow18).mul(toBN(4)));
-      await collateralizationOracleWrapper.update();
+      await collateralizationOracle.update();
 
       const userFeiBalanceBefore = toBN(await fei.balanceOf(deployAddress));
       const userTribeBalanceBefore = await tribe.balanceOf(deployAddress);
@@ -78,7 +78,7 @@ describe('e2e-backstop', function () {
       await tribeReserveStabilizer.startOracleDelayCountdown();
       await time.increase(await tribeReserveStabilizer.duration());
 
-      await collateralizationOracleWrapper.update();
+      await collateralizationOracle.update();
 
       const expectedAmountOut = await tribeReserveStabilizer.getAmountOut(feiTokensExchange);
       await tribeReserveStabilizer.exchangeFei(feiTokensExchange);
