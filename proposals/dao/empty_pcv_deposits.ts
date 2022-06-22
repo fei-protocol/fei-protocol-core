@@ -5,8 +5,11 @@ import {
   NamedAddresses,
   SetupUpgradeFunc,
   TeardownUpgradeFunc,
-  ValidateUpgradeFunc
+  ValidateUpgradeFunc,
+  ERC20HoldingPCVDeposit
 } from '@custom-types/types';
+import { forceEth } from '@test/integration/setup/utils';
+import { getImpersonatedSigner } from '@test/helpers';
 
 /*
 
@@ -67,18 +70,47 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // Run any validations required on the fip using mocha or console logging
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  const wethHoldingDeposit = contracts.wethHoldingDeposit;
-  const lusdHoldingDeposit = contracts.lusdHoldingDeposit;
-  const voltHoldingDeposit = contracts.voltHoldingDeposit;
-  const daiHoldingDeposit = contracts.daiHoldingDeposit;
+  const wethHoldingDeposit = contracts.wethHoldingDeposit as ERC20HoldingPCVDeposit;
+  const lusdHoldingDeposit = contracts.lusdHoldingDeposit as ERC20HoldingPCVDeposit;
+  const voltHoldingDeposit = contracts.voltHoldingDeposit as ERC20HoldingPCVDeposit;
+  const daiHoldingDeposit = contracts.daiHoldingDeposit as ERC20HoldingPCVDeposit;
 
   // 1. Validate all holding PCV Deposits configured correctly
   expect(await wethHoldingDeposit.token()).to.be.equal(addresses.weth);
+  expect(await wethHoldingDeposit.balanceReportedIn()).to.be.equal(addresses.weth);
+
   expect(await lusdHoldingDeposit.token()).to.be.equal(addresses.lusd);
+  expect(await lusdHoldingDeposit.balanceReportedIn()).to.be.equal(addresses.lusd);
+
   expect(await voltHoldingDeposit.token()).to.be.equal(addresses.volt);
+  expect(await voltHoldingDeposit.balanceReportedIn()).to.be.equal(addresses.volt);
+
   expect(await daiHoldingDeposit.token()).to.be.equal(addresses.dai);
+  expect(await daiHoldingDeposit.balanceReportedIn()).to.be.equal(addresses.dai);
 
   // 2. Validate can drop funds on the PCV Deposits and then withdraw with the guardian
+  const wethWhale = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2';
+  await forceEth(wethWhale);
+  const wethWhaleSigner = await getImpersonatedSigner(wethWhale);
+
+  // Transfer to the empty PCV deposit. Validate that the balance reads correctly, then withdraw
+  const transferAmount = ethers.constants.WeiPerEther.mul(100);
+  await contracts.weth.connect(wethWhaleSigner).transfer(wethHoldingDeposit, transferAmount);
+
+  expect(await wethHoldingDeposit.balance()).to.be.equal(transferAmount);
+  expect(await contracts.weth.balanceOf(wethHoldingDeposit)).to.be.equal(transferAmount);
+
+  const resistantBalanceAndFei = await wethHoldingDeposit.resistantBalanceAndFei();
+  expect(resistantBalanceAndFei[0]).to.be.equal(transferAmount);
+  expect(resistantBalanceAndFei[1]).to.be.equal(0);
+
+  // Transfer out
+  const receiver = '0xFc312F21E1D56D8dab5475FB5aaEFfB18B892a85';
+  const guardianSigner = await getImpersonatedSigner(addresses.feiDAOTimelock);
+  await wethHoldingDeposit.connect(guardianSigner).withdrawERC20(addresses.weth, receiver, transferAmount);
+
+  expect(await wethHoldingDeposit.balance()).to.be.equal(0);
+  expect(await contracts.weth.balanceOf(receiver)).to.be.equal(transferAmount);
 };
 
 export { deploy, setup, teardown, validate };

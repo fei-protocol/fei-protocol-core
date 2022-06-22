@@ -33,7 +33,8 @@ import {
   TribalChief,
   Tribe,
   TribeReserveStabilizer,
-  UniswapPCVDeposit
+  UniswapPCVDeposit,
+  ERC20HoldingPCVDeposit
 } from './contracts';
 import { RestrictedPermissions } from './contracts/RestrictedPermissions';
 
