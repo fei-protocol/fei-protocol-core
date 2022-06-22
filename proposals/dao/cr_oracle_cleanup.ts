@@ -8,14 +8,7 @@ import {
   ValidateUpgradeFunc,
   PcvStats
 } from '@custom-types/types';
-import {
-  getImpersonatedSigner,
-  overwriteChainlinkAggregator,
-  ZERO_ADDRESS,
-  balance,
-  time,
-  expectRevert
-} from '@test/helpers';
+import { getImpersonatedSigner, overwriteChainlinkAggregator, time, expectRevert } from '@test/helpers';
 import { forceEth } from '@test/integration/setup/utils';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { BigNumber, Contract } from 'ethers';
@@ -156,6 +149,14 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   // fast-forward time so that e2e tests are not bricked
   await time.increase(await contracts.tribeReserveStabilizer.duration());
   await contracts.tribeReserveStabilizer.resetOracleDelayCountdown();
+
+  //////  Ops optimistic timelock deprecation validation /////////
+  expect(await contracts.core.hasRole(ethers.utils.id('METAGOVERNANCE_VOTE_ADMIN'), addresses.opsOptimisticTimelock)).to
+    .be.false;
+  expect(await contracts.core.hasRole(ethers.utils.id('METAGOVERNANCE_TOKEN_STAKING'), addresses.opsOptimisticTimelock))
+    .to.be.false;
+  expect(await contracts.core.hasRole(ethers.utils.id('ORACLE_ADMIN_ROLE'), addresses.opsOptimisticTimelock)).to.be
+    .false;
 };
 
 export { deploy, setup, teardown, validate };
