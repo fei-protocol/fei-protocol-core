@@ -2,7 +2,7 @@ import { ethers } from 'hardhat';
 import { TemplatedProposalDescription } from '@custom-types/types';
 
 const proposal: TemplatedProposalDescription = {
-  title: 'CR Oracle cleanup',
+  title: 'CR Oracle & Optimistic Approval Cleanup',
   commands: [
     {
       target: 'core',
@@ -314,6 +314,28 @@ const proposal: TemplatedProposalDescription = {
         ]
       ],
       description: 'Remove deprecated deposits from safe address list'
+    },
+    //// Deprecate ops optimistic timelock
+    {
+      target: 'core',
+      values: '0',
+      method: 'revokeRole(bytes32,address)',
+      arguments: (addresses) => [ethers.utils.id('METAGOVERNANCE_VOTE_ADMIN'), addresses.opsOptimisticTimelock],
+      description: 'Revoke METAGOVERNANCE_VOTE_ADMIN role from the Ops Optimistic Timelock'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'revokeRole(bytes32,address)',
+      arguments: (addresses) => [ethers.utils.id('METAGOVERNANCE_TOKEN_STAKING'), addresses.opsOptimisticTimelock],
+      description: 'Revoke METAGOVERNANCE_TOKEN_STAKING role from the Ops Optimistic Timelock'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'revokeRole(bytes32,address)',
+      arguments: (addresses) => [ethers.utils.id('ORACLE_ADMIN_ROLE'), addresses.opsOptimisticTimelock],
+      description: 'Revoke ORACLE_ADMIN_ROLE role from the Ops Optimistic Timelock'
     }
   ],
   description: `CR Oracle & Optimistic Approval Cleanup
@@ -352,6 +374,11 @@ Deprecate OA Roles:
  - METAGOVERNANCE_GAUGE_ADMIN
  - PCV_MINOR_PARAM_ROLE
  - TOKEMAK_DEPOSIT_ADMIN_ROLE
+
+ Deprecate ops optimistic timelock by revoking the following roles:
+ - METAGOVERNANCE_TOKEN_STAKING
+ - METAGOVERNANCE_VOTE_ADMIN
+ - METAGOVERNANCE_TOKEN_STAKING
 `
 };
 
