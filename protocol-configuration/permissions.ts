@@ -31,7 +31,7 @@ export const permissions = {
     'opsOptimisticTimelock',
     'tribalCouncilTimelock'
   ],
-  SWAP_ADMIN_ROLE: ['pcvEquityMinter', 'optimisticTimelock', 'tribalCouncilTimelock'],
+  SWAP_ADMIN_ROLE: ['pcvEquityMinter', 'optimisticTimelock', 'tribalCouncilTimelock', 'tribalCouncilSafe'],
   BALANCER_MANAGER_ADMIN_ROLE: [],
   RATE_LIMITED_MINTER_ADMIN: [],
   PARAMETER_ADMIN: [],

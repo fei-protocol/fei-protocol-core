@@ -6,8 +6,13 @@ import {
   TeardownUpgradeFunc,
   ValidateUpgradeFunc
 } from '@custom-types/types';
-import { expect } from 'chai';
+import chai, { expect } from 'chai';
 import hre from 'hardhat';
+import { time } from '@test/helpers';
+import { ethers } from 'ethers';
+import CBN from 'chai-bn';
+
+chai.use(CBN(ethers.BigNumber));
 
 const fipNumber = 'tip_115';
 
@@ -47,6 +52,9 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await contracts.rariTimelockFeiOldLens.balanceReportedIn()).to.be.equal(addresses.fei);
   expect(await contracts.tribalCouncilTimelockFeiLens.balanceReportedIn()).to.be.equal(addresses.fei);
   expect(await contracts.namedStaticPCVDepositWrapper.numDeposits()).to.be.equal('0');
+  expect(await contracts.ethToDaiLBPSwapper.swapEndTime()).to.be.gt(
+    ethers.BigNumber.from((await time.latest()).toString())
+  );
 };
 
 export { deploy, setup, teardown, validate };
