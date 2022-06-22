@@ -153,7 +153,7 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   opsOptimisticTimelock: {
     artifactName: 'OptimisticTimelock',
     address: '0x7DC26A320a9f70Db617e24B77aCA1D3DC48C5721',
-    category: AddressCategory.Governance
+    category: AddressCategory.Deprecated
   },
 
   weightedBalancerPoolManagerBase: {

@@ -25,12 +25,7 @@ export const permissions = {
     'raiPCVDripController'
   ],
   GUARDIAN_ROLE: ['guardianMultisig', 'pcvGuardianNew', 'pcvSentinel'],
-  ORACLE_ADMIN_ROLE: [
-    'collateralizationOracleGuardian',
-    'optimisticTimelock',
-    'opsOptimisticTimelock',
-    'tribalCouncilTimelock'
-  ],
+  ORACLE_ADMIN_ROLE: ['collateralizationOracleGuardian', 'optimisticTimelock', 'tribalCouncilTimelock'],
   SWAP_ADMIN_ROLE: ['pcvEquityMinter', 'optimisticTimelock', 'tribalCouncilTimelock'],
   BALANCER_MANAGER_ADMIN_ROLE: [],
   RATE_LIMITED_MINTER_ADMIN: [],
