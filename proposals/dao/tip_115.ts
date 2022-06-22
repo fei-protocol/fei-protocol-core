@@ -9,7 +9,7 @@ import {
 import { expect } from 'chai';
 import hre from 'hardhat';
 
-const fipNumber = 'timelock_admin';
+const fipNumber = 'tip_115';
 
 // Do any deployments
 // This should exclusively include new contract deployments
@@ -40,7 +40,6 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // Run any validations required on the fip using mocha or console logging
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  console.log('here');
   expect(await contracts.rariInfraFeiTimelock.beneficiary()).to.be.equal(addresses.tribalCouncilTimelock);
   expect(await contracts.rariInfraTribeTimelock.beneficiary()).to.be.equal(addresses.tribalCouncilTimelock);
   expect(await contracts.rariTimelockFeiOldLens.balance()).to.be.equal('3178504756468797564687976');

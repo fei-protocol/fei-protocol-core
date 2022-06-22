@@ -1,7 +1,7 @@
 import { TemplatedProposalDescription } from '@custom-types/types';
 
-const timelock_admin: TemplatedProposalDescription = {
-  title: 'Timelock Updates',
+const tip_115: TemplatedProposalDescription = {
+  title: 'TIP-115: Timelock Updates',
   commands: [
     {
       target: 'collateralizationOracle',
@@ -35,4 +35,4 @@ const timelock_admin: TemplatedProposalDescription = {
   description: `Accept beneficiary of the old rari timelocks to tribal council timelock. Add a FEI lens to the FEI there`
 };
 
-export default timelock_admin;
+export default tip_115;
