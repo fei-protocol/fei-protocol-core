@@ -7,7 +7,6 @@ export const permissions = {
     'ratioPCVControllerV2',
     'pcvGuardianNew',
     'daiPCVDripController',
-    'daiFixedPricePSMFeiSkimmer',
     'ethPSMFeiSkimmer',
     'lusdPSMFeiSkimmer'
   ],

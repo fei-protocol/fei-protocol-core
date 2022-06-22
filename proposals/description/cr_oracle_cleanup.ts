@@ -260,14 +260,14 @@ const proposal: TemplatedProposalDescription = {
       values: '0',
       method: 'withdrawRatioERC20(address,address,address,uint256)',
       arguments: (addresses) => [addresses.raiPriceBoundPSM, addresses.rai, addresses.tribalCouncilSafe, '10000'],
-      description: 'Withdraw all RAI from raiPSM to TC Multisig where it can be sold'
+      description: 'Withdraw all RAI from PSM to TC Multisig where it can be sold'
     },
     {
       target: 'ratioPCVControllerV2',
       values: '0',
       method: 'withdrawRatioERC20(address,address,address,uint256)',
       arguments: (addresses) => [addresses.raiPriceBoundPSM, addresses.fei, addresses.daiFixedPricePSM, '10000'],
-      description: 'Withdraw all FEI from raiPSM to DAI PSM where it can be burnt'
+      description: 'Withdraw all FEI from PSM to DAI PSM where it can be burnt'
     },
     {
       target: 'collateralizationOracle',
@@ -314,20 +314,6 @@ const proposal: TemplatedProposalDescription = {
         ]
       ],
       description: 'Remove deprecated deposits from safe address list'
-    },
-    {
-      target: 'core',
-      values: '0',
-      method: 'grantRole(bytes32,address)',
-      arguments: (addresses) => [ethers.utils.id('PCV_CONTROLLER_ROLE'), addresses.daiFixedPricePSMFeiSkimmer],
-      description: 'Grant PCV_CONTROLLER_ROLE to daiFixedPricePSMFeiSkimmer (DAI skimmer is deployed but has no role)'
-    },
-    {
-      target: 'daiFixedPricePSMFeiSkimmer',
-      values: '0',
-      method: 'skim()',
-      arguments: (addresses) => [],
-      description: 'Skim DAI psm FEI'
     }
   ],
   description: `CR Oracle & Optimistic Approval Cleanup
