@@ -6,12 +6,11 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 contract MockERC20UniswapPCVDeposit is IPCVDeposit {
+    IERC20 public token;
 
-	IERC20 public token;
-
-	constructor(IERC20 _token) {
-		token = _token;
-	}
+    constructor(IERC20 _token) {
+        token = _token;
+    }
 
     function deposit() external override {}
 
@@ -20,9 +19,9 @@ contract MockERC20UniswapPCVDeposit is IPCVDeposit {
     }
 
     function withdrawERC20(
-      address token, 
-      address to, 
-      uint256 amount
+        address token,
+        address to,
+        uint256 amount
     ) public override {
         SafeERC20.safeTransfer(IERC20(token), to, amount);
         emit WithdrawERC20(msg.sender, to, token, amount);
@@ -33,8 +32,8 @@ contract MockERC20UniswapPCVDeposit is IPCVDeposit {
         emit WithdrawETH(msg.sender, to, amountOut);
     }
 
-    function balance() public view override returns(uint256) {
-    	return token.balanceOf(address(this));
+    function balance() public view override returns (uint256) {
+        return token.balanceOf(address(this));
     }
 
     /// @notice display the related token of the balance reported
@@ -42,7 +41,7 @@ contract MockERC20UniswapPCVDeposit is IPCVDeposit {
         return address(token);
     }
 
-    function resistantBalanceAndFei() public view virtual override returns(uint256, uint256) {
-      return (balance(), 0);
+    function resistantBalanceAndFei() public view virtual override returns (uint256, uint256) {
+        return (balance(), 0);
     }
 }

@@ -1,4 +1,4 @@
-import { Contract, ethers } from 'ethers';
+import { ethers } from 'ethers';
 import {
   AavePCVDeposit,
   AutoRewardsDistributor,
@@ -29,6 +29,7 @@ import {
   RewardsDistributorAdmin,
   StakingTokenWrapper,
   Timelock,
+  TimelockController,
   TribalChief,
   Tribe,
   TribeReserveStabilizer,
@@ -36,13 +37,13 @@ import {
 } from './contracts';
 import { RestrictedPermissions } from './contracts/RestrictedPermissions';
 
-export type Env = {
+export type ContractsAndAddresses = {
   contracts: NamedContracts;
   contractAddresses: NamedAddresses;
 };
 
 export interface TestCoordinator {
-  loadEnvironment(): Promise<Env>;
+  loadEnvironment(): Promise<ContractsAndAddresses>;
 }
 
 export function namedContractsToNamedAddresses(contracts: NamedContracts): NamedAddresses {
@@ -62,11 +63,14 @@ export type DependencyMap = { [key: string]: Dependency };
 
 export enum ProposalCategory {
   DAO,
+  DEBUG,
   OA,
+  TC, // Tribal Council
+  DEBUG_TC,
   None
 }
 
-export type ProposalConfig = {
+export interface ProposalConfig {
   deploy: boolean;
   category: ProposalCategory;
   totalValue: number;
@@ -74,31 +78,74 @@ export type ProposalConfig = {
   affectedContractSignoff: string[];
   deprecatedContractSignoff: string[];
   proposalId: string;
-};
+}
 
-export type ProposalsConfigMap = {
+export interface TemplatedProposalConfig {
+  deploy: boolean;
+  category: ProposalCategory;
+  totalValue: number;
+  proposal: TemplatedProposalDescription;
+  affectedContractSignoff: string[];
+  deprecatedContractSignoff: string[];
+  proposalId: string;
+}
+
+export interface ProposalsConfigMap {
   [key: string]: ProposalConfig;
-};
+}
 
-export type ProposalDescription = {
+export interface TemplatedProposalsConfigMap {
+  [key: string]: TemplatedProposalConfig;
+}
+
+export interface ProposalDescription {
   title: string;
   commands: ProposalCommand[];
   description: string;
-};
+}
 
-export type ProposalCommand = {
+export interface TemplatedProposalDescription {
+  title: string;
+  commands: TemplatedProposalCommand[];
+  description: string;
+}
+
+export interface ProposalCommand {
   target: string;
   values: string;
   method: string;
   arguments: any[];
   description: string;
-};
-
-export interface MainnetAddresses {
-  [key: string]: AddressConfig;
 }
 
-export interface AddressConfig {
+export interface TemplatedProposalCommand {
+  target: string;
+  values: string;
+  method: string;
+  arguments: (namedAddresses: NamedAddresses) => any[];
+  description: string;
+}
+
+export interface MainnetContractsConfig {
+  [key: string]: ContractConfig;
+}
+
+export type TribalChiefPoolConfig = {
+  allocPoint: number;
+  unlocked: boolean;
+};
+
+export interface PcvStats {
+  protocolControlledValue: ethers.BigNumber;
+  userCirculatingFei: ethers.BigNumber;
+  protocolEquity: ethers.BigNumber;
+}
+
+export interface TribalChiefConfig {
+  [key: string]: TribalChiefPoolConfig;
+}
+
+export interface ContractConfig {
   artifactName: string;
   address: string;
   category: AddressCategory;
@@ -107,16 +154,20 @@ export interface AddressConfig {
 export enum AddressCategory {
   Core = 'Core',
   Governance = 'Governance',
+  Utility = 'Utility',
+  Security = 'Security',
   Peg = 'Peg',
   PCV = 'PCV',
   PCV_V1 = 'PCV_V1',
   Collateralization = 'Collateralization',
   Oracle = 'Oracle',
-  Keeper = 'Keeper',
   Rewards = 'Rewards',
   FeiRari = 'FeiRari',
+  Turbo = 'Turbo',
   External = 'External',
   Deprecated = 'Deprecated',
+  Fuse = 'Fuse',
+  Volt = 'Volt',
   TBD = 'TBD'
 }
 
@@ -183,7 +234,6 @@ export interface MainnetContracts {
   compoundEthPCVDeposit: EthCompoundPCVDeposit;
   compoundDaiPCVDeposit: ERC20CompoundPCVDeposit;
   curveMetapoolDeposit: ethers.Contract;
-  curveMetapool: ethers.Contract;
   curve3pool: ethers.Contract;
   curve3crv: ethers.Contract;
   aaveEthPCVDeposit: AavePCVDeposit;
@@ -193,11 +243,11 @@ export interface MainnetContracts {
   dai: IERC20;
   chainlinkDpiUsdOracleWrapper: ChainlinkOracleWrapper;
   dpiUniswapPCVDeposit: UniswapPCVDeposit;
-  indexCoopFusePoolDpiPCVDeposit: ERC20CompoundPCVDeposit;
+  rariPool19DpiPCVDeposit: ERC20CompoundPCVDeposit;
   rai: IERC20;
   chainlinkRaiEthOracleWrapper: ChainlinkOracleWrapper;
   chainlinkRaiUsdCompositeOracle: CompositeOracle;
-  reflexerStableAssetFusePoolRaiPCVDeposit: ERC20CompoundPCVDeposit;
+  rariPool9RaiPCVDeposit: ERC20CompoundPCVDeposit;
   kashiFeiTribe: IKashiPair;
   bentoBox: IMasterContractManager;
   aaveEthPCVDripController: PCVDripController;
@@ -206,7 +256,7 @@ export interface MainnetContracts {
   stakingTokenWrapper: StakingTokenWrapper;
   feiTribePair: IUniswapV2Pair;
   rariPool8Tribe: CErc20Delegator;
-  curve3Metapool: IERC20;
+  curveFei3crvMetapool: IERC20;
   erc20Dripper: ERC20Dripper;
   tribalChiefOptimisticTimelock: OptimisticTimelock;
   collateralizationOracle: CollateralizationOracle;
@@ -223,6 +273,7 @@ export interface MainnetContracts {
   autoRewardsDistributor: AutoRewardsDistributor;
   rewardsDistributorAdmin: RewardsDistributorAdmin;
   restrictedPermissions: RestrictedPermissions;
+  tribalCouncilTimelock: TimelockController;
 }
 
 export interface MainnetContractAddresses {
@@ -244,19 +295,20 @@ export interface MainnetContractAddresses {
   feiRewardsDistributor: string;
   tribeReserveStabilizer: string;
   timelock: string;
-  multisig: string;
+  guardianMultisig: string;
   governorAlpha: string;
-  indexCoopFusePoolDpi: string;
-  reflexerStableAssetFusePoolRai: string;
+  rariPool19Dpi: string;
+  rariPool9Rai: string;
   bentoBox: string;
   masterKashi: string;
   feiTribePair: string;
   rariPool8Tribe: string;
-  curve3Metapool: string;
-  tribalChiefOptimisticMultisig: string;
+  curveFei3crvMetapool: string;
+  optimisticMultisig: string;
   stakingTokenWrapperRari: string;
   rariRewardsDistributorDelegator: string;
   restrictedPermissions: string;
+  tribalCouncilTimelock: string;
 }
 
 export type ContractAccessRights = {

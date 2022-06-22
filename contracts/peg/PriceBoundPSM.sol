@@ -34,16 +34,18 @@ contract PriceBoundPSM is PegStabilityModule, IPriceBound {
         uint256 _mintingBufferCap,
         IERC20 _underlyingToken,
         IPCVDeposit _surplusTarget
-    ) PegStabilityModule(
-        _params,
-        _mintFeeBasisPoints,
-        _redeemFeeBasisPoints,
-        _reservesThreshold,
-        _feiLimitPerSecond,
-        _mintingBufferCap,
-        _underlyingToken,
-        _surplusTarget
-    ) {
+    )
+        PegStabilityModule(
+            _params,
+            _mintFeeBasisPoints,
+            _redeemFeeBasisPoints,
+            _reservesThreshold,
+            _feiLimitPerSecond,
+            _mintingBufferCap,
+            _underlyingToken,
+            _surplusTarget
+        )
+    {
         _setCeilingBasisPoints(_ceiling);
         _setFloorBasisPoints(_floor);
     }
@@ -58,16 +60,24 @@ contract PriceBoundPSM is PegStabilityModule, IPriceBound {
         _setCeilingBasisPoints(newCeilingBasisPoints);
     }
 
-    function isPriceValid() external override view returns (bool) {
+    function isPriceValid() external view override returns (bool) {
         return _validPrice(readOracle());
+    }
+
+    /// @notice Allocates a portion of escrowed PCV to a target PCV deposit
+    function _allocate(uint256 amount) internal override {
+        _transfer(address(surplusTarget), amount);
+
+        emit AllocateSurplus(msg.sender, amount);
     }
 
     /// @notice helper function to set the ceiling in basis points
     function _setCeilingBasisPoints(uint256 newCeilingBasisPoints) internal {
         require(newCeilingBasisPoints != 0, "PegStabilityModule: invalid ceiling");
         require(
-            Decimal.ratio(newCeilingBasisPoints, Constants.BASIS_POINTS_GRANULARITY)
-                .greaterThan(Decimal.ratio(floor, Constants.BASIS_POINTS_GRANULARITY)),
+            Decimal.ratio(newCeilingBasisPoints, Constants.BASIS_POINTS_GRANULARITY).greaterThan(
+                Decimal.ratio(floor, Constants.BASIS_POINTS_GRANULARITY)
+            ),
             "PegStabilityModule: ceiling must be greater than floor"
         );
         uint256 oldCeiling = ceiling;
@@ -80,8 +90,9 @@ contract PriceBoundPSM is PegStabilityModule, IPriceBound {
     function _setFloorBasisPoints(uint256 newFloorBasisPoints) internal {
         require(newFloorBasisPoints != 0, "PegStabilityModule: invalid floor");
         require(
-            Decimal.ratio(newFloorBasisPoints, Constants.BASIS_POINTS_GRANULARITY)
-                .lessThan(Decimal.ratio(ceiling, Constants.BASIS_POINTS_GRANULARITY)),
+            Decimal.ratio(newFloorBasisPoints, Constants.BASIS_POINTS_GRANULARITY).lessThan(
+                Decimal.ratio(ceiling, Constants.BASIS_POINTS_GRANULARITY)
+            ),
             "PegStabilityModule: floor must be less than ceiling"
         );
         uint256 oldFloor = floor;
@@ -92,8 +103,9 @@ contract PriceBoundPSM is PegStabilityModule, IPriceBound {
 
     /// @notice helper function to determine if price is within a valid range
     function _validPrice(Decimal.D256 memory price) internal view returns (bool valid) {
-        valid = price.greaterThan(Decimal.ratio(floor, Constants.BASIS_POINTS_GRANULARITY))
-            && price.lessThan(Decimal.ratio(ceiling, Constants.BASIS_POINTS_GRANULARITY));
+        valid =
+            price.greaterThan(Decimal.ratio(floor, Constants.BASIS_POINTS_GRANULARITY)) &&
+            price.lessThan(Decimal.ratio(ceiling, Constants.BASIS_POINTS_GRANULARITY));
     }
 
     /// @notice reverts if the price is greater than or equal to the ceiling or less than or equal to the floor

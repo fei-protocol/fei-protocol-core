@@ -25,7 +25,7 @@ contract MockOracle is IOracle {
         return (price, valid);
     }
 
-    function isOutdated() public view override returns(bool) {
+    function isOutdated() public view override returns (bool) {
         return outdated;
     }
 
@@ -42,6 +42,6 @@ contract MockOracle is IOracle {
     }
 
     function setExchangeRateScaledBase(uint256 usdPerEth) public {
-        price = Decimal.D256({ value: usdPerEth });
+        price = Decimal.D256({value: usdPerEth});
     }
 }

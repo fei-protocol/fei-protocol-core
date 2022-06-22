@@ -6,12 +6,17 @@ import "../../oracle/collateralization/ICollateralizationOracle.sol";
 /// @title a Tribe Reserve Stabilizer interface
 /// @author Fei Protocol
 interface ITribeReserveStabilizer {
-
     // ----------- Events -----------
 
-    event CollateralizationOracleUpdate(address indexed oldCollateralizationOracle, address indexed newCollateralizationOracle);
+    event CollateralizationOracleUpdate(
+        address indexed oldCollateralizationOracle,
+        address indexed newCollateralizationOracle
+    );
 
-    event CollateralizationThresholdUpdate(uint256 oldCollateralizationThresholdBasisPoints, uint256 newCollateralizationThresholdBasisPoints);
+    event CollateralizationThresholdUpdate(
+        uint256 oldCollateralizationThresholdBasisPoints,
+        uint256 newCollateralizationThresholdBasisPoints
+    );
 
     // ----------- Governor only state changing api -----------
 

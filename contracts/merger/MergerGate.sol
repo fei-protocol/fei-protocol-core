@@ -8,7 +8,7 @@ import "../dao/governor/GovernorAlpha.sol";
  @author Joey Santoro
  @notice a gate to make sure the FeiRari Merger proposal has executed on Rari side before executing Fei Side
 */
-contract MergerGate {   
+contract MergerGate {
     event OnePlusOneEqualsThree(string note);
 
     /// @notice the Rari DAO address
@@ -23,4 +23,4 @@ contract MergerGate {
         require(rgtGovernor.state(PROPOSAL_NUMBER) == GovernorAlpha.ProposalState.Executed, "rip");
         emit OnePlusOneEqualsThree("May the sun never set on the Tribe");
     }
-}   
+}

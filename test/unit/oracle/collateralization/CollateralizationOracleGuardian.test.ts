@@ -1,9 +1,9 @@
-import { getCore, getAddresses, expectRevert, increaseTime, getImpersonatedSigner } from '../../../helpers';
-import { expect } from 'chai';
-import { ethers } from 'hardhat';
-import { Signer } from 'ethers';
 import { CollateralizationOracleWrapper, Core, MockCollateralizationOracle } from '@custom-types/contracts';
 import { CollateralizationOracleGuardian } from '@custom-types/contracts/CollateralizationOracleGuardian';
+import { expect } from 'chai';
+import { Signer } from 'ethers';
+import { ethers } from 'hardhat';
+import { expectRevert, getAddresses, getCore, getImpersonatedSigner, increaseTime } from '../../../helpers';
 
 describe('CollateralizationOracleGuardian', function () {
   let userAddress: string;

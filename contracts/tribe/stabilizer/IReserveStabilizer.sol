@@ -4,7 +4,6 @@ pragma solidity ^0.8.4;
 /// @title a Reserve Stabilizer interface
 /// @author Fei Protocol
 interface IReserveStabilizer {
-
     // ----------- Events -----------
     event FeiExchange(address indexed to, uint256 feiAmountIn, uint256 amountOut);
 

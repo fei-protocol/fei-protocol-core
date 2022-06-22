@@ -1,15 +1,15 @@
-import { expectRevert, getAddresses, getCore } from '../../helpers';
 import { expect } from 'chai';
-import hre, { ethers } from 'hardhat';
 import { Signer } from 'ethers';
+import hre, { ethers } from 'hardhat';
+import { expectRevert, getAddresses, getCore } from '../../helpers';
 
 const toBN = ethers.BigNumber.from;
 
 describe('ReserveStabilizer', function () {
-  let userAddress;
-  let governorAddress;
-  let minterAddress;
-  let pcvControllerAddress;
+  let userAddress: string;
+  let governorAddress: string;
+  let minterAddress: string;
+  let pcvControllerAddress: string;
 
   const impersonatedSigners: { [key: string]: Signer } = {};
 

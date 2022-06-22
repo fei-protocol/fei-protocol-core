@@ -6,16 +6,12 @@ import "../../refs/CoreRef.sol";
 
 // Timelock with veto admin roles
 contract OptimisticTimelock is TimelockController, CoreRef {
-
     constructor(
-        address core_, 
-        uint256 minDelay, 
+        address core_,
+        uint256 minDelay,
         address[] memory proposers,
         address[] memory executors
-    ) 
-        TimelockController(minDelay, proposers, executors)
-        CoreRef(core_)
-    {
+    ) TimelockController(minDelay, proposers, executors) CoreRef(core_) {
         // Only guardians and governors are timelock admins
         revokeRole(TIMELOCK_ADMIN_ROLE, msg.sender);
     }

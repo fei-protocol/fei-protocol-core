@@ -5,17 +5,16 @@ import "./MockIncentive.sol";
 import "../external/Decimal.sol";
 
 contract MockUniswapIncentive is MockIncentive {
-
-	constructor(address core) MockIncentive(core) {}
+    constructor(address core) MockIncentive(core) {}
 
     bool public isParity = false;
     bool public isExempt = false;
 
     function incentivize(
-    	address sender, 
-    	address recipient, 
-    	address, 
-    	uint256
+        address sender,
+        address recipient,
+        address,
+        uint256
     ) public override {
         if (!isExempt) {
             super.incentivize(sender, recipient, address(0), 0);
@@ -38,24 +37,34 @@ contract MockUniswapIncentive is MockIncentive {
         isExempt = exempt;
     }
 
-    function updateOracle() external pure returns(bool) {
+    function updateOracle() external pure returns (bool) {
         return true;
     }
 
     function setExemptAddress(address account, bool _isExempt) external {}
 
-    function getBuyIncentive(uint amount) external pure returns(uint,        
-        uint32 weight,
-        Decimal.D256 memory initialDeviation,
-        Decimal.D256 memory finalDeviation
-    ) {
-        return (amount * 10 / 100, weight, initialDeviation, finalDeviation);
+    function getBuyIncentive(uint256 amount)
+        external
+        pure
+        returns (
+            uint256,
+            uint32 weight,
+            Decimal.D256 memory initialDeviation,
+            Decimal.D256 memory finalDeviation
+        )
+    {
+        return ((amount * 10) / 100, weight, initialDeviation, finalDeviation);
     }
 
-    function getSellPenalty(uint amount) external pure returns(uint,    
-        Decimal.D256 memory initialDeviation,
-        Decimal.D256 memory finalDeviation) 
+    function getSellPenalty(uint256 amount)
+        external
+        pure
+        returns (
+            uint256,
+            Decimal.D256 memory initialDeviation,
+            Decimal.D256 memory finalDeviation
+        )
     {
-        return (amount * 10 / 100, initialDeviation, finalDeviation);
+        return ((amount * 10) / 100, initialDeviation, finalDeviation);
     }
 }

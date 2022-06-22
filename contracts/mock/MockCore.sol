@@ -9,10 +9,9 @@ import "../tribe/Tribe.sol";
 /// @author Fei Protocol
 /// @notice maintains roles, access control, fei, tribe, genesisGroup, and the TRIBE treasury
 contract MockCore is Permissions {
-
     /// @notice the address of the FEI contract
     IFei public fei;
-    
+
     /// @notice the address of the TRIBE contract
     IFei public tribe;
 
@@ -29,7 +28,7 @@ contract MockCore is Permissions {
         }
         require(id != 1, "cannot deploy mock on mainnet");
         _setupGovernor(msg.sender);
-        
+
         Fei _fei = new Fei(address(this));
         fei = IFei(_fei);
 

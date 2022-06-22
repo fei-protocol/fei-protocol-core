@@ -12,25 +12,15 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 /// @title base class for a Balancer PCV Deposit
 /// @author Fei Protocol
 abstract contract BalancerPCVDepositBase is PCVDeposit {
-
     // ----------- Events ---------------
     event UpdateMaximumSlippage(uint256 maximumSlippageBasisPoints);
 
     /// @notice event generated when rewards are claimed
-    event ClaimRewards (
-        address indexed _caller,
-        address indexed _token,
-        address indexed _to,
-        uint256 _amount
-    );
+    event ClaimRewards(address indexed _caller, address indexed _token, address indexed _to, uint256 _amount);
 
     // @notice event generated when pool position is exited (LP tokens redeemed
     // for tokens in proportion to the pool's weights.
-    event ExitPool(
-        bytes32 indexed _poodId,
-        address indexed _to,
-        uint256 _bptAmount
-    );
+    event ExitPool(bytes32 indexed _poodId, address indexed _to, uint256 _bptAmount);
 
     // Maximum tolerated slippage for deposits
     uint256 public maximumSlippageBasisPoints;
@@ -105,7 +95,10 @@ abstract contract BalancerPCVDepositBase is PCVDeposit {
     /// @notice Sets the maximum slippage vs 1:1 price accepted during withdraw.
     /// @param _maximumSlippageBasisPoints the maximum slippage expressed in basis points (1/10_000)
     function setMaximumSlippage(uint256 _maximumSlippageBasisPoints) external onlyGovernorOrAdmin {
-        require(_maximumSlippageBasisPoints <= Constants.BASIS_POINTS_GRANULARITY, "BalancerPCVDepositBase: Exceeds bp granularity.");
+        require(
+            _maximumSlippageBasisPoints <= Constants.BASIS_POINTS_GRANULARITY,
+            "BalancerPCVDepositBase: Exceeds bp granularity."
+        );
         maximumSlippageBasisPoints = _maximumSlippageBasisPoints;
         emit UpdateMaximumSlippage(_maximumSlippageBasisPoints);
     }
@@ -165,11 +158,6 @@ abstract contract BalancerPCVDepositBase is PCVDeposit {
 
         IMerkleOrchard(rewards).claimDistributions(address(this), claims, tokens);
 
-        emit ClaimRewards(
-          msg.sender,
-          address(BAL_TOKEN_ADDRESS),
-          address(this),
-          amount
-        );
+        emit ClaimRewards(msg.sender, address(BAL_TOKEN_ADDRESS), address(this), amount);
     }
 }

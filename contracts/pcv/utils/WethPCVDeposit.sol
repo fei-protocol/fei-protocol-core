@@ -8,7 +8,6 @@ import "@openzeppelin/contracts/utils/Address.sol";
 /// @title base class for a WethPCVDeposit PCV Deposit
 /// @author Fei Protocol
 abstract contract WethPCVDeposit is PCVDeposit {
-
     /// @notice Empty callback on ETH reception
     receive() external payable virtual {}
 
@@ -29,11 +28,7 @@ abstract contract WethPCVDeposit is PCVDeposit {
     /// @notice withdraw ETH from the contract
     /// @param to address to send ETH
     /// @param amountOut amount of ETH to send
-    function withdrawETH(address payable to, uint256 amountOut)
-        external
-        override
-        onlyPCVController
-    {
+    function withdrawETH(address payable to, uint256 amountOut) external override onlyPCVController {
         Constants.WETH.withdraw(amountOut);
         Address.sendValue(to, amountOut);
         emit WithdrawETH(msg.sender, to, amountOut);

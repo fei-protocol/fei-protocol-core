@@ -31,16 +31,20 @@ contract TribalChiefSyncExtension {
     }
 
     /// @notice Sync a rewards rate change
-    function decreaseRewards(uint256 tribePerBlock, bytes32 salt, IAutoRewardsDistributor[] calldata distributors) external update(distributors) {
+    function decreaseRewards(
+        uint256 tribePerBlock,
+        bytes32 salt,
+        IAutoRewardsDistributor[] calldata distributors
+    ) external update(distributors) {
         tribalChiefSync.decreaseRewards(tribePerBlock, salt);
     }
 
     /// @notice Sync a pool addition
     function addPool(
-        uint120 allocPoint, 
-        address stakedToken, 
-        address rewarder, 
-        TribalChiefSyncV2.RewardData[] calldata rewardData, 
+        uint120 allocPoint,
+        address stakedToken,
+        address rewarder,
+        TribalChiefSyncV2.RewardData[] calldata rewardData,
         bytes32 salt,
         IAutoRewardsDistributor[] calldata distributors
     ) external update(distributors) {

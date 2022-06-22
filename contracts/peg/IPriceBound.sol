@@ -20,11 +20,11 @@ interface IPriceBound {
     // ----------- Getters -----------
 
     /// @notice get the floor price in basis points
-    function floor() external view returns(uint256);
+    function floor() external view returns (uint256);
 
     /// @notice get the ceiling price in basis points
-    function ceiling() external view returns(uint256);
+    function ceiling() external view returns (uint256);
 
     /// @notice return wether the current oracle price is valid or not
-    function isPriceValid() external view returns(bool);
+    function isPriceValid() external view returns (bool);
 }

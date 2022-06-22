@@ -15,17 +15,17 @@ abstract contract PCVDeposit is IPCVDeposit, CoreRef {
     /// @param to address destination of the ERC20
     /// @param amount quantity of ERC20 to send
     function withdrawERC20(
-      address token, 
-      address to, 
-      uint256 amount
+        address token,
+        address to,
+        uint256 amount
     ) public virtual override onlyPCVController {
         _withdrawERC20(token, to, amount);
     }
 
     function _withdrawERC20(
-      address token, 
-      address to, 
-      uint256 amount
+        address token,
+        address to,
+        uint256 amount
     ) internal {
         IERC20(token).safeTransfer(to, amount);
         emit WithdrawERC20(msg.sender, token, to, amount);
@@ -39,9 +39,12 @@ abstract contract PCVDeposit is IPCVDeposit, CoreRef {
         emit WithdrawETH(msg.sender, to, amountOut);
     }
 
-    function balance() public view virtual override returns(uint256);
+    function balance() public view virtual override returns (uint256);
 
-    function resistantBalanceAndFei() public view virtual override returns(uint256, uint256) {
-      return (balance(), 0);
+    function balanceReportedIn() public view virtual override returns (address);
+
+    function resistantBalanceAndFei() public view virtual override returns (uint256, uint256) {
+        uint256 tokenBalance = balance();
+        return (tokenBalance, balanceReportedIn() == address(fei()) ? tokenBalance : 0);
     }
 }

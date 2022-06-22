@@ -40,13 +40,15 @@ describe('RestrictedPermissions', function () {
       await getAddresses());
     core = await getCore();
 
-    const restrictedPermissionsFactory = await ethers.getContractFactory('RestrictedPermissions');
-    restrictedPermissions = await restrictedPermissionsFactory.deploy(core.address);
+    const restrictedPermissionsFactory = await ethers.getContractFactory('MockRestrictedPermissions');
+    restrictedPermissions = await restrictedPermissionsFactory.deploy(
+      core.address,
+      await core.fei(),
+      await core.tribe()
+    );
 
     const coreRefFactory = await ethers.getContractFactory('MockCoreRef');
-    coreRef = await coreRefFactory.deploy(core.address);
-
-    await coreRef.connect(impersonatedSigners[governorAddress]).setCore(restrictedPermissions.address);
+    coreRef = await coreRefFactory.deploy(restrictedPermissions.address);
   });
 
   describe('Minter', function () {

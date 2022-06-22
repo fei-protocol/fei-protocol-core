@@ -7,7 +7,6 @@ import "../../oracle/collateralization/ICollateralizationOracle.sol";
 /// @title a PCV Equity Minter Interface
 /// @author Fei Protocol
 interface IPCVEquityMinter {
-
     // ----------- Events -----------
 
     event APRUpdate(uint256 oldAprBasisPoints, uint256 newAprBasisPoints);
@@ -24,9 +23,9 @@ interface IPCVEquityMinter {
 
     // ----------- Getters -----------
 
-    function MAX_APR_BASIS_POINTS() external view returns(uint256);
+    function MAX_APR_BASIS_POINTS() external view returns (uint256);
 
-    function collateralizationOracle() external view returns(ICollateralizationOracle);
+    function collateralizationOracle() external view returns (ICollateralizationOracle);
 
-    function aprBasisPoints() external view returns(uint256);
+    function aprBasisPoints() external view returns (uint256);
 }

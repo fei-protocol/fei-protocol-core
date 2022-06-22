@@ -4,9 +4,8 @@ pragma solidity ^0.8.4;
 /// @title a PCV Deposit interface for only balance getters
 /// @author Fei Protocol
 interface IPCVDepositBalances {
-    
     // ----------- Getters -----------
-    
+
     /// @notice gets the effective balance of "balanceReportedIn" token if the deposit were fully withdrawn
     function balance() external view returns (uint256);
 

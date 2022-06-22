@@ -7,6 +7,7 @@ import 'hardhat-gas-reporter';
 import 'hardhat-contract-sizer';
 import 'solidity-coverage';
 import 'tsconfig-paths/register';
+import '@nomiclabs/hardhat-etherscan';
 
 import * as dotenv from 'dotenv';
 
@@ -20,11 +21,13 @@ const enableMainnetForking = process.env.ENABLE_MAINNET_FORKING;
 const mainnetAlchemyApiKey = process.env.MAINNET_ALCHEMY_API_KEY;
 const runAllTests = process.env.RUN_ALL_TESTS;
 const useJSONTestReporter = process.env.REPORT_TEST_RESULTS_AS_JSON;
+const etherscanKey = process.env.ETHERSCAN_API_KEY;
+const forkBlock = process.env.FORK_BLOCK;
+const logging = process.env.LOGGING;
 
 if (!(process.env.NODE_OPTIONS && process.env.NODE_OPTIONS.includes('max-old-space-size'))) {
-  throw new Error(
-    `Please export node env var max-old-space-size before running hardhat. "export NODE_OPTIONS=--max-old-space-size=4096"`
-  );
+  console.warn(`Node option 'max-old-space-size' is not set. This *might* cause hardhat to run out of memory.`);
+  console.warn('To fix: export NODE_OPTIONS=--max-old-space-size=4096');
 }
 
 if (enableMainnetForking) {
@@ -32,9 +35,9 @@ if (enableMainnetForking) {
     throw new Error('Cannot fork mainnet without mainnet alchemy api key.');
   }
 
-  console.log('Mainnet forking enabled.');
+  logging && console.log('Mainnet forking enabled.');
 } else {
-  console.log('Mainnet forking disabled.');
+  logging && console.log('Mainnet forking disabled.');
 }
 
 if (useJSONTestReporter) {
@@ -45,15 +48,17 @@ export default {
   gasReporter: {
     enabled: !!process.env.REPORT_GAS
   },
-
+  etherscan: {
+    apiKey: etherscanKey
+  },
   networks: {
     hardhat: {
       gas: 12e6,
       chainId: 5777, // Any network (default: none)
       forking: enableMainnetForking
         ? {
-            url: `https://eth-mainnet.alchemyapi.io/v2/${mainnetAlchemyApiKey}`
-            // blockNumber: 13968350
+            url: `https://eth-mainnet.alchemyapi.io/v2/${mainnetAlchemyApiKey}`,
+            blockNumber: forkBlock ? parseInt(forkBlock) : undefined
           }
         : undefined
     },
@@ -70,7 +75,7 @@ export default {
     mainnet: {
       url: `https://eth-mainnet.alchemyapi.io/v2/${mainnetAlchemyApiKey}`,
       accounts: privateKey ? [privateKey] : [],
-      gasPrice: 150000000000
+      gasPrice: 100000000000
     }
   },
 
@@ -87,6 +92,15 @@ export default {
       },
       {
         version: '0.4.18',
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 200
+          }
+        }
+      },
+      {
+        version: '0.8.7',
         settings: {
           optimizer: {
             enabled: true,

@@ -1,92 +1,142 @@
 version: 2.1
-orbs:
-  discord: antonioned/discord@0.1.0
+
+executors:
+  nodeimage:
+    docker:
+      - image: cimg/node:16.14
+    working_directory: ~/repo
+    resource_class: xlarge
+
 jobs:
   build:
-    working_directory: ~/repo
-    docker:
-      - image: circleci/node:14
-    resource_class: xlarge
+    executor: nodeimage
     steps:
-      - checkout 
-      - run:
-          name: 'Update NPM'
-          command: sudo npm install -g npm@6.13.4
-      - run:
-          name: 'Set caching variables'
-          command: |
-            LAST_SUCCESSFUL_BUILD_URL="https://circleci.com/api/v1.1/project/github/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/tree/master?filter=successful&limit=1"
-            LAST_SUCCESSFUL_COMMIT=`curl -Ss -u "$CIRCLE_TOKEN:" $LAST_SUCCESSFUL_BUILD_URL | jq -r '.[0]["vcs_revision"]'`
-            echo $LAST_SUCCESSFUL_COMMIT > /tmp/last-successful-commit
-            echo $CIRCLE_SHA1 > /tmp/current-commit
-      - restore_cache:
-          keys:
-            - build-cache-{{ .Branch }}-{{ checksum "/tmp/last-successful-commit" }}
-      - run:
+      - checkout
+      - restore_cache: # This one restores node_modules, and .npm if the package-lock.json checksum is the same
+          key: package-cache-{{ checksum "package-lock.json" }}
+      - run: # we use npm install and not npm ci because npm ci removes node-modules entirely
           name: Install dependencies
           command: npm install
+      - save_cache: # Save the node_modules and .npm directories into the cache by the checksum of package-lock.json
+          key: package-cache-{{ checksum "package-lock.json" }}
+          paths:
+            - node_modules
+      - run: # generate a checksum of all of the source solidity files to see if they have changed, which we use as the key for caching
+          name: Generate solidity source checksum
+          command: ./sol-checksum.sh /tmp/sol-checksum.txt
+      - restore_cache: # Restore the solidity files cache the same way we do node_modules (by the checksum of the .json file)
+          key: solcache-{{ checksum "/tmp/sol-checksum.txt" }}
       - run:
           name: Compile contracts
-          command: npm run compile
-      - save_cache:
-          key: repo-{{ .Environment.CIRCLE_SHA1 }}
+          command: npm run compile:hardhat
+      - run: # generate a checksum of all of the source solidity files to see if they have changed, which we use as the key for caching
+          name: Generate solidity source checksum (again)
+          command: ./sol-checksum.sh /tmp/sol-checksum.txt
+      - save_cache: # Save the solidity files cache, the compiled artifacts, and the generated types
+          key: solcache-{{ checksum "/tmp/sol-checksum.txt" }}
           paths:
-            - ~/repo
+            - artifacts
+            - types/contracts
+            - cache/solidity-files-cache.json
+      - restore_cache: # Restore the hardhat network fork cache if the hardhat-config hasn't changed
+          key: hardhat-config-{{ checksum "hardhat.config.ts" }}
+      - persist_to_workspace:
+          root: ~/repo
+          paths:
+            - ./
   lint:
     working_directory: ~/repo
-    docker:
-      - image: circleci/node:14
+    executor: nodeimage
     steps:
-      - restore_cache:
-          keys:
-            - repo-{{ .Environment.CIRCLE_SHA1 }}
+      - attach_workspace:
+          at: ./
       - run:
           name: Run linter
           command: npm run lint
   test:
     working_directory: ~/repo
-    docker:
-      - image: circleci/node:14
+    executor: nodeimage
     parallelism: 16
-    resource_class: large
     steps:
-      - restore_cache:
-          keys:
-            - repo-{{ .Environment.CIRCLE_SHA1 }}
+      - attach_workspace:
+          at: ./
       - run:
           name: Run tests
           command: |
             circleci tests glob "test/unit/**/*.ts" | circleci tests split --split-by=filesize > /tmp/tests-to-run
-            npm run test $(cat /tmp/tests-to-run)
+            npm run test:hardhat $(cat /tmp/tests-to-run)
       - store_test_results:
-            path: test-results
+          path: test-results
       - store_artifacts:
-            path: test-results
-  e2e-test:
+          path: test-results
+
+  test-forge:
     working_directory: ~/repo
-    docker:
-      - image: circleci/node:14
-    parallelism: 5
-    resource_class: xlarge
+    executor: nodeimage
     steps:
+      - attach_workspace:
+          at: ./
+      - checkout
       - restore_cache:
           keys:
             - repo-{{ .Environment.CIRCLE_SHA1 }}
       - run:
+          name: Setup env
+          command: echo "export PATH=$PATH:$(pwd)/.circleci" >> /home/circleci/.bashrc
+      - run:
+          name: Finish setting up env
+          command: echo "export PATH=$PATH:$(pwd)/.foundry/bin" >> /home/circleci/.bashrc
+      - run:
+          name: Install Foundry
+          command: curl -L https://foundry.paradigm.xyz | bash; source /home/circleci/.bashrc; $HOME/.foundry/bin/foundryup
+      - run:
+          name: Run tests
+          command: |
+            source /home/circleci/.bashrc
+            export PATH=$PATH:/home/circleci/.foundry/bin; npm run clean && npm run compile && npm run test && npm run test:integration:latest
+
+  e2e-test:
+    working_directory: ~/repo
+    executor: nodeimage
+    parallelism: 20
+    steps:
+      - attach_workspace:
+          at: ./
+      - restore_cache:
+          key: fork-cache-{{ checksum "hardhat.config.ts" }}
+      - run:
           name: Run end-to-end tests
           command: |
-            circleci tests glob "test/integration/**/*.ts" | circleci tests split --split-by=filesize > /tmp/tests-to-run
+            circleci tests glob "test/integration/tests/*.ts" | circleci tests split --split-by=filesize > /tmp/tests-to-run
             npm run test:e2e $(cat /tmp/tests-to-run)
       - store_test_results:
-            path: test-results
+          path: test-results
       - store_artifacts:
-            path: test-results
+          path: test-results
+      - persist_to_workspace:
+          root: ~/repo
+          paths:
+            - ./cache/hardhat-network-fork
+
+  save-network-fork-cache:
+    working_directory: ~/repo
+    executor: nodeimage
+    steps:
+      - attach_workspace:
+          at: ./
+      - save_cache: # Save the solidity files cache, the compiled artifacts, and the generated types
+          key: fork-cache-{{ checksum "hardhat.config.ts" }}
+          paths:
+            - cache/hardhat-network-fork
 
 workflows:
   main:
     jobs:
       - build
-      - lint: 
+      - lint:
+          requires:
+            - build
+      - test-forge:
           requires:
             - build
       - test:
@@ -95,3 +145,6 @@ workflows:
       - e2e-test:
           requires:
             - build
+      - save-network-fork-cache:
+          requires:
+            - e2e-test

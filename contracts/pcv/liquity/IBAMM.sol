@@ -6,7 +6,6 @@ import "./IStabilityPool.sol";
 
 // Ref: https://github.com/backstop-protocol/dev/blob/main/packages/contracts/contracts/B.Protocol/BAMM.sol
 interface IBAMM {
-
     // Views
 
     /// @notice returns ETH price scaled by 1e18
@@ -42,5 +41,9 @@ interface IBAMM {
     function transfer(address to, uint256 amount) external;
 
     /// @notice swap LUSD to ETH in BAMM
-    function swap(uint256 lusdAmount, uint256 minEthReturn, address dest) external returns(uint256);
-} 
+    function swap(
+        uint256 lusdAmount,
+        uint256 minEthReturn,
+        address dest
+    ) external returns (uint256);
+}

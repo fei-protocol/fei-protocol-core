@@ -2,9 +2,12 @@ import hre, { ethers, artifacts, network } from 'hardhat';
 import chai from 'chai';
 import CBN from 'chai-bn';
 import { Core, Core__factory } from '@custom-types/contracts';
-import { BigNumber, BigNumberish, Signer } from 'ethers';
+import { BigNumber, BigNumberish, Contract, ContractTransaction, Signer } from 'ethers';
 import { NamedAddresses } from '@custom-types/types';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
+import EthersAdapter from '@gnosis.pm/safe-ethers-lib';
+import Safe from '@gnosis.pm/safe-core-sdk';
+import { TransactionDescription } from 'ethers/lib/utils';
 
 // use default BigNumber
 chai.use(CBN(ethers.BigNumber));
@@ -82,7 +85,8 @@ async function resetFork(): Promise<void> {
       {
         forking: hre.config.networks.hardhat.forking
           ? {
-              jsonRpcUrl: hre.config.networks.hardhat.forking.url
+              jsonRpcUrl: hre.config.networks.hardhat.forking.url,
+              blockNumber: hre.config.networks.hardhat.forking.blockNumber
             }
           : undefined
       }
@@ -105,7 +109,7 @@ async function latestTime(): Promise<number> {
 
 async function mine(): Promise<void> {
   await hre.network.provider.request({
-    method: 'evm_mine'
+    method: 'hardhat_mine'
   });
 }
 
@@ -130,6 +134,11 @@ async function getCore(): Promise<Core> {
 
   return core;
 }
+
+const validateArraysEqual = (arrayA: string[], arrayB: string[]) => {
+  expect(arrayA.length).to.equal(arrayB.length);
+  arrayA.every((a) => expect(arrayB.map((b) => b.toLowerCase()).includes(a.toLowerCase())));
+};
 
 async function expectApprox(
   actual: string | number | BigNumberish,
@@ -167,17 +176,17 @@ async function expectApproxAbs(
   expect(actualBN).to.be.lte(upperBound);
 }
 
-async function expectEvent(tx, contract: any, event: string, args: any[]): Promise<void> {
+async function expectEvent(tx: any, contract: any, event: string, args: any[]): Promise<void> {
   await expect(tx)
     .to.emit(contract, event)
     .withArgs(...args);
 }
 
-async function expectRevert(tx, errorMessage: string): Promise<void> {
+async function expectRevert(tx: Promise<any>, errorMessage: string): Promise<void> {
   await expect(tx).to.be.revertedWith(errorMessage);
 }
 
-async function expectUnspecifiedRevert(tx): Promise<void> {
+async function expectUnspecifiedRevert(tx: Promise<any>): Promise<void> {
   await expect(tx).to.be.reverted;
 }
 
@@ -191,7 +200,7 @@ const balance = {
   }
 };
 
-async function overwriteChainlinkAggregator(chainlink, value, decimals) {
+async function overwriteChainlinkAggregator(aggregatorAddress: string, value: string, decimals: string) {
   // Deploy new mock aggregator
   const factory = await ethers.getContractFactory('MockChainlinkOracle');
   const mockAggregator = await factory.deploy(value, decimals);
@@ -200,7 +209,7 @@ async function overwriteChainlinkAggregator(chainlink, value, decimals) {
 
   // Overwrite storage at chainlink address to use mock aggregator for updates
   const address = `0x00000000000000000000${mockAggregator.address.slice(2)}0005`;
-  await hre.network.provider.send('hardhat_setStorageAt', [chainlink, '0x2', address]);
+  await hre.network.provider.send('hardhat_setStorageAt', [aggregatorAddress, '0x2', address]);
 }
 
 const time = {
@@ -213,9 +222,11 @@ const time = {
 
     if (durationBN.lt(ethers.constants.Zero)) throw Error(`Cannot increase time by a negative amount (${duration})`);
 
-    await hre.network.provider.send('evm_increaseTime', [durationBN.toNumber()]);
-
-    await hre.network.provider.send('evm_mine');
+    if (durationBN.eq(ethers.constants.Zero)) {
+      await hre.network.provider.send('hardhat_mine');
+    } else {
+      await hre.network.provider.send('hardhat_mine', ['0x2', ethers.utils.hexStripZeros(durationBN.toHexString())]);
+    }
   },
 
   increaseTo: async (target: number | string | BigNumberish): Promise<void> => {
@@ -232,23 +243,83 @@ const time = {
     target = ethers.BigNumber.from(target);
 
     const currentBlock = await time.latestBlock();
-    const start = Date.now();
-    let notified;
     if (target.lt(currentBlock))
       throw Error(`Target block #(${target}) is lower than current block #(${currentBlock})`);
-    while (ethers.BigNumber.from(await time.latestBlock()).lt(target)) {
-      if (!notified && Date.now() - start >= 5000) {
-        notified = true;
-        console.warn(`You're advancing many blocks; this test may be slow.`);
-      }
-      await time.advanceBlock();
-    }
+
+    const diff = target.sub(currentBlock);
+    await hre.network.provider.send('hardhat_mine', [ethers.utils.hexStripZeros(diff.toHexString())]);
   },
 
   advanceBlock: async (): Promise<void> => {
-    await hre.network.provider.send('evm_mine');
+    await hre.network.provider.send('hardhat_mine');
   }
 };
+
+async function performDAOAction(
+  feiDAO: Contract,
+  multisigAddress: string,
+  calldatas: string[],
+  targets: string[],
+  values: number[]
+): Promise<void> {
+  const description = '';
+
+  await hre.network.provider.request({
+    method: 'hardhat_impersonateAccount',
+    params: [multisigAddress]
+  });
+
+  const signer = await ethers.getSigner(multisigAddress);
+
+  // Propose
+  // note ethers.js requires using this notation when two overloaded methods exist)
+  // https://docs.ethers.io/v5/migration/web3/#migration-from-web3-js--contracts--overloaded-functions
+  await feiDAO.connect(signer)['propose(address[],uint256[],bytes[],string)'](targets, values, calldatas, description);
+
+  const pid = await feiDAO.hashProposal(targets, values, calldatas, ethers.utils.keccak256(description));
+  const startBlock = (await feiDAO.proposals(pid)).startBlock;
+  await time.advanceBlockTo(startBlock.toString());
+
+  // vote
+  await feiDAO.connect(signer).castVote(pid, 1);
+
+  const endBlock = (await feiDAO.proposals(pid)).endBlock;
+  await time.advanceBlockTo(endBlock.toString());
+
+  // queue
+  await feiDAO['queue(address[],uint256[],bytes[],bytes32)'](
+    targets,
+    values,
+    calldatas,
+    ethers.utils.keccak256(description)
+  );
+
+  await time.increase('1000000');
+
+  // execute
+  await feiDAO['execute(address[],uint256[],bytes[],bytes32)'](
+    targets,
+    values,
+    calldatas,
+    ethers.utils.keccak256(description)
+  );
+}
+
+async function initialiseGnosisSDK(safeOwner: Signer, safeAddress: string): Promise<Safe> {
+  const ethAdapter = new EthersAdapter({
+    ethers,
+    signer: safeOwner
+  });
+  const { chainId } = await safeOwner.provider!.getNetwork();
+  const contractNetworks = {
+    [chainId]: {
+      multiSendAddress: '0x8D29bE29923b68abfDD21e541b9374737B49cdAD',
+      safeMasterCopyAddress: '0x34CfAC646f301356fAa8B21e94227e3583Fe3F5F',
+      safeProxyFactoryAddress: '0x76E2cFc1F5Fa8F6a5b3fC4c8F4788F0116861F9B'
+    }
+  };
+  return Safe.create({ ethAdapter, safeAddress, contractNetworks });
+}
 
 export {
   // utils
@@ -272,5 +343,8 @@ export {
   setNextBlockTimestamp,
   resetTime,
   resetFork,
-  overwriteChainlinkAggregator
+  overwriteChainlinkAggregator,
+  performDAOAction,
+  initialiseGnosisSDK,
+  validateArraysEqual
 };

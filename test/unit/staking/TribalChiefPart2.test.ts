@@ -5,12 +5,11 @@
 /* eslint-disable no-unused-expressions */
 /* eslint-disable no-plusplus */
 /* eslint-disable no-await-in-loop */
-import { time } from '../../helpers';
-import { expectRevert, expectUnspecifiedRevert, getCore, getAddresses, expectApprox } from '../../helpers';
+import { TransactionResponse } from '@ethersproject/abstract-provider';
 import { expect } from 'chai';
+import { BigNumber, Contract, Signer } from 'ethers';
 import hre, { ethers } from 'hardhat';
-import { Signer } from 'ethers';
-import { TransactionReceipt, TransactionResponse } from '@ethersproject/abstract-provider';
+import { expectApprox, expectRevert, expectUnspecifiedRevert, getAddresses, getCore, time } from '../../helpers';
 
 const toBN = ethers.BigNumber.from;
 
@@ -22,14 +21,14 @@ const blockReward = '100000000000000000000';
 const impersonatedSigners: { [key: string]: Signer } = {};
 
 async function testMultipleUsersPooling(
-  tribalChief,
-  lpToken,
-  userAddresses,
-  incrementAmount,
-  blocksToAdvance,
-  lockLength,
-  totalStaked,
-  pid
+  tribalChief: Contract,
+  lpToken: Contract,
+  userAddresses: string[],
+  incrementAmount: BigNumber | BigNumber[],
+  blocksToAdvance: number,
+  lockLength: number | number[],
+  totalStaked: string,
+  pid: number
 ) {
   // if lock length isn't defined, it defaults to 0
   lockLength = lockLength === undefined ? 0 : lockLength;
@@ -84,7 +83,7 @@ async function testMultipleUsersPooling(
 
       await expectApprox(
         toBN(await tribalChief.pendingRewards(pid, userAddresses[j])),
-        pendingBalances[j].add(userIncrementAmount)
+        pendingBalances[j].add(userIncrementAmount as any)
       );
     }
   }
@@ -98,20 +97,20 @@ const depositReport = [];
 
 describe('TribalChief', () => {
   // this is the process ID of the staking rewards that we will use
-  let pid;
-  let minterAddress;
-  let governorAddress;
-  let userAddress;
-  let secondUserAddress;
-  let thirdUserAddress;
-  let fourthUserAddress;
-  let fifthUserAddress;
-  let sixthUserAddress;
-  let seventhUserAddress;
-  let eigthUserAddress;
-  let ninthUserAddress;
-  let tenthUserAddress;
-  let perBlockReward;
+  let pid: number;
+  let minterAddress: string;
+  let governorAddress: string;
+  let userAddress: string;
+  let secondUserAddress: string;
+  let thirdUserAddress: string;
+  let fourthUserAddress: string;
+  let fifthUserAddress: string;
+  let sixthUserAddress: string;
+  let seventhUserAddress: string;
+  let eigthUserAddress: string;
+  let ninthUserAddress: string;
+  let tenthUserAddress: string;
+  let perBlockReward: number;
 
   const multiplier10x = '100000';
   const multiplier5x = '50000';
@@ -404,7 +403,7 @@ describe('TribalChief', () => {
     it('should not be able to deposit without LPToken approval', async function () {
       await expectRevert(
         this.tribalChief.connect(impersonatedSigners[userAddress]).deposit(pid, totalStaked, 100),
-        'transfer amount exceeds allowance'
+        'ERC20: insufficient allowance'
       );
     });
 
@@ -600,9 +599,7 @@ describe('TribalChief', () => {
       // to the staked amount which is total staked x 2
       expect((await this.tribalChief.poolInfo(pid)).virtualTotalSupply).to.be.equal(toBN(totalStaked).mul(toBN('2')));
 
-      for (let i = 0; i < 50; i++) {
-        await time.advanceBlock();
-      }
+      await hre.network.provider.send('hardhat_mine', [ethers.utils.hexStripZeros(BigNumber.from(50).toHexString())]);
 
       let pendingTribe = await this.tribalChief.pendingRewards(pid, userAddress);
       await this.tribalChief
@@ -623,9 +620,7 @@ describe('TribalChief', () => {
       expect(await this.LPToken.balanceOf(userAddress)).to.be.equal(toBN(totalStaked));
       expect(await this.tribe.balanceOf(userAddress)).to.be.gte(pendingTribe);
 
-      for (let i = 0; i < 50; i++) {
-        await time.advanceBlock();
-      }
+      await hre.network.provider.send('hardhat_mine', [ethers.utils.hexStripZeros(BigNumber.from(50).toHexString())]);
       pendingTribe = await this.tribalChief.pendingRewards(pid, userAddress);
       const currentTribe = await this.tribe.balanceOf(userAddress);
       // assert that the virtual total supply is equal to the staked amount

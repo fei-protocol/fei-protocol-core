@@ -16,10 +16,7 @@ contract ConstantOracle is IOracle, CoreRef {
     /// @notice Constant oracle constructor
     /// @param _core Fei Core for reference
     /// @param _priceBasisPoints the price to report in basis points
-    constructor(
-        address _core,
-        uint256 _priceBasisPoints
-    ) CoreRef(_core) {
+    constructor(address _core, uint256 _priceBasisPoints) CoreRef(_core) {
         price = Decimal.ratio(_priceBasisPoints, Constants.BASIS_POINTS_GRANULARITY);
     }
 

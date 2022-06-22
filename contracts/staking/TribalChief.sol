@@ -50,7 +50,7 @@ contract TribalChief is CoreRef, ReentrancyGuard, Initializable {
     /// @notice Info of each pool.
     /// `virtualTotalSupply` The total virtual supply in this pool
     /// `accTribePerShare` The amount of tribe each share is entitled to.
-    /// Users entering a pool have their reward debt start at current tribe per share and 
+    /// Users entering a pool have their reward debt start at current tribe per share and
     /// then they get the delta between where the tribe per share goes to and where they started.
     /// `lastRewardBlock` The last block where rewards were paid for this pool
     /// `allocPoint` The amount of allocation points assigned to the pool.
@@ -68,7 +68,7 @@ contract TribalChief is CoreRef, ReentrancyGuard, Initializable {
 
     /// @notice Info of each pool rewards multipliers available.
     /// map a pool id to a block lock time to a rewards multiplier
-    mapping (uint256 => mapping (uint128 => uint128)) public rewardMultipliers;
+    mapping(uint256 => mapping(uint128 => uint128)) public rewardMultipliers;
 
     /// @notice Data needed for governor to create a new lockup period
     /// and associated reward multiplier
@@ -86,17 +86,16 @@ contract TribalChief is CoreRef, ReentrancyGuard, Initializable {
     IERC20[] public stakedToken;
     /// @notice Address of each `IRewarder` contract.
     IRewarder[] public rewarder;
-    
+
     /// @notice Info of each users reward debt and virtual amount.
     /// One object is instantiated per user per pool
-    mapping (uint256 => mapping(address => UserInfo)) public userInfo;
+    mapping(uint256 => mapping(address => UserInfo)) public userInfo;
     /// @notice Info of each user that stakes tokens.
-    mapping (uint256 => mapping (address => DepositInfo[])) public depositInfo;
+    mapping(uint256 => mapping(address => DepositInfo[])) public depositInfo;
     /// @dev Total allocation points. Must be the sum of all allocation points in all pools.
     uint256 public totalAllocPoint;
 
-
-    /// @notice these variables cannot be initialized with a constant value 
+    /// @notice these variables cannot be initialized with a constant value
     /// because of the way that upgradeable contracts work, their initial write
     // to storage doesn't happen as the logic contract doesn't run the constructor
 
@@ -111,26 +110,36 @@ contract TribalChief is CoreRef, ReentrancyGuard, Initializable {
     event Withdraw(address indexed user, uint256 indexed pid, uint256 amount, address indexed to);
     event EmergencyWithdraw(address indexed user, uint256 indexed pid, uint256 amount, address indexed to);
     event Harvest(address indexed user, uint256 indexed pid, uint256 amount);
-    event LogPoolAddition(uint256 indexed pid, uint256 allocPoint, IERC20 indexed stakedToken, IRewarder indexed rewarder);
+    event LogPoolAddition(
+        uint256 indexed pid,
+        uint256 allocPoint,
+        IERC20 indexed stakedToken,
+        IRewarder indexed rewarder
+    );
     event LogSetPool(uint256 indexed pid, uint256 allocPoint, IRewarder indexed rewarder, bool overwrite);
     event LogPoolMultiplier(uint256 indexed pid, uint128 indexed lockLength, uint256 indexed multiplier);
-    event LogUpdatePool(uint256 indexed pid, uint128 indexed lastRewardBlock, uint256 lpSupply, uint256 accTribePerShare);
+    event LogUpdatePool(
+        uint256 indexed pid,
+        uint128 indexed lastRewardBlock,
+        uint256 lpSupply,
+        uint256 accTribePerShare
+    );
     /// @notice tribe withdraw event
     event TribeWithdraw(uint256 amount);
     event NewTribePerBlock(uint256 indexed amount);
     event PoolLocked(bool indexed locked, uint256 indexed pid);
 
-    /// @notice The way this function is constructed, you will not be able to 
-    /// call initialize after this function is constructed, effectively 
+    /// @notice The way this function is constructed, you will not be able to
+    /// call initialize after this function is constructed, effectively
     /// only allowing TribalChief to be used through delegate calls.
     /// @param coreAddress The Core contract address.
     constructor(address coreAddress) CoreRef(coreAddress) {}
 
     /// @param _core The Core contract address.
     /// @param _tribe The TRIBE token contract address.
-    function initialize(address _core, IERC20 _tribe) external initializer {        
-        CoreRef._initialize(_core);    
-        
+    function initialize(address _core, IERC20 _tribe) external initializer {
+        CoreRef._initialize(_core);
+
         TRIBE = _tribe;
         _setContractAdminRole(keccak256("TRIBAL_CHIEF_ADMIN_ROLE"));
 
@@ -163,7 +172,7 @@ contract TribalChief is CoreRef, ReentrancyGuard, Initializable {
         emit PoolLocked(true, _pid);
     }
 
-    /// @notice Allows governor to unlock the pool so that users can withdraw 
+    /// @notice Allows governor to unlock the pool so that users can withdraw
     /// before their tokens have been locked for the entire lockup period
     /// @param _pid pool ID
     function unlockPool(uint256 _pid) external onlyGovernorOrAdmin {
@@ -226,12 +235,11 @@ contract TribalChief is CoreRef, ReentrancyGuard, Initializable {
         return amount;
     }
 
-
     /// @notice Add a new pool. Can only be called by the governor.
     /// @param allocPoint AP of the new pool.
     /// @param _stakedToken Address of the ERC-20 token to stake.
     /// @param _rewarder Address of the rewarder delegate.
-    /// @param rewardData Reward Multiplier data 
+    /// @param rewardData Reward Multiplier data
     function add(
         uint120 allocPoint,
         IERC20 _stakedToken,
@@ -254,24 +262,25 @@ contract TribalChief is CoreRef, ReentrancyGuard, Initializable {
                 require(rewardData[i].rewardMultiplier == SCALE_FACTOR, "invalid multiplier for 0 lock length");
             } else {
                 // else, assert that multplier is greater than or equal to scale factor
-                require(rewardData[i].rewardMultiplier >= SCALE_FACTOR, "invalid multiplier, must be above scale factor");
+                require(
+                    rewardData[i].rewardMultiplier >= SCALE_FACTOR,
+                    "invalid multiplier, must be above scale factor"
+                );
             }
 
             rewardMultipliers[pid][rewardData[i].lockLength] = rewardData[i].rewardMultiplier;
-            emit LogPoolMultiplier(
-                pid,
-                rewardData[i].lockLength,
-                rewardData[i].rewardMultiplier
-            );
+            emit LogPoolMultiplier(pid, rewardData[i].lockLength, rewardData[i].rewardMultiplier);
         }
 
-        poolInfo.push(PoolInfo({
-            allocPoint: allocPoint,
-            virtualTotalSupply: 0, // virtual total supply starts at 0 as there is 0 initial supply
-            lastRewardBlock: lastRewardBlock,
-            accTribePerShare: 0,
-            unlocked: false
-        }));
+        poolInfo.push(
+            PoolInfo({
+                allocPoint: allocPoint,
+                virtualTotalSupply: 0, // virtual total supply starts at 0 as there is 0 initial supply
+                lastRewardBlock: lastRewardBlock,
+                accTribePerShare: 0,
+                unlocked: false
+            })
+        );
         emit LogPoolAddition(pid, allocPoint, _stakedToken, _rewarder);
     }
 
@@ -281,7 +290,12 @@ contract TribalChief is CoreRef, ReentrancyGuard, Initializable {
     /// @param _allocPoint New AP of the pool.
     /// @param _rewarder Address of the rewarder delegate.
     /// @param overwrite True if _rewarder should be `set`. Otherwise `_rewarder` is ignored.
-    function set(uint256 _pid, uint120 _allocPoint, IRewarder _rewarder, bool overwrite) public onlyGovernorOrAdmin {
+    function set(
+        uint256 _pid,
+        uint120 _allocPoint,
+        IRewarder _rewarder,
+        bool overwrite
+    ) public onlyGovernorOrAdmin {
         // we must update the pool before applying set so that all previously accrued rewards
         // are paid out before alloc points change
         updatePool(_pid);
@@ -298,7 +312,7 @@ contract TribalChief is CoreRef, ReentrancyGuard, Initializable {
 
     /// @notice Reset the given pool's TRIBE allocation to 0 and unlock the pool.
     /// Can only be called by the governor or guardian.
-    /// @param _pid The index of the pool. See `poolInfo`.    
+    /// @param _pid The index of the pool. See `poolInfo`.
     function resetRewards(uint256 _pid) public onlyGuardianOrGovernor {
         // we must update the pool before resetting rewards so that all previously accrued rewards
         // are paid out before alloc points go to 0 in this pool
@@ -307,7 +321,7 @@ contract TribalChief is CoreRef, ReentrancyGuard, Initializable {
         // set the pool's allocation points to zero
         totalAllocPoint = (totalAllocPoint - pool.allocPoint);
         pool.allocPoint = 0;
-        
+
         // unlock all staked tokens in the pool
         pool.unlocked = true;
 
@@ -338,7 +352,8 @@ contract TribalChief is CoreRef, ReentrancyGuard, Initializable {
         }
 
         // use the virtual amount to calculate the users share of the pool and their pending rewards
-        return (((user.virtualAmount * accTribePerShare) / ACC_TRIBE_PRECISION).toInt256() - user.rewardDebt).toUint256();
+        return
+            (((user.virtualAmount * accTribePerShare) / ACC_TRIBE_PRECISION).toInt256() - user.rewardDebt).toUint256();
     }
 
     /// @notice Update reward variables for all pools. Be careful of gas spending!
@@ -375,7 +390,11 @@ contract TribalChief is CoreRef, ReentrancyGuard, Initializable {
     /// @param pid The index of the pool. See `poolInfo`.
     /// @param amount The token amount to deposit.
     /// @param lockLength The length of time you would like to lock tokens
-    function deposit(uint256 pid, uint256 amount, uint64 lockLength) public nonReentrant whenNotPaused {
+    function deposit(
+        uint256 pid,
+        uint256 amount,
+        uint64 lockLength
+    ) public nonReentrant whenNotPaused {
         // we have to update the pool before we allow a user to deposit so that we can correctly calculate their reward debt
         // if we didn't do this, it would allow users to steal from us by calling deposits and gaining rewards they aren't entitled to
         updatePool(pid);
@@ -435,8 +454,8 @@ contract TribalChief is CoreRef, ReentrancyGuard, Initializable {
         uint256 processedDeposits = 0;
         for (uint256 i = 0; i < depositInfo[pid][msg.sender].length; i++) {
             DepositInfo storage poolDeposit = depositInfo[pid][msg.sender][i];
-            // if the user has locked the tokens for at least the 
-            // lockup period or the pool has been unlocked, allow 
+            // if the user has locked the tokens for at least the
+            // lockup period or the pool has been unlocked, allow
             // user to withdraw their principle from this deposit, otherwise skip this action
             if (poolDeposit.unlockBlock > block.number && pool.unlocked == false) {
                 continue;
@@ -476,7 +495,7 @@ contract TribalChief is CoreRef, ReentrancyGuard, Initializable {
             // Here, we just have to make the reward debt equal to:
             // (current tribe per share * the virtual liquidity) / ACC_TRIBE_PRECISION
             // of that user so that it is accurate.
-            user.rewardDebt = (user.virtualAmount * pool.accTribePerShare / ACC_TRIBE_PRECISION).toInt256();
+            user.rewardDebt = ((user.virtualAmount * pool.accTribePerShare) / ACC_TRIBE_PRECISION).toInt256();
         }
 
         // regardless of whether or not we removed all of this users liquidity from the pool, we will need to
@@ -512,16 +531,18 @@ contract TribalChief is CoreRef, ReentrancyGuard, Initializable {
         DepositInfo storage poolDeposit = depositInfo[pid][msg.sender][index];
         UserInfo storage user = userInfo[pid][msg.sender];
 
-        // if the user has locked the tokens for at least the 
+        // if the user has locked the tokens for at least the
         // lockup period or the pool has been unlocked by the governor,
         // allow user to withdraw their principle
         require(poolDeposit.unlockBlock <= block.number || pool.unlocked == true, "tokens locked");
 
-        uint256 virtualAmountDelta = ( amount * poolDeposit.multiplier ) / SCALE_FACTOR;
+        uint256 virtualAmountDelta = (amount * poolDeposit.multiplier) / SCALE_FACTOR;
 
         // Effects
         poolDeposit.amount -= amount;
-        user.rewardDebt = user.rewardDebt - ((virtualAmountDelta * pool.accTribePerShare) / ACC_TRIBE_PRECISION).toInt256();
+        user.rewardDebt =
+            user.rewardDebt -
+            ((virtualAmountDelta * pool.accTribePerShare) / ACC_TRIBE_PRECISION).toInt256();
         user.virtualAmount -= virtualAmountDelta;
         pool.virtualTotalSupply -= virtualAmountDelta;
 
@@ -539,7 +560,7 @@ contract TribalChief is CoreRef, ReentrancyGuard, Initializable {
         UserInfo storage user = userInfo[pid][msg.sender];
 
         // assumption here is that we will never go over 2^256 -1
-        int256 accumulatedTribe = ( (user.virtualAmount * pool.accTribePerShare ) / ACC_TRIBE_PRECISION ).toInt256();
+        int256 accumulatedTribe = ((user.virtualAmount * pool.accTribePerShare) / ACC_TRIBE_PRECISION).toInt256();
 
         // this should never happen
         assert(accumulatedTribe >= 0 && accumulatedTribe - user.rewardDebt >= 0);
@@ -559,7 +580,7 @@ contract TribalChief is CoreRef, ReentrancyGuard, Initializable {
 
         IRewarder _rewarder = rewarder[pid];
         if (address(_rewarder) != address(0)) {
-            _rewarder.onSushiReward( pid, msg.sender, to, pendingTribe, user.virtualAmount);
+            _rewarder.onSushiReward(pid, msg.sender, to, pendingTribe, user.virtualAmount);
         }
 
         emit Harvest(msg.sender, pid, pendingTribe);
@@ -589,8 +610,8 @@ contract TribalChief is CoreRef, ReentrancyGuard, Initializable {
         for (uint256 i = 0; i < depositInfo[pid][msg.sender].length; i++) {
             DepositInfo storage poolDeposit = depositInfo[pid][msg.sender][i];
 
-            // if the user has locked the tokens for at least the 
-            // lockup period or the pool has been unlocked, allow 
+            // if the user has locked the tokens for at least the
+            // lockup period or the pool has been unlocked, allow
             // user to withdraw their principle
             require(poolDeposit.unlockBlock <= block.number || pool.unlocked == true, "tokens locked");
 

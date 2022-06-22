@@ -6,7 +6,6 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 /// @title OwnableTimedMinter
 /// @notice A FeiTimedMinter that mints only when called by an owner
 contract OwnableTimedMinter is FeiTimedMinter, Ownable {
-
     /**
         @notice constructor for OwnableTimedMinter
         @param _core the Core address to reference
@@ -19,9 +18,7 @@ contract OwnableTimedMinter is FeiTimedMinter, Ownable {
         address _owner,
         uint256 _frequency,
         uint256 _initialMintAmount
-    ) 
-        FeiTimedMinter(_core, _owner, 0, _frequency, _initialMintAmount)
-    {
+    ) FeiTimedMinter(_core, _owner, 0, _frequency, _initialMintAmount) {
         transferOwnership(_owner);
     }
 

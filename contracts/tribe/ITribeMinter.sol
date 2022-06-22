@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 interface ITribe is IERC20 {
     function mint(address to, uint256 amount) external;
+
     function setMinter(address newMinter) external;
 }
 
@@ -37,7 +38,7 @@ interface ITribeMinter {
     // ----------- Getters -----------
 
     function annualMaxInflationBasisPoints() external view returns (uint256);
-    
+
     function idealBufferCap() external view returns (uint256);
 
     function tribeCirculatingSupply() external view returns (uint256);

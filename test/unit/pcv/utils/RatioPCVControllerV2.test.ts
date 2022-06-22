@@ -1,27 +1,27 @@
 import {
-  expectRevert,
+  Core,
+  MockERC20,
+  MockEthUniswapPCVDeposit,
+  MockPCVDepositV2,
+  RatioPCVControllerV2,
+  WETH9
+} from '@custom-types/contracts';
+import {
   balance,
+  deployDevelopmentWeth,
+  expectRevert,
   getAddresses,
   getCore,
-  getImpersonatedSigner,
-  deployDevelopmentWeth
+  getImpersonatedSigner
 } from '@test/helpers';
 import { forceEth } from '@test/integration/setup/utils';
 import { expect } from 'chai';
-import { ethers } from 'hardhat';
 import { BigNumber, Signer } from 'ethers';
-import {
-  MockEthUniswapPCVDeposit,
-  MockPCVDepositV2,
-  WETH9,
-  Core,
-  RatioPCVControllerV2,
-  MockERC20
-} from '@custom-types/contracts';
+import { ethers } from 'hardhat';
 
 const toBN = ethers.BigNumber.from;
 
-describe.skip('RatioPCVControllerV2', function () {
+describe('RatioPCVControllerV2', function () {
   let userAddress: string;
   let governorAddress: string;
   let pcvControllerAddress: string;
@@ -571,11 +571,16 @@ describe.skip('RatioPCVControllerV2', function () {
             pcvController
               .connect(impersonatedSigners[pcvControllerAddress])
               .transferFrom(pcvDepositEth.address, token.address, userAddress, pcvAmount, {}),
-            'ERC20: transfer amount exceeds allowance'
+            'ERC20: insufficient allowance'
           );
         });
 
         it('200% reverts', async function () {
+          // approve 2x
+          const signer = await getImpersonatedSigner(pcvDepositEth.address);
+          await forceEth(pcvDepositEth.address);
+          await token.connect(signer).approve(pcvController.address, pcvAmount.mul(toBN('2')));
+
           await expectRevert(
             pcvController
               .connect(impersonatedSigners[pcvControllerAddress])
@@ -588,6 +593,11 @@ describe.skip('RatioPCVControllerV2', function () {
           await pcvController
             .connect(impersonatedSigners[pcvControllerAddress])
             .transferFrom(pcvDepositEth.address, token.address, userAddress, pcvAmount, {}); // withdraw all
+
+          // approve again
+          const signer = await getImpersonatedSigner(pcvDepositEth.address);
+          await forceEth(pcvDepositEth.address);
+          await token.connect(signer).approve(pcvController.address, pcvAmount);
 
           await expectRevert(
             pcvController
@@ -667,7 +677,7 @@ describe.skip('RatioPCVControllerV2', function () {
             pcvController
               .connect(impersonatedSigners[pcvControllerAddress])
               .transferFromRatio(pcvDepositEth.address, token.address, userAddress, '10000', {}),
-            'ERC20: transfer amount exceeds allowance'
+            'ERC20: insufficient allowance'
           );
         });
 

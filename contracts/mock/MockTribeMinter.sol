@@ -6,8 +6,8 @@ interface ITribe {
 }
 
 contract MockTribeMinter {
-
     ITribe public tribe;
+
     constructor(ITribe _tribe) {
         tribe = _tribe;
     }

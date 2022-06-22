@@ -1,0 +1,22 @@
+export const fip_84aCalldata = [
+  // core.grantRole(bytes32,address)
+  '0x2f2ff15d899bd46557473cb80307a9dabc297131ced39608330a2d29b2d52b660c03923e0000000000000000000000008ace03fc45139fddba944c6a4082b604041d19fc',
+  // core.revokeGovernor(address)
+  '0xe6eb982f000000000000000000000000639572471f2f318464dc01066a56867130e45e25',
+  // feiDAO.updateTimelock(address)
+  '0xa890c910000000000000000000000000639572471f2f318464dc01066a56867130e45e25'
+];
+export const fip_84bCalldata = [
+  // proxyAdmin.transferOwnership(address)
+  '0xf2fde38b000000000000000000000000d51dba7a94e1adea403553a8235c302cebf41a3c',
+  // timelock.setDelay(uint256)
+  '0xe177246e0000000000000000000000000000000000000000000000000000000000000000',
+  // timelock.setPendingAdmin(address)
+  '0x4dd18bf5000000000000000000000000d51dba7a94e1adea403553a8235c302cebf41a3c',
+  // feiDAO.updateTimelock(address)
+  '0xa890c910000000000000000000000000d51dba7a94e1adea403553a8235c302cebf41a3c'
+];
+export const fip_84cCalldata = [
+  // timelock.acceptAdmin()
+  '0x0e18b681'
+];

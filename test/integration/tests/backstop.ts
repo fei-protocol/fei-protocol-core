@@ -4,16 +4,10 @@ import { solidity } from 'ethereum-waffle';
 import { ethers } from 'hardhat';
 import { NamedAddresses, NamedContracts } from '@custom-types/types';
 import { resetFork, time, overwriteChainlinkAggregator } from '@test/helpers';
-import proposals from '@test/integration/proposals_config';
+import proposals from '@protocol/proposalsConfig';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
 
 const toBN = ethers.BigNumber.from;
-
-before(async () => {
-  chai.use(CBN(ethers.BigNumber));
-  chai.use(solidity);
-  await resetFork();
-});
 
 describe('e2e-backstop', function () {
   let contracts: NamedContracts;
@@ -23,6 +17,11 @@ describe('e2e-backstop', function () {
   let doLogging: boolean;
 
   const tenPow18 = ethers.constants.WeiPerEther;
+
+  before(async () => {
+    chai.use(CBN(ethers.BigNumber));
+    chai.use(solidity);
+  });
 
   before(async function () {
     // Setup test environment and get contracts
@@ -60,13 +59,13 @@ describe('e2e-backstop', function () {
   });
   describe('TribeReserveStabilizer', async function () {
     it('exchangeFei', async function () {
-      const { fei, staticPcvDepositWrapper, tribe, tribeReserveStabilizer, collateralizationOracleWrapper } = contracts;
+      const { fei, staticPcvDepositWrapper, tribe, tribeReserveStabilizer, collateralizationOracle } = contracts;
 
       // set Chainlink ETHUSD to a fixed 4,000$ value
       await overwriteChainlinkAggregator(contractAddresses.chainlinkEthUsdOracle, '400000000000', '8');
 
       await fei.mint(deployAddress, tenPow18.mul(tenPow18).mul(toBN(4)));
-      await collateralizationOracleWrapper.update();
+      await collateralizationOracle.update();
 
       const userFeiBalanceBefore = toBN(await fei.balanceOf(deployAddress));
       const userTribeBalanceBefore = await tribe.balanceOf(deployAddress);
@@ -79,7 +78,7 @@ describe('e2e-backstop', function () {
       await tribeReserveStabilizer.startOracleDelayCountdown();
       await time.increase(await tribeReserveStabilizer.duration());
 
-      await collateralizationOracleWrapper.update();
+      await collateralizationOracle.update();
 
       const expectedAmountOut = await tribeReserveStabilizer.getAmountOut(feiTokensExchange);
       await tribeReserveStabilizer.exchangeFei(feiTokensExchange);

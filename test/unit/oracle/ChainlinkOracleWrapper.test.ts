@@ -1,7 +1,7 @@
-import { getCore, getAddresses } from '../../helpers';
 import { expect } from 'chai';
-import hre, { ethers, artifacts } from 'hardhat';
 import { Signer } from 'ethers';
+import hre, { artifacts, ethers } from 'hardhat';
+import { getAddresses, getCore } from '../../helpers';
 
 const ChainlinkOracleWrapper = artifacts.readArtifactSync('ChainlinkOracleWrapper');
 const MockChainlinkOracle = artifacts.readArtifactSync('MockChainlinkOracle');

@@ -1,37 +1,34 @@
+import { FixedPricePSM } from '@custom-types/contracts';
+import { NamedContracts } from '@custom-types/types';
+import proposals from '@protocol/proposalsConfig';
+import { expectApprox, expectRevert, getAddresses, getImpersonatedSigner, time } from '@test/helpers';
+import { TestEndtoEndCoordinator } from '@test/integration/setup';
+import { forceEth } from '@test/integration/setup/utils';
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
-import hre, { ethers } from 'hardhat';
-import { NamedContracts } from '@custom-types/types';
-import { expectRevert, getAddresses, getImpersonatedSigner, resetFork, time } from '@test/helpers';
-import proposals from '@test/integration/proposals_config';
-import { TestEndtoEndCoordinator } from '@test/integration/setup';
-import { forceEth } from '@test/integration/setup/utils';
 import { Contract, Signer } from 'ethers';
-import { expectApprox } from '@test/helpers';
-import { FixedPricePSM } from '@custom-types/contracts';
+import { ethers } from 'hardhat';
 
 before(async () => {
   chai.use(CBN(ethers.BigNumber));
   chai.use(solidity);
-  await resetFork();
 });
 
 describe('e2e-peg-stability-module', function () {
-  const feiSkimThreshold = ethers.utils.parseEther('10000000');
   const impersonatedSigners: { [key: string]: Signer } = {};
   let contracts: NamedContracts;
   let deployAddress: string;
   let e2eCoord: TestEndtoEndCoordinator;
   let daiPCVDripController: Contract;
   let doLogging: boolean;
-  let userAddress;
-  let minterAddress;
+  let userAddress: string;
+  let minterAddress: string;
+  let governorAddress;
   let dai: Contract;
   let daiPSM: Contract;
   let fei: Contract;
   let core: Contract;
-  let daiFixedPricePSMFeiSkimmer: Contract;
   let feiDAOTimelock: Contract;
 
   before(async function () {
@@ -63,8 +60,7 @@ describe('e2e-peg-stability-module', function () {
     doLogging && console.log(`Loading environment...`);
     ({ contracts } = await e2eCoord.loadEnvironment());
     let daiFixedPricePSM;
-    ({ dai, daiFixedPricePSM, daiFixedPricePSMFeiSkimmer, fei, core, daiPCVDripController, feiDAOTimelock } =
-      contracts);
+    ({ dai, daiFixedPricePSM, fei, core, daiPCVDripController, feiDAOTimelock } = contracts);
     doLogging && console.log(`Environment loaded.`);
     daiPSM = daiFixedPricePSM as FixedPricePSM;
     await core.grantMinter(minterAddress);
@@ -126,6 +122,16 @@ describe('e2e-peg-stability-module', function () {
       beforeEach(async () => {
         await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, redeemAmount);
         await fei.connect(impersonatedSigners[userAddress]).approve(daiPSM.address, redeemAmount);
+
+        const isPaused = await daiPSM.paused();
+        if (isPaused) {
+          await daiPSM.unpause();
+        }
+
+        const isRedeemPaused = await daiPSM.redeemPaused();
+        if (isRedeemPaused) {
+          await daiPSM.unpauseRedeem();
+        }
       });
 
       it('exchanges 10,000,000 FEI for DAI', async () => {
@@ -207,20 +213,6 @@ describe('e2e-peg-stability-module', function () {
         const actualDAIAmountOut = await daiPSM.getMintAmountOut(mintAmount);
         await expectApprox(actualDAIAmountOut, mintAmount);
       });
-    });
-  });
-
-  describe('skim FEI', function () {
-    before(async () => {
-      await fei.mint(daiPSM.address, feiSkimThreshold.mul(2));
-    });
-
-    it('skim all excess FEi', async () => {
-      await daiFixedPricePSMFeiSkimmer.skim();
-
-      const endingFEIBalance = await fei.balanceOf(daiPSM.address);
-
-      expect(endingFEIBalance).to.be.equal(feiSkimThreshold);
     });
   });
 });

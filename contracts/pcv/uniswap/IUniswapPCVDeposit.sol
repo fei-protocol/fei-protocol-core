@@ -22,4 +22,3 @@ interface IUniswapPCVDeposit {
 
     function maxBasisPointsFromPegLP() external view returns (uint256);
 }
-

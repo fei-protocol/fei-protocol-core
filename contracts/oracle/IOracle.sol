@@ -19,5 +19,4 @@ interface IOracle {
     function read() external view returns (Decimal.D256 memory, bool);
 
     function isOutdated() external view returns (bool);
-    
 }

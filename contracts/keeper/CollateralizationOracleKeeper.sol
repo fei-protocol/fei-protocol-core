@@ -4,9 +4,8 @@ import "../fei/minter/FeiTimedMinter.sol";
 import "../oracle/collateralization/ICollateralizationOracleWrapper.sol";
 
 /// @title CollateralizationOracleKeeper
-/// @notice a FEI timed minter which only rewards when updating the collateralization oracle 
+/// @notice a FEI timed minter which only rewards when updating the collateralization oracle
 contract CollateralizationOracleKeeper is FeiTimedMinter {
-
     ICollateralizationOracleWrapper public collateralizationOracleWrapper;
 
     /**
@@ -20,9 +19,7 @@ contract CollateralizationOracleKeeper is FeiTimedMinter {
         address _core,
         uint256 _incentive,
         ICollateralizationOracleWrapper _collateralizationOracleWrapper
-    ) 
-        FeiTimedMinter(_core, address(this), _incentive, MIN_MINT_FREQUENCY, 0) 
-    {
+    ) FeiTimedMinter(_core, address(this), _incentive, MIN_MINT_FREQUENCY, 0) {
         collateralizationOracleWrapper = _collateralizationOracleWrapper;
     }
 

@@ -31,11 +31,13 @@ contract MockVault {
         mockDoTransfers = flag;
     }
 
-    enum PoolSpecialization { GENERAL, MINIMAL_SWAP_INFO, TWO_TOKEN }
-    function getPool(bytes32 poolId) external view returns (
-        address poolAddress,
-        PoolSpecialization poolSpec
-    ) {
+    enum PoolSpecialization {
+        GENERAL,
+        MINIMAL_SWAP_INFO,
+        TWO_TOKEN
+    }
+
+    function getPool(bytes32 poolId) external view returns (address poolAddress, PoolSpecialization poolSpec) {
         poolAddress = address(_pool);
         poolSpec = PoolSpecialization.TWO_TOKEN;
     }
@@ -47,17 +49,18 @@ contract MockVault {
             IERC20[] memory tokens,
             uint256[] memory balances,
             uint256 lastChangeBlock
-        ) {
-            if (mockBalancesSet) {
-                balances = _balances;
-            } else {
-                balances = new uint256[](_tokens.length);
-                for (uint256 i = 0; i < _tokens.length; i++) {
-                    balances[i] = _tokens[i].balanceOf(address(_pool));
-                }
+        )
+    {
+        if (mockBalancesSet) {
+            balances = _balances;
+        } else {
+            balances = new uint256[](_tokens.length);
+            for (uint256 i = 0; i < _tokens.length; i++) {
+                balances[i] = _tokens[i].balanceOf(address(_pool));
             }
-            return (_tokens, balances, lastChangeBlock);
         }
+        return (_tokens, balances, lastChangeBlock);
+    }
 
     function setBalances(uint256[] memory balances) external {
         _balances = balances;
@@ -72,7 +75,7 @@ contract MockVault {
     ) external payable {
         if (mockDoTransfers) {
             for (uint256 i = 0; i < _tokens.length; i++) {
-              _tokens[i].safeTransferFrom(msg.sender, address(_pool), request.maxAmountsIn[i]);
+                _tokens[i].safeTransferFrom(msg.sender, address(_pool), request.maxAmountsIn[i]);
             }
         }
         _pool.mint(recipient, LIQUIDITY_AMOUNT);

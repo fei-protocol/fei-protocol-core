@@ -24,15 +24,15 @@ library ABDKMath64x64 {
      */
     int128 private constant MAX_64x64 = 0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
 
-    function uint256toInt128(uint256 input) internal pure returns(int128) {
+    function uint256toInt128(uint256 input) internal pure returns (int128) {
         return int128(int256(input));
     }
 
-    function int128toUint256(int128 input) internal pure returns(uint256) {
+    function int128toUint256(int128 input) internal pure returns (uint256) {
         return uint256(int256(input));
     }
 
-    function int128toUint64(int128 input) internal pure returns(uint64) {
+    function int128toUint64(int128 input) internal pure returns (uint64) {
         return uint64(uint256(int256(input)));
     }
 
@@ -67,10 +67,7 @@ library ABDKMath64x64 {
      * @return signed 64.64-bit fixed point number
      */
     function fromUInt(uint256 x) internal pure returns (int128) {
-        require(
-            x <= 0x7FFFFFFFFFFFFFFF,
-            "value is too high to be transformed in a 64.64-bit number"
-        );
+        require(x <= 0x7FFFFFFFFFFFFFFF, "value is too high to be transformed in a 64.64-bit number");
         return uint256toInt128(x << 64);
     }
 
@@ -191,16 +188,10 @@ library ABDKMath64x64 {
             }
             uint256 absoluteResult = mulu(x, uint256(y));
             if (negativeResult) {
-                require(
-                    absoluteResult <=
-                        0x8000000000000000000000000000000000000000000000000000000000000000
-                );
+                require(absoluteResult <= 0x8000000000000000000000000000000000000000000000000000000000000000);
                 return -int256(absoluteResult); // We rely on overflow behavior here
             } else {
-                require(
-                    absoluteResult <=
-                        0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-                );
+                require(absoluteResult <= 0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF);
                 return int256(absoluteResult);
             }
         }
@@ -466,30 +457,18 @@ library ABDKMath64x64 {
 
         uint256 result = 0x80000000000000000000000000000000;
 
-        if (x & 0x8000000000000000 > 0)
-            result = (result * 0x16A09E667F3BCC908B2FB1366EA957D3E) >> 128;
-        if (x & 0x4000000000000000 > 0)
-            result = (result * 0x1306FE0A31B7152DE8D5A46305C85EDEC) >> 128;
-        if (x & 0x2000000000000000 > 0)
-            result = (result * 0x1172B83C7D517ADCDF7C8C50EB14A791F) >> 128;
-        if (x & 0x1000000000000000 > 0)
-            result = (result * 0x10B5586CF9890F6298B92B71842A98363) >> 128;
-        if (x & 0x800000000000000 > 0)
-            result = (result * 0x1059B0D31585743AE7C548EB68CA417FD) >> 128;
-        if (x & 0x400000000000000 > 0)
-            result = (result * 0x102C9A3E778060EE6F7CACA4F7A29BDE8) >> 128;
-        if (x & 0x200000000000000 > 0)
-            result = (result * 0x10163DA9FB33356D84A66AE336DCDFA3F) >> 128;
-        if (x & 0x100000000000000 > 0)
-            result = (result * 0x100B1AFA5ABCBED6129AB13EC11DC9543) >> 128;
-        if (x & 0x80000000000000 > 0)
-            result = (result * 0x10058C86DA1C09EA1FF19D294CF2F679B) >> 128;
-        if (x & 0x40000000000000 > 0)
-            result = (result * 0x1002C605E2E8CEC506D21BFC89A23A00F) >> 128;
-        if (x & 0x20000000000000 > 0)
-            result = (result * 0x100162F3904051FA128BCA9C55C31E5DF) >> 128;
-        if (x & 0x10000000000000 > 0)
-            result = (result * 0x1000B175EFFDC76BA38E31671CA939725) >> 128;
+        if (x & 0x8000000000000000 > 0) result = (result * 0x16A09E667F3BCC908B2FB1366EA957D3E) >> 128;
+        if (x & 0x4000000000000000 > 0) result = (result * 0x1306FE0A31B7152DE8D5A46305C85EDEC) >> 128;
+        if (x & 0x2000000000000000 > 0) result = (result * 0x1172B83C7D517ADCDF7C8C50EB14A791F) >> 128;
+        if (x & 0x1000000000000000 > 0) result = (result * 0x10B5586CF9890F6298B92B71842A98363) >> 128;
+        if (x & 0x800000000000000 > 0) result = (result * 0x1059B0D31585743AE7C548EB68CA417FD) >> 128;
+        if (x & 0x400000000000000 > 0) result = (result * 0x102C9A3E778060EE6F7CACA4F7A29BDE8) >> 128;
+        if (x & 0x200000000000000 > 0) result = (result * 0x10163DA9FB33356D84A66AE336DCDFA3F) >> 128;
+        if (x & 0x100000000000000 > 0) result = (result * 0x100B1AFA5ABCBED6129AB13EC11DC9543) >> 128;
+        if (x & 0x80000000000000 > 0) result = (result * 0x10058C86DA1C09EA1FF19D294CF2F679B) >> 128;
+        if (x & 0x40000000000000 > 0) result = (result * 0x1002C605E2E8CEC506D21BFC89A23A00F) >> 128;
+        if (x & 0x20000000000000 > 0) result = (result * 0x100162F3904051FA128BCA9C55C31E5DF) >> 128;
+        if (x & 0x10000000000000 > 0) result = (result * 0x1000B175EFFDC76BA38E31671CA939725) >> 128;
         if (x & 0x8000000000000 > 0) result = (result * 0x100058BA01FB9F96D6CACD4B180917C3D) >> 128;
         if (x & 0x4000000000000 > 0) result = (result * 0x10002C5CC37DA9491D0985C348C68E7B3) >> 128;
         if (x & 0x2000000000000 > 0) result = (result * 0x1000162E525EE054754457D5995292026) >> 128;
@@ -682,9 +661,7 @@ library ABDKMath64x64 {
                     result = result * x;
                     y -= 1;
                     re += xe;
-                    if (
-                        result >= 0x8000000000000000000000000000000000000000000000000000000000000000
-                    ) {
+                    if (result >= 0x8000000000000000000000000000000000000000000000000000000000000000) {
                         result >>= 128;
                         re += 1;
                     } else result >>= 127;

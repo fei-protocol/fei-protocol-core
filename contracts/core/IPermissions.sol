@@ -46,5 +46,4 @@ interface IPermissions is IAccessControl, IPermissionsRead {
     function MINTER_ROLE() external view returns (bytes32);
 
     function PCV_CONTROLLER_ROLE() external view returns (bytes32);
-
 }

@@ -19,12 +19,7 @@ contract BalancerPCVDepositWeightedPool is BalancerPCVDepositBase {
     using SafeMath for *;
     using Decimal for Decimal.D256;
 
-    event OracleUpdate(
-        address _sender,
-        address indexed _token,
-        address indexed _oldOracle,
-        address indexed _newOracle
-    );
+    event OracleUpdate(address _sender, address indexed _token, address indexed _oldOracle, address indexed _newOracle);
 
     /// @notice oracle array of the tokens stored in this Balancer pool
     IOracle[] public tokenOracles;
@@ -96,20 +91,15 @@ contract BalancerPCVDepositWeightedPool is BalancerPCVDepositBase {
         tokenOraclesMapping[IERC20(_token)] = IOracle(_newOracle);
 
         // emit event
-        emit OracleUpdate(
-            msg.sender,
-            _token,
-            oldOracle,
-            _newOracle
-        );
+        emit OracleUpdate(msg.sender, _token, oldOracle, _newOracle);
     }
 
     /// @notice returns total balance of PCV in the Deposit, expressed in "token"
     function balance() public view override returns (uint256) {
         uint256 _bptSupply = IWeightedPool(poolAddress).totalSupply();
         if (_bptSupply == 0) {
-          // empty (uninitialized) pools have a totalSupply of 0
-          return 0;
+            // empty (uninitialized) pools have a totalSupply of 0
+            return 0;
         }
 
         (, uint256[] memory balances, ) = vault.getPoolTokens(poolId);
@@ -120,20 +110,17 @@ contract BalancerPCVDepositWeightedPool is BalancerPCVDepositBase {
             bool isToken = i == tokenIndexInPool;
             bool isFei = feiInPool && i == feiIndexInPool;
             if (!isToken && !isFei) {
-                _balance += balances[i] * underlyingPrices[i] / underlyingPrices[tokenIndexInPool];
+                _balance += (balances[i] * underlyingPrices[i]) / underlyingPrices[tokenIndexInPool];
             }
         }
 
         uint256 _bptBalance = IWeightedPool(poolAddress).balanceOf(address(this));
 
-        return _balance * _bptBalance / _bptSupply;
+        return (_balance * _bptBalance) / _bptSupply;
     }
 
     // @notice returns the manipulation-resistant balance of tokens & FEI held.
-    function resistantBalanceAndFei() public view override returns (
-        uint256 _resistantBalance,
-        uint256 _resistantFei
-    ) {
+    function resistantBalanceAndFei() public view override returns (uint256 _resistantBalance, uint256 _resistantFei) {
         // read oracle values
         uint256[] memory underlyingPrices = _readOracles();
 
@@ -156,7 +143,7 @@ contract BalancerPCVDepositWeightedPool is BalancerPCVDepositBase {
             uint256[] memory _weights = IWeightedPool(poolAddress).getNormalizedWeights();
             _resistantFei = bptValueUSD.mul(_weights[feiIndexInPool]).div(1e18).asUint256();
             // if FEI is x% of the pool, remove x% of the balance
-            _resistantBalance = _resistantBalance * (1e18 - _weights[feiIndexInPool]) / 1e18;
+            _resistantBalance = (_resistantBalance * (1e18 - _weights[feiIndexInPool])) / 1e18;
         }
 
         return (_resistantBalance, _resistantFei);
@@ -188,7 +175,11 @@ contract BalancerPCVDepositWeightedPool is BalancerPCVDepositBase {
         if (feiInPool) {
             // If FEI is in pool, we mint the good balance of FEI to go with the tokens
             // we are depositing
-            uint256 _feiToMint = underlyingPrices[tokenIndexInPool] * balances[tokenIndexInPool] / 1e18;
+            uint256 _feiToMint = (underlyingPrices[tokenIndexInPool] * balances[tokenIndexInPool]) / 1e18;
+            // normalize by weights
+            uint256[] memory _weights = IWeightedPool(poolAddress).getNormalizedWeights();
+            _feiToMint = (_feiToMint * _weights[feiIndexInPool]) / _weights[tokenIndexInPool];
+            // mint FEI
             _mintFei(address(this), _feiToMint);
             balances[feiIndexInPool] = _feiToMint;
         }
@@ -228,13 +219,14 @@ contract BalancerPCVDepositWeightedPool is BalancerPCVDepositBase {
             // Compute USD value deposited
             uint256 valueIn = 0;
             for (uint256 i = 0; i < balances.length; i++) {
-                valueIn += balances[i] * underlyingPrices[i] / 1e18;
+                valueIn += (balances[i] * underlyingPrices[i]) / 1e18;
             }
 
             // Compute USD value out
             uint256 bptPrice = _getBPTPrice(underlyingPrices);
             uint256 valueOut = Decimal.from(bptPrice).mul(bptBalanceAfter - bptBalanceBefore).div(1e18).asUint256();
-            uint256 minValueOut = Decimal.from(valueIn)
+            uint256 minValueOut = Decimal
+                .from(valueIn)
                 .mul(Constants.BASIS_POINTS_GRANULARITY - maximumSlippageBasisPoints)
                 .div(Constants.BASIS_POINTS_GRANULARITY)
                 .asUint256();
@@ -271,7 +263,11 @@ contract BalancerPCVDepositWeightedPool is BalancerPCVDepositBase {
             }
 
             // Uses encoding for exact tokens out, spending at maximum bptBalance
-            bytes memory userData = abi.encode(IWeightedPool.ExitKind.BPT_IN_FOR_EXACT_TOKENS_OUT, request.minAmountsOut, bptBalance);
+            bytes memory userData = abi.encode(
+                IWeightedPool.ExitKind.BPT_IN_FOR_EXACT_TOKENS_OUT,
+                request.minAmountsOut,
+                bptBalance
+            );
             request.userData = userData;
 
             vault.exitPool(poolId, address(this), payable(address(this)), request);
@@ -286,7 +282,8 @@ contract BalancerPCVDepositWeightedPool is BalancerPCVDepositBase {
     function _readOracles() internal view returns (uint256[] memory underlyingPrices) {
         underlyingPrices = new uint256[](poolAssets.length);
         for (uint256 i = 0; i < underlyingPrices.length; i++) {
-            (Decimal.D256 memory oracleValue, bool oracleValid) = tokenOraclesMapping[IERC20(address(poolAssets[i]))].read();
+            (Decimal.D256 memory oracleValue, bool oracleValid) = tokenOraclesMapping[IERC20(address(poolAssets[i]))]
+                .read();
             require(oracleValid, "BalancerPCVDepositWeightedPool: invalid oracle");
             underlyingPrices[i] = oracleValue.mul(1e18).asUint256();
 
@@ -294,27 +291,27 @@ contract BalancerPCVDepositWeightedPool is BalancerPCVDepositBase {
             uint8 decimals = ERC20(address(poolAssets[i])).decimals();
             require(decimals <= 18, "invalid decimals"); // should never happen
             if (decimals < 18) {
-                underlyingPrices[i] = underlyingPrices[i] * 10**(18-decimals);
+                underlyingPrices[i] = underlyingPrices[i] * 10**(18 - decimals);
             }
         }
     }
 
     /**
-    * Calculates the value of Balancer pool tokens using the logic described here:
-    * https://docs.gyro.finance/learn/oracles/bpt-oracle
-    * This is robust to price manipulations within the Balancer pool.
-    * Courtesy of Gyroscope protocol, used with permission. See the original file here :
-    * https://github.com/gyrostable/core/blob/master/contracts/GyroPriceOracle.sol#L109-L167
-    * @param underlyingPrices = array of prices for underlying assets in the pool,
-    *   given in USD, on a base of 18 decimals.
-    * @return bptPrice = the price of balancer pool tokens, in USD, on a base
-    *   of 18 decimals.
-    */
+     * Calculates the value of Balancer pool tokens using the logic described here:
+     * https://docs.gyro.finance/learn/oracles/bpt-oracle
+     * This is robust to price manipulations within the Balancer pool.
+     * Courtesy of Gyroscope protocol, used with permission. See the original file here :
+     * https://github.com/gyrostable/core/blob/master/contracts/GyroPriceOracle.sol#L109-L167
+     * @param underlyingPrices = array of prices for underlying assets in the pool,
+     *   given in USD, on a base of 18 decimals.
+     * @return bptPrice = the price of balancer pool tokens, in USD, on a base
+     *   of 18 decimals.
+     */
     function _getBPTPrice(uint256[] memory underlyingPrices) internal view returns (uint256 bptPrice) {
         IWeightedPool pool = IWeightedPool(poolAddress);
         uint256 _bptSupply = pool.totalSupply();
         uint256[] memory _weights = pool.getNormalizedWeights();
-        ( , uint256[] memory _balances, ) = vault.getPoolTokens(poolId);
+        (, uint256[] memory _balances, ) = vault.getPoolTokens(poolId);
 
         uint256 _k = uint256(1e18);
         uint256 _weightedProd = uint256(1e18);
@@ -334,11 +331,7 @@ contract BalancerPCVDepositWeightedPool is BalancerPCVDepositBase {
 
             _k = _k.mulPow(_tokenBalance, _weights[i], 18);
 
-            _weightedProd = _weightedProd.mulPow(
-                underlyingPrices[i].scaledDiv(_weights[i], 18),
-                _weights[i],
-                18
-            );
+            _weightedProd = _weightedProd.mulPow(underlyingPrices[i].scaledDiv(_weights[i], 18), _weights[i], 18);
         }
 
         uint256 result = _k.scaledMul(_weightedProd).scaledDiv(_bptSupply);

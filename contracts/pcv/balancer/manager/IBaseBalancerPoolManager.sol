@@ -10,8 +10,8 @@ interface IBaseBalancerPoolManager {
     function setPaused(IBasePool pool, bool paused) external;
 
     function setAssetManagerPoolConfig(
-        IBasePool pool, 
-        IERC20 token, 
+        IBasePool pool,
+        IERC20 token,
         IAssetManager.PoolConfig memory poolConfig
     ) external;
-}   
+}

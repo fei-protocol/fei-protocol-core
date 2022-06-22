@@ -6,7 +6,6 @@ import "./ICollateralizationOracle.sol";
 /// @title Collateralization ratio oracle interface for Fei Protocol
 /// @author Fei Protocol
 interface ICollateralizationOracleWrapper is ICollateralizationOracle {
-
     // ----------- Events ------------------------------------------------------
 
     event CachedValueUpdate(
@@ -22,15 +21,10 @@ interface ICollateralizationOracleWrapper is ICollateralizationOracle {
         address indexed newOracleAddress
     );
 
-    event DeviationThresholdUpdate(
-        address from,
-        uint256 indexed oldThreshold,
-        uint256 indexed newThreshold
-    );
+    event DeviationThresholdUpdate(address from, uint256 indexed oldThreshold, uint256 indexed newThreshold);
 
-    event ReadPauseOverrideUpdate(
-        bool readPauseOverride
-    );
+    event ReadPauseOverrideUpdate(bool readPauseOverride);
+
     // ----------- Public state changing api -----------
 
     function updateIfOutdated() external;
@@ -51,27 +45,30 @@ interface ICollateralizationOracleWrapper is ICollateralizationOracle {
     ) external;
 
     // ----------- Getters -----------
-    
+
     function cachedProtocolControlledValue() external view returns (uint256);
-    
+
     function cachedUserCirculatingFei() external view returns (uint256);
 
     function cachedProtocolEquity() external view returns (int256);
 
     function deviationThresholdBasisPoints() external view returns (uint256);
 
-    function collateralizationOracle() external view returns(address);
+    function collateralizationOracle() external view returns (address);
 
     function isOutdatedOrExceededDeviationThreshold() external view returns (bool);
 
-    function pcvStatsCurrent() external view returns (
-        uint256 protocolControlledValue,
-        uint256 userCirculatingFei,
-        int256 protocolEquity,
-        bool validityStatus
-    );
+    function pcvStatsCurrent()
+        external
+        view
+        returns (
+            uint256 protocolControlledValue,
+            uint256 userCirculatingFei,
+            int256 protocolEquity,
+            bool validityStatus
+        );
 
     function isExceededDeviationThreshold() external view returns (bool);
 
-    function readPauseOverride() external view returns(bool);
+    function readPauseOverride() external view returns (bool);
 }

@@ -1,20 +1,14 @@
+import { Core } from '@custom-types/contracts';
+import { ContractAccessRights, NamedAddresses, NamedContracts } from '@custom-types/types';
+import proposals from '@protocol/proposalsConfig';
+import { getImpersonatedSigner, increaseTime, latestTime, time } from '@test/helpers';
+import { TestEndtoEndCoordinator } from '@test/integration/setup';
+import { forceEth } from '@test/integration/setup/utils';
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
 import hre, { ethers } from 'hardhat';
-import { NamedAddresses, NamedContracts } from '@custom-types/types';
-import { getImpersonatedSigner, increaseTime, latestTime, resetFork, time } from '@test/helpers';
-import proposals from '@test/integration/proposals_config';
-import { TestEndtoEndCoordinator } from '@test/integration/setup';
-import { forceEth } from '@test/integration/setup/utils';
-import { Core } from '@custom-types/contracts';
 const toBN = ethers.BigNumber.from;
-
-before(async () => {
-  chai.use(CBN(ethers.BigNumber));
-  chai.use(solidity);
-  await resetFork();
-});
 
 describe('e2e-dao', function () {
   let contracts: NamedContracts;
@@ -22,6 +16,11 @@ describe('e2e-dao', function () {
   let deployAddress: string;
   let e2eCoord: TestEndtoEndCoordinator;
   let doLogging: boolean;
+
+  before(async () => {
+    chai.use(CBN(ethers.BigNumber));
+    chai.use(solidity);
+  });
 
   before(async function () {
     // Setup test environment and get contracts
@@ -72,14 +71,14 @@ describe('e2e-dao', function () {
       const calldatas = [
         '0x70b0f660000000000000000000000000000000000000000000000000000000000000000a' // set voting delay 10
       ];
-      const description = [];
+      const description: any[] = [];
 
       await hre.network.provider.request({
         method: 'hardhat_impersonateAccount',
-        params: [contractAddresses.multisig]
+        params: [contractAddresses.guardianMultisig]
       });
 
-      const signer = await ethers.getSigner(contractAddresses.multisig);
+      const signer = await ethers.getSigner(contractAddresses.guardianMultisig);
 
       // Propose
       // note ethers.js requires using this notation when two overloaded methods exist)
@@ -97,7 +96,7 @@ describe('e2e-dao', function () {
 
       // advance to end of voting period
       const endBlock = (await feiDAO.proposals(pid)).endBlock;
-      await time.advanceBlockTo(endBlock.toString());
+      await time.advanceBlockTo(endBlock.toNumber());
 
       // queue
       await feiDAO['queue(address[],uint256[],bytes[],bytes32)'](
@@ -123,11 +122,11 @@ describe('e2e-dao', function () {
 
   describe('Optimistic Approval', async () => {
     beforeEach(async function () {
-      const { tribalChiefOptimisticMultisig, timelock } = contractAddresses;
+      const { optimisticMultisig, timelock } = contractAddresses;
 
       await hre.network.provider.request({
         method: 'hardhat_impersonateAccount',
-        params: [tribalChiefOptimisticMultisig]
+        params: [optimisticMultisig]
       });
 
       await hre.network.provider.request({
@@ -143,26 +142,28 @@ describe('e2e-dao', function () {
 
       await (
         await ethers.getSigner(timelock)
-      ).sendTransaction({ to: tribalChiefOptimisticMultisig, value: toBN('40000000000000000') });
+      ).sendTransaction({ to: optimisticMultisig, value: toBN('40000000000000000') });
     });
 
     it('governor can assume timelock admin', async () => {
-      const { timelock } = contractAddresses;
+      // oldTimelock has had Governor revoked, so apply to newTimelock
+      const { feiDAOTimelock } = contractAddresses;
       const { optimisticTimelock } = contracts;
 
-      await optimisticTimelock.connect(await ethers.getSigner(timelock)).becomeAdmin();
+      const newTimelockSigner = await getImpersonatedSigner(feiDAOTimelock);
+      await optimisticTimelock.connect(newTimelockSigner).becomeAdmin();
 
       const admin = await optimisticTimelock.TIMELOCK_ADMIN_ROLE();
-      expect(await optimisticTimelock.hasRole(admin, timelock)).to.be.true;
+      expect(await optimisticTimelock.hasRole(admin, feiDAOTimelock)).to.be.true;
     });
 
     it('proposal can execute on tribalChief', async () => {
-      const { tribalChiefOptimisticMultisig } = contractAddresses;
+      const { optimisticMultisig } = contractAddresses;
       const { optimisticTimelock, tribalChief } = contracts;
 
       const oldBlockReward = await tribalChief.tribePerBlock();
       await optimisticTimelock
-        .connect(await ethers.getSigner(tribalChiefOptimisticMultisig))
+        .connect(await ethers.getSigner(optimisticMultisig))
         .schedule(
           tribalChief.address,
           0,
@@ -183,7 +184,7 @@ describe('e2e-dao', function () {
 
       await increaseTime(500000);
       await optimisticTimelock
-        .connect(await ethers.getSigner(tribalChiefOptimisticMultisig))
+        .connect(await ethers.getSigner(optimisticMultisig))
         .execute(
           tribalChief.address,
           0,
@@ -217,24 +218,32 @@ describe('e2e-dao', function () {
         const id = ethers.utils.id(element);
         const numRoles = await core.getRoleMemberCount(id);
         doLogging && console.log(`Role count for ${element}: ${numRoles}`);
-        expect(numRoles.toNumber()).to.be.equal(accessRights[element].length);
+        expect(numRoles.toNumber()).to.be.equal(
+          accessRights[element as keyof ContractAccessRights].length,
+          'role ' + element
+        );
       }
     });
 
     it('should have granted contracts correct roles', async function () {
       const core: Core = contracts.core as Core;
       const accessControl = e2eCoord.getAccessControlMapping();
-
       const roles = Object.keys(accessControl);
 
       for (let i = 0; i < roles.length; i++) {
         const element = roles[i];
         const id = ethers.utils.id(element);
-        for (let i = 0; i < accessControl[element].length; i++) {
-          const contractAddress = accessControl[element][i];
+        for (let i = 0; i < accessControl[element as keyof ContractAccessRights].length; i++) {
+          const contractAddress = accessControl[element as keyof ContractAccessRights][i];
           doLogging && console.log(`${element} contract address: ${contractAddress}`);
-          const isMinter = await core.hasRole(id, contractAddress);
-          expect(isMinter).to.be.true;
+          const hasRole = await core.hasRole(id, contractAddress);
+          expect(hasRole).to.be.equal(
+            true,
+            'expect contract ' +
+              accessControl[element as keyof ContractAccessRights][i] +
+              ' expected to have role ' +
+              element
+          );
         }
       }
 

@@ -25,7 +25,7 @@ contract CollateralizationOracleGuardian is CoreRef, Timed {
 
     /// @notice the maximum update size relative to current, measured in basis points (1/10000)
     uint256 public deviationThresholdBasisPoints;
-    
+
     /**
         @notice The constructor for CollateralizationOracleGuardian
         @param _core the core address to reference
@@ -34,8 +34,8 @@ contract CollateralizationOracleGuardian is CoreRef, Timed {
         @param _deviationThresholdBasisPoints the maximum percent change in a cache value for a given update
      */
     constructor(
-        address _core, 
-        ICollateralizationOracleWrapper _oracleWrapper, 
+        address _core,
+        ICollateralizationOracleWrapper _oracleWrapper,
         uint256 _frequency,
         uint256 _deviationThresholdBasisPoints
     ) CoreRef(_core) Timed(_frequency) {
@@ -50,10 +50,11 @@ contract CollateralizationOracleGuardian is CoreRef, Timed {
     /// @param protocolControlledValue new PCV value
     /// @param userCirculatingFei new user FEI value
     /// @dev make sure to pause the CR oracle wrapper or else the set value would be overwritten on next update
-    function setCache(
-        uint256 protocolControlledValue, 
-        uint256 userCirculatingFei
-    ) external onlyGuardianOrGovernor afterTime {
+    function setCache(uint256 protocolControlledValue, uint256 userCirculatingFei)
+        external
+        onlyGuardianOrGovernor
+        afterTime
+    {
         // Reset timer
         _initTimed();
 
@@ -80,7 +81,7 @@ contract CollateralizationOracleGuardian is CoreRef, Timed {
     /// @notice return the percent deviation between a and b in basis points terms
     function calculateDeviationThresholdBasisPoints(uint256 a, uint256 b) public pure returns (uint256) {
         uint256 delta = (a < b) ? (b - a) : (a - b);
-        return delta * Constants.BASIS_POINTS_GRANULARITY / a;
+        return (delta * Constants.BASIS_POINTS_GRANULARITY) / a;
     }
 
     /// @notice governance setter for maximum deviation the guardian can change per update
@@ -89,7 +90,10 @@ contract CollateralizationOracleGuardian is CoreRef, Timed {
     }
 
     function _setDeviationThresholdBasisPoints(uint256 newDeviationThresholdBasisPoints) internal {
-        require(newDeviationThresholdBasisPoints <= Constants.BASIS_POINTS_GRANULARITY, "CollateralizationOracleGuardian: deviation exceeds granularity");
+        require(
+            newDeviationThresholdBasisPoints <= Constants.BASIS_POINTS_GRANULARITY,
+            "CollateralizationOracleGuardian: deviation exceeds granularity"
+        );
 
         uint256 oldDeviationThresholdBasisPoints = deviationThresholdBasisPoints;
         deviationThresholdBasisPoints = newDeviationThresholdBasisPoints;

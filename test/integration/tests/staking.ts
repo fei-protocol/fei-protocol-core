@@ -1,35 +1,75 @@
 import {
   AutoRewardsDistributor,
+  Core,
+  FeiDAOTimelock,
+  RewardsDistributorAdmin,
+  StakingTokenWrapper,
   TribalChief,
   TribalChiefSyncExtension,
-  TribalChiefSyncV2
+  TribalChiefSyncV2,
+  Tribe
 } from '@custom-types/contracts';
+import { NamedAddresses, NamedContracts } from '@custom-types/types';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
+import proposals from '@protocol/proposalsConfig';
+import { expectApprox, getImpersonatedSigner, time } from '@test/helpers';
+import { forceEth } from '@test/integration/setup/utils';
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
 import { BigNumber, Contract } from 'ethers';
 import hre, { ethers } from 'hardhat';
-import { NamedAddresses, NamedContracts } from '@custom-types/types';
-import { expectApprox, getImpersonatedSigner, resetFork, time } from '@test/helpers';
-import proposals from '@test/integration/proposals_config';
 import { TestEndtoEndCoordinator } from '../setup';
-import { forceEth } from '@test/integration/setup/utils';
 
 const toBN = ethers.BigNumber.from;
 
-before(async () => {
-  chai.use(CBN(ethers.BigNumber));
-  chai.use(solidity);
-  await resetFork();
-});
+const setupIncentivesFixtures = async (
+  core: Core,
+  tribalChief: TribalChief,
+  feiDAOTimelock: FeiDAOTimelock,
+  rewardsDistributorAdmin: RewardsDistributorAdmin,
+  autoRewardsDistributors: AutoRewardsDistributor[],
+  pid: number,
+  poolAllocPoints: number,
+  addresses: NamedAddresses
+) => {
+  // TribalChief fixture: setup with non-zero block reward and various pools with allocation points
+  const daoSigner = await getImpersonatedSigner(feiDAOTimelock.address);
+  await forceEth(feiDAOTimelock.address);
+  await tribalChief.connect(daoSigner).updateBlockReward('26150000000000000000');
 
-describe('e2e-staking', function () {
+  // Initialise various pools with rewards
+  await tribalChief.connect(daoSigner).set(pid, poolAllocPoints, ethers.constants.AddressZero, false);
+  await tribalChief.connect(daoSigner).set(12, 250, ethers.constants.AddressZero, false);
+  await tribalChief.connect(daoSigner).set(13, 250, ethers.constants.AddressZero, false);
+  await tribalChief.connect(daoSigner).set(14, 1000, ethers.constants.AddressZero, false);
+  await tribalChief.connect(daoSigner).set(15, 100, ethers.constants.AddressZero, false);
+  await tribalChief.connect(daoSigner).set(16, 500, ethers.constants.AddressZero, false);
+  await tribalChief.connect(daoSigner).set(17, 250, ethers.constants.AddressZero, false);
+
+  // Grant out roles
+  await core.connect(daoSigner).grantRole(ethers.utils.id('TRIBAL_CHIEF_ADMIN_ROLE'), addresses.tribalChiefSyncV2);
+  await rewardsDistributorAdmin.connect(daoSigner).becomeAdmin();
+
+  for (const rewardDistributor of autoRewardsDistributors) {
+    console.log('granting role: ', rewardDistributor.address);
+    await rewardsDistributorAdmin
+      .connect(daoSigner)
+      .grantRole(ethers.utils.id('AUTO_REWARDS_DISTRIBUTOR_ROLE'), rewardDistributor.address);
+  }
+};
+
+describe.skip('e2e-staking', function () {
   let contracts: NamedContracts;
   let contractAddresses: NamedAddresses;
   let deployAddress: string;
   let e2eCoord: TestEndtoEndCoordinator;
   let doLogging: boolean;
+
+  before(async () => {
+    chai.use(CBN(ethers.BigNumber));
+    chai.use(solidity);
+  });
 
   before(async function () {
     // Setup test environment and get contracts
@@ -173,25 +213,40 @@ describe('e2e-staking', function () {
   });
 
   describe('FeiRari Tribe Staking Rewards', async () => {
-    let tribe: Contract;
+    let tribe: Tribe;
     let tribalChief: TribalChief;
     let tribePerBlock: BigNumber;
     let autoRewardsDistributor: AutoRewardsDistributor;
-    let rewardsDistributorAdmin: Contract;
-    let stakingTokenWrapper: Contract;
+    let rewardsDistributorAdmin: RewardsDistributorAdmin;
+    let stakingTokenWrapper: StakingTokenWrapper;
     const poolAllocPoints = 1000;
     const pid = 3;
     let optimisticTimelock: SignerWithAddress;
     let totalAllocPoint: BigNumber;
 
     before(async () => {
-      stakingTokenWrapper = contracts.stakingTokenWrapperRari;
+      stakingTokenWrapper = contracts.stakingTokenWrapperRari as StakingTokenWrapper;
       tribalChief = contracts.tribalChief as TribalChief;
-      tribePerBlock = await tribalChief.tribePerBlock();
-
-      rewardsDistributorAdmin = contracts.rewardsDistributorAdmin;
+      rewardsDistributorAdmin = contracts.rewardsDistributorAdmin as RewardsDistributorAdmin;
       autoRewardsDistributor = contracts.autoRewardsDistributor as AutoRewardsDistributor;
-      tribe = contracts.tribe;
+      tribe = contracts.tribe as Tribe;
+
+      const feiDAOTimelock = contracts.feiDAOTimelock as FeiDAOTimelock;
+      const d3AutoRewardsDistributor = contracts.d3AutoRewardsDistributor as AutoRewardsDistributor;
+      const fei3CrvAutoRewardsDistributor = contracts.fei3CrvAutoRewardsDistributor as AutoRewardsDistributor;
+
+      await setupIncentivesFixtures(
+        contracts.core as Core,
+        tribalChief,
+        feiDAOTimelock,
+        rewardsDistributorAdmin,
+        [autoRewardsDistributor, d3AutoRewardsDistributor, fei3CrvAutoRewardsDistributor],
+        pid,
+        poolAllocPoints,
+        contractAddresses
+      );
+
+      tribePerBlock = await tribalChief.tribePerBlock();
 
       optimisticTimelock = await ethers.getSigner(contracts.optimisticTimelock.address);
       await hre.network.provider.request({
@@ -199,6 +254,8 @@ describe('e2e-staking', function () {
         params: [optimisticTimelock.address]
       });
       await forceEth(optimisticTimelock.address);
+
+      totalAllocPoint = await tribalChief.totalAllocPoint();
     });
 
     describe('Staking Token Wrapper', async () => {
@@ -215,9 +272,9 @@ describe('e2e-staking', function () {
         const startingTribeBalance = await tribe.balanceOf(rariRewardsDistributorDelegator);
 
         const blocksToAdvance = 10;
-        for (let i = 0; i < blocksToAdvance; i++) {
-          await time.advanceBlock();
-        }
+        await hre.network.provider.send('hardhat_mine', [
+          ethers.utils.hexStripZeros(BigNumber.from(blocksToAdvance).toHexString())
+        ]);
 
         /// add 1 as calling the harvest is another block where rewards are received
         const pendingTribe = toBN(blocksToAdvance + 1)
@@ -307,8 +364,8 @@ describe('e2e-staking', function () {
 
     describe('Guardian Disables Supply Rewards', async () => {
       it('does not receive reward when supply incentives are moved to zero', async () => {
-        const { erc20Dripper, multisig, rariRewardsDistributorDelegator } = contractAddresses;
-        const signer = await getImpersonatedSigner(multisig);
+        const { erc20Dripper, guardianMultisig, rariRewardsDistributorDelegator } = contractAddresses;
+        const signer = await getImpersonatedSigner(guardianMultisig);
         const { rariPool8Tribe } = contracts;
         const rewardsDistributorDelegator = await ethers.getContractAt(
           'IRewardsAdmin',
@@ -333,6 +390,31 @@ describe('e2e-staking', function () {
   });
 
   describe('TribalChiefSyncV2', async () => {
+    before(async () => {
+      const tribalChief = contracts.tribalChief as TribalChief;
+      const rewardsDistributorAdmin = contracts.rewardsDistributorAdmin as RewardsDistributorAdmin;
+      const autoRewardsDistributor = contracts.autoRewardsDistributor as AutoRewardsDistributor;
+      const feiDAOTimelock = contracts.feiDAOTimelock as FeiDAOTimelock;
+
+      const d3AutoRewardsDistributor = contracts.d3AutoRewardsDistributor as AutoRewardsDistributor;
+      const fei3CrvAutoRewardsDistributor = contracts.fei3CrvAutoRewardsDistributor as AutoRewardsDistributor;
+
+      const pid = 3;
+      const poolAllocPoints = 1000;
+
+      // Fixture: Set Tribe block reward to be greater than 0
+      await setupIncentivesFixtures(
+        contracts.core as Core,
+        tribalChief,
+        feiDAOTimelock,
+        rewardsDistributorAdmin,
+        [autoRewardsDistributor, d3AutoRewardsDistributor, fei3CrvAutoRewardsDistributor],
+        pid,
+        poolAllocPoints,
+        contractAddresses
+      );
+    });
+
     it('auto-sync works correctly', async () => {
       const tribalChiefSync: TribalChiefSyncV2 = contracts.tribalChiefSyncV2 as TribalChiefSyncV2;
       const tribalChiefSyncExtension: TribalChiefSyncExtension =
@@ -365,7 +447,9 @@ describe('e2e-staking', function () {
         });
 
         if (nextRewardRate.toString() !== '6060000000000000000') {
-          await time.increaseTo((await tribalChiefSync.nextRewardTimestamp()).add(toBN(1)));
+          const deadline = (await tribalChiefSync.nextRewardTimestamp()).add(toBN(1)).toNumber();
+          const currentTime = await time.latest();
+          if (deadline > currentTime) await time.increaseTo(deadline);
         }
       }
       doLogging && console.log(`Done and checking latest`);

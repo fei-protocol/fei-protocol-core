@@ -1,25 +1,25 @@
-import hre, { ethers } from 'hardhat';
+import { Core, Fei, MockOracle, MockPCVDepositV2, PegStabilityModule, WETH9 } from '@custom-types/contracts';
 import {
+  deployDevelopmentWeth,
   expectRevert,
   getAddresses,
   getCore,
-  deployDevelopmentWeth,
-  ZERO_ADDRESS,
-  getImpersonatedSigner
+  getImpersonatedSigner,
+  ZERO_ADDRESS
 } from '@test/helpers';
 import { expect } from 'chai';
 import { Signer, utils } from 'ethers';
-import { Core, Fei, MockOracle, PegStabilityModule, MockPCVDepositV2, WETH9 } from '@custom-types/contracts';
 import { keccak256 } from 'ethers/lib/utils';
+import hre, { ethers } from 'hardhat';
 
 const toBN = ethers.BigNumber.from;
 
 describe('PegStabilityModule', function () {
-  let userAddress;
-  let governorAddress;
-  let minterAddress;
-  let pcvControllerAddress;
-  let psmAdminAddress;
+  let userAddress: string;
+  let governorAddress: string;
+  let minterAddress: string;
+  let pcvControllerAddress: string;
+  let psmAdminAddress: string;
 
   const mintFeeBasisPoints = 30;
   const redeemFeeBasisPoints = 30;
@@ -454,7 +454,7 @@ describe('PegStabilityModule', function () {
         await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, 10_000_000);
         await expectRevert(
           psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, 1, 0),
-          'ERC20: transfer amount exceeds allowance'
+          'ERC20: insufficient allowance'
         );
       });
     });

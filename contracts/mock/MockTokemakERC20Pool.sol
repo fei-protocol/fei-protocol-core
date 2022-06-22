@@ -4,7 +4,6 @@ pragma solidity ^0.8.0;
 import "./MockERC20.sol";
 
 contract MockTokemakERC20Pool is MockERC20 {
-
     MockERC20 public token;
 
     mapping(address => uint256) public requestedWithdrawal;

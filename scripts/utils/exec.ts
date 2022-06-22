@@ -1,7 +1,7 @@
-import hre, { ethers } from 'hardhat';
-import { time, getImpersonatedSigner } from '@test/helpers';
-
+import { NamedAddresses } from '@custom-types/types';
+import { getImpersonatedSigner, time } from '@test/helpers';
 import * as dotenv from 'dotenv';
+import hre, { ethers } from 'hardhat';
 
 dotenv.config();
 
@@ -11,7 +11,7 @@ const toBN = ethers.BigNumber.from;
 
 // txData = The calldata for the DAO transaction to execute.
 // The address at MAINNET_PROPOSER will submit this tx to the GovernorAlpha
-export async function exec(txData, totalValue, addresses, proposalNo) {
+export async function exec(txData: string, totalValue: string, addresses: NamedAddresses, proposalNo: string) {
   const { proposerAddress, voterAddress, governorAlphaAddress } = addresses;
 
   // Impersonate the proposer and voter with sufficient TRIBE for execution
@@ -32,7 +32,12 @@ export async function exec(txData, totalValue, addresses, proposalNo) {
   execProposal(voterAddress, governorAlphaAddress, totalValue, proposalNo);
 }
 
-export async function execProposal(voterAddress, governorAlphaAddress, totalValue, proposalNo) {
+export async function execProposal(
+  voterAddress: string,
+  governorAlphaAddress: string,
+  totalValue: string,
+  proposalNo: string
+) {
   const governor = await ethers.getContractAt('FeiDAO', governorAlphaAddress);
   const signer = await getImpersonatedSigner(voterAddress);
 

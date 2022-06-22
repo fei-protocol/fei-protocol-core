@@ -4,7 +4,6 @@ pragma solidity ^0.8.4;
 /// @title an abstract contract for timed events
 /// @author Fei Protocol
 abstract contract Timed {
-
     /// @notice the start timestamp of the timed period
     uint256 public startTime;
 
@@ -59,7 +58,7 @@ abstract contract Timed {
 
     function _initTimed() internal {
         startTime = block.timestamp;
-        
+
         emit TimerReset(block.timestamp);
     }
 
