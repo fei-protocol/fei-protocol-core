@@ -46,6 +46,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await contracts.tribalCouncilTimelockFeiLens.balance()).to.be.equal('0');
   expect(await contracts.rariTimelockFeiOldLens.balanceReportedIn()).to.be.equal(addresses.fei);
   expect(await contracts.tribalCouncilTimelockFeiLens.balanceReportedIn()).to.be.equal(addresses.fei);
+  expect(await contracts.namedStaticPCVDepositWrapper.numDeposits()).to.be.equal('0');
 };
 
 export { deploy, setup, teardown, validate };

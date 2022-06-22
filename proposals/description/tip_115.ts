@@ -18,6 +18,27 @@ const tip_115: TemplatedProposalDescription = {
       description: 'Add FEI lens to CR oracle for tribal council timelock FEI'
     },
     {
+      target: 'collateralizationOracle',
+      values: '0',
+      method: 'removeDeposit(address)',
+      arguments: (addresses) => [addresses.namedStaticPCVDepositWrapper],
+      description: 'Remove NamedStaticPCVDepositWrapper from CR oracle'
+    },
+    {
+      target: 'namedStaticPCVDepositWrapper',
+      values: '0',
+      method: 'removeDeposit(uint256)',
+      arguments: (addresses) => [1],
+      description: 'Remove NamedStaticPCVDepositWrapper FEI deposit'
+    },
+    {
+      target: 'namedStaticPCVDepositWrapper',
+      values: '0',
+      method: 'removeDeposit(uint256)',
+      arguments: (addresses) => [0],
+      description: 'Remove NamedStaticPCVDepositWrapper INDEX deposit'
+    },
+    {
       target: 'rariInfraFeiTimelock',
       values: '0',
       method: 'acceptBeneficiary()',
