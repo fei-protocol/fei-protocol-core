@@ -6,7 +6,7 @@ import {CoreRef} from "../refs/CoreRef.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 /// @title ERC20HoldingPCVDeposit
-/// @notice PCVDeposit that is used to hold ERC20 tokens as a safe harbour. Deposit is a no-op
+/// @notice PCVDeposit that is used to hold ERC20 tokens as a safe harbour. Deposit and withdraw is a no-op
 contract ERC20HoldingPCVDeposit is PCVDeposit {
     /// @notice Token which the balance is reported in
     IERC20 immutable token;
@@ -40,7 +40,7 @@ contract ERC20HoldingPCVDeposit is PCVDeposit {
     /// @notice No-op deposit
     function deposit() external override whenNotPaused {}
 
-    /// @notice No-op withdraw method withdraw method
+    /// @notice No-op withdraw method
     /// @param amountUnderlying of tokens withdrawn
     /// @param to the address to send PCV to
     function withdraw(address to, uint256 amountUnderlying) external override onlyPCVController whenNotPaused {}

@@ -24,8 +24,6 @@ contract ERC20HoldingPCVDepositTest is DSTest {
         erc20.mint(address(this), 1000);
 
         emptyDeposit = new ERC20HoldingPCVDeposit(address(core), erc20);
-
-        // Create PCV_CONTROLLER_ROLE and grant to an address
     }
 
     /// @notice Validate initiate state when deployed
@@ -63,10 +61,26 @@ contract ERC20HoldingPCVDepositTest is DSTest {
     }
 
     /// @notice Validate that withdraw() does not perform any state change, it is a noop
-    function testWithdrawIsNoop() public {}
+    function testWithdrawIsNoop() public {
+        erc20.transfer(address(emptyDeposit), 10);
+
+        address receiver = address(3);
+        vm.prank(addresses.pcvControllerAddress);
+        emptyDeposit.withdraw(receiver, 5);
+
+        assertEq(erc20.balanceOf(address(emptyDeposit)), 10);
+        assertEq(erc20.balanceOf(receiver), 0);
+    }
 
     /// @notice Validate that withdrawERC20() does indeed withdraw the specified ERC20
     function testCanWithdrawERC20() public {
         erc20.transfer(address(emptyDeposit), 10);
+
+        address receiver = address(3);
+        vm.prank(addresses.pcvControllerAddress);
+        emptyDeposit.withdrawERC20(address(erc20), receiver, 5);
+
+        assertEq(erc20.balanceOf(address(emptyDeposit)), 5);
+        assertEq(erc20.balanceOf(receiver), 5);
     }
 }

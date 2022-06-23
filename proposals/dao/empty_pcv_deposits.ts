@@ -29,19 +29,19 @@ const fipNumber = 'empty_pcv_deposits';
 const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: NamedAddresses, logging: boolean) => {
   // Deploy empty PCV deposits for ERC20 assets
   const ERC20HoldingPCVDepositFactory = await ethers.getContractFactory('ERC20HoldingPCVDeposit');
-  const wethHoldingDeposit = await ERC20HoldingPCVDepositFactory.deploy(addresses.core, addresses.weth, false);
+  const wethHoldingDeposit = await ERC20HoldingPCVDepositFactory.deploy(addresses.core, addresses.weth);
   await wethHoldingDeposit.deployTransaction.wait();
   logging && console.log('WETH holding deposit deployed to: ', wethHoldingDeposit.address);
 
-  const lusdHoldingDeposit = await ERC20HoldingPCVDepositFactory.deploy(addresses.core, addresses.lusd, false);
+  const lusdHoldingDeposit = await ERC20HoldingPCVDepositFactory.deploy(addresses.core, addresses.lusd);
   await lusdHoldingDeposit.deployTransaction.wait();
   logging && console.log('LUSD holding deposit deployed to: ', lusdHoldingDeposit.address);
 
-  const voltHoldingDeposit = await ERC20HoldingPCVDepositFactory.deploy(addresses.core, addresses.volt, false);
+  const voltHoldingDeposit = await ERC20HoldingPCVDepositFactory.deploy(addresses.core, addresses.volt);
   await voltHoldingDeposit.deployTransaction.wait();
   logging && console.log('VOLT holding deposit deployed to: ', voltHoldingDeposit.address);
 
-  const daiHoldingDeposit = await ERC20HoldingPCVDepositFactory.deploy(addresses.core, addresses.dai, false);
+  const daiHoldingDeposit = await ERC20HoldingPCVDepositFactory.deploy(addresses.core, addresses.dai);
   await daiHoldingDeposit.deployTransaction.wait();
   logging && console.log('DAI holding deposit deployed to: ', daiHoldingDeposit.address);
 
@@ -87,7 +87,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await daiHoldingDeposit.token()).to.be.equal(addresses.dai);
   expect(await daiHoldingDeposit.balanceReportedIn()).to.be.equal(addresses.dai);
 
-  // 2. Validate can drop funds on the PCV Deposits and then withdraw with the guardian
+  // 2. Validate can drop funds on a PCV Deposit and then withdraw with the guardian
   const wethWhale = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2';
   await forceEth(wethWhale);
   const wethWhaleSigner = await getImpersonatedSigner(wethWhale);
@@ -103,9 +103,9 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(resistantBalanceAndFei[0]).to.be.equal(transferAmount);
   expect(resistantBalanceAndFei[1]).to.be.equal(0);
 
-  // Transfer out
+  // Withdraw ERC20
   const receiver = '0xFc312F21E1D56D8dab5475FB5aaEFfB18B892a85';
-  const guardianSigner = await getImpersonatedSigner(addresses.feiDAOTimelock);
+  const guardianSigner = await getImpersonatedSigner(addresses.guardian);
   await wethHoldingDeposit.connect(guardianSigner).withdrawERC20(addresses.weth, receiver, transferAmount);
 
   expect(await wethHoldingDeposit.balance()).to.be.equal(0);
