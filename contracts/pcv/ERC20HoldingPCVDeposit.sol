@@ -28,8 +28,8 @@ contract ERC20HoldingPCVDeposit is PCVDeposit {
     /// @notice returns the resistant balance and FEI in the deposit
     function resistantBalanceAndFei() public view override returns (uint256, uint256) {
         uint256 resistantBalance = balance();
-        uint256 reistantFei = 0;
-        return (resistantBalance, reistantFei);
+        uint256 feiBalance = 0;
+        return (resistantBalance, feiBalance);
     }
 
     /// @notice display the related token of the balance reported
