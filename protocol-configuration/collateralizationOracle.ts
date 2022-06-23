@@ -14,7 +14,6 @@ const collateralizationAddresses: CollateralizationAddressType = {
   usd: ['namedStaticPCVDepositWrapper'],
   bal: ['balancerDepositBalWeth', 'balancerLensVeBalBal', 'balancerGaugeStaker'],
   weth: ['ethLidoPCVDeposit', 'ethPSM', 'balancerLensVeBalWeth', 'ethToDaiLensEth'],
-  agEUR: ['uniswapLensAgEurUniswapGauge', 'agEurUniswapPCVDeposit'],
   volt: ['voltDepositWrapper']
 };
 

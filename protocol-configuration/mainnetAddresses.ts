@@ -310,7 +310,7 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   agEurUniswapPCVDeposit: {
     artifactName: 'UniswapPCVDeposit',
     address: '0xE8633C49AcE655EB4A8B720e6b12F09Bd3a97812',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
 
   bammDeposit: {
@@ -473,7 +473,7 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   uniswapLensAgEurUniswapGauge: {
     artifactName: 'UniswapLens',
     address: '0xD2554839c2e8a87Dd2CddD013EF828B6534aBC26',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
 
   compoundFeiPCVDepositWrapper: {
@@ -573,7 +573,7 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   agEurAngleUniswapPCVDeposit: {
     artifactName: 'AngleUniswapPCVDeposit',
     address: '0x7AC2Ab8143634419c5bc230A9f9955C3e29f64Ef',
-    category: AddressCategory.PCV_V1 // Not used anymore, stakes in old rewards contract
+    category: AddressCategory.Deprecated
   },
   balUsdCompositeOracle: {
     artifactName: 'CompositeOracle',
@@ -698,7 +698,7 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   gaugeLensAgEurUniswapGauge: {
     artifactName: 'AngleGaugeLens',
     address: '0x10f59bd0a100bcAD86CaB39751797D952eE1f76f',
-    category: AddressCategory.Oracle
+    category: AddressCategory.Deprecated
   },
   collateralizationOracle: {
     artifactName: 'CollateralizationOracle',
@@ -1136,6 +1136,17 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   angleGaugeUniswapV2FeiAgEur: {
     artifactName: 'ILiquidityGauge',
     address: '0xd6282C5aEAaD4d776B932451C44b8EB453E44244',
+    category: AddressCategory.External
+  },
+
+  anglePoolManagerUsdc: {
+    artifactName: 'IPoolManager',
+    address: '0xe9f183FC656656f1F17af1F2b0dF79b8fF9ad8eD',
+    category: AddressCategory.External
+  },
+  angleStrategyUsdc1: {
+    artifactName: 'IAngleStrategy',
+    address: '0x5fE0E497Ac676d8bA78598FC8016EBC1E6cE14a3',
     category: AddressCategory.External
   },
 

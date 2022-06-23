@@ -1,4 +1,5 @@
 import { ProposalCategory, TemplatedProposalsConfigMap } from '@custom-types/types';
+import tip_110 from '@proposals/description/tip_110';
 import tip_111 from '@proposals/description/tip_111';
 import cr_oracle_cleanup from '@proposals/description/cr_oracle_cleanup';
 import pod_exec_v2 from '@proposals/description/pod_exec_v2';
@@ -14,6 +15,15 @@ const proposals: TemplatedProposalsConfigMap = {
     affectedContractSignoff: [],
     deprecatedContractSignoff: [],
     category: ProposalCategory.DAO
+  },
+  tip_110: {
+    deploy: true, // deploy flag for whether to run deploy action during e2e tests or use mainnet state
+    totalValue: 0, // amount of ETH to send to DAO execution
+    proposal: tip_110, // full proposal file, imported from '@proposals/description/fip_xx.ts'
+    proposalId: '',
+    affectedContractSignoff: ['core', 'fuseFixer', 'pcvGuardianNew'],
+    deprecatedContractSignoff: [],
+    category: ProposalCategory.DEBUG
   },
   tip_112: {
     deploy: false, // deploy flag for whether to run deploy action during e2e tests or use mainnet state
