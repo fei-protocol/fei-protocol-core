@@ -169,13 +169,6 @@ const proposal: TemplatedProposalDescription = {
     {
       target: 'ratioPCVControllerV2',
       values: '0',
-      method: 'withdrawRatioWrapETH(address,address,uint256)',
-      arguments: (addresses) => [addresses.ethTokemakPCVDeposit, addresses.ethPSM, '10000'],
-      description: 'Withdraw all ETH from Tokemak to ETH PSM'
-    },
-    {
-      target: 'ratioPCVControllerV2',
-      values: '0',
       method: 'withdrawRatioERC20(address,address,address,uint256)',
       arguments: (addresses) => [addresses.ethTokemakPCVDeposit, addresses.toke, addresses.tribalCouncilSafe, '10000'],
       description: 'Withdraw all TOKE from Tokemak ETH deposit to TC Multisig where it can be sold'

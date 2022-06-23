@@ -189,16 +189,9 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const daiHoldingDeposit = contracts.daiHoldingDeposit;
 
   // 1. Validate all holding PCV Deposits configured correctly
-  expect(await wethHoldingDeposit.token()).to.be.equal(addresses.weth);
   expect(await wethHoldingDeposit.balanceReportedIn()).to.be.equal(addresses.weth);
-
-  expect(await lusdHoldingDeposit.token()).to.be.equal(addresses.lusd);
   expect(await lusdHoldingDeposit.balanceReportedIn()).to.be.equal(addresses.lusd);
-
-  expect(await voltHoldingDeposit.token()).to.be.equal(addresses.volt);
   expect(await voltHoldingDeposit.balanceReportedIn()).to.be.equal(addresses.volt);
-
-  expect(await daiHoldingDeposit.token()).to.be.equal(addresses.dai);
   expect(await daiHoldingDeposit.balanceReportedIn()).to.be.equal(addresses.dai);
 
   // 2. Validate can drop funds on a PCV Deposit and then withdraw with the guardian
@@ -219,7 +212,8 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 
   // Withdraw ERC20
   const receiver = '0xFc312F21E1D56D8dab5475FB5aaEFfB18B892a85';
-  const guardianSigner = await getImpersonatedSigner(addresses.guardian);
+  const guardianSigner = await getImpersonatedSigner(addresses.pcvGuardianNew);
+  await forceEth(addresses.pcvGuardianNew);
   await wethHoldingDeposit.connect(guardianSigner).withdrawERC20(addresses.weth, receiver, transferAmount);
 
   expect(await wethHoldingDeposit.balance()).to.be.equal(0);
