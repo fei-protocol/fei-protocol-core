@@ -10,11 +10,13 @@ const collateralizationAddresses: CollateralizationAddressType = {
     'rariPool22FeiPCVDepositWrapper',
     'feiBuybackLensNoFee',
     'compoundFeiPCVDepositWrapper',
-    'turboFusePCVDeposit'
+    'turboFusePCVDeposit',
+    'rariTimelockFeiOldLens',
+    'tribalCouncilTimelockFeiLens'
   ],
   lusd: ['rariPool7LusdPCVDeposit', 'bammDeposit', 'lusdPSM'],
   dai: ['compoundDaiPCVDepositWrapper', 'daiFixedPricePSM', 'dpiToDaiLensDai', 'ethToDaiLensDai'],
-  usd: ['namedStaticPCVDepositWrapper', 'd3poolCurvePCVDeposit', 'd3poolConvexPCVDeposit'],
+  usd: ['d3poolCurvePCVDeposit', 'd3poolConvexPCVDeposit'],
   bal: ['balancerDepositBalWeth', 'balancerLensVeBalBal', 'balancerGaugeStaker'],
   weth: [
     'ethLidoPCVDeposit',
