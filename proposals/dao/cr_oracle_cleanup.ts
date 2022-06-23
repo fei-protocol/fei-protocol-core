@@ -33,8 +33,31 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   await voltOracle.deployed();
   logging && console.log(`voltOracle: ${voltOracle.address}`);
 
+  ////// Deploy empty PCV deposits for remaining PCV assets
+  // Deploy empty PCV deposits for ERC20 assets
+  const ERC20HoldingPCVDepositFactory = await ethers.getContractFactory('ERC20HoldingPCVDeposit');
+  const wethHoldingDeposit = await ERC20HoldingPCVDepositFactory.deploy(addresses.core, addresses.weth);
+  await wethHoldingDeposit.deployTransaction.wait();
+  logging && console.log('WETH holding deposit deployed to: ', wethHoldingDeposit.address);
+
+  const lusdHoldingDeposit = await ERC20HoldingPCVDepositFactory.deploy(addresses.core, addresses.lusd);
+  await lusdHoldingDeposit.deployTransaction.wait();
+  logging && console.log('LUSD holding deposit deployed to: ', lusdHoldingDeposit.address);
+
+  const voltHoldingDeposit = await ERC20HoldingPCVDepositFactory.deploy(addresses.core, addresses.volt);
+  await voltHoldingDeposit.deployTransaction.wait();
+  logging && console.log('VOLT holding deposit deployed to: ', voltHoldingDeposit.address);
+
+  const daiHoldingDeposit = await ERC20HoldingPCVDepositFactory.deploy(addresses.core, addresses.dai);
+  await daiHoldingDeposit.deployTransaction.wait();
+  logging && console.log('DAI holding deposit deployed to: ', daiHoldingDeposit.address);
+
   return {
-    voltOracle
+    voltOracle,
+    wethHoldingDeposit,
+    lusdHoldingDeposit,
+    voltHoldingDeposit,
+    daiHoldingDeposit
   };
 };
 
@@ -68,32 +91,6 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
   const cycleEnd: BigNumber = await tokemakManager.nextCycleStartTime();
   await time.increaseTo(cycleEnd.add(1));
   await tokemakManager.completeRollover(IPFS_JSON_FILE_HASH);
-
-  ////// Deploy empty PCV deposits for remaining PCV assets
-  // Deploy empty PCV deposits for ERC20 assets
-  const ERC20HoldingPCVDepositFactory = await ethers.getContractFactory('ERC20HoldingPCVDeposit');
-  const wethHoldingDeposit = await ERC20HoldingPCVDepositFactory.deploy(addresses.core, addresses.weth);
-  await wethHoldingDeposit.deployTransaction.wait();
-  logging && console.log('WETH holding deposit deployed to: ', wethHoldingDeposit.address);
-
-  const lusdHoldingDeposit = await ERC20HoldingPCVDepositFactory.deploy(addresses.core, addresses.lusd);
-  await lusdHoldingDeposit.deployTransaction.wait();
-  logging && console.log('LUSD holding deposit deployed to: ', lusdHoldingDeposit.address);
-
-  const voltHoldingDeposit = await ERC20HoldingPCVDepositFactory.deploy(addresses.core, addresses.volt);
-  await voltHoldingDeposit.deployTransaction.wait();
-  logging && console.log('VOLT holding deposit deployed to: ', voltHoldingDeposit.address);
-
-  const daiHoldingDeposit = await ERC20HoldingPCVDepositFactory.deploy(addresses.core, addresses.dai);
-  await daiHoldingDeposit.deployTransaction.wait();
-  logging && console.log('DAI holding deposit deployed to: ', daiHoldingDeposit.address);
-
-  return {
-    wethHoldingDeposit,
-    lusdHoldingDeposit,
-    voltHoldingDeposit,
-    daiHoldingDeposit
-  };
 };
 
 // Tears down any changes made in setup() that need to be
