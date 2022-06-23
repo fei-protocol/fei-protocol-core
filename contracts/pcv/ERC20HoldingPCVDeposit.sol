@@ -8,19 +8,11 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 /// @title ERC20HoldingPCVDeposit
 /// @notice PCVDeposit that is used to hold ERC20 tokens as a safe harbour. Deposit is a no-op
 contract ERC20HoldingPCVDeposit is PCVDeposit {
-    /// @notice the underlying token of the PCV deposit
-    IERC20 public token;
+    /// @notice Token which the balance is reported in
+    IERC20 immutable token;
 
-    /// @notice a flag for whether to report the balance as protocol owned FEI
-    bool public isProtocolFeiDeposit;
-
-    constructor(
-        address _core,
-        IERC20 _token,
-        bool _isProtocolFeiDeposit
-    ) CoreRef(_core) {
+    constructor(address _core, IERC20 _token) CoreRef(_core) {
         token = _token;
-        isProtocolFeiDeposit = _isProtocolFeiDeposit;
     }
 
     /// @notice Empty receive function to receive ETH
@@ -36,7 +28,7 @@ contract ERC20HoldingPCVDeposit is PCVDeposit {
     /// @notice returns the resistant balance and FEI in the deposit
     function resistantBalanceAndFei() public view override returns (uint256, uint256) {
         uint256 resistantBalance = balance();
-        uint256 reistantFei = isProtocolFeiDeposit ? resistantBalance : 0;
+        uint256 reistantFei = 0;
         return (resistantBalance, reistantFei);
     }
 

@@ -1,12 +1,11 @@
-import hre, { ethers, artifacts } from 'hardhat';
+import { ethers } from 'hardhat';
 import { expect } from 'chai';
 import {
   DeployUpgradeFunc,
   NamedAddresses,
   SetupUpgradeFunc,
   TeardownUpgradeFunc,
-  ValidateUpgradeFunc,
-  ERC20HoldingPCVDeposit
+  ValidateUpgradeFunc
 } from '@custom-types/types';
 import { forceEth } from '@test/integration/setup/utils';
 import { getImpersonatedSigner } from '@test/helpers';
@@ -38,11 +37,11 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   await lusdHoldingDeposit.deployTransaction.wait();
   logging && console.log('LUSD holding deposit deployed to: ', lusdHoldingDeposit.address);
 
-  const voltHoldingDeposit = await ERC20HoldingPCVDepositFactory.deploy(addresses.core, addresses.lusd, false);
+  const voltHoldingDeposit = await ERC20HoldingPCVDepositFactory.deploy(addresses.core, addresses.volt, false);
   await voltHoldingDeposit.deployTransaction.wait();
   logging && console.log('VOLT holding deposit deployed to: ', voltHoldingDeposit.address);
 
-  const daiHoldingDeposit = await ERC20HoldingPCVDepositFactory.deploy(addresses.core, addresses.lusd, false);
+  const daiHoldingDeposit = await ERC20HoldingPCVDepositFactory.deploy(addresses.core, addresses.dai, false);
   await daiHoldingDeposit.deployTransaction.wait();
   logging && console.log('DAI holding deposit deployed to: ', daiHoldingDeposit.address);
 
@@ -70,10 +69,10 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // Run any validations required on the fip using mocha or console logging
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  const wethHoldingDeposit = contracts.wethHoldingDeposit as ERC20HoldingPCVDeposit;
-  const lusdHoldingDeposit = contracts.lusdHoldingDeposit as ERC20HoldingPCVDeposit;
-  const voltHoldingDeposit = contracts.voltHoldingDeposit as ERC20HoldingPCVDeposit;
-  const daiHoldingDeposit = contracts.daiHoldingDeposit as ERC20HoldingPCVDeposit;
+  const wethHoldingDeposit = contracts.wethHoldingDeposit;
+  const lusdHoldingDeposit = contracts.lusdHoldingDeposit;
+  const voltHoldingDeposit = contracts.voltHoldingDeposit;
+  const daiHoldingDeposit = contracts.daiHoldingDeposit;
 
   // 1. Validate all holding PCV Deposits configured correctly
   expect(await wethHoldingDeposit.token()).to.be.equal(addresses.weth);
@@ -95,10 +94,10 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 
   // Transfer to the empty PCV deposit. Validate that the balance reads correctly, then withdraw
   const transferAmount = ethers.constants.WeiPerEther.mul(100);
-  await contracts.weth.connect(wethWhaleSigner).transfer(wethHoldingDeposit, transferAmount);
+  await contracts.weth.connect(wethWhaleSigner).transfer(wethHoldingDeposit.address, transferAmount);
 
   expect(await wethHoldingDeposit.balance()).to.be.equal(transferAmount);
-  expect(await contracts.weth.balanceOf(wethHoldingDeposit)).to.be.equal(transferAmount);
+  expect(await contracts.weth.balanceOf(wethHoldingDeposit.address)).to.be.equal(transferAmount);
 
   const resistantBalanceAndFei = await wethHoldingDeposit.resistantBalanceAndFei();
   expect(resistantBalanceAndFei[0]).to.be.equal(transferAmount);
