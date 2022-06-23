@@ -1,13 +1,17 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {PCVDeposit} from "./PCVDeposit.sol";
 import {CoreRef} from "../refs/CoreRef.sol";
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {Constants} from "../Constants.sol";
 
 /// @title ERC20HoldingPCVDeposit
 /// @notice PCVDeposit that is used to hold ERC20 tokens as a safe harbour. Deposit and withdraw is a no-op
 contract ERC20HoldingPCVDeposit is PCVDeposit {
+    using SafeERC20 for IERC20;
+
     /// @notice Token which the balance is reported in
     IERC20 immutable token;
 
@@ -38,10 +42,15 @@ contract ERC20HoldingPCVDeposit is PCVDeposit {
     }
 
     /// @notice No-op deposit
-    function deposit() external override whenNotPaused {}
+    function deposit() external override whenNotPaused {
+        emit Deposit(msg.sender, token.balanceOf(address(this)));
+    }
 
     /// @notice No-op withdraw method
     /// @param amountUnderlying of tokens withdrawn
     /// @param to the address to send PCV to
-    function withdraw(address to, uint256 amountUnderlying) external override onlyPCVController whenNotPaused {}
+    function withdraw(address to, uint256 amountUnderlying) external override onlyPCVController whenNotPaused {
+        token.safeTransfer(to, amountUnderlying);
+        emit WithdrawERC20(msg.sender, address(token), to, amountUnderlying);
+    }
 }

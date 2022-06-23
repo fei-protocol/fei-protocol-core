@@ -17,6 +17,8 @@ contract ERC20HoldingPCVDepositTest is DSTest {
 
     MockERC20 private erc20;
 
+    address receiver = address(3);
+
     function setUp() public {
         // Deploy mock token and mint some tokens to an account
         erc20 = new MockERC20();
@@ -64,7 +66,6 @@ contract ERC20HoldingPCVDepositTest is DSTest {
     function testWithdrawIsNoop() public {
         erc20.transfer(address(emptyDeposit), 10);
 
-        address receiver = address(3);
         vm.prank(addresses.pcvControllerAddress);
         emptyDeposit.withdraw(receiver, 5);
 
@@ -76,11 +77,27 @@ contract ERC20HoldingPCVDepositTest is DSTest {
     function testCanWithdrawERC20() public {
         erc20.transfer(address(emptyDeposit), 10);
 
-        address receiver = address(3);
         vm.prank(addresses.pcvControllerAddress);
         emptyDeposit.withdrawERC20(address(erc20), receiver, 5);
 
         assertEq(erc20.balanceOf(address(emptyDeposit)), 5);
         assertEq(erc20.balanceOf(receiver), 5);
+    }
+
+    /// @notice Validate that can withdraw() from the deposit
+    function testCanWithdraw() public {
+        erc20.transfer(address(emptyDeposit), 10);
+
+        emptyDeposit.withdraw(receiver, 10);
+
+        assertEq(erc20.balanceOf(emptyDeposit), 0);
+        assertEq(emptyDeposit.balance(), 0);
+        assertEq(erc20.balanceOf(receiver), 10);
+    }
+
+    /// @notice Validate that can wrap ETH to WETH
+    function testCanWrapEth() public {
+        emptyDeposit.transfer(2 ether);
+        emptyDeposit.wrapETH();
     }
 }
