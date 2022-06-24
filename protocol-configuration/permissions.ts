@@ -12,7 +12,7 @@ export const permissions = {
   ],
   GUARDIAN_ROLE: ['guardianMultisig', 'pcvGuardianNew', 'pcvSentinel'],
   ORACLE_ADMIN_ROLE: ['opsOptimisticTimelock', 'tribalCouncilTimelock'],
-  SWAP_ADMIN_ROLE: ['pcvEquityMinter', 'tribalCouncilTimelock'],
+  SWAP_ADMIN_ROLE: ['pcvEquityMinter', 'tribalCouncilTimelock', 'tribalCouncilSafe'],
   BALANCER_MANAGER_ADMIN_ROLE: [],
   RATE_LIMITED_MINTER_ADMIN: [],
   PARAMETER_ADMIN: [],
