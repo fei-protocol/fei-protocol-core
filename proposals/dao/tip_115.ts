@@ -48,7 +48,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await contracts.rariInfraFeiTimelock.beneficiary()).to.be.equal(addresses.tribalCouncilTimelock);
   expect(await contracts.rariInfraTribeTimelock.beneficiary()).to.be.equal(addresses.tribalCouncilTimelock);
   expect(await contracts.rariTimelockFeiOldLens.balance()).to.be.equal('3178504756468797564687976');
-  expect(await contracts.tribalCouncilTimelockFeiLens.balance()).to.be.equal('0');
+  expect(await contracts.tribalCouncilTimelockFeiLens.balance()).to.be.equal('42905768215167745773610059');
   expect(await contracts.rariTimelockFeiOldLens.balanceReportedIn()).to.be.equal(addresses.fei);
   expect(await contracts.tribalCouncilTimelockFeiLens.balanceReportedIn()).to.be.equal(addresses.fei);
   expect(await contracts.namedStaticPCVDepositWrapper.numDeposits()).to.be.equal('0');
