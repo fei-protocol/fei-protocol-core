@@ -2,7 +2,7 @@ import { ethers } from 'hardhat';
 import { TemplatedProposalDescription } from '@custom-types/types';
 
 const proposal: TemplatedProposalDescription = {
-  title: 'CR Oracle & Optimistic Approval Cleanup',
+  title: 'TIP-117: Oracles, Roles, and OA Cleanup',
   commands: [
     {
       target: 'core',
@@ -158,20 +158,6 @@ const proposal: TemplatedProposalDescription = {
       method: 'withdrawRatio(address,address,uint256)',
       arguments: (addresses) => [addresses.uniswapPCVDeposit, addresses.ethPSM, '10000'],
       description: 'Withdraw remaining ETH/FEI liquidity from Uniswap v2'
-    },
-    {
-      target: 'collateralizationOracle',
-      values: '0',
-      method: 'setOracle(address,address)',
-      arguments: (addresses) => [addresses.uniswapPCVDeposit, addresses.voltOracle],
-      description: 'Replace VOLT oracle in CR oracle'
-    },
-    {
-      target: 'ratioPCVControllerV2',
-      values: '0',
-      method: 'withdrawRatioWrapETH(address,address,uint256)',
-      arguments: (addresses) => [addresses.ethTokemakPCVDeposit, addresses.ethPSM, '10000'],
-      description: 'Withdraw all ETH from Tokemak to ETH PSM'
     },
     {
       target: 'ratioPCVControllerV2',
@@ -338,7 +324,7 @@ const proposal: TemplatedProposalDescription = {
       description: 'Revoke ORACLE_ADMIN_ROLE role from the Ops Optimistic Timelock'
     }
   ],
-  description: `CR Oracle & Optimistic Approval Cleanup
+  description: `TIP-117: Oracles, Roles, and OA Cleanup
 
 Deprecate Old CR Oracle Caching Features :
  - collateralizationOracle is now read directly by pcvEquityMinter (buybacks) and tribeReserveStabilizer (backstop)
@@ -347,24 +333,22 @@ Deprecate Old CR Oracle Caching Features :
  - collateralizationOracleKeeper (used to incentivize updates of the cache) is no longer used (revoked MINTER_ROLE role)
 
 Remove Empty or Deprecated PCV Deposits from CR Oracle :
- - DPI->DAI LBP lenses
+ - DPI->DAI LBP swapper lenses
  - B.AMM LUSD Deposit (deprecated, would need to redeploy to use the new B.AMM)
  - Fuse pool 7 (Tetranode) LUSD deposit (0$ left)
  - Fuse pool 6, 19, and 24 FEI deposit (114$, 0$, and 6k$ left)
  - DAO Timelock lenses for agEUR and WETH
- - Curve/Convex d3 deposits (1034$ left in Curve)
- - ETH in Tokemak (0$ left)
+ - Curve/Convex d3 deposits (0$ left)
  - Withdraw remaining ETH/FEI liquidity from Uniswap v2 (0$ left)
  - Aave/Compound FEI/ETH deposits (0$ left)
  - Balancer FEI/WETH deposit (0$ left)
 
+Unset deprecated contracts from safe addresses list (eligible destinations for PCV Guardian).
 
 TIP-110 Simplify PCV:
  - Move LM rewards (COMP, stkAAVE, CRV, CVX) to the TC Multisig where they can be sold.
  - Move leftover RAI that is in PSM to the TC Multisig where it can be sold.
  - Move LQTY to TC Timelock where it can be moved to a proper PCVDeposit later.
-
-Unset deprecated PCV Deposits and PSMs as safe addresses (eligible destinations for PCV Guardian).
 
 Deprecate OA Roles:
  - ORACLE_ADMIN ROLE
