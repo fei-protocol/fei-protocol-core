@@ -9,4 +9,5 @@ library MainnetAddresses {
     address public constant ORCA_POD_CONTROLLER_V1 = 0xD89AAd5348A34E440E72f5F596De4fA7e291A3e8;
     address public constant ORCA_POD_CONTROLLER_V1_2 = 0x17FDC2Eaf2bd46f3e1052CCbccD9e6AD0296C42c;
     address public constant FEI = 0x956F47F50A910163D8BF957Cf5846D573E7f87CA;
+    address public constant WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
 }

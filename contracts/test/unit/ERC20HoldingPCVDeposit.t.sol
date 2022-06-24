@@ -17,7 +17,7 @@ contract ERC20HoldingPCVDepositTest is DSTest {
 
     MockERC20 private erc20;
 
-    address receiver = address(3);
+    address payable receiver = payable(address(3));
 
     function setUp() public {
         // Deploy mock token and mint some tokens to an account
@@ -62,15 +62,15 @@ contract ERC20HoldingPCVDepositTest is DSTest {
         assertEq(feiBalance, 0);
     }
 
-    /// @notice Validate that withdraw() does not perform any state change, it is a noop
-    function testWithdrawIsNoop() public {
+    /// @notice Validate that withdraw() withdraws funds
+    function testWithdraw() public {
         erc20.transfer(address(emptyDeposit), 10);
 
         vm.prank(addresses.pcvControllerAddress);
         emptyDeposit.withdraw(receiver, 5);
 
-        assertEq(erc20.balanceOf(address(emptyDeposit)), 10);
-        assertEq(erc20.balanceOf(receiver), 0);
+        assertEq(erc20.balanceOf(address(emptyDeposit)), 5);
+        assertEq(erc20.balanceOf(receiver), 5);
     }
 
     /// @notice Validate that withdrawERC20() does indeed withdraw the specified ERC20
@@ -88,10 +88,21 @@ contract ERC20HoldingPCVDepositTest is DSTest {
     function testCanWithdraw() public {
         erc20.transfer(address(emptyDeposit), 10);
 
+        vm.prank(addresses.pcvControllerAddress);
         emptyDeposit.withdraw(receiver, 10);
 
         assertEq(erc20.balanceOf(address(emptyDeposit)), 0);
         assertEq(emptyDeposit.balance(), 0);
         assertEq(erc20.balanceOf(receiver), 10);
+    }
+
+    /// @notice Validate that can withdrawETH() from the deposit
+    function testCanWithdrawEth() public {
+        payable(address(emptyDeposit)).transfer(1 ether);
+
+        vm.prank(addresses.pcvControllerAddress);
+        emptyDeposit.withdrawETH(receiver, 1 ether);
+
+        assertEq(address(receiver).balance, 1 ether);
     }
 }

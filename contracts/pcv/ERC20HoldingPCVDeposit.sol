@@ -48,7 +48,7 @@ contract ERC20HoldingPCVDeposit is PCVDeposit {
         emit Deposit(msg.sender, token.balanceOf(address(this)));
     }
 
-    /// @notice No-op withdraw method
+    /// @notice Withdraw underlying
     /// @param amountUnderlying of tokens withdrawn
     /// @param to the address to send PCV to
     function withdraw(address to, uint256 amountUnderlying) external override onlyPCVController whenNotPaused {
