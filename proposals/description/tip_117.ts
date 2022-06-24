@@ -281,7 +281,6 @@ const proposal: TemplatedProposalDescription = {
           addresses.d3poolCurvePCVDeposit, // 0$ left in Curve d3
           addresses.uniswapPCVDeposit, // 0$ left in FEI/ETH Uniswap v2
           addresses.compoundEthPCVDepositWrapper, // 0 ETH left in Compound
-          addresses.aaveEthPCVDepositWrapper, // 0 ETH left in Aave
           addresses.raiPriceBoundPSM, // RAI will finish to be liquidated by TC multisig
           addresses.balancerDepositFeiWeth, // 0$ left in B-70WETH-30FEI deposit
           addresses.balancerLensBpt30Fei70Weth, // 0$ left in B-70WETH-30FEI gauge
@@ -302,7 +301,6 @@ const proposal: TemplatedProposalDescription = {
           addresses.balancerDepositFeiWeth,
           addresses.d3poolConvexPCVDeposit,
           addresses.d3poolCurvePCVDeposit,
-          addresses.aaveEthPCVDeposit,
           addresses.compoundEthPCVDeposit
         ]
       ],
