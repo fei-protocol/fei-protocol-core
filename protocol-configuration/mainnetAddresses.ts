@@ -993,6 +993,11 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     address: '0x84dc71500D504163A87756dB6368CC8bB654592f',
     category: AddressCategory.Volt
   },
+  voltOracle: {
+    artifactName: 'CompositeOracle',
+    address: '0x8A1f9707AbeE2102Da45a2392f2F992BA22Ff446',
+    category: AddressCategory.Oracle
+  },
   dpiToDaiLBPPool: {
     artifactName: 'IWeightedPool',
     address: '0xd10386804959a121a8a487e49f45aa9f5a2eb2a0',
