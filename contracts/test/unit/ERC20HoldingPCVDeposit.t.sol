@@ -90,14 +90,8 @@ contract ERC20HoldingPCVDepositTest is DSTest {
 
         emptyDeposit.withdraw(receiver, 10);
 
-        assertEq(erc20.balanceOf(emptyDeposit), 0);
+        assertEq(erc20.balanceOf(address(emptyDeposit)), 0);
         assertEq(emptyDeposit.balance(), 0);
         assertEq(erc20.balanceOf(receiver), 10);
-    }
-
-    /// @notice Validate that can wrap ETH to WETH
-    function testCanWrapEth() public {
-        emptyDeposit.transfer(2 ether);
-        emptyDeposit.wrapETH();
     }
 }

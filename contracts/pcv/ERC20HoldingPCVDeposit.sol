@@ -15,6 +15,9 @@ contract ERC20HoldingPCVDeposit is PCVDeposit {
     /// @notice Token which the balance is reported in
     IERC20 immutable token;
 
+    /// @notice Fei ERC20 token address
+    address private constant FEI = 0x956F47F50A910163D8BF957Cf5846D573E7f87CA;
+
     constructor(address _core, IERC20 _token) CoreRef(_core) {
         token = _token;
     }
@@ -31,9 +34,8 @@ contract ERC20HoldingPCVDeposit is PCVDeposit {
 
     /// @notice returns the resistant balance and FEI in the deposit
     function resistantBalanceAndFei() public view override returns (uint256, uint256) {
-        uint256 resistantBalance = balance();
-        uint256 feiBalance = 0;
-        return (resistantBalance, feiBalance);
+        if (address(token) == FEI) return (0, balance());
+        else return (balance(), 0);
     }
 
     /// @notice display the related token of the balance reported
@@ -52,5 +54,13 @@ contract ERC20HoldingPCVDeposit is PCVDeposit {
     function withdraw(address to, uint256 amountUnderlying) external override onlyPCVController whenNotPaused {
         token.safeTransfer(to, amountUnderlying);
         emit WithdrawERC20(msg.sender, address(token), to, amountUnderlying);
+    }
+
+    /// @notice Wraps all ETH held by the contract to WETH. Permissionless, anyone can call it
+    function wrapETH() public {
+        uint256 ethBalance = address(this).balance;
+        if (ethBalance != 0) {
+            Constants.WETH.deposit{value: ethBalance}();
+        }
     }
 }
