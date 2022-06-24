@@ -61,6 +61,13 @@ const proposal: TemplatedProposalDescription = {
       description: 'Prevent surplus allocation from LUSD PSM to this deprecated deposit'
     },
     {
+      target: 'ratioPCVControllerV2',
+      values: '0',
+      method: 'withdrawRatio(address,address,uint256)',
+      arguments: (addresses) => [addresses.aaveEthPCVDeposit, addresses.ethPSM, '10000'],
+      description: 'Withdraw all ETH in Aave to the ETH PSM'
+    },
+    {
       target: 'core',
       values: '0',
       method: 'revokeRole(bytes32,address)',
