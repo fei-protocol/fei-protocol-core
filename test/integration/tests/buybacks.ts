@@ -58,7 +58,7 @@ describe('e2e-buybacks', function () {
     it('mints appropriate amount and swaps', async function () {
       const {
         pcvEquityMinter,
-        collateralizationOracleWrapper,
+        collateralizationOracle,
         namedStaticPCVDepositWrapper,
         noFeeFeiTribeLBPSwapper,
         fei,
@@ -68,7 +68,7 @@ describe('e2e-buybacks', function () {
 
       await increaseTime(await noFeeFeiTribeLBPSwapper.remainingTime());
 
-      const pcvStats = await collateralizationOracleWrapper.pcvStats();
+      const pcvStats = await collateralizationOracle.pcvStats();
 
       if (pcvStats[2] < 0) {
         await namedStaticPCVDepositWrapper.addDeposit({
@@ -83,7 +83,7 @@ describe('e2e-buybacks', function () {
       // set Chainlink ETHUSD to a fixed 4,000$ value
       await overwriteChainlinkAggregator(contractAddresses.chainlinkEthUsdOracle, '400000000000', '8');
 
-      await collateralizationOracleWrapper.update();
+      await collateralizationOracle.update();
 
       await core.allocateTribe(noFeeFeiTribeLBPSwapper.address, ethers.constants.WeiPerEther.mul(1_000_000));
       const tx = await pcvEquityMinter.mint();
