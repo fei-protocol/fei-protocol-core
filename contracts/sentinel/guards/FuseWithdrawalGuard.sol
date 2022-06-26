@@ -2,11 +2,12 @@
 pragma solidity ^0.8.4;
 
 import "../IGuard.sol";
+import "../../refs/CoreRef.sol";
 import "../../pcv/compound/ERC20CompoundPCVDeposit.sol";
 import "../../pcv/PCVGuardian.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
-contract FuseWithdrawalGuard is IGuard {
+contract FuseWithdrawalGuard is IGuard, CoreRef {
     using EnumerableSet for EnumerableSet.AddressSet;
 
     struct WithdrawInfo {
@@ -14,12 +15,51 @@ contract FuseWithdrawalGuard is IGuard {
         uint96 liquidityToLeave;
     }
 
-    mapping(address => WithdrawInfo) public withdrawInfo;
+    /// @notice map the destination and minimum liquidity for each pcv deposit
+    mapping(address => WithdrawInfo) public withdrawInfos;
 
     EnumerableSet.AddressSet private fuseDeposits;
 
+    /// @notice the PCV mover contract exposed to guardian role
     PCVGuardian public constant pcvGuardian = PCVGuardian(0x02435948F84d7465FB71dE45ABa6098Fc6eC2993);
 
+    constructor(
+        address core,
+        address[] memory deposits,
+        address[] memory destinations,
+        uint96[] memory liquidityToLeaveList
+    ) CoreRef(core) {
+        uint256 len = deposits.length;
+        require(len == destinations.length && len == liquidityToLeaveList.length);
+        for (uint256 i = 0; i < len; ) {
+            fuseDeposits.add(deposits[i]);
+            withdrawInfos[deposits[i]] = WithdrawInfo({
+                destination: destinations[i],
+                liquidityToLeave: liquidityToLeaveList[i]
+            });
+            unchecked {
+                ++i;
+            }
+        }
+    }
+
+    /// @notice setter for the Fuse deposit destination and minimum liquidity
+    function setWithdrawInfo(address deposit, WithdrawInfo calldata withdrawInfo)
+        public
+        onlyTribeRole(TribeRoles.GUARDIAN)
+    {
+        withdrawInfos[deposit] = withdrawInfo;
+    }
+
+    /// @notice helper method to trustlessly and publicly remove deposits once emptied.
+    /// TODO could be removed to simplify/minimize attack surface and public functions.
+    function removeDepositIfEmpty(ERC20CompoundPCVDeposit deposit) public {
+        if (deposit.balance() == 0) {
+            delete withdrawInfos[address(deposit)];
+        }
+    }
+
+    /// @notice check if contract can be called. If any deposit has a nonzero withdraw amount available, then return true.
     function check() external view override returns (bool) {
         for (uint256 i = 0; i < fuseDeposits.length(); ) {
             if (getAmountToWithdraw(ERC20CompoundPCVDeposit(fuseDeposits.at(i))) > 0) return true;
@@ -30,15 +70,19 @@ contract FuseWithdrawalGuard is IGuard {
         return false;
     }
 
+    /// @notice return the amount that can be withdrawn from a deposit after leaving min liquidity
     function getAmountToWithdraw(ERC20CompoundPCVDeposit deposit) public view returns (uint256) {
         IERC20 underlying = IERC20(deposit.balanceReportedIn());
+        // Reserves of underlying left in the cToken are considered withdrawable liquidity
         uint256 liquidity = underlying.balanceOf(address(deposit.cToken()));
-        uint256 liquidityToLeave = withdrawInfo[address(deposit)].liquidityToLeave;
+        uint256 liquidityToLeave = withdrawInfos[address(deposit)].liquidityToLeave;
         if (liquidity <= liquidityToLeave) {
             return 0;
         }
+        // take away min liquidity when calculating how much to withdraw.
         liquidity -= liquidityToLeave;
 
+        // max withdraw is the pcv deposit balance
         uint256 withdrawAmount = deposit.balance();
         if (withdrawAmount > liquidity) {
             withdrawAmount = liquidity;
@@ -46,6 +90,8 @@ contract FuseWithdrawalGuard is IGuard {
         return withdrawAmount;
     }
 
+    /// @notice return the first element which can be withdrawn from with the appropriate calldata encoding tha max withdraw amount.
+    /// @dev it only returns one element for simplicity. Unlikely multiple will be withdrawable simulteneously after the first pass, and pruning empty entries from a sparse array is an inefficient and inelegant algorithm in solidity.
     function getProtecActions()
         external
         view
@@ -65,7 +111,7 @@ contract FuseWithdrawalGuard is IGuard {
                 datas[0] = abi.encodeWithSelector(
                     PCVGuardian.withdrawToSafeAddress.selector,
                     fuseDeposits.at(i),
-                    withdrawInfo[fuseDeposits.at(i)].destination,
+                    withdrawInfos[fuseDeposits.at(i)].destination,
                     amount,
                     false,
                     false
