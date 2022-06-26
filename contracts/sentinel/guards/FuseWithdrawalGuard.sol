@@ -12,6 +12,7 @@ contract FuseWithdrawalGuard is IGuard, CoreRef {
 
     struct WithdrawInfo {
         address destination;
+        address underlying;
         uint96 liquidityToLeave;
     }
 
@@ -27,14 +28,16 @@ contract FuseWithdrawalGuard is IGuard, CoreRef {
         address core,
         address[] memory deposits,
         address[] memory destinations,
+        address[] memory underlyings,
         uint96[] memory liquidityToLeaveList
     ) CoreRef(core) {
         uint256 len = deposits.length;
-        require(len == destinations.length && len == liquidityToLeaveList.length);
+        require(len == destinations.length && len == liquidityToLeaveList.length && len == underlyings.length);
         for (uint256 i = 0; i < len; ) {
             fuseDeposits.add(deposits[i]);
             withdrawInfos[deposits[i]] = WithdrawInfo({
                 destination: destinations[i],
+                underlying: underlyings[i],
                 liquidityToLeave: liquidityToLeaveList[i]
             });
             unchecked {
@@ -72,7 +75,8 @@ contract FuseWithdrawalGuard is IGuard, CoreRef {
 
     /// @notice return the amount that can be withdrawn from a deposit after leaving min liquidity
     function getAmountToWithdraw(ERC20CompoundPCVDeposit deposit) public view returns (uint256) {
-        IERC20 underlying = IERC20(deposit.balanceReportedIn());
+        // can't read underlying directly because some of the PCV deposits use an old abi
+        IERC20 underlying = IERC20(withdrawInfos[address(deposit)].underlying);
         // Reserves of underlying left in the cToken are considered withdrawable liquidity
         uint256 liquidity = underlying.balanceOf(address(deposit.cToken()));
         uint256 liquidityToLeave = withdrawInfos[address(deposit)].liquidityToLeave;
