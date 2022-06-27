@@ -58,34 +58,6 @@ describe('e2e-collateralization', function () {
     }
   });
 
-  describe('Collateralization Oracle Guardian', async function () {
-    it('can update cache', async function () {
-      const collateralizationOracleWrapper: CollateralizationOracleWrapper =
-        contracts.collateralizationOracleWrapper as CollateralizationOracleWrapper;
-
-      const collateralizationOracleGuardian: CollateralizationOracleGuardian =
-        contracts.collateralizationOracleGuardian as CollateralizationOracleGuardian;
-
-      // set Chainlink ETHUSD to a fixed 4,000$ value
-      await overwriteChainlinkAggregator(contractAddresses.chainlinkEthUsdOracle, '400000000000', '8');
-
-      await collateralizationOracleWrapper.update();
-
-      const wrapperStats = await collateralizationOracleWrapper.pcvStats();
-
-      // Set cache values 1% higher
-      await collateralizationOracleGuardian.setCache(
-        wrapperStats[0].mul(101).div(100),
-        wrapperStats[1].mul(101).div(100)
-      );
-
-      // Check cache updates
-      const wrapperStatsAfter = await collateralizationOracleWrapper.pcvStats();
-      expect(wrapperStatsAfter[0]).to.be.bignumber.equal(wrapperStats[0].mul(101).div(100));
-      expect(wrapperStatsAfter[1]).to.be.bignumber.equal(wrapperStats[1].mul(101).div(100));
-    });
-  });
-
   describe('Named PCVDeposit Wrapper', async function () {
     it('can fetch all underlying token addresses', async function () {
       const namedStaticPCVDepositWrapper: NamedStaticPCVDepositWrapper =
