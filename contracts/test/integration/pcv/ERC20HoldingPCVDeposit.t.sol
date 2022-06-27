@@ -22,8 +22,8 @@ contract ERC20HoldingPCVDepositIntegrationTest is DSTest {
     MockERC20 private erc20;
 
     function setUp() public {
-        erc20 = new MockERC20();
-        emptyDeposit = new ERC20HoldingPCVDeposit(address(core), erc20);
+        // Deploying a holding deposit for FEI
+        emptyDeposit = new ERC20HoldingPCVDeposit(address(core), fei);
     }
 
     /// @notice Validate that can wrap ETH to WETH
@@ -35,29 +35,23 @@ contract ERC20HoldingPCVDepositIntegrationTest is DSTest {
         assertEq(weth.balanceOf(address(emptyDeposit)), 2 ether);
     }
 
-    /// @notice Validate that can wrap ETH to WETH
+    /// @notice Validate that can withdraw ETH that was wrapped to WETH
     function testCanWithdraWrappedEth() public {
         payable(address(emptyDeposit)).transfer(2 ether);
         emptyDeposit.wrapETH();
 
         vm.prank(MainnetAddresses.FEI_DAO_TIMELOCK);
-        emptyDeposit.withdrawETH(receiver, 2 ether);
-        assertEq(address(this).balance, 2 ether);
+        emptyDeposit.withdrawERC20(MainnetAddresses.WETH, receiver, 2 ether);
+        assertEq(weth.balanceOf(receiver), 2 ether);
     }
 
     /// @notice Validate balances update when token is FEI
     function testBalancesUpdateForFei() public {
-        ERC20HoldingPCVDeposit emptyFeiDeposit = new ERC20HoldingPCVDeposit(
-            address(core),
-            IERC20(MainnetAddresses.FEI)
-        );
-
         address feiWhale = 0x2A188F9EB761F70ECEa083bA6c2A40145078dfc2;
 
         vm.prank(feiWhale);
-        fei.transfer(address(emptyFeiDeposit), 10);
-
-        assertEq(emptyFeiDeposit.balance(), 10);
+        fei.transfer(address(emptyDeposit), 10);
+        assertEq(emptyDeposit.balance(), 10);
 
         (uint256 resistantBalance, uint256 feiBalance) = emptyDeposit.resistantBalanceAndFei();
         assertEq(resistantBalance, 0);
