@@ -24,6 +24,9 @@ contract FuseWithdrawalGuard is IGuard, CoreRef {
     /// @notice the PCV mover contract exposed to guardian role
     PCVGuardian public constant pcvGuardian = PCVGuardian(0x02435948F84d7465FB71dE45ABa6098Fc6eC2993);
 
+    /// @notice added to prevent dust from bricking the contract
+    uint256 public constant MIN_WITHDRAW = 100e18;
+
     constructor(
         address core,
         address[] memory deposits,
@@ -83,7 +86,7 @@ contract FuseWithdrawalGuard is IGuard, CoreRef {
         if (withdrawAmount > liquidity) {
             withdrawAmount = liquidity;
         }
-        return withdrawAmount;
+        return withdrawAmount > MIN_WITHDRAW ? withdrawAmount : 0;
     }
 
     /// @notice return the first element which can be withdrawn from with the appropriate calldata encoding tha max withdraw amount.
