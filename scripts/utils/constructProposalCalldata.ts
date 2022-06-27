@@ -94,7 +94,7 @@ function getTimelockCalldata(
 
   // Pod execute calldata
   const podExecutorFunctionFragment = new Interface([
-    'function executeBatch(address timelock,address[] calldata targets,uint256[] calldata values,bytes[] calldata payloads,bytes32 predecessor,bytes32 salt)'
+    'function executeBatch(address timelock,address[] calldata targets,uint256[] calldata values,bytes[] calldata payloads,bytes32 predecessor,bytes32 salt) public'
   ]);
 
   const podExecuteCalldata = podExecutorFunctionFragment.encodeFunctionData('executeBatch', [
