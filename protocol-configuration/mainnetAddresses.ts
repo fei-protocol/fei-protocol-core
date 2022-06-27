@@ -250,7 +250,7 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   lusdPSM: {
     artifactName: 'PegStabilityModule',
     address: '0xb0e731F036AdfDeC12da77c15aaB0F90E8e45A0e',
-    category: AddressCategory.Peg
+    category: AddressCategory.Deprecated
   },
   raiPriceBoundPSM: {
     artifactName: 'PriceBoundPSM',
@@ -260,7 +260,7 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   ethPSM: {
     artifactName: 'PegStabilityModule',
     address: '0x98E5F5706897074a4664DD3a32eB80242d6E694B',
-    category: AddressCategory.Peg
+    category: AddressCategory.Deprecated
   },
   ethPSMRouter: {
     artifactName: 'PSMRouter',
