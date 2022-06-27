@@ -33,31 +33,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   await voltOracle.deployed();
   logging && console.log(`voltOracle: ${voltOracle.address}`);
 
-  ////// Deploy empty PCV deposits for remaining PCV assets
-  // Deploy empty PCV deposits for ERC20 assets
-  const ERC20HoldingPCVDepositFactory = await ethers.getContractFactory('ERC20HoldingPCVDeposit');
-  const wethHoldingDeposit = await ERC20HoldingPCVDepositFactory.deploy(addresses.core, addresses.weth);
-  await wethHoldingDeposit.deployTransaction.wait();
-  logging && console.log('WETH holding deposit deployed to: ', wethHoldingDeposit.address);
-
-  const lusdHoldingDeposit = await ERC20HoldingPCVDepositFactory.deploy(addresses.core, addresses.lusd);
-  await lusdHoldingDeposit.deployTransaction.wait();
-  logging && console.log('LUSD holding deposit deployed to: ', lusdHoldingDeposit.address);
-
-  const voltHoldingDeposit = await ERC20HoldingPCVDepositFactory.deploy(addresses.core, addresses.volt);
-  await voltHoldingDeposit.deployTransaction.wait();
-  logging && console.log('VOLT holding deposit deployed to: ', voltHoldingDeposit.address);
-
-  const daiHoldingDeposit = await ERC20HoldingPCVDepositFactory.deploy(addresses.core, addresses.dai);
-  await daiHoldingDeposit.deployTransaction.wait();
-  logging && console.log('DAI holding deposit deployed to: ', daiHoldingDeposit.address);
-
   return {
-    voltOracle,
-    wethHoldingDeposit,
-    lusdHoldingDeposit,
-    voltHoldingDeposit,
-    daiHoldingDeposit
+    voltOracle
   };
 };
 
@@ -161,44 +138,6 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
     .to.be.false;
   expect(await contracts.core.hasRole(ethers.utils.id('ORACLE_ADMIN_ROLE'), addresses.opsOptimisticTimelock)).to.be
     .false;
-
-  ////////// Validate empty PCV deposit deployments
-
-  const wethHoldingDeposit = contracts.wethHoldingDeposit;
-  const lusdHoldingDeposit = contracts.lusdHoldingDeposit;
-  const voltHoldingDeposit = contracts.voltHoldingDeposit;
-  const daiHoldingDeposit = contracts.daiHoldingDeposit;
-
-  // 1. Validate all holding PCV Deposits configured correctly
-  expect(await wethHoldingDeposit.balanceReportedIn()).to.be.equal(addresses.weth);
-  expect(await lusdHoldingDeposit.balanceReportedIn()).to.be.equal(addresses.lusd);
-  expect(await voltHoldingDeposit.balanceReportedIn()).to.be.equal(addresses.volt);
-  expect(await daiHoldingDeposit.balanceReportedIn()).to.be.equal(addresses.dai);
-
-  // 2. Validate can drop funds on a PCV Deposit and then withdraw with the guardian
-  const wethWhale = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2';
-  await forceEth(wethWhale);
-  const wethWhaleSigner = await getImpersonatedSigner(wethWhale);
-
-  // Transfer to the empty PCV deposit. Validate that the balance reads correctly, then withdraw
-  const transferAmount = ethers.constants.WeiPerEther.mul(100);
-  await contracts.weth.connect(wethWhaleSigner).transfer(wethHoldingDeposit.address, transferAmount);
-
-  expect(await wethHoldingDeposit.balance()).to.be.equal(transferAmount);
-  expect(await contracts.weth.balanceOf(wethHoldingDeposit.address)).to.be.equal(transferAmount);
-
-  const resistantBalanceAndFei = await wethHoldingDeposit.resistantBalanceAndFei();
-  expect(resistantBalanceAndFei[0]).to.be.equal(transferAmount);
-  expect(resistantBalanceAndFei[1]).to.be.equal(0);
-
-  // Withdraw ERC20
-  const receiver = '0xFc312F21E1D56D8dab5475FB5aaEFfB18B892a85';
-  const guardianSigner = await getImpersonatedSigner(addresses.pcvGuardianNew);
-  await forceEth(addresses.pcvGuardianNew);
-  await wethHoldingDeposit.connect(guardianSigner).withdrawERC20(addresses.weth, receiver, transferAmount);
-
-  expect(await wethHoldingDeposit.balance()).to.be.equal(0);
-  expect(await contracts.weth.balanceOf(receiver)).to.be.equal(transferAmount);
 };
 
 export { deploy, setup, teardown, validate };
