@@ -120,44 +120,6 @@ describe('e2e-dao', function () {
     });
   });
 
-  describe('Optimistic Approval', async () => {
-    beforeEach(async function () {
-      const { optimisticMultisig, timelock } = contractAddresses;
-
-      await hre.network.provider.request({
-        method: 'hardhat_impersonateAccount',
-        params: [optimisticMultisig]
-      });
-
-      await hre.network.provider.request({
-        method: 'hardhat_impersonateAccount',
-        params: [timelock]
-      });
-
-      const signer = (await ethers.getSigners())[0];
-      await signer.sendTransaction({
-        to: timelock,
-        value: ethers.utils.parseEther(`1`)
-      });
-
-      await (
-        await ethers.getSigner(timelock)
-      ).sendTransaction({ to: optimisticMultisig, value: toBN('40000000000000000') });
-    });
-
-    it('governor can assume timelock admin', async () => {
-      // oldTimelock has had Governor revoked, so apply to newTimelock
-      const { feiDAOTimelock } = contractAddresses;
-      const { optimisticTimelock } = contracts;
-
-      const newTimelockSigner = await getImpersonatedSigner(feiDAOTimelock);
-      await optimisticTimelock.connect(newTimelockSigner).becomeAdmin();
-
-      const admin = await optimisticTimelock.TIMELOCK_ADMIN_ROLE();
-      expect(await optimisticTimelock.hasRole(admin, feiDAOTimelock)).to.be.true;
-    });
-  });
-
   describe('Access control', async () => {
     before(async () => {
       // Revoke deploy address permissions, so that does not erroneously
