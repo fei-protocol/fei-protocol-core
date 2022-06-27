@@ -9,6 +9,7 @@ import {
 } from '@custom-types/types';
 import { getImpersonatedSigner } from '@test/helpers';
 import { forceEth } from '@test/integration/setup/utils';
+import { BigNumber } from 'ethers';
 
 /*
 
@@ -19,7 +20,11 @@ Tribal Council proposal TIP_118
 
 */
 
+const toBN = BigNumber.from;
+
 const fipNumber = 'tip_118';
+
+let initialDAIPSMBalance: BigNumber;
 
 // Do any deployments
 // This should exclusively include new contract deployments
@@ -42,11 +47,16 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   await daiHoldingDeposit.deployTransaction.wait();
   logging && console.log('DAI holding deposit deployed to: ', daiHoldingDeposit.address);
 
+  const raiHoldingDeposit = await ERC20HoldingPCVDepositFactory.deploy(addresses.core, addresses.rai);
+  await raiHoldingDeposit.deployTransaction.wait();
+  logging && console.log('RAI holding deposit deployed to: ', raiHoldingDeposit.address);
+
   return {
     wethHoldingDeposit,
     lusdHoldingDeposit,
     voltHoldingDeposit,
-    daiHoldingDeposit
+    daiHoldingDeposit,
+    raiHoldingDeposit
   };
 };
 
@@ -54,7 +64,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 // This could include setting up Hardhat to impersonate accounts,
 // ensuring contracts have a specific state, etc.
 const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  console.log(`No actions to complete in setup for fip${fipNumber}`);
+  initialDAIPSMBalance = await contracts.dai.balanceOf(addresses.daiFixedPricePSM);
 };
 
 // Tears down any changes made in setup() that need to be
@@ -76,17 +86,20 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const lusd = contracts.lusd;
   const weth = contracts.weth;
   const rai = contracts.rai;
+  const dai = contracts.dai;
 
   const wethHoldingDeposit = contracts.wethHoldingDeposit;
   const lusdHoldingDeposit = contracts.lusdHoldingDeposit;
   const voltHoldingDeposit = contracts.voltHoldingDeposit;
   const daiHoldingDeposit = contracts.daiHoldingDeposit;
+  const raiHoldingDeposit = contracts.raiHoldingDeposit;
 
   // 1. Validate all holding PCV Deposits configured correctly
   expect(await wethHoldingDeposit.balanceReportedIn()).to.be.equal(addresses.weth);
   expect(await lusdHoldingDeposit.balanceReportedIn()).to.be.equal(addresses.lusd);
   expect(await voltHoldingDeposit.balanceReportedIn()).to.be.equal(addresses.volt);
   expect(await daiHoldingDeposit.balanceReportedIn()).to.be.equal(addresses.dai);
+  expect(await raiHoldingDeposit.balanceReportedIn()).to.be.equal(addresses.rai);
 
   // 2. Validate can drop funds on a PCV Deposit and then withdraw with the guardian
   const wethWhale = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2';
@@ -123,13 +136,25 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await fei.balanceOf(raiPSM.address)).to.be.equal(0);
   expect(await rai.balanceOf(raiPSM.address)).to.be.equal(0);
 
-  // 4. Validate deprecated PSMs have no MINTER_ROLE
+  // 4. Validate transferred assets were received
+  const EXPECTED_RAI_TRANSFER = toBN('270749178623488861888895');
+  const EXPECTED_WETH_TRANSFER = toBN('21828675312169174908543');
+  const EXPECTED_LUSD_TRANSFER = toBN('17765325999630072368537481');
+  const SANITY_CHECK_DAI_TRANSFER = toBN('10000000000000000000000000');
+
+  // These deposits started off empty
+  expect(await weth.balanceOf(wethHoldingDeposit.address)).to.be.at.least(EXPECTED_WETH_TRANSFER);
+  expect(await lusd.balanceOf(lusdHoldingDeposit.address)).to.be.at.least(EXPECTED_LUSD_TRANSFER);
+  expect(await rai.balanceOf(raiHoldingDeposit.address)).to.be.at.least(EXPECTED_RAI_TRANSFER);
+  expect(await dai.balanceOf(dai.address)).to.be.at.least(initialDAIPSMBalance.add(SANITY_CHECK_DAI_TRANSFER));
+
+  // 5. Validate deprecated PSMs have no MINTER_ROLE
   const MINTER_ROLE = ethers.utils.id('MINTER_ROLE');
   expect(await core.hasRole(MINTER_ROLE, addresses.ethPSM)).to.be.false;
   expect(await core.hasRole(MINTER_ROLE, addresses.raiPriceBoundPSM)).to.be.false;
   expect(await core.hasRole(MINTER_ROLE, addresses.lusdPSM)).to.be.false;
 
-  // 5. Validate deprecated PSMs fully paused
+  // 6. Validate deprecated PSMs fully paused
   expect(await ethPSM.redeemPaused()).to.be.true;
   expect(await ethPSM.paused()).to.be.true;
 
