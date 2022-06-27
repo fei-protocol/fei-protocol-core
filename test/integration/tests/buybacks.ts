@@ -58,7 +58,7 @@ describe('e2e-buybacks', function () {
     it('mints appropriate amount and swaps', async function () {
       const {
         pcvEquityMinter,
-        collateralizationOracleWrapper,
+        collateralizationOracle,
         namedStaticPCVDepositWrapper,
         noFeeFeiTribeLBPSwapper,
         fei,
@@ -68,7 +68,7 @@ describe('e2e-buybacks', function () {
 
       await increaseTime(await noFeeFeiTribeLBPSwapper.remainingTime());
 
-      const pcvStats = await collateralizationOracleWrapper.pcvStats();
+      const pcvStats = await collateralizationOracle.pcvStats();
 
       if (pcvStats[2] < 0) {
         await namedStaticPCVDepositWrapper.addDeposit({
@@ -83,7 +83,7 @@ describe('e2e-buybacks', function () {
       // set Chainlink ETHUSD to a fixed 4,000$ value
       await overwriteChainlinkAggregator(contractAddresses.chainlinkEthUsdOracle, '400000000000', '8');
 
-      await collateralizationOracleWrapper.update();
+      await collateralizationOracle.update();
 
       await core.allocateTribe(noFeeFeiTribeLBPSwapper.address, ethers.constants.WeiPerEther.mul(1_000_000));
       const tx = await pcvEquityMinter.mint();
@@ -128,59 +128,6 @@ describe('e2e-buybacks', function () {
       expectApprox(afterStats[0], beforeStats[0].sub(beforeBalance));
       expectApprox(afterStats[1], afterStats[1]);
       expectApprox(afterStats[2], beforeStats[2].sub(beforeBalance));
-    });
-  });
-
-  describe('Collateralization Oracle Keeper', async function () {
-    it('can only call when deviation or time met', async function () {
-      const { namedStaticPCVDepositWrapper, collateralizationOracleWrapper, collateralizationOracleKeeper, fei } =
-        contracts;
-
-      const beforeBalance = await fei.balanceOf(deployAddress);
-
-      // set Chainlink ETHUSD to a fixed 4,000$ value
-      await overwriteChainlinkAggregator(contractAddresses.chainlinkEthUsdOracle, '400000000000', '8');
-
-      await collateralizationOracleWrapper.update();
-
-      // After updating everything should be up to date
-      expect(await collateralizationOracleWrapper.isOutdatedOrExceededDeviationThreshold()).to.be.false;
-
-      // After time increase, should be outdated
-      await increaseTime(await collateralizationOracleWrapper.remainingTime());
-
-      expect(await collateralizationOracleWrapper.isOutdatedOrExceededDeviationThreshold()).to.be.true;
-      expect(await collateralizationOracleWrapper.isOutdated()).to.be.true;
-      expect(await collateralizationOracleWrapper.isExceededDeviationThreshold()).to.be.false;
-
-      // UpdateIfOutdated succeeds
-      await collateralizationOracleWrapper.updateIfOutdated();
-
-      expect(await collateralizationOracleWrapper.isOutdatedOrExceededDeviationThreshold()).to.be.false;
-
-      // Increase PCV balance to exceed deviation threshold
-      const pcvStats = await collateralizationOracleWrapper.pcvStats();
-      await namedStaticPCVDepositWrapper.addDeposit({
-        depositName: 'massive test deposit',
-        usdAmount: pcvStats[0],
-        feiAmount: 1,
-        underlyingTokenAmount: 1,
-        underlyingToken: ethers.constants.AddressZero
-      });
-
-      expect(await collateralizationOracleWrapper.isOutdatedOrExceededDeviationThreshold()).to.be.true;
-      expect(await collateralizationOracleWrapper.isOutdated()).to.be.false;
-      expect(await collateralizationOracleWrapper.isExceededDeviationThreshold()).to.be.true;
-
-      // Keeper is incentivized to update oracle
-      await increaseTime(await collateralizationOracleKeeper.MIN_MINT_FREQUENCY());
-
-      await collateralizationOracleKeeper.mint();
-
-      const incentive = await collateralizationOracleKeeper.incentiveAmount();
-      expect(beforeBalance.add(incentive)).to.be.equal(await fei.balanceOf(deployAddress));
-
-      expect(await collateralizationOracleWrapper.isOutdatedOrExceededDeviationThreshold()).to.be.false;
     });
   });
 });
