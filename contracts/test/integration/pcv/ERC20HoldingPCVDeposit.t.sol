@@ -26,15 +26,6 @@ contract ERC20HoldingPCVDepositIntegrationTest is DSTest {
         emptyDeposit = new ERC20HoldingPCVDeposit(address(core), fei);
     }
 
-    /// @notice Validate that can wrap ETH to WETH
-    function testCanWrapEth() public {
-        payable(address(emptyDeposit)).transfer(2 ether);
-        emptyDeposit.wrapETH();
-
-        // Validate WETH balance
-        assertEq(weth.balanceOf(address(emptyDeposit)), 2 ether);
-    }
-
     /// @notice Validate that can withdraw ETH that was wrapped to WETH
     function testCanWithdraWrappedEth() public {
         payable(address(emptyDeposit)).transfer(2 ether);
@@ -43,6 +34,16 @@ contract ERC20HoldingPCVDepositIntegrationTest is DSTest {
         vm.prank(MainnetAddresses.FEI_DAO_TIMELOCK);
         emptyDeposit.withdrawERC20(MainnetAddresses.WETH, receiver, 2 ether);
         assertEq(weth.balanceOf(receiver), 2 ether);
+    }
+
+    /// @notice Validate that can wrap ETH to WETH
+    function testCanWrapEth() public {
+        ERC20HoldingPCVDeposit emptyNewDeposit = new ERC20HoldingPCVDeposit(address(core), fei);
+        payable(address(emptyNewDeposit)).transfer(2 ether);
+        emptyNewDeposit.wrapETH();
+
+        // Validate WETH balance
+        assertEq(weth.balanceOf(address(emptyNewDeposit)), 2 ether);
     }
 
     /// @notice Validate balances update when token is FEI

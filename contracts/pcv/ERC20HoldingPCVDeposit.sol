@@ -8,7 +8,7 @@ import {CoreRef} from "../refs/CoreRef.sol";
 import {Constants} from "../Constants.sol";
 
 /// @title ERC20HoldingPCVDeposit
-/// @notice PCVDeposit that is used to hold ERC20 tokens as a safe harbour. Deposit and withdraw is a no-op
+/// @notice PCVDeposit that is used to hold ERC20 tokens as a safe harbour. Deposit is a no-op
 contract ERC20HoldingPCVDeposit is PCVDeposit {
     using SafeERC20 for IERC20;
 
@@ -27,7 +27,7 @@ contract ERC20HoldingPCVDeposit is PCVDeposit {
 
     ///////   READ-ONLY Methods /////////////
 
-    /// @notice returns total balance of PCV in the Deposit
+    /// @notice returns total balance of PCV in the deposit
     function balance() public view override returns (uint256) {
         return token.balanceOf(address(this));
     }
@@ -45,7 +45,7 @@ contract ERC20HoldingPCVDeposit is PCVDeposit {
 
     /// @notice No-op deposit
     function deposit() external override whenNotPaused {
-        emit Deposit(msg.sender, token.balanceOf(address(this)));
+        emit Deposit(msg.sender, balance());
     }
 
     /// @notice Withdraw underlying

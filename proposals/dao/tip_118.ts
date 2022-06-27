@@ -112,16 +112,17 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const wethWhaleSigner = await getImpersonatedSigner(wethWhale);
 
   // Transfer to the holding PCV deposit. Validate that the balance reads correctly, then withdraw
+  const initialWethDepositBalance = await wethHoldingDeposit.balance();
   const transferAmount = ethers.constants.WeiPerEther.mul(100);
   await contracts.weth.connect(wethWhaleSigner).transfer(wethHoldingDeposit.address, transferAmount);
 
-  expect(await wethHoldingDeposit.balance()).to.be.equal(transferAmount.add(EXPECTED_WETH_TRANSFER));
+  expect(await wethHoldingDeposit.balance()).to.be.equal(transferAmount.add(initialWethDepositBalance));
   expect(await contracts.weth.balanceOf(wethHoldingDeposit.address)).to.be.equal(
     transferAmount.add(EXPECTED_WETH_TRANSFER)
   );
 
   const resistantBalanceAndFei = await wethHoldingDeposit.resistantBalanceAndFei();
-  expect(resistantBalanceAndFei[0]).to.be.equal(transferAmount.add(EXPECTED_WETH_TRANSFER));
+  expect(resistantBalanceAndFei[0]).to.be.equal(transferAmount.add(initialWethDepositBalance));
   expect(resistantBalanceAndFei[1]).to.be.equal(0);
 
   // Withdraw ERC20
@@ -130,7 +131,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   await forceEth(addresses.pcvGuardianNew);
   await wethHoldingDeposit.connect(guardianSigner).withdrawERC20(addresses.weth, receiver, transferAmount);
 
-  expect(await wethHoldingDeposit.balance()).to.be.equal(EXPECTED_WETH_TRANSFER);
+  expect(await wethHoldingDeposit.balance()).to.be.equal(initialWethDepositBalance);
   expect(await contracts.weth.balanceOf(receiver)).to.be.equal(transferAmount);
 
   // 3. Validate deprecated PSMs have no assets
@@ -146,9 +147,9 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   // 4. Validate transferred assets were received
 
   // These deposits started off empty
-  expect(await weth.balanceOf(wethHoldingDeposit.address)).to.be.at.least(EXPECTED_WETH_TRANSFER);
-  expect(await lusd.balanceOf(lusdHoldingDeposit.address)).to.be.at.least(EXPECTED_LUSD_TRANSFER);
-  expect(await rai.balanceOf(raiHoldingDeposit.address)).to.be.at.least(EXPECTED_RAI_TRANSFER);
+  expect(await weth.balanceOf(wethHoldingDeposit.address)).to.be.equal(EXPECTED_WETH_TRANSFER);
+  expect(await lusd.balanceOf(lusdHoldingDeposit.address)).to.be.equal(EXPECTED_LUSD_TRANSFER);
+  expect(await rai.balanceOf(raiHoldingDeposit.address)).to.be.equal(EXPECTED_RAI_TRANSFER);
   expect(await fei.balanceOf(addresses.daiFixedPricePSM)).to.be.at.least(
     initialDAIPSMFeiBalance.add(SANITY_CHECK_DAI_TRANSFER)
   );
