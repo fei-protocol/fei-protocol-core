@@ -80,7 +80,7 @@ describe('e2e-pcv', function () {
   });
 
   describe('PCV Guardian', async () => {
-    it.only('can withdraw PCV and pause', async () => {
+    it('can withdraw PCV and pause', async () => {
       const pcvGuardian = contracts.pcvGuardianNew;
 
       const amount = await contracts.compoundEthPCVDeposit.balance();
