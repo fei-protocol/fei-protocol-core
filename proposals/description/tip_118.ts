@@ -57,32 +57,6 @@ const tip_118: TemplatedProposalDescription = {
       description: 'Migrate FEI from the LUSD PSM to the DAI PSM'
     },
 
-    // RAI_PSM
-    {
-      target: 'ratioPCVControllerV2',
-      values: '0',
-      method: 'withdrawRatioERC20(address,address,address,uint256)',
-      arguments: (addresses) => [
-        addresses.raiPriceBoundPSM, // pcvDeposit
-        addresses.rai, // token
-        addresses.raiHoldingDeposit, // to
-        '10000' // basisPoints, 100%
-      ],
-      description: 'Migrate RAI from the RAI PSM to the RAI holding PCV deposit'
-    },
-    {
-      target: 'ratioPCVControllerV2',
-      values: '0',
-      method: 'withdrawRatioERC20(address,address,address,uint256)',
-      arguments: (addresses) => [
-        addresses.raiPriceBoundPSM, // pcvDeposit
-        addresses.fei, // token
-        addresses.daiFixedPricePSM, // to
-        '10000' // basisPoints, 100%
-      ],
-      description: 'Migrate FEI from the RAI PSM to the DAI PSM'
-    },
-
     // 2. Revoke PSM permissions
     {
       target: 'core',
@@ -128,7 +102,6 @@ const tip_118: TemplatedProposalDescription = {
         [
           addresses.wethHoldingDeposit,
           addresses.lusdHoldingDeposit,
-          addresses.raiHoldingDeposit,
           addresses.daiHoldingDeposit,
           addresses.voltHoldingDeposit
         ]
@@ -151,6 +124,15 @@ const tip_118: TemplatedProposalDescription = {
       arguments: (addresses) => [],
       description: 'Pause the RAI PCV drip controller'
     },
+    {
+      target: 'lusdPCVDripController',
+      values: '0',
+      method: 'pause()',
+      arguments: (addresses) => [],
+      description: 'Pause the LUSD PCV drip controller'
+    },
+
+    // Set new dep
     {
       target: 'lusdPCVDripController',
       values: '0',

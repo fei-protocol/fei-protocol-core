@@ -48,16 +48,11 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   await daiHoldingDeposit.deployTransaction.wait();
   logging && console.log('DAI holding deposit deployed to: ', daiHoldingDeposit.address);
 
-  const raiHoldingDeposit = await ERC20HoldingPCVDepositFactory.deploy(addresses.core, addresses.rai);
-  await raiHoldingDeposit.deployTransaction.wait();
-  logging && console.log('RAI holding deposit deployed to: ', raiHoldingDeposit.address);
-
   return {
     wethHoldingDeposit,
     lusdHoldingDeposit,
     voltHoldingDeposit,
-    daiHoldingDeposit,
-    raiHoldingDeposit
+    daiHoldingDeposit
   };
 };
 
@@ -86,17 +81,14 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const fei = contracts.fei;
   const lusd = contracts.lusd;
   const weth = contracts.weth;
-  const rai = contracts.rai;
 
   const wethHoldingDeposit = contracts.wethHoldingDeposit;
   const lusdHoldingDeposit = contracts.lusdHoldingDeposit;
   const voltHoldingDeposit = contracts.voltHoldingDeposit;
   const daiHoldingDeposit = contracts.daiHoldingDeposit;
-  const raiHoldingDeposit = contracts.raiHoldingDeposit;
 
   const pcvGuardian = contracts.pcvGuardianNew;
 
-  const EXPECTED_RAI_TRANSFER = toBN('270749178623488861888895');
   const EXPECTED_WETH_TRANSFER = toBN('21828675312169174908543');
   const EXPECTED_LUSD_TRANSFER = toBN('17765325999630072368537481');
   const SANITY_CHECK_DAI_TRANSFER = ethers.constants.WeiPerEther.mul(2_000_000);
@@ -106,7 +98,6 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await lusdHoldingDeposit.balanceReportedIn()).to.be.equal(addresses.lusd);
   expect(await voltHoldingDeposit.balanceReportedIn()).to.be.equal(addresses.volt);
   expect(await daiHoldingDeposit.balanceReportedIn()).to.be.equal(addresses.dai);
-  expect(await raiHoldingDeposit.balanceReportedIn()).to.be.equal(addresses.rai);
 
   // 2. Validate can drop funds on a PCV Deposit and then withdraw with the guardian
   const wethWhale = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2';
@@ -143,15 +134,11 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await fei.balanceOf(lusdPSM.address)).to.be.equal(0);
   expect(await lusd.balanceOf(lusdPSM.address)).to.be.equal(0);
 
-  expect(await fei.balanceOf(raiPSM.address)).to.be.equal(0);
-  expect(await rai.balanceOf(raiPSM.address)).to.be.equal(0);
-
   // 4. Validate transferred assets were received
 
   // These deposits started off empty
   expect(await weth.balanceOf(wethHoldingDeposit.address)).to.be.equal(EXPECTED_WETH_TRANSFER);
   expect(await lusd.balanceOf(lusdHoldingDeposit.address)).to.be.equal(EXPECTED_LUSD_TRANSFER);
-  expect(await rai.balanceOf(raiHoldingDeposit.address)).to.be.equal(EXPECTED_RAI_TRANSFER);
   expect(await fei.balanceOf(addresses.daiFixedPricePSM)).to.be.at.least(
     initialDAIPSMFeiBalance.add(SANITY_CHECK_DAI_TRANSFER)
   );
