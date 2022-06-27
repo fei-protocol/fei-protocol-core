@@ -49,7 +49,7 @@ contract FuseWithdrawalGuard is IGuard, CoreRef {
     /// @notice setter for the Fuse deposit destination and minimum liquidity
     function setWithdrawInfo(address deposit, WithdrawInfo calldata withdrawInfo)
         public
-        onlyTribeRole(TribeRoles.GUARDIAN)
+        hasAnyOfThreeRoles(TribeRoles.GUARDIAN, TribeRoles.GOVERNOR, TribeRoles.PCV_SAFE_MOVER_ROLE)
     {
         withdrawInfos[deposit] = withdrawInfo;
     }
