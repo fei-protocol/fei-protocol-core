@@ -1,4 +1,4 @@
-import hre, { ethers, artifacts } from 'hardhat';
+import { ethers } from 'hardhat';
 import { expect } from 'chai';
 import {
   DeployUpgradeFunc,
@@ -67,6 +67,15 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
   ////////// Validate empty PCV deposit deployments
+  const core = contracts.core;
+  const ethPSM = contracts.ethPSM;
+  const lusdPSM = contracts.lusdPSM;
+  const raiPSM = contracts.raiPriceBoundPSM;
+
+  const fei = contracts.fei;
+  const lusd = contracts.lusd;
+  const weth = contracts.weth;
+  const rai = contracts.rai;
 
   const wethHoldingDeposit = contracts.wethHoldingDeposit;
   const lusdHoldingDeposit = contracts.lusdHoldingDeposit;
@@ -103,6 +112,33 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 
   expect(await wethHoldingDeposit.balance()).to.be.equal(0);
   expect(await contracts.weth.balanceOf(receiver)).to.be.equal(transferAmount);
+
+  // 3. Validate deprecated PSMs have no assets
+  expect(await fei.balanceOf(ethPSM.address)).to.be.equal(0);
+  expect(await weth.balanceOf(ethPSM.address)).to.be.equal(0);
+
+  expect(await fei.balanceOf(lusdPSM.address)).to.be.equal(0);
+  expect(await lusd.balanceOf(lusdPSM.address)).to.be.equal(0);
+
+  expect(await fei.balanceOf(raiPSM.address)).to.be.equal(0);
+  expect(await rai.balanceOf(raiPSM.address)).to.be.equal(0);
+
+  // 4. Validate deprecated PSMs have no MINTER_ROLE
+  const MINTER_ROLE = ethers.utils.id('MINTER_ROLE');
+  expect(await core.hasRole(MINTER_ROLE, addresses.ethPSM)).to.be.false;
+  expect(await core.hasRole(MINTER_ROLE, addresses.raiPriceBoundPSM)).to.be.false;
+  expect(await core.hasRole(MINTER_ROLE, addresses.lusdPSM)).to.be.false;
+
+  // 5. Validate deprecated PSMs fully paused
+  expect(await ethPSM.redeemPaused()).to.be.true;
+  expect(await ethPSM.paused()).to.be.true;
+
+  expect(await lusdPSM.redeemPaused()).to.be.true;
+  expect(await lusdPSM.paused()).to.be.true;
+
+  expect(await raiPSM.redeemPaused()).to.be.true;
+  expect(await raiPSM.mintPaused()).to.be.true;
+  expect(await raiPSM.paused()).to.be.true;
 };
 
 export { deploy, setup, teardown, validate };
