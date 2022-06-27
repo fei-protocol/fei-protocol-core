@@ -8,14 +8,7 @@ import {
   ValidateUpgradeFunc,
   PcvStats
 } from '@custom-types/types';
-import {
-  getImpersonatedSigner,
-  overwriteChainlinkAggregator,
-  ZERO_ADDRESS,
-  balance,
-  time,
-  expectRevert
-} from '@test/helpers';
+import { getImpersonatedSigner, overwriteChainlinkAggregator, time, expectRevert } from '@test/helpers';
 import { forceEth } from '@test/integration/setup/utils';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { BigNumber, Contract } from 'ethers';
@@ -56,25 +49,6 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
 
   // read pcvStats before proposal execution
   pcvStatsBefore = await contracts.collateralizationOracle.pcvStats();
-
-  // impersonate the rollover signer, and make the Tokemak pool go to next cycle
-  const TOKEMAK_MANAGER_ROLLOVER_ADDRESS = '0x90b6C61B102eA260131aB48377E143D6EB3A9d4B'; // has the rollover role
-  const TOKEMAK_MANAGER_ADDRESS = '0xa86e412109f77c45a3bc1c5870b880492fb86a14'; // tokemak manager
-  const IPFS_JSON_FILE_HASH = 'QmP4Vzg45jExr3mcNsx9xxV1fNft95uVzgZGeLtkBXgpkx';
-  await forceEth(TOKEMAK_MANAGER_ROLLOVER_ADDRESS);
-  const tokemakRolloverSigner: SignerWithAddress = await getImpersonatedSigner(TOKEMAK_MANAGER_ROLLOVER_ADDRESS);
-  const tokemakManagerAbi: string[] = [
-    'function nextCycleStartTime() view returns (uint256)',
-    'function completeRollover(string calldata rewardsIpfsHash)'
-  ];
-  const tokemakManager: Contract = new ethers.Contract(
-    TOKEMAK_MANAGER_ADDRESS,
-    tokemakManagerAbi,
-    tokemakRolloverSigner
-  );
-  const cycleEnd: BigNumber = await tokemakManager.nextCycleStartTime();
-  await time.increaseTo(cycleEnd.add(1));
-  await tokemakManager.completeRollover(IPFS_JSON_FILE_HASH);
 };
 
 // Tears down any changes made in setup() that need to be
@@ -156,6 +130,14 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   // fast-forward time so that e2e tests are not bricked
   await time.increase(await contracts.tribeReserveStabilizer.duration());
   await contracts.tribeReserveStabilizer.resetOracleDelayCountdown();
+
+  //////  Ops optimistic timelock deprecation validation /////////
+  expect(await contracts.core.hasRole(ethers.utils.id('METAGOVERNANCE_VOTE_ADMIN'), addresses.opsOptimisticTimelock)).to
+    .be.false;
+  expect(await contracts.core.hasRole(ethers.utils.id('METAGOVERNANCE_TOKEN_STAKING'), addresses.opsOptimisticTimelock))
+    .to.be.false;
+  expect(await contracts.core.hasRole(ethers.utils.id('ORACLE_ADMIN_ROLE'), addresses.opsOptimisticTimelock)).to.be
+    .false;
 };
 
 export { deploy, setup, teardown, validate };
