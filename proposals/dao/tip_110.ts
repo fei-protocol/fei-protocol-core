@@ -82,6 +82,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(daiRedeemed).to.be.at.least(ethers.utils.parseEther('9500000')); // >9.5M DAI
 
   // check redeemer is empty
+  expect(await contracts.agEUR.balanceOf(addresses.angleEuroRedeemer)).to.be.equal('0');
   expect(await contracts.fei.balanceOf(addresses.angleEuroRedeemer)).to.be.equal('0');
   expect(await contracts.dai.balanceOf(addresses.angleEuroRedeemer)).to.be.equal('0');
   expect(await contracts.usdc.balanceOf(addresses.angleEuroRedeemer)).to.be.equal('0');
@@ -104,6 +105,10 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   console.log(' Circ FEI diff                          [M]e18 ', Number(cFeiDiff) / 1e24);
   console.log(' Equity diff                            [M]e18 ', Number(eqDiff) / 1e24);
   console.log('----------------------------------------------------');
+
+  // PCV Equity change should be neutral for this proposal
+  expect(Number(eqDiff) / 1e18).to.be.at.least(-10000);
+  expect(Number(eqDiff) / 1e18).to.be.at.most(+10000);
 };
 
 export { deploy, setup, teardown, validate };

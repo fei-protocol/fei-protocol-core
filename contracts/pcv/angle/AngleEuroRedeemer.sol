@@ -5,7 +5,6 @@ import "./IStableMaster.sol";
 import "../../external/Decimal.sol";
 import "../../oracle/IOracle.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "hardhat/console.sol";
 
 interface IMakerPSM {
     function sellGem(address, uint256) external;
@@ -40,16 +39,18 @@ contract AngleEuroRedeemer {
         require(oracleValid, "ORACLE_INVALID");
         uint256 usdPerEur = oracleValue.mul(1e18).asUint256(); // ~1.05e18
 
-        // redeem max 90% of USDC available
+        // redeem USDC available
         uint256 usdcAvailableForRedeem = ANGLE_POOLMANAGER_USDC.getBalance();
-        uint256 agEurSpentToRedeemUsdc = (usdcAvailableForRedeem * 1e12 * 1e18 * 9) / (10 * usdPerEur);
+        // scale decimals 6 -> 18
+        uint256 agEurSpentToRedeemUsdc = (usdcAvailableForRedeem * 1e12 * 1e18) / (usdPerEur);
         if (agEurSpentToRedeemUsdc > agEurBalance) {
             agEurSpentToRedeemUsdc = agEurBalance;
         }
         // no need to check stableMaster.collateralMap[PoolManager].stocksUsers because
-        // USDC has a lot of stock available (>30M)
+        // USDC has a lot of stock available (~57M)
 
         // max 1% slippage (angle redeem has 0.5% fee, oracle has 0.15% precision)
+        // scale decimals 18 -> 6
         uint256 minUsdcOut = (agEurSpentToRedeemUsdc * usdPerEur * 99) / (100 * 1e18 * 1e12);
 
         // burn agEUR for USDC
@@ -69,6 +70,7 @@ contract AngleEuroRedeemer {
         IMakerPSM(daiUsdcPSM).sellGem(address(this), redeemedUsdc);
 
         // sanity check
+        // Maker PSM has no fee for USDC->DAI
         uint256 redeemedDai = DAI.balanceOf(address(this));
         require(redeemedUsdc / 1e6 == redeemedDai / 1e18, "PSM_SLIPPAGE");
 
@@ -76,10 +78,13 @@ contract AngleEuroRedeemer {
         DAI.transfer(TRIBEDAO_FEI_DAI_PSM, redeemedDai);
     }
 
-    /// @notice send all agEUR to TC timelock
-    /// this contract should never hold agEUR at it will atomically be funded & redeemed
-    function withdrawAgEur() external {
-        uint256 agEurBalance = AGEUR.balanceOf(address(this));
-        AGEUR.transfer(TRIBEDAO_TC_TIMELOCK, agEurBalance);
+    /// @notice send all tokens held to the Tribal Council timelock
+    /// this contract should never hold agEUR as it will atomically be funded & redeemed,
+    /// nor should it hold any DAI/FEI/USDC because the redeemed funds are atomically
+    /// sent away, but this function is included for funds recovery in case something goes wrong.
+    function withdrawERC20(address token) external {
+        require(block.timestamp > 1657843200, "20220715");
+        uint256 balance = IERC20(token).balanceOf(address(this));
+        IERC20(token).transfer(TRIBEDAO_TC_TIMELOCK, balance);
     }
 }
