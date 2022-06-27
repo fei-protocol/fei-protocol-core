@@ -54,14 +54,6 @@ contract FuseWithdrawalGuard is IGuard, CoreRef {
         withdrawInfos[deposit] = withdrawInfo;
     }
 
-    /// @notice helper method to trustlessly and publicly remove deposits once emptied.
-    /// TODO could be removed to simplify/minimize attack surface and public functions.
-    function removeDepositIfEmpty(ERC20CompoundPCVDeposit deposit) public {
-        if (deposit.balance() == 0) {
-            delete withdrawInfos[address(deposit)];
-        }
-    }
-
     /// @notice check if contract can be called. If any deposit has a nonzero withdraw amount available, then return true.
     function check() external view override returns (bool) {
         for (uint256 i = 0; i < fuseDeposits.length(); ) {
