@@ -94,6 +94,8 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const daiHoldingDeposit = contracts.daiHoldingDeposit;
   const raiHoldingDeposit = contracts.raiHoldingDeposit;
 
+  const pcvGuardian = contracts.pcvGuardianNew;
+
   const EXPECTED_RAI_TRANSFER = toBN('270749178623488861888895');
   const EXPECTED_WETH_TRANSFER = toBN('21828675312169174908543');
   const EXPECTED_LUSD_TRANSFER = toBN('17765325999630072368537481');
@@ -170,6 +172,11 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await raiPSM.redeemPaused()).to.be.true;
   expect(await raiPSM.mintPaused()).to.be.true;
   expect(await raiPSM.paused()).to.be.true;
+
+  // 7. Validate PSMs are no longer safe addresses
+  expect(await pcvGuardian.isSafeAddress(ethPSM.address)).to.be.false;
+  expect(await pcvGuardian.isSafeAddress(lusdPSM.address)).to.be.false;
+  expect(await pcvGuardian.isSafeAddress(raiPSM.address)).to.be.false;
 };
 
 export { deploy, setup, teardown, validate };

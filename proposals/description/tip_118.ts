@@ -110,6 +110,15 @@ const tip_118: TemplatedProposalDescription = {
       description: 'Pause redemptions on the Rai Price bound PSM'
     },
 
+    // 4. Unset deprecated PSMs as safe addresses
+    {
+      target: 'pcvGuardianNew',
+      values: '0',
+      method: 'unsetSafeAddresses(address[])',
+      arguments: (addresses) => [[addresses.ethPSM, addresses.lusdPSM, addresses.raiPriceBoundPSM]],
+      description: 'Unset the ETH, LUSD and RAI PSMs as safe addresses'
+    },
+
     ///  PCV DRIP CONTROLLERS
     {
       target: 'aaveEthPCVDripController',
