@@ -28,11 +28,8 @@ export async function constructProposalCalldata(proposalName: string): Promise<s
   const proposal = (await constructProposal(proposalInfo, contracts, contractAddresses)) as ExtendedAlphaProposal;
 
   console.log(proposals[proposalName].category);
-  if (
-    proposals[proposalName].category === ProposalCategory.OA ||
-    proposals[proposalName].category === ProposalCategory.TC
-  ) {
-    return getTimelockCalldata(proposal, proposalInfo);
+  if (proposals[proposalName].category === ProposalCategory.TC) {
+    return getTimelockCalldata(proposal, proposalInfo, contractAddresses.tribalCouncilTimelock);
   }
 
   return getDAOCalldata(proposal);
@@ -59,7 +56,11 @@ function getDAOCalldata(proposal: ExtendedAlphaProposal): string {
   return calldata;
 }
 
-function getTimelockCalldata(proposal: ExtendedAlphaProposal, proposalInfo: TemplatedProposalDescription): string {
+function getTimelockCalldata(
+  proposal: ExtendedAlphaProposal,
+  proposalInfo: TemplatedProposalDescription,
+  timelockAddress: string
+): string {
   const proposeFuncFrag = new Interface([
     'function scheduleBatch(address[] calldata targets,uint256[] calldata values,bytes[] calldata data,bytes32 predecessor,bytes32 salt,uint256 delay) public',
     'function executeBatch(address[] calldata targets,uint256[] calldata values,bytes[] calldata data,bytes32 predecessor,bytes32 salt) public'
@@ -91,5 +92,19 @@ function getTimelockCalldata(proposal: ExtendedAlphaProposal, proposalInfo: Temp
     salt
   ]);
 
-  return `Calldata: ${calldata}\nExecute Calldata: ${executeCalldata}`;
+  // Pod execute calldata
+  const podExecutorFunctionFragment = new Interface([
+    'function executeBatch(address timelock,address[] calldata targets,uint256[] calldata values,bytes[] calldata payloads,bytes32 predecessor,bytes32 salt)'
+  ]);
+
+  const podExecuteCalldata = podExecutorFunctionFragment.encodeFunctionData('executeBatch', [
+    timelockAddress,
+    proposal.targets,
+    proposal.values,
+    combinedCalldatas,
+    predecessor,
+    salt
+  ]);
+
+  return `Calldata: ${calldata}\nExecute Calldata: ${executeCalldata}\nPod Executor Calldata: ${podExecuteCalldata}`;
 }
