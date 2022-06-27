@@ -39,7 +39,7 @@ const deprecate_incentives: TemplatedProposalDescription = {
       target: 'rewardsDistributorAdmin',
       values: '0',
       method: '_grantComp(address,uint256)',
-      arguments: (addresses) => [addresses.core, '150000000000000000000000'], // TODO: Confirm and get signoff from Storm before
+      arguments: (addresses) => [addresses.core, '150000000000000000000000'],
       description: `Withdraw excess 164k TRIBE from Rari delegator contract`
     },
     {
