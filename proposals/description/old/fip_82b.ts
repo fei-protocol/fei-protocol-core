@@ -109,10 +109,10 @@ const fip_82b: ProposalDescription = {
       values: '0',
       method: 'createRole(bytes32,bytes32)',
       arguments: [
-        '0x2d46c62aa6fbc9b550f22e00476aebb90f4ea69cd492a68db4d444217763330d', // VOTIUM_ROLE
+        '0x2d46c62aa6fbc9b550f22e00476aebb90f4ea69cd492a68db4d444217763330d', // VOTIUM_ADMIN_ROLE
         '0x2172861495e7b85edac73e3cd5fbb42dd675baadf627720e687bcfdaca025096' // ROLE_ADMIN
       ],
-      description: 'Transfer VOTIUM_ROLE role admin from GOVERNOR to ROLE_ADMIN'
+      description: 'Transfer VOTIUM_ADMIN_ROLE role admin from GOVERNOR to ROLE_ADMIN'
     },
     //////// Create new roles for the Tribal Council to manage /////////
     {

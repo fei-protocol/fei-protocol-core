@@ -1,15 +1,14 @@
+import { FixedPricePSM } from '@custom-types/contracts';
+import { NamedContracts } from '@custom-types/types';
+import proposals from '@protocol/proposalsConfig';
+import { expectApprox, expectRevert, getAddresses, getImpersonatedSigner, time } from '@test/helpers';
+import { TestEndtoEndCoordinator } from '@test/integration/setup';
+import { forceEth } from '@test/integration/setup/utils';
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
-import { ethers } from 'hardhat';
-import { NamedContracts } from '@custom-types/types';
-import { expectRevert, getAddresses, getImpersonatedSigner, resetFork, time } from '@test/helpers';
-import { TestEndtoEndCoordinator } from '@test/integration/setup';
-import proposals from '@test/integration/proposals_config';
-import { forceEth } from '@test/integration/setup/utils';
 import { Contract, Signer } from 'ethers';
-import { expectApprox } from '@test/helpers';
-import { FixedPricePSM } from '@custom-types/contracts';
+import { ethers } from 'hardhat';
 
 before(async () => {
   chai.use(CBN(ethers.BigNumber));
@@ -23,8 +22,9 @@ describe('e2e-peg-stability-module', function () {
   let e2eCoord: TestEndtoEndCoordinator;
   let daiPCVDripController: Contract;
   let doLogging: boolean;
-  let userAddress;
-  let minterAddress;
+  let userAddress: string;
+  let minterAddress: string;
+  let governorAddress;
   let dai: Contract;
   let daiPSM: Contract;
   let fei: Contract;

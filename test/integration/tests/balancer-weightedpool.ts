@@ -1,14 +1,14 @@
+import { NamedContracts } from '@custom-types/types';
+import { TransactionResponse } from '@ethersproject/providers';
+import proposals from '@protocol/proposalsConfig';
+import { balance, expectApproxAbs, expectRevert, getImpersonatedSigner } from '@test/helpers';
+import { TestEndtoEndCoordinator } from '@test/integration/setup';
+import { forceEth } from '@test/integration/setup/utils';
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
 import { ethers } from 'hardhat';
-import { NamedContracts } from '@custom-types/types';
-import { getImpersonatedSigner, expectRevert, expectApproxAbs, balance, resetFork } from '@test/helpers';
-import proposals from '@test/integration/proposals_config';
-import { TestEndtoEndCoordinator } from '@test/integration/setup';
-import { forceEth } from '@test/integration/setup/utils';
 const toBN = ethers.BigNumber.from;
-import { TransactionResponse } from '@ethersproject/providers';
 const BNe18 = (x: any) => ethers.constants.WeiPerEther.mul(toBN(x));
 
 describe('balancer-weightedpool', function () {
@@ -137,7 +137,7 @@ describe('balancer-weightedpool', function () {
       expect(await balancerDepositTribeWeth.balance()).to.be.equal('0');
       expect((await balancerDepositTribeWeth.resistantBalanceAndFei())[0]).to.be.equal('0');
       expect((await balancerDepositTribeWeth.resistantBalanceAndFei())[1]).to.be.equal('0');
-      expect(await contracts.wethERC20.balanceOf(balancerDepositTribeWeth.address)).to.be.equal('0');
+      expect(await contracts.weth.balanceOf(balancerDepositTribeWeth.address)).to.be.equal('0');
       expect(await contracts.tribe.balanceOf(balancerDepositTribeWeth.address)).to.be.equal('0');
     });
 
@@ -149,12 +149,12 @@ describe('balancer-weightedpool', function () {
       const tribeToAllocate = BNe18(Math.round(4 * tribePerEth * 10000)).div(10000); // rounding error < slippage tolerance
       await contracts.aaveEthPCVDeposit.connect(daoSigner).withdraw(balancerDepositTribeWeth.address, BNe18('1'));
       await contracts.core.connect(daoSigner).allocateTribe(balancerDepositTribeWeth.address, tribeToAllocate);
-      expect(await contracts.wethERC20.balanceOf(balancerDepositTribeWeth.address)).to.be.equal(BNe18('1'));
+      expect(await contracts.weth.balanceOf(balancerDepositTribeWeth.address)).to.be.equal(BNe18('1'));
       expect(await contracts.tribe.balanceOf(balancerDepositTribeWeth.address)).to.be.equal(tribeToAllocate);
 
       // deposit funds in the pool
       await balancerDepositTribeWeth.deposit();
-      expect(await contracts.wethERC20.balanceOf(balancerDepositTribeWeth.address)).to.be.equal('0');
+      expect(await contracts.weth.balanceOf(balancerDepositTribeWeth.address)).to.be.equal('0');
       expect(await contracts.tribe.balanceOf(balancerDepositTribeWeth.address)).to.be.equal('0');
 
       const poolTokens = await contracts.balancerVault.getPoolTokens(await balancerDepositTribeWeth.poolId());
@@ -226,7 +226,7 @@ describe('balancer-weightedpool', function () {
 
       // check the amount of tokens out after exitPool
       const tribeBalanceAfterExit = (await contracts.tribe.balanceOf(balancerDepositTribeWeth.address)) / 1e18;
-      const wethBalanceAfterExit = (await contracts.wethERC20.balanceOf(balancerDepositTribeWeth.address)) / 1e18;
+      const wethBalanceAfterExit = (await contracts.weth.balanceOf(balancerDepositTribeWeth.address)) / 1e18;
       expect(tribeBalanceAfterExit).to.be.at.least(4 * tribePerEth * 0.99);
       expect(wethBalanceAfterExit).to.be.at.least(0.99);
     });
@@ -358,24 +358,24 @@ describe('balancer-weightedpool', function () {
     });
 
     it('should be able to wrap and unwrap ETH', async function () {
-      expect(await contracts.wethERC20.balanceOf(balancerDepositFeiWeth.address)).to.be.equal('0');
+      expect(await contracts.weth.balanceOf(balancerDepositFeiWeth.address)).to.be.equal('0');
       expect((await balance.current(balancerDepositFeiWeth.address)).toString()).to.be.equal('0');
 
       await (
         await ethers.getSigner(deployAddress)
       ).sendTransaction({ to: balancerDepositFeiWeth.address, value: toBN('1000') });
 
-      expect(await contracts.wethERC20.balanceOf(balancerDepositFeiWeth.address)).to.be.equal('0');
+      expect(await contracts.weth.balanceOf(balancerDepositFeiWeth.address)).to.be.equal('0');
       expect((await balance.current(balancerDepositFeiWeth.address)).toString()).to.be.equal(toBN('1000'));
 
       await balancerDepositFeiWeth.wrapETH();
 
-      expect(await contracts.wethERC20.balanceOf(balancerDepositFeiWeth.address)).to.be.equal(toBN('1000'));
+      expect(await contracts.weth.balanceOf(balancerDepositFeiWeth.address)).to.be.equal(toBN('1000'));
       expect((await balance.current(balancerDepositFeiWeth.address)).toString()).to.be.equal('0');
 
       await balancerDepositFeiWeth.connect(daoSigner).unwrapETH();
 
-      expect(await contracts.wethERC20.balanceOf(balancerDepositFeiWeth.address)).to.be.equal('0');
+      expect(await contracts.weth.balanceOf(balancerDepositFeiWeth.address)).to.be.equal('0');
       expect((await balance.current(balancerDepositFeiWeth.address)).toString()).to.be.equal(toBN('1000'));
     });
 
@@ -385,10 +385,10 @@ describe('balancer-weightedpool', function () {
       const signer = await getImpersonatedSigner(WETH_HOLDER);
       await forceEth(WETH_HOLDER);
       const amount = '10000000000000000000000'; // 10k WETH (18 decimals)
-      await contracts.wethERC20.connect(signer).transfer(balancerDepositFeiWeth.address, amount);
+      await contracts.weth.connect(signer).transfer(balancerDepositFeiWeth.address, amount);
 
       // check initial amounts and deposit
-      expect(await contracts.wethERC20.balanceOf(balancerDepositFeiWeth.address)).to.be.equal(amount);
+      expect(await contracts.weth.balanceOf(balancerDepositFeiWeth.address)).to.be.equal(amount);
       expect(await contracts.fei.balanceOf(balancerDepositFeiWeth.address)).to.be.equal('0');
       await balancerDepositFeiWeth.deposit();
 

@@ -5,13 +5,11 @@
 /* eslint-disable no-unused-expressions */
 /* eslint-disable no-plusplus */
 /* eslint-disable no-await-in-loop */
-import { time } from '../../helpers';
-import { expectRevert, expectUnspecifiedRevert, getCore, getAddresses, expectApprox } from '../../helpers';
-import { expect } from 'chai';
-import hre, { ethers } from 'hardhat';
-import { BigNumber, Signer } from 'ethers';
 import { TransactionReceipt, TransactionResponse } from '@ethersproject/abstract-provider';
-import { BN } from 'ethereumjs-util';
+import { expect } from 'chai';
+import { BigNumber, Contract, Signer } from 'ethers';
+import hre, { ethers } from 'hardhat';
+import { expectApprox, expectRevert, getAddresses, getCore, time } from '../../helpers';
 
 const toBN = ethers.BigNumber.from;
 
@@ -23,14 +21,14 @@ const blockReward = '100000000000000000000';
 const impersonatedSigners: { [key: string]: Signer } = {};
 
 async function testMultipleUsersPooling(
-  tribalChief,
-  lpToken,
-  userAddresses,
-  incrementAmount,
-  blocksToAdvance,
-  lockLength,
-  totalStaked,
-  pid
+  tribalChief: Contract,
+  lpToken: Contract,
+  userAddresses: string[],
+  incrementAmount: BigNumber | BigNumber[],
+  blocksToAdvance: number,
+  lockLength: number | number[],
+  totalStaked: string,
+  pid: number
 ) {
   // if lock length isn't defined, it defaults to 0
   lockLength = lockLength === undefined ? 0 : lockLength;
@@ -85,34 +83,34 @@ async function testMultipleUsersPooling(
 
       await expectApprox(
         toBN(await tribalChief.pendingRewards(pid, userAddresses[j])),
-        pendingBalances[j].add(userIncrementAmount)
+        pendingBalances[j].add(userIncrementAmount as any)
       );
     }
   }
 }
 
-const emergencyWithdrawReport = [];
-const withdrawAllAndHarvestReport = [];
-const withdrawFromDepositReport = [];
-const harvestReport = [];
-const depositReport = [];
+const emergencyWithdrawReport: any[] = [];
+const withdrawAllAndHarvestReport: any[] = [];
+const withdrawFromDepositReport: any[] = [];
+const harvestReport: any[] = [];
+const depositReport: any[] = [];
 
 describe('TribalChief', () => {
   // this is the process ID of the staking rewards that we will use
-  let pid;
-  let minterAddress;
-  let governorAddress;
-  let userAddress;
-  let secondUserAddress;
-  let thirdUserAddress;
-  let fourthUserAddress;
-  let fifthUserAddress;
-  let sixthUserAddress;
-  let seventhUserAddress;
-  let eigthUserAddress;
-  let ninthUserAddress;
-  let tenthUserAddress;
-  let perBlockReward;
+  let pid: number;
+  let minterAddress: string;
+  let governorAddress: string;
+  let userAddress: string;
+  let secondUserAddress: string;
+  let thirdUserAddress: string;
+  let fourthUserAddress: string;
+  let fifthUserAddress: string;
+  let sixthUserAddress: string;
+  let seventhUserAddress: string;
+  let eigthUserAddress: string;
+  let ninthUserAddress: string;
+  let tenthUserAddress: string;
+  let perBlockReward: number;
 
   const multiplier10x = '100000';
   const multiplier5x = '50000';
@@ -1102,7 +1100,7 @@ describe('TribalChief', () => {
           thirdPid
         );
 
-        async function testFailureWithdraw(poolPid, users, tribalChief) {
+        async function testFailureWithdraw(poolPid: number, users: string[], tribalChief: Contract) {
           for (const user of users) {
             await expectRevert(
               tribalChief.connect(impersonatedSigners[user]).withdrawFromDeposit(poolPid, totalStaked, user, 0),
@@ -1969,9 +1967,9 @@ describe('TribalChief', () => {
       });
 
       it('', async () => {
-        function printData(data, message) {
+        function printData(data: any, message: any) {
           console.log(message);
-          data.forEach((e) => {
+          data.forEach((e: any) => {
             console.log(`${e.msg} ${e.gas}`);
           });
         }

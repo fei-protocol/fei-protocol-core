@@ -4,7 +4,7 @@ import { solidity } from 'ethereum-waffle';
 import { ethers } from 'hardhat';
 import { NamedAddresses, NamedContracts } from '@custom-types/types';
 import { resetFork, time, overwriteChainlinkAggregator } from '@test/helpers';
-import proposals from '@test/integration/proposals_config';
+import proposals from '@protocol/proposalsConfig';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
 
 const toBN = ethers.BigNumber.from;

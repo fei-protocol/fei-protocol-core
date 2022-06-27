@@ -5,7 +5,7 @@ import { ethers } from 'hardhat';
 import { NamedContracts } from '@custom-types/types';
 import { expectRevert, getAddresses, getImpersonatedSigner, resetFork, time } from '@test/helpers';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
-import proposals from '@test/integration/proposals_config';
+import proposals from '@protocol/proposalsConfig';
 import { forceEth } from '@test/integration/setup/utils';
 import { Contract, Signer } from 'ethers';
 import { expectApprox } from '@test/helpers';
@@ -21,8 +21,9 @@ describe('e2e-peg-stability-module', function () {
   let daiPCVDripController: Contract;
   let doLogging: boolean;
   let ethPSMRouter: Contract;
-  let userAddress;
-  let minterAddress;
+  let userAddress: string;
+  let minterAddress: string;
+  let governorAddress;
   let weth: Contract;
   let dai: Contract;
   let raiPriceBoundPSM: Contract;
@@ -30,9 +31,9 @@ describe('e2e-peg-stability-module', function () {
   let fei: Contract;
   let rai: Contract;
   let core: Contract;
-  let feiDAOTimelock;
-  let beneficiaryAddress1;
-  let guardianAddress;
+  let feiDAOTimelock: Contract;
+  let beneficiaryAddress1: string;
+  let guardianAddress: string;
   let daiFixedPricePSM: Contract;
 
   before(async () => {
@@ -88,7 +89,7 @@ describe('e2e-peg-stability-module', function () {
       contracts.feiDAOTimelock.address
     ];
 
-    ({ userAddress, minterAddress, beneficiaryAddress1, guardianAddress } = addresses);
+    ({ userAddress, minterAddress, beneficiaryAddress1, guardianAddress, governorAddress } = addresses);
 
     await core.grantMinter(minterAddress);
 
@@ -406,6 +407,15 @@ describe('e2e-peg-stability-module', function () {
         await forceEth(raiWhale);
         const raiWhaleSigner = await getImpersonatedSigner(raiWhale);
         await rai.connect(raiWhaleSigner).transfer(raiPriceBoundPSM.address, redeemAmount);
+
+        // Set floor to something sufficiently low for tests to pass - RAI price on-chain fluctuates
+        await raiPriceBoundPSM.connect(impersonatedSigners[userAddress]).setOracleFloorBasisPoints(25000);
+
+        // Ensure RAI PSM is not paused
+        const isPaused = await raiPriceBoundPSM.paused();
+        if (isPaused) {
+          await raiPriceBoundPSM.connect(impersonatedSigners[userAddress]).unpause();
+        }
       });
 
       it('exchanges 1000 FEI for rai', async () => {
@@ -457,6 +467,9 @@ describe('e2e-peg-stability-module', function () {
         await forceEth(raiAccount);
         await rai.connect(raiSigner).transfer(userAddress, mintAmount);
         await rai.connect(impersonatedSigners[userAddress]).approve(raiPriceBoundPSM.address, mintAmount * 2);
+
+        // Set floor to something sufficiently low for tests to pass - RAI price on-chain fluctuates
+        await raiPriceBoundPSM.connect(impersonatedSigners[userAddress]).setOracleFloorBasisPoints(2500);
       });
 
       it('cannot mint because the rai psm is paused', async () => {

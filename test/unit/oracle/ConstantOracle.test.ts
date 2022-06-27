@@ -1,7 +1,7 @@
-import { getCore, getAddresses } from '../../helpers';
 import { expect } from 'chai';
-import hre, { ethers, artifacts } from 'hardhat';
 import { Signer } from 'ethers';
+import hre, { artifacts, ethers } from 'hardhat';
+import { getAddresses, getCore } from '../../helpers';
 
 const ConstantOracle = artifacts.readArtifactSync('ConstantOracle');
 

@@ -18,8 +18,7 @@ import {DummyStorage} from "../../utils/Fixtures.sol";
 import {Vm} from "../../utils/Vm.sol";
 import {MainnetAddresses} from "../fixtures/MainnetAddresses.sol";
 
-/// @notice Validate PodFactory critical functionality such as creating pods
-///  @dev PodAdmin can not also be a pod member
+/// @notice Validate PodFactory functionality, such as creating pods
 contract PodFactoryIntegrationTest is DSTest {
     Vm public constant vm = Vm(HEVM_ADDRESS);
 
@@ -274,60 +273,6 @@ contract PodFactoryIntegrationTest is DSTest {
         assertEq(podBId, podAId + 1);
         address podBAdmin = ControllerV1(podController).podAdmin(podBId);
         assertEq(podBAdmin, podAdmin);
-    }
-
-    /// @notice Validate that can create a transaction in the pod and that it progresses to the timelock
-    function testCreateTxInOptimisticPod() public {
-        vm.warp(1);
-        vm.roll(1);
-
-        // 1. Deploy Dummy contract to perform a transaction on
-        DummyStorage dummyContract = new DummyStorage();
-        assertEq(dummyContract.getVariable(), 5);
-
-        // 2. Deploy pod
-        IPodFactory.PodConfig memory podConfig = getPodParamsWithTimelock(podAdmin);
-        vm.prank(feiDAOTimelock);
-        (, address podTimelock, address safe) = factory.createOptimisticPod(podConfig);
-
-        TimelockController timelockContract = TimelockController(payable(podTimelock));
-
-        // 3. Schedle a transaction from the Pod's safe address to timelock. Transaction sets a variable on a dummy contract
-        uint256 newDummyContractVar = 10;
-        bytes memory timelockExecutionTxData = abi.encodePacked(
-            bytes4(keccak256(bytes("setVariable(uint256)"))),
-            newDummyContractVar
-        );
-
-        vm.prank(safe);
-        timelockContract.schedule(
-            address(dummyContract),
-            0,
-            timelockExecutionTxData,
-            bytes32(0),
-            bytes32("1"),
-            podConfig.minDelay
-        );
-
-        // 4. Validate that transaction is in timelock
-        bytes32 txHash = timelockContract.hashOperation(
-            address(dummyContract),
-            0,
-            timelockExecutionTxData,
-            bytes32(0),
-            bytes32("1")
-        );
-        assertTrue(timelockContract.isOperationPending(txHash));
-
-        // 5. Fast forward to execution time in timelock
-        vm.warp(podConfig.minDelay + 10);
-        vm.roll(podConfig.minDelay + 10);
-
-        // 6. Execute transaction and validate state is updated
-        podExecutor.execute(podTimelock, address(dummyContract), 0, timelockExecutionTxData, bytes32(0), bytes32("1"));
-
-        assertTrue(timelockContract.isOperationDone(txHash));
-        assertEq(dummyContract.getVariable(), newDummyContractVar);
     }
 
     /// @notice Validate that the default pod controller can be updated

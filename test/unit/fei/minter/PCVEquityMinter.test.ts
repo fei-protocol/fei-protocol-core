@@ -1,7 +1,7 @@
-import { ZERO_ADDRESS, expectRevert, time, getAddresses, getCore, expectApprox } from '@test/helpers';
+import { expectApprox, expectRevert, getAddresses, getCore, time, ZERO_ADDRESS } from '@test/helpers';
 import { expect } from 'chai';
-import hre, { ethers } from 'hardhat';
 import { Signer } from 'ethers';
+import hre, { ethers } from 'hardhat';
 
 describe('PCVEquityMinter', function () {
   let userAddress: string;

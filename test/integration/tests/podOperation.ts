@@ -1,17 +1,18 @@
 import { PodAdminGateway, PodFactory } from '@custom-types/contracts';
+import { NamedAddresses, NamedContracts } from '@custom-types/types';
+import Safe from '@gnosis.pm/safe-core-sdk';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
+import { MIN_TIMELOCK_DELAY, TRIBAL_COUNCIL_POD_ID, tribeCouncilPodConfig } from '@protocol/optimisticGovernance';
+import proposals from '@protocol/proposalsConfig';
+import { getImpersonatedSigner, initialiseGnosisSDK, time } from '@test/helpers';
+import { forceEth } from '@test/integration/setup/utils';
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
-import { ethers } from 'hardhat';
-import { NamedAddresses, NamedContracts } from '@custom-types/types';
-import { getImpersonatedSigner, resetFork, time, initialiseGnosisSDK } from '@test/helpers';
-import proposals from '@test/integration/proposals_config';
-import { forceEth } from '@test/integration/setup/utils';
-import { TestEndtoEndCoordinator } from '../setup';
 import { BigNumberish, Contract } from 'ethers';
+import { ethers } from 'hardhat';
 import { abi as timelockABI } from '../../../artifacts/@openzeppelin/contracts/governance/TimelockController.sol/TimelockController.json';
-import { MIN_TIMELOCK_DELAY } from '@protocol/optimisticGovernance';
+import { TestEndtoEndCoordinator } from '../setup';
 
 function createSafeTxArgs(timelock: Contract, functionSig: string, args: any[]) {
   return {
@@ -33,8 +34,7 @@ describe('Pod operation and veto', function () {
   let timelockAddress: string;
   let podTimelock: Contract;
   let registryTxData: string;
-  let registryTxData2: string;
-  let safeSDK: any;
+  let safeSDK: Safe;
 
   const proposalId = '1234';
   const proposalMetadata = 'FIP_XX: This tests that the governance upgrade flow works';
@@ -70,6 +70,8 @@ describe('Pod operation and veto', function () {
 
     await forceEth(contractAddresses.tribalCouncilTimelock);
     await forceEth(contractAddresses.feiDAOTimelock);
+    await forceEth(contractAddresses.tribalCouncilTimelock);
+    await forceEth(contractAddresses.feiDAOTimelock);
 
     podConfig = {
       members: [
@@ -101,8 +103,8 @@ describe('Pod operation and veto', function () {
 
     // 1. Deploy a pod through which a proposal will be executed
     const deployTx = await podFactory.connect(tribalCouncilTimelockSigner).createOptimisticPod(podConfig);
-    const { args } = (await deployTx.wait()).events.find((elem) => elem.event === 'CreatePod');
-
+    const result = (await deployTx.wait()).events!.find((elem) => elem.event === 'CreatePod');
+    const args = result!.args!;
     podId = args.podId;
     const safeAddress = await podFactory.getPodSafe(podId);
     timelockAddress = await podFactory.getPodTimelock(podId);
@@ -194,7 +196,7 @@ describe('Pod operation and veto', function () {
     //    call the podAdminGateway.veto() method with the proposalId that is in the timelock
     // 2. Have a member with >quorum TRIBE vote for proposal
     // 3. Validate that proposal is executed
-    const userWithTribe = await getImpersonatedSigner(contractAddresses.multisig);
+    const userWithTribe = await getImpersonatedSigner(contractAddresses.guardianMultisig);
     const timelockProposalId = await podTimelock.hashOperation(
       contractAddresses.governanceMetadataRegistry,
       0,
@@ -211,7 +213,8 @@ describe('Pod operation and veto', function () {
     const values = [0];
 
     const proposeTx = await nopeDAO.propose(targets, values, calldatas, description);
-    const { args } = (await proposeTx.wait()).events.find((elem) => elem.event === 'ProposalCreated');
+    const result = (await proposeTx.wait()).events!.find((elem: any) => elem.event === 'ProposalCreated');
+    const args = result!.args!;
     const nopeDAOProposalId = args.proposalId;
 
     // Use the proposalID to vote for this proposal on the nopeDAO
@@ -223,5 +226,137 @@ describe('Pod operation and veto', function () {
     // Validate proposal was nope'd
     const readyTimestamp = await podTimelock.getTimestamp(timelockProposalId);
     expect(readyTimestamp).to.equal(0);
+  });
+
+  it('should allow TribalCouncil to operate on the protocol', async () => {
+    // 1. Get Gnosis SDK connections for each TC member
+    const tribalCouncilTimelock = contracts.tribalCouncilTimelock;
+    const tribalCouncilSafeSigner = await getImpersonatedSigner(contractAddresses.tribalCouncilSafe);
+    await forceEth(tribalCouncilTimelock.address);
+    await forceEth(contractAddresses.tribalCouncilSafe);
+
+    const tribalCouncilMinDelay = await tribalCouncilTimelock.getMinDelay();
+    expect(tribalCouncilMinDelay).to.be.equal(tribeCouncilPodConfig.minDelay);
+
+    // 2. Prepare a proposal which requires a TribeRole. TribalCouncil timelock should have been granted
+    // ROLE_ADMIN and be able to call into RoleBastion to create a role
+    const dummyRole = ethers.utils.id('DUMMY_2_ROLE');
+    const registryTCData = contracts.roleBastion.interface.encodeFunctionData('createRole', [dummyRole]);
+    await tribalCouncilTimelock
+      .connect(tribalCouncilSafeSigner)
+      .schedule(
+        contractAddresses.roleBastion,
+        0,
+        registryTCData,
+        '0x0000000000000000000000000000000000000000000000000000000000000000',
+        '0x0000000000000000000000000000000000000000000000000000000000000001',
+        tribeCouncilPodConfig.minDelay
+      );
+
+    // 5. Execute timelocked transaction - need to call via the podExecutor
+    // Fast forward time on timelock
+    await time.increase(tribeCouncilPodConfig.minDelay);
+
+    const podExecutor = contracts.podExecutor;
+    const executeTx = await podExecutor.execute(
+      tribalCouncilTimelock.address,
+      contractAddresses.roleBastion,
+      0,
+      registryTCData,
+      '0x0000000000000000000000000000000000000000000000000000000000000000',
+      '0x0000000000000000000000000000000000000000000000000000000000000001'
+    );
+    await executeTx.wait();
+
+    // 6.0 Validate that the expected role was created in core, should have a ROLE_ADMIN admin
+    const dummyRoleAdmin = await contracts.core.getRoleAdmin(dummyRole);
+    expect(dummyRoleAdmin).to.be.equal(ethers.utils.id('ROLE_ADMIN'));
+  });
+
+  it('should allow deployed NopeDAO to veto a TribalCouncil proposal', async () => {
+    // 1. Get Gnosis SDK connections for each TC member
+    const tribalCouncilTimelock = contracts.tribalCouncilTimelock;
+    const tribalCouncilSafeSigner = await getImpersonatedSigner(contractAddresses.tribalCouncilSafe);
+    await forceEth(tribalCouncilTimelock.address);
+    await forceEth(contractAddresses.tribalCouncilSafe);
+
+    const tribalCouncilMinDelay = await tribalCouncilTimelock.getMinDelay();
+    expect(tribalCouncilMinDelay).to.be.equal(tribeCouncilPodConfig.minDelay);
+
+    // 2. Prepare a proposal which requires a TribeRole. TribalCouncil timelock should have been granted
+    // ROLE_ADMIN and be able to call into RoleBastion to create a role
+    const dummyRole = ethers.utils.id('DUMMY_ROLE');
+    const roleCreationData = contracts.roleBastion.interface.encodeFunctionData('createRole', [dummyRole]);
+    await tribalCouncilTimelock
+      .connect(tribalCouncilSafeSigner)
+      .schedule(
+        contractAddresses.roleBastion,
+        0,
+        roleCreationData,
+        '0x0000000000000000000000000000000000000000000000000000000000000000',
+        '0x0000000000000000000000000000000000000000000000000000000000000001',
+        tribeCouncilPodConfig.minDelay
+      );
+
+    // 3. Create NopeDAO proposal to veto the timelocked transaction
+    const userWithTribe = await getImpersonatedSigner(contractAddresses.guardianMultisig);
+    const timelockProposalId = await tribalCouncilTimelock.hashOperation(
+      contractAddresses.roleBastion,
+      0,
+      roleCreationData,
+      '0x0000000000000000000000000000000000000000000000000000000000000000',
+      '0x0000000000000000000000000000000000000000000000000000000000000001'
+    );
+
+    // User proposes on NopeDAO
+    const nopeDAO = contracts.nopeDAO;
+    const description = 'Veto proposal';
+    const calldatas = [
+      contracts.podAdminGateway.interface.encodeFunctionData('veto', [TRIBAL_COUNCIL_POD_ID, timelockProposalId])
+    ];
+    const targets = [contractAddresses.podAdminGateway];
+    const values = [0];
+
+    const proposeTx = await nopeDAO.propose(targets, values, calldatas, description);
+    const { args } = (await proposeTx.wait()).events.find((elem: any) => elem.event === 'ProposalCreated');
+    const nopeDAOProposalId = args.proposalId;
+
+    // Use the proposalID to vote for this proposal on the nopeDAO
+    await nopeDAO.connect(userWithTribe).castVote(nopeDAOProposalId, 1);
+
+    const descriptionHash = ethers.utils.id(description);
+    await nopeDAO.execute(targets, values, calldatas, descriptionHash);
+
+    // Validate proposal was nope'd
+    const readyTimestamp = await tribalCouncilTimelock.getTimestamp(timelockProposalId);
+    expect(readyTimestamp).to.equal(0);
+  });
+
+  it('should not allow non-Safe to queue on TribalCouncil timelock', async () => {
+    const attackerAddress = '0xFBbbedc28217550fa63ACA29e85b87c2646e11d4';
+    const attackerSigner = await getImpersonatedSigner(attackerAddress);
+
+    const tribalCouncilTimelock = contracts.tribalCouncilTimelock;
+    await forceEth(tribalCouncilTimelock.address);
+    await forceEth(attackerAddress);
+
+    // 2. Prepare a proposal which requires a TribeRole. TribalCouncil timelock should have been granted
+    // ROLE_ADMIN and be able to call into RoleBastion to create a role
+    const dummyRole = ethers.utils.id('DUMMY_3_ROLE');
+    const roleCreationData = contracts.roleBastion.interface.encodeFunctionData('createRole', [dummyRole]);
+    await expect(
+      tribalCouncilTimelock
+        .connect(attackerSigner)
+        .schedule(
+          contractAddresses.roleBastion,
+          0,
+          roleCreationData,
+          '0x0000000000000000000000000000000000000000000000000000000000000000',
+          '0x0000000000000000000000000000000000000000000000000000000000000001',
+          tribeCouncilPodConfig.minDelay
+        )
+    ).to.be.revertedWith(
+      'AccessControl: account 0xfbbbedc28217550fa63aca29e85b87c2646e11d4 is missing role 0xb09aa5aeb3702cfd50b6b62bc4532604938f21248a27a1d5ca736082b6819cc1'
+    );
   });
 });

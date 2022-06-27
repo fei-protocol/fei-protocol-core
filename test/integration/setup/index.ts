@@ -1,12 +1,12 @@
-import { ethers } from 'hardhat';
-import { permissions } from '@protocol/permissions';
+import { permissions, PermissionsType } from '@protocol/permissions';
 import { getAllContractAddresses, getAllContracts } from './loadContracts';
 import {
   Config,
   ContractAccessRights,
   TestCoordinator,
-  Env,
+  ContractsAndAddresses,
   ProposalConfig,
+  TemplatedProposalConfig,
   namedContractsToNamedAddresses,
   NamedAddresses,
   NamedContracts,
@@ -21,7 +21,9 @@ import { sudo } from '@scripts/utils/sudo';
 import constructProposal from '@scripts/utils/constructProposal';
 import '@nomiclabs/hardhat-ethers';
 import { resetFork } from '@test/helpers';
-import simulateOAProposal from '@scripts/utils/simulateOAProposal';
+import { simulateOAProposal } from '@scripts/utils/simulateTimelockProposal';
+import { simulateTCProposal } from '@scripts/utils/simulateTimelockProposal';
+import { simulateDEBUGProposal } from '@scripts/utils/simulateDEBUGProposal';
 import { forceEth } from '@test/integration/setup/utils';
 import { getImpersonatedSigner } from '@test/helpers';
 
@@ -38,6 +40,10 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
 
   constructor(private config: Config, proposals?: any) {
     this.proposals = proposals;
+
+    this.mainnetContracts = {};
+    this.afterUpgradeAddresses = {};
+    this.afterUpgradeContracts = {};
   }
 
   public async initMainnetContracts(): Promise<void> {
@@ -54,7 +60,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
    * 3) Apply appropriate permissions to the contracts e.g. minter, burner priviledges
    *
    */
-  public async loadEnvironment(): Promise<Env> {
+  public async loadEnvironment(): Promise<ContractsAndAddresses> {
     await resetFork();
     await this.initMainnetContracts();
     let existingContracts = this.mainnetContracts;
@@ -94,7 +100,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
   async applyUpgrade(
     existingContracts: NamedContracts,
     proposalName: string,
-    config: ProposalConfig
+    config: TemplatedProposalConfig
   ): Promise<NamedContracts> {
     let deployedUpgradedContracts = {};
 
@@ -159,51 +165,14 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
       await proposal.simulate();
     }
 
-    if (config.category === ProposalCategory.DEBUG) {
-      console.log('Simulating DAO proposal in DEBUG mode (step by step)...');
-      console.log('  Title: ', config.proposal.title);
-
-      const signer = await getImpersonatedSigner(contracts.feiDAOTimelock.address);
-      await forceEth(contracts.feiDAOTimelock.address);
-
-      let totalGasUsed = 0;
-      for (let i = 0; i < config.proposal.commands.length; i++) {
-        const cmd = config.proposal.commands[i];
-        // build tx & print details
-        console.log('  Step' + (config.proposal.commands.length >= 10 && i < 10 ? ' ' : ''), i, ':', cmd.description);
-        let types = [];
-        if (cmd.method.indexOf('(') !== -1 && cmd.method.indexOf('()') === -1) {
-          // e.g. ['address', 'bytes32', 'uint256'], or empty array []
-          types = cmd.method.split('(')[1].split(')')[0].split(',');
-        }
-        const cmdArguments = cmd.arguments.map((arg) => {
-          if (arg.indexOf('{') == 0) {
-            arg = contractAddresses[arg.replace('{', '').replace('}', '')] || arg;
-          }
-          return arg;
-        });
-        const functionSig = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(cmd.method));
-        const calldata = ethers.utils.defaultAbiCoder
-          .encode(types, cmdArguments)
-          .replace('0x', functionSig.substring(0, 10)); // prepend function signature
-        const to = contractAddresses[cmd.target] || cmd.target;
-        const value = cmd.values;
-        console.log('    Target:', cmd.target, '[' + to + ']');
-        console.log('    Method:', cmd.method);
-        types.forEach((type, i) => {
-          console.log('      Argument', i, '[' + type + ']', cmdArguments[i]);
-        });
-        //console.log('    Value:', value);
-        //console.log('    Calldata:', calldata);
-        console.log('    Calling... ');
-
-        // send tx
-        const tx = await signer.sendTransaction({ data: calldata, to, value: Number(value) });
-        const d = await tx.wait();
-        console.log('    Done. Used ' + d.cumulativeGasUsed.toString() + ' gas.');
-        totalGasUsed += Number(d.cumulativeGasUsed.toString());
-      }
-      console.log('  Done. Used', totalGasUsed, 'gas in total.');
+    if (config.category === ProposalCategory.TC) {
+      this.config.logging && console.log(`Simulating Tribal Council proposal...`);
+      await simulateTCProposal(
+        config.proposal,
+        contracts as unknown as MainnetContracts,
+        contractAddresses,
+        this.config.logging
+      );
     }
 
     if (config.category === ProposalCategory.OA) {
@@ -214,6 +183,26 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
         contractAddresses,
         this.config.logging
       );
+    }
+
+    if (config.category === ProposalCategory.DEBUG) {
+      console.log('Simulating DAO proposal in DEBUG mode (step by step)...');
+      console.log('  Title: ', config.proposal.title);
+
+      const signer = await getImpersonatedSigner(contracts.feiDAOTimelock.address);
+      await forceEth(contracts.feiDAOTimelock.address);
+
+      await simulateDEBUGProposal(signer, contractAddresses, contracts as unknown as MainnetContracts, config);
+    }
+
+    if (config.category === ProposalCategory.DEBUG_TC) {
+      console.log('Simulating TC proposal in DEBUG mode (step by step)...');
+      console.log('  Title: ', config.proposal.title);
+
+      const signer = await getImpersonatedSigner(contracts.tribalCouncilTimelock.address);
+      await forceEth(contracts.tribalCouncilTimelock.address);
+
+      await simulateDEBUGProposal(signer, contractAddresses, contracts as unknown as MainnetContracts, config);
     }
 
     // teardown the DAO proposal
@@ -259,16 +248,22 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
    * permissions contract
    */
   getAccessControlMapping(): ContractAccessRights {
-    const accessControlRoles = {};
+    const accessControlRoles: ContractAccessRights = {
+      minter: [],
+      burner: [],
+      pcvController: [],
+      governor: [],
+      guardian: []
+    };
 
     // Array of all deployed contracts
     Object.keys(permissions).map((role) => {
-      const contracts = permissions[role];
+      const contracts = permissions[role as PermissionsType];
       const addresses = contracts.map((contractName) => {
         return this.afterUpgradeAddresses[contractName];
       });
 
-      accessControlRoles[role] = addresses;
+      accessControlRoles[role as keyof ContractAccessRights] = addresses;
     });
 
     return accessControlRoles as ContractAccessRights;

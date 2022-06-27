@@ -1,24 +1,23 @@
 import {
   AavePCVDeposit,
-  PegStabilityModule,
   Fei,
   IERC20,
   PCVDripController,
+  PegStabilityModule,
   PSMRouter,
   WETH9
 } from '@custom-types/contracts';
+import { NamedAddresses, NamedContracts } from '@custom-types/types';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
+import proposals from '@protocol/proposalsConfig';
+import { expectApprox, expectRevert, getImpersonatedSigner, increaseTime, time } from '@test/helpers';
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
 import { BigNumber } from 'ethers';
 import hre, { ethers } from 'hardhat';
-import { NamedAddresses, NamedContracts } from '@custom-types/types';
-import { expectApprox, expectRevert, getImpersonatedSigner, increaseTime, resetFork } from '@test/helpers';
-import proposals from '@test/integration/proposals_config';
 import { TestEndtoEndCoordinator } from '../setup';
 import { forceEth } from '../setup/utils';
-import { time } from '@test/helpers';
 
 const oneEth = ethers.constants.WeiPerEther;
 
@@ -70,7 +69,7 @@ describe('eth PSM', function () {
     fei = await ethers.getContractAt('Fei', contractAddresses.fei);
     dripper = contracts.aaveEthPCVDripController as PCVDripController;
     await hre.network.provider.send('hardhat_setBalance', [deployAddress.address, '0x21E19E0C9BAB2400000']);
-    guardian = await getImpersonatedSigner(contractAddresses.guardian);
+    guardian = await getImpersonatedSigner(contractAddresses.guardianMultisig);
     await forceEth(guardian.address);
   });
 
@@ -194,9 +193,9 @@ describe('eth PSM', function () {
         // empty drip target to make sure it is empty
         await forceEth(ethPSM.address);
         const signer = await getImpersonatedSigner(ethPSM.address);
-        await contracts.wethERC20
+        await contracts.weth
           .connect(signer)
-          .transfer(await dripper.source(), await contracts.wethERC20.balanceOf(ethPSM.address));
+          .transfer(await dripper.source(), await contracts.weth.balanceOf(ethPSM.address));
       });
 
       it('sets ethpsm reserve threshold to 5250 eth', async () => {
