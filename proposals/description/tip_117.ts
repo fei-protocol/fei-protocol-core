@@ -2,7 +2,7 @@ import { ethers } from 'hardhat';
 import { TemplatedProposalDescription } from '@custom-types/types';
 
 const proposal: TemplatedProposalDescription = {
-  title: 'CR Oracle & Optimistic Approval Cleanup',
+  title: 'TIP-117: Oracles, Roles, and OA Cleanup',
   commands: [
     {
       target: 'core',
@@ -59,6 +59,13 @@ const proposal: TemplatedProposalDescription = {
       method: 'pause()',
       arguments: (addresses) => [],
       description: 'Prevent surplus allocation from LUSD PSM to this deprecated deposit'
+    },
+    {
+      target: 'ratioPCVControllerV2',
+      values: '0',
+      method: 'withdrawRatio(address,address,uint256)',
+      arguments: (addresses) => [addresses.aaveEthPCVDeposit, addresses.ethPSM, '10000'],
+      description: 'Withdraw all ETH in Aave to the ETH PSM'
     },
     {
       target: 'core',
@@ -158,13 +165,6 @@ const proposal: TemplatedProposalDescription = {
       method: 'withdrawRatio(address,address,uint256)',
       arguments: (addresses) => [addresses.uniswapPCVDeposit, addresses.ethPSM, '10000'],
       description: 'Withdraw remaining ETH/FEI liquidity from Uniswap v2'
-    },
-    {
-      target: 'collateralizationOracle',
-      values: '0',
-      method: 'setOracle(address,address)',
-      arguments: (addresses) => [addresses.uniswapPCVDeposit, addresses.voltOracle],
-      description: 'Replace VOLT oracle in CR oracle'
     },
     {
       target: 'ratioPCVControllerV2',
@@ -281,7 +281,6 @@ const proposal: TemplatedProposalDescription = {
           addresses.d3poolCurvePCVDeposit, // 0$ left in Curve d3
           addresses.uniswapPCVDeposit, // 0$ left in FEI/ETH Uniswap v2
           addresses.compoundEthPCVDepositWrapper, // 0 ETH left in Compound
-          addresses.aaveEthPCVDepositWrapper, // 0 ETH left in Aave
           addresses.raiPriceBoundPSM, // RAI will finish to be liquidated by TC multisig
           addresses.balancerDepositFeiWeth, // 0$ left in B-70WETH-30FEI deposit
           addresses.balancerLensBpt30Fei70Weth, // 0$ left in B-70WETH-30FEI gauge
@@ -302,7 +301,6 @@ const proposal: TemplatedProposalDescription = {
           addresses.balancerDepositFeiWeth,
           addresses.d3poolConvexPCVDeposit,
           addresses.d3poolCurvePCVDeposit,
-          addresses.aaveEthPCVDeposit,
           addresses.compoundEthPCVDeposit
         ]
       ],
@@ -331,47 +329,56 @@ const proposal: TemplatedProposalDescription = {
       description: 'Revoke ORACLE_ADMIN_ROLE role from the Ops Optimistic Timelock'
     }
   ],
-  description: `CR Oracle & Optimistic Approval Cleanup
+  description: `TIP-117: Oracles, Roles, and OA Cleanup
 
-Deprecate Old CR Oracle Caching Features :
- - collateralizationOracle is now read directly by pcvEquityMinter (buybacks) and tribeReserveStabilizer (backstop)
- - collateralizationOracleWrapper and collateralizationOracleWrapperImpl are no longer used anywhere in the system
- - collateralizationOracleGuardian (used to update the cache) is no longer used (revoked ORACLE_ADMIN_ROLE role)
- - collateralizationOracleKeeper (used to incentivize updates of the cache) is no longer used (revoked MINTER_ROLE role)
+  This proposal performs various technical maintenance, cleanup and deprecation tasks. It also completes tasks from 
+  TIP-110 (https://tribe.fei.money/t/tip-110-simplify-pcv/4323) and deprecates the optimistic approval and ops timelocks, which as of
+  FIP-82: Governance Enhancements (https://tribe.fei.money/t/fip-82-governance-enhancements/3945) are no longer required.
 
-Remove Empty or Deprecated PCV Deposits from CR Oracle :
- - DPI->DAI LBP lenses
- - B.AMM LUSD Deposit (deprecated, would need to redeploy to use the new B.AMM)
- - Fuse pool 7 (Tetranode) LUSD deposit (0$ left)
- - Fuse pool 6, 19, and 24 FEI deposit (114$, 0$, and 6k$ left)
- - DAO Timelock lenses for agEUR and WETH
- - Curve/Convex d3 deposits (1034$ left in Curve)
- - ETH in Tokemak (0$ left)
- - Withdraw remaining ETH/FEI liquidity from Uniswap v2 (0$ left)
- - Aave/Compound FEI/ETH deposits (0$ left)
- - Balancer FEI/WETH deposit (0$ left)
+  Specifically, it:
+1. Deprecates old collaterization oracle caching Features :
+    - collateralizationOracle is now read directly by pcvEquityMinter (buybacks) and tribeReserveStabilizer (backstop)
+    - collateralizationOracleWrapper and collateralizationOracleWrapperImpl are no longer used anywhere in the system
+    - collateralizationOracleGuardian (used to update the cache) is no longer used (revoked ORACLE_ADMIN_ROLE role)
+    - collateralizationOracleKeeper (used to incentivize updates of the cache) is no longer used (revoked MINTER_ROLE role)
 
+2. Removes empty or deprecated PCV deposits from the collaterization oracle:
+    - DPI->DAI LBP swapper lenses
+    - B.AMM LUSD Deposit (deprecated, would need to redeploy to use the new B.AMM)
+    - Fuse pool 7 (Tetranode) LUSD deposit (0$ left)
+    - Fuse pool 6, 19, and 24 FEI deposit (114$, 0$, and 6k$ left)
+    - DAO Timelock lenses for agEUR and WETH
+    - Curve/Convex d3 deposits (0$ left)
+    - Withdraw remaining ETH/FEI liquidity from Uniswap v2 (0$ left)
+    - Aave/Compound FEI/ETH deposits (0$ left)
+    - Balancer FEI/WETH deposit (0$ left)
 
-TIP-110 Simplify PCV:
+3. Unsets deprecated contracts from the safe addresses list, so funds can no longer be transferred to these deprecated
+   contracts by the PCV Guardian
+
+4. Implements components of TIP-110 Simplify PCV (https://tribe.fei.money/t/tip-110-simplify-pcv/4323):
  - Move LM rewards (COMP, stkAAVE, CRV, CVX) to the TC Multisig where they can be sold.
  - Move leftover RAI that is in PSM to the TC Multisig where it can be sold.
  - Move LQTY to TC Timelock where it can be moved to a proper PCVDeposit later.
 
-Unset deprecated PCV Deposits and PSMs as safe addresses (eligible destinations for PCV Guardian).
+5. Deprecates the optimistic approval timelock by removing its various access roles. 
+   This is cleanup from FIP-82: Governance Enhancements (https://tribe.fei.money/t/fip-82-governance-enhancements/3945),
+   the optimistic approval timelock is no longer required.
 
-Deprecate OA Roles:
- - ORACLE_ADMIN ROLE
- - SWAP_ADMIN_ROLE
- - FUSE_ADMIN
- - PCV_GUARDIAN_ADMIN_ROLE
- - METAGOVERNANCE_GAUGE_ADMIN
- - PCV_MINOR_PARAM_ROLE
- - TOKEMAK_DEPOSIT_ADMIN_ROLE
+   The following roles are removed:
+      - ORACLE_ADMIN ROLE
+      - SWAP_ADMIN_ROLE
+      - FUSE_ADMIN
+      - PCV_GUARDIAN_ADMIN_ROLE
+      - METAGOVERNANCE_GAUGE_ADMIN
+      - PCV_MINOR_PARAM_ROLE
+      - TOKEMAK_DEPOSIT_ADMIN_ROLE
 
- Deprecate ops optimistic timelock by revoking the following roles:
- - METAGOVERNANCE_TOKEN_STAKING
- - METAGOVERNANCE_VOTE_ADMIN
- - METAGOVERNANCE_TOKEN_STAKING
+ 6. Deprecates the ops optimistic timelock, which as of FIP-82: Governance Enhancements (https://tribe.fei.money/t/fip-82-governance-enhancements/3945), 
+    is no longer required. The following roles are removed:
+      - METAGOVERNANCE_TOKEN_STAKING
+      - METAGOVERNANCE_VOTE_ADMIN
+      - METAGOVERNANCE_TOKEN_STAKING
 `
 };
 

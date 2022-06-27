@@ -237,6 +237,16 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     address: '0x8096314D9014EbB69Fc777ED3791DDE6FFbaFAed',
     category: AddressCategory.Governance
   },
+  tribalCouncilTimelockFeiLens: {
+    artifactName: 'ERC20PCVDepositWrapper',
+    address: '0x4037a70152F4c88Ad40522f35BD4dDD17E6B2052',
+    category: AddressCategory.PCV
+  },
+  rariTimelockFeiOldLens: {
+    artifactName: 'ERC20PCVDepositWrapper',
+    address: '0x614D46B7eB2AC1a359b8835D64954F3Ee4E6F676',
+    category: AddressCategory.PCV
+  },
   lusdPSM: {
     artifactName: 'PegStabilityModule',
     address: '0xb0e731F036AdfDeC12da77c15aaB0F90E8e45A0e',
@@ -382,7 +392,7 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   aaveEthPCVDepositWrapper: {
     artifactName: 'PCVDepositWrapper',
     address: '0x43Ef03755991056681F01EE2182234eF6aF1f658',
-    category: AddressCategory.Deprecated
+    category: AddressCategory.PCV
   },
 
   aaveFeiPCVDepositWrapper: {
@@ -982,6 +992,11 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     artifactName: 'IOracle',
     address: '0x84dc71500D504163A87756dB6368CC8bB654592f',
     category: AddressCategory.Volt
+  },
+  voltOracle: {
+    artifactName: 'CompositeOracle',
+    address: '0x8A1f9707AbeE2102Da45a2392f2F992BA22Ff446',
+    category: AddressCategory.Oracle
   },
   dpiToDaiLBPPool: {
     artifactName: 'IWeightedPool',

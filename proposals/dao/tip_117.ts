@@ -72,25 +72,6 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
 
   // read pcvStats before proposal execution
   pcvStatsBefore = await contracts.collateralizationOracle.pcvStats();
-
-  // impersonate the rollover signer, and make the Tokemak pool go to next cycle
-  const TOKEMAK_MANAGER_ROLLOVER_ADDRESS = '0x90b6C61B102eA260131aB48377E143D6EB3A9d4B'; // has the rollover role
-  const TOKEMAK_MANAGER_ADDRESS = '0xa86e412109f77c45a3bc1c5870b880492fb86a14'; // tokemak manager
-  const IPFS_JSON_FILE_HASH = 'QmP4Vzg45jExr3mcNsx9xxV1fNft95uVzgZGeLtkBXgpkx';
-  await forceEth(TOKEMAK_MANAGER_ROLLOVER_ADDRESS);
-  const tokemakRolloverSigner: SignerWithAddress = await getImpersonatedSigner(TOKEMAK_MANAGER_ROLLOVER_ADDRESS);
-  const tokemakManagerAbi: string[] = [
-    'function nextCycleStartTime() view returns (uint256)',
-    'function completeRollover(string calldata rewardsIpfsHash)'
-  ];
-  const tokemakManager: Contract = new ethers.Contract(
-    TOKEMAK_MANAGER_ADDRESS,
-    tokemakManagerAbi,
-    tokemakRolloverSigner
-  );
-  const cycleEnd: BigNumber = await tokemakManager.nextCycleStartTime();
-  await time.increaseTo(cycleEnd.add(1));
-  await tokemakManager.completeRollover(IPFS_JSON_FILE_HASH);
 };
 
 // Tears down any changes made in setup() that need to be

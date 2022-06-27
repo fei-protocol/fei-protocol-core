@@ -58,7 +58,7 @@
     "@openzeppelin/contracts": "4.6.0",
     "@openzeppelin/test-environment": "^0.1.7",
     "@openzeppelin/test-helpers": "^0.5.15",
-    "@orcaprotocol/contracts": "^5.0.1",
+    "@orcaprotocol/contracts": "^5.3.0",
     "@rari-capital/solmate": "^6.4.0",
     "@uniswap/lib": "^1.1.2",
     "@uniswap/v2-core": "^1.0.1",
