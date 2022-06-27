@@ -17,6 +17,7 @@ Tribal Council proposal TIP_118
 
 - Deploy ERC20Holding PCV Deposits for remaining PCV assets
 - Deprecate LUSD, RAI and ETH PSMs
+- Pause PCV Drip Controllers
 
 */
 
@@ -24,8 +25,7 @@ const toBN = BigNumber.from;
 
 const fipNumber = 'tip_118';
 
-let initialDAIPSMBalance: BigNumber;
-let initialWethHoldingDepositBalance: BigNumber;
+let initialDAIPSMFeiBalance: BigNumber;
 
 // Do any deployments
 // This should exclusively include new contract deployments
@@ -65,8 +65,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 // This could include setting up Hardhat to impersonate accounts,
 // ensuring contracts have a specific state, etc.
 const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  initialDAIPSMBalance = await contracts.dai.balanceOf(addresses.daiFixedPricePSM);
-  initialWethHoldingDepositBalance = await contracts.weth.balanceOf(addresses.wethHoldingDeposit);
+  initialDAIPSMFeiBalance = await contracts.fei.balanceOf(addresses.daiFixedPricePSM);
 };
 
 // Tears down any changes made in setup() that need to be
@@ -88,13 +87,17 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const lusd = contracts.lusd;
   const weth = contracts.weth;
   const rai = contracts.rai;
-  const dai = contracts.dai;
 
   const wethHoldingDeposit = contracts.wethHoldingDeposit;
   const lusdHoldingDeposit = contracts.lusdHoldingDeposit;
   const voltHoldingDeposit = contracts.voltHoldingDeposit;
   const daiHoldingDeposit = contracts.daiHoldingDeposit;
   const raiHoldingDeposit = contracts.raiHoldingDeposit;
+
+  const EXPECTED_RAI_TRANSFER = toBN('270749178623488861888895');
+  const EXPECTED_WETH_TRANSFER = toBN('21828675312169174908543');
+  const EXPECTED_LUSD_TRANSFER = toBN('17765325999630072368537481');
+  const SANITY_CHECK_DAI_TRANSFER = ethers.constants.WeiPerEther.mul(2_000_000);
 
   // 1. Validate all holding PCV Deposits configured correctly
   expect(await wethHoldingDeposit.balanceReportedIn()).to.be.equal(addresses.weth);
@@ -112,11 +115,13 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const transferAmount = ethers.constants.WeiPerEther.mul(100);
   await contracts.weth.connect(wethWhaleSigner).transfer(wethHoldingDeposit.address, transferAmount);
 
-  expect(await wethHoldingDeposit.balance()).to.be.equal(transferAmount.add(initialWethHoldingDepositBalance));
-  expect(await contracts.weth.balanceOf(wethHoldingDeposit.address)).to.be.equal(transferAmount);
+  expect(await wethHoldingDeposit.balance()).to.be.equal(transferAmount.add(EXPECTED_WETH_TRANSFER));
+  expect(await contracts.weth.balanceOf(wethHoldingDeposit.address)).to.be.equal(
+    transferAmount.add(EXPECTED_WETH_TRANSFER)
+  );
 
   const resistantBalanceAndFei = await wethHoldingDeposit.resistantBalanceAndFei();
-  expect(resistantBalanceAndFei[0]).to.be.equal(transferAmount);
+  expect(resistantBalanceAndFei[0]).to.be.equal(transferAmount.add(EXPECTED_WETH_TRANSFER));
   expect(resistantBalanceAndFei[1]).to.be.equal(0);
 
   // Withdraw ERC20
@@ -125,7 +130,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   await forceEth(addresses.pcvGuardianNew);
   await wethHoldingDeposit.connect(guardianSigner).withdrawERC20(addresses.weth, receiver, transferAmount);
 
-  expect(await wethHoldingDeposit.balance()).to.be.equal(0);
+  expect(await wethHoldingDeposit.balance()).to.be.equal(EXPECTED_WETH_TRANSFER);
   expect(await contracts.weth.balanceOf(receiver)).to.be.equal(transferAmount);
 
   // 3. Validate deprecated PSMs have no assets
@@ -139,16 +144,14 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await rai.balanceOf(raiPSM.address)).to.be.equal(0);
 
   // 4. Validate transferred assets were received
-  const EXPECTED_RAI_TRANSFER = toBN('270749178623488861888895');
-  const EXPECTED_WETH_TRANSFER = toBN('21828675312169174908543');
-  const EXPECTED_LUSD_TRANSFER = toBN('17765325999630072368537481');
-  const SANITY_CHECK_DAI_TRANSFER = toBN('10000000000000000000000000');
 
   // These deposits started off empty
   expect(await weth.balanceOf(wethHoldingDeposit.address)).to.be.at.least(EXPECTED_WETH_TRANSFER);
   expect(await lusd.balanceOf(lusdHoldingDeposit.address)).to.be.at.least(EXPECTED_LUSD_TRANSFER);
-  // expect(await rai.balanceOf(raiHoldingDeposit.address)).to.be.at.least(EXPECTED_RAI_TRANSFER);
-  expect(await dai.balanceOf(dai.address)).to.be.at.least(initialDAIPSMBalance.add(SANITY_CHECK_DAI_TRANSFER));
+  expect(await rai.balanceOf(raiHoldingDeposit.address)).to.be.at.least(EXPECTED_RAI_TRANSFER);
+  expect(await fei.balanceOf(addresses.daiFixedPricePSM)).to.be.at.least(
+    initialDAIPSMFeiBalance.add(SANITY_CHECK_DAI_TRANSFER)
+  );
 
   // 5. Validate deprecated PSMs have no MINTER_ROLE
   const MINTER_ROLE = ethers.utils.id('MINTER_ROLE');
