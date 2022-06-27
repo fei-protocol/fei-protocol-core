@@ -108,6 +108,29 @@ const tip_118: TemplatedProposalDescription = {
       method: 'pauseRedeem()',
       arguments: (addresses) => [],
       description: 'Pause redemptions on the Rai Price bound PSM'
+    },
+
+    ///  PCV DRIP CONTROLLERS
+    {
+      target: 'aaveEthPCVDripController',
+      values: '0',
+      method: 'pause()',
+      arguments: (addresses) => [],
+      description: 'Pause the ETH PCV drip controller'
+    },
+    {
+      target: 'raiPCVDripController',
+      values: '0',
+      method: 'pause()',
+      arguments: (addresses) => [],
+      description: 'Pause the RAI PCV drip controller'
+    },
+    {
+      target: 'lusdPCVDripController',
+      values: '0',
+      method: 'pause()',
+      arguments: (addresses) => [],
+      description: 'Pause the LUSD PCV drip controller'
     }
   ],
   description: `
@@ -117,7 +140,7 @@ const tip_118: TemplatedProposalDescription = {
   the deposit() method as a no-op and is intended to just hold assets. 
 
   In addition, it also deprecates the ETH, LUSD and RAI PSMs. This involves transferring all assets off these PSMs, 
-  revoking their MINTER_ROLE and ensuring they are fully paused. 
+  revoking their MINTER_ROLE, ensuring they are fully paused and pausing the associated PCV drip controllers.
   
   Going forward, the only active PSM will be the DAI PSM.
   `
