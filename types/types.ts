@@ -64,7 +64,6 @@ export type DependencyMap = { [key: string]: Dependency };
 export enum ProposalCategory {
   DAO,
   DEBUG,
-  OA,
   TC, // Tribal Council
   DEBUG_TC,
   None
