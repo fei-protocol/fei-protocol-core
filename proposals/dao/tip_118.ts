@@ -140,9 +140,6 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   // Minting currently enabled on ETH PSM, so WETH balance may increase
   expect(await weth.balanceOf(wethHoldingDeposit.address)).to.be.at.least(EXPECTED_WETH_TRANSFER);
   expect(await lusd.balanceOf(lusdHoldingDeposit.address)).to.be.equal(EXPECTED_LUSD_TRANSFER);
-  expect(await fei.balanceOf(addresses.daiFixedPricePSM)).to.be.at.least(
-    initialDAIPSMFeiBalance.add(SANITY_CHECK_DAI_TRANSFER)
-  );
 
   // 5. Validate deprecated PSMs have no MINTER_ROLE
   const MINTER_ROLE = ethers.utils.id('MINTER_ROLE');
@@ -179,6 +176,10 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 
   expect(await contracts.lusdPSMFeiSkimmer.paused()).to.be.true;
   expect(await core.hasRole(PCV_CONTROLLER_ROLE, addresses.lusdPSMFeiSkimmer)).to.be.false;
+
+  // 10. daiFixedPricePSMFeiSkimmer granted PCV_CONTROLLER_ROLE and burns Fei
+  expect(await core.hasRole(PCV_CONTROLLER_ROLE, addresses.daiFixedPricePSMFeiSkimmer)).to.be.true;
+  expect(await fei.balanceOf(addresses.daiFixedPricePSM)).to.be.equal(ethers.constants.WeiPerEther.mul(20_000_000));
 };
 
 export { deploy, setup, teardown, validate };

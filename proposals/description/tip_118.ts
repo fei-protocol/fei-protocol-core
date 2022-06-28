@@ -184,19 +184,20 @@ const tip_118: TemplatedProposalDescription = {
       description: 'Revoke PCV_CONTROLLER_ROLE from ethPSMFeiSkimmer'
     },
 
-    {
-      target: 'lusdPSMFeiSkimmer',
-      values: '0',
-      method: 'pause()',
-      arguments: (addresses) => [],
-      description: 'Pause the LUSD PSM Fei skimmer'
-    },
+    //// Activate DAI PSM skimmer and burn Fei
     {
       target: 'core',
       values: '0',
-      method: 'revokeRole(bytes32,address)',
-      arguments: (addresses) => [ethers.utils.id('PCV_CONTROLLER_ROLE'), addresses.lusdPSMFeiSkimmer],
-      description: 'Revoke PCV_CONTROLLER_ROLE from lusdPSMFeiSkimmer'
+      method: 'grantRole(bytes32,address)',
+      arguments: (addresses) => [ethers.utils.id('PCV_CONTROLLER_ROLE'), addresses.daiFixedPricePSMFeiSkimmer],
+      description: 'Grant PCV_CONTROLLER_ROLE to daiFixedPricePSMFeiSkimmer'
+    },
+    {
+      target: 'daiFixedPricePSMFeiSkimmer',
+      values: '0',
+      method: 'skim()',
+      arguments: (addresses) => [],
+      description: 'Burn excess Fei on the DAI PSM. Will burn ~95M FEI'
     }
   ],
   description: `
