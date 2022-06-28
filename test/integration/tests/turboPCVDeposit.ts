@@ -18,8 +18,6 @@ describe('Turbo PCV deposit', function () {
   let turboFusePCVDeposit: any;
   const depositAmount = ethers.utils.parseEther('1000000');
 
-  const laasMultisigAddress = '0xb230B535D2cf009Bdc9D7579782DE160b795d5E8';
-
   before(async () => {
     chai.use(CBN(ethers.BigNumber));
     chai.use(solidity);
@@ -48,12 +46,12 @@ describe('Turbo PCV deposit', function () {
     const signer = (await ethers.getSigners())[0];
     turboFusePCVDeposit = new ethers.Contract(contractAddresses.turboFusePCVDeposit, PCVDepositAbi, signer);
 
-    const laasMultisigSigner = await getImpersonatedSigner(laasMultisigAddress);
+    const feiHolderSigner = await getImpersonatedSigner(contracts.tribalCouncilTimelock.address);
 
     // Transfer 1M Fei
-    await forceEth(laasMultisigAddress);
+    await forceEth(feiHolderSigner.address);
     const fei = contracts.fei;
-    await fei.connect(laasMultisigSigner).transfer(turboFusePCVDeposit.address, depositAmount);
+    await fei.connect(feiHolderSigner).transfer(turboFusePCVDeposit.address, depositAmount);
 
     const balanceOfPCVDeposit = await fei.balanceOf(turboFusePCVDeposit.address);
     expect(balanceOfPCVDeposit).to.be.bignumber.equal(depositAmount);
