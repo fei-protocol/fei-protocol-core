@@ -1,4 +1,4 @@
-import { TemplatedProposalsConfigMap } from '@custom-types/types';
+import { ProposalCategory, TemplatedProposalsConfigMap } from '@custom-types/types';
 
 const proposals: TemplatedProposalsConfigMap = {};
 
