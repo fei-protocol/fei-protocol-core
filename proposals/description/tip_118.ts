@@ -151,6 +151,52 @@ const tip_118: TemplatedProposalDescription = {
       method: 'pause()',
       arguments: (addresses) => [],
       description: 'Pause the LUSD PCV drip controller'
+    },
+
+    ///// Deprecate PSM skimmers
+    {
+      target: 'lusdPSMFeiSkimmer',
+      values: '0',
+      method: 'pause()',
+      arguments: (addresses) => [],
+      description: 'Pause the LUSD PSM Fei skimmer'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'revokeRole(bytes32,address)',
+      arguments: (addresses) => [ethers.utils.id('PCV_CONTROLLER_ROLE'), addresses.lusdPSMFeiSkimmer],
+      description: 'Revoke PCV_CONTROLLER_ROLE from lusdPSMFeiSkimmer'
+    },
+
+    {
+      target: 'ethPSMFeiSkimmer',
+      values: '0',
+      method: 'pause()',
+      arguments: (addresses) => [],
+      description: 'Pause the ETH PSM Fei skimmer'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'revokeRole(bytes32,address)',
+      arguments: (addresses) => [ethers.utils.id('PCV_CONTROLLER_ROLE'), addresses.ethPSMFeiSkimmer],
+      description: 'Revoke PCV_CONTROLLER_ROLE from ethPSMFeiSkimmer'
+    },
+
+    {
+      target: 'lusdPSMFeiSkimmer',
+      values: '0',
+      method: 'pause()',
+      arguments: (addresses) => [],
+      description: 'Pause the LUSD PSM Fei skimmer'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'revokeRole(bytes32,address)',
+      arguments: (addresses) => [ethers.utils.id('PCV_CONTROLLER_ROLE'), addresses.lusdPSMFeiSkimmer],
+      description: 'Revoke PCV_CONTROLLER_ROLE from lusdPSMFeiSkimmer'
     }
   ],
   description: `

@@ -101,7 +101,7 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   lusdPSMFeiSkimmer: {
     artifactName: 'FeiSkimmer',
     address: '0xFc29429D8c8D80320C4AB454131f741F56239c2b',
-    category: AddressCategory.Utility
+    category: AddressCategory.Deprecated
   },
   lusdPCVDripController: {
     artifactName: 'PCVDripController',
@@ -275,7 +275,7 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   ethPSMFeiSkimmer: {
     artifactName: 'FeiSkimmer',
     address: '0xA8A25F8cbfC5053241aB6FA87b865755dcB5501F',
-    category: AddressCategory.Peg
+    category: AddressCategory.Deprecated
   },
   daiFixedPricePSM: {
     artifactName: 'FixedPricePSM',
