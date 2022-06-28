@@ -48,11 +48,16 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   await daiHoldingDeposit.deployTransaction.wait();
   logging && console.log('DAI holding deposit deployed to: ', daiHoldingDeposit.address);
 
+  const gOHMHoldingPCVDeposit = await ERC20HoldingPCVDepositFactory.deploy(addresses.core, addresses.gOHM);
+  await gOHMHoldingPCVDeposit.deployTransaction.wait();
+  logging && console.log('gOHM holding deposit deployed to: ', gOHMHoldingPCVDeposit.address);
+
   return {
     wethHoldingDeposit,
     lusdHoldingDeposit,
     voltHoldingDeposit,
-    daiHoldingDeposit
+    daiHoldingDeposit,
+    gOHMHoldingPCVDeposit
   };
 };
 
@@ -81,23 +86,27 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const fei = contracts.fei;
   const lusd = contracts.lusd;
   const weth = contracts.weth;
+  const volt = contracts.volt;
+  const gOHM = contracts.gOHM;
 
   const wethHoldingDeposit = contracts.wethHoldingDeposit;
   const lusdHoldingDeposit = contracts.lusdHoldingDeposit;
   const voltHoldingDeposit = contracts.voltHoldingDeposit;
   const daiHoldingDeposit = contracts.daiHoldingDeposit;
+  const gOHMHoldingPCVDeposit = contracts.gOHMHoldingPCVDeposit;
 
   const pcvGuardian = contracts.pcvGuardianNew;
 
   const EXPECTED_WETH_TRANSFER = toBN('23129630802267046361289');
   const EXPECTED_LUSD_TRANSFER = toBN('17765325999630072368537481');
-  const SANITY_CHECK_DAI_TRANSFER = ethers.constants.WeiPerEther.mul(2_000_000);
+  const EXPECTED_VOLT_TRANSFER = ethers.constants.WeiPerEther.mul(10_000_000);
 
   // 1. Validate all holding PCV Deposits configured correctly
   expect(await wethHoldingDeposit.balanceReportedIn()).to.be.equal(addresses.weth);
   expect(await lusdHoldingDeposit.balanceReportedIn()).to.be.equal(addresses.lusd);
   expect(await voltHoldingDeposit.balanceReportedIn()).to.be.equal(addresses.volt);
   expect(await daiHoldingDeposit.balanceReportedIn()).to.be.equal(addresses.dai);
+  expect(await gOHMHoldingPCVDeposit.balanceReportedIn()).to.be.equal(addresses.gOHM);
 
   // 2. Validate can drop funds on a PCV Deposit and then withdraw with the guardian
   const wethWhale = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2';
@@ -140,6 +149,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   // Minting currently enabled on ETH PSM, so WETH balance may increase
   expect(await weth.balanceOf(wethHoldingDeposit.address)).to.be.at.least(EXPECTED_WETH_TRANSFER);
   expect(await lusd.balanceOf(lusdHoldingDeposit.address)).to.be.equal(EXPECTED_LUSD_TRANSFER);
+  expect(await volt.balanceOf(voltHoldingDeposit.address)).to.be.equal(EXPECTED_VOLT_TRANSFER);
 
   // 5. Validate deprecated PSMs have no MINTER_ROLE
   const MINTER_ROLE = ethers.utils.id('MINTER_ROLE');
@@ -180,6 +190,9 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   // 10. daiFixedPricePSMFeiSkimmer granted PCV_CONTROLLER_ROLE and burns Fei
   expect(await core.hasRole(PCV_CONTROLLER_ROLE, addresses.daiFixedPricePSMFeiSkimmer)).to.be.true;
   expect(await fei.balanceOf(addresses.daiFixedPricePSM)).to.be.equal(ethers.constants.WeiPerEther.mul(20_000_000));
+
+  // 11. gOHM received funds
+  expect(await gOHM.balanceOf(addresses.gOHMHoldingPCVDeposit)).to.be.equal('577180000000000000000');
 };
 
 export { deploy, setup, teardown, validate };

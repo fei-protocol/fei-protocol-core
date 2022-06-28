@@ -198,6 +198,24 @@ const tip_118: TemplatedProposalDescription = {
       method: 'skim()',
       arguments: (addresses) => [],
       description: 'Burn excess Fei on the DAI PSM. Will burn ~95M FEI'
+    },
+
+    ///// Send VOLT to it's holding ERC20 deposit
+    {
+      target: 'volt',
+      values: '0',
+      method: 'transfer(address,uint256)',
+      arguments: (addresses) => [addresses.voltHoldingDeposit, '10000000000000000000000000'],
+      description: 'Move 10M VOLT from the DAO timelock to the VOLT holding PCV deposit'
+    },
+
+    ///// Send gOHM to it's holding ERC20 deposit
+    {
+      target: 'gOHM',
+      values: '0',
+      method: 'transfer(address,uint256)',
+      arguments: (addresses) => [addresses.gOHMHoldingPCVDeposit, '577180000000000000000'],
+      description: 'Send 577 gOHM from the DAO timelock to the gOHM holding PCV deposit'
     }
   ],
   description: `

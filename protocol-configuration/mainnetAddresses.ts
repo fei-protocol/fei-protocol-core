@@ -2330,6 +2330,11 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     address: '0x14d2F529576d3a5451BfbA370408a899Bb5261a9',
     category: AddressCategory.Deprecated
   },
+  gOHM: {
+    artifactName: 'IERC20',
+    address: '0x0ab87046fBb341D058F17CBC4c1133F25a20a52f',
+    category: AddressCategory.External
+  },
   mergerGate: {
     artifactName: 'MergerGate',
     address: '0xC2d452A4Feb76B41659cd036D5746149B98453D6',
