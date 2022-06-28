@@ -165,6 +165,12 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await pcvGuardian.isSafeAddress(ethPSM.address)).to.be.false;
   expect(await pcvGuardian.isSafeAddress(lusdPSM.address)).to.be.false;
   expect(await pcvGuardian.isSafeAddress(raiPSM.address)).to.be.false;
+
+  // 8. New ERC20 holding deposits are safe addresses
+  expect(await pcvGuardian.isSafeAddress(wethHoldingDeposit.address)).to.be.true;
+  expect(await pcvGuardian.isSafeAddress(lusdHoldingDeposit.address)).to.be.true;
+  expect(await pcvGuardian.isSafeAddress(voltHoldingDeposit.address)).to.be.true;
+  expect(await pcvGuardian.isSafeAddress(daiHoldingDeposit.address)).to.be.true;
 };
 
 export { deploy, setup, teardown, validate };

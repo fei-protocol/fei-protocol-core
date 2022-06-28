@@ -100,7 +100,7 @@ const tip_118: TemplatedProposalDescription = {
       description: 'Unset the ETH, LUSD and RAI PSMs as safe addresses'
     },
 
-    // Add new Holding PCV deposits to Collaterization Oracle
+    // Add new Holding PCV deposits to Collaterization Oracle and set as safe addresses
     {
       target: 'collateralizationOracle',
       values: '0',
@@ -114,6 +114,20 @@ const tip_118: TemplatedProposalDescription = {
         ]
       ],
       description: 'Add the holding ERC20 deposits to the Collaterization Oracle'
+    },
+    {
+      target: 'pcvGuardianNew',
+      values: '0',
+      method: 'setSafeAddresses(address[])',
+      arguments: (addresses) => [
+        [
+          addresses.wethHoldingDeposit,
+          addresses.lusdHoldingDeposit,
+          addresses.daiHoldingDeposit,
+          addresses.voltHoldingDeposit
+        ]
+      ],
+      description: 'Set all new ERC20 holding deposits as safe addresses on the PCV Guardian'
     },
 
     ///  PCV DRIP CONTROLLERS
