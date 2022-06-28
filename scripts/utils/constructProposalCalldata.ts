@@ -42,7 +42,7 @@ export async function constructProposalCalldata(proposalName: string): Promise<s
       id: TRIBAL_COUNCIL_POD_ID,
       timelockAddress: contractAddresses.tribalCouncilTimelock
     };
-    return getTimelockCalldata(proposal, proposalInfo, podConfig);
+    return getPodCalldata(proposal, proposalInfo, podConfig);
   }
 
   return getDAOCalldata(proposal);
@@ -67,7 +67,7 @@ function getDAOCalldata(proposal: ExtendedAlphaProposal): string {
   return calldata;
 }
 
-function getTimelockCalldata(
+function getPodCalldata(
   proposal: ExtendedAlphaProposal,
   proposalInfo: TemplatedProposalDescription,
   podConfig: PodConfig

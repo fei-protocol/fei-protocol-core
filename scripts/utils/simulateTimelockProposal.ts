@@ -7,17 +7,6 @@ import { forceEth } from '@test/integration/setup/utils';
 import { TRIBAL_COUNCIL_POD_ID } from '@protocol/optimisticGovernance';
 import { PodConfig } from './constructProposalCalldata';
 
-export async function simulateOAProposal(
-  proposalInfo: TemplatedProposalDescription,
-  contracts: MainnetContracts,
-  contractAddresses: NamedAddresses,
-  logging = false
-) {
-  const timelockOA = contracts.optimisticTimelock as OptimisticTimelock;
-  const multisigAddressOA = contractAddresses.optimisticMultisig as string;
-  await simulateTimelockProposal(timelockOA, multisigAddressOA, proposalInfo, contracts, contractAddresses, logging);
-}
-
 export async function simulateTCProposal(
   proposalInfo: TemplatedProposalDescription,
   contracts: MainnetContracts,
@@ -26,10 +15,11 @@ export async function simulateTCProposal(
 ) {
   const timelockTC = contracts.tribalCouncilTimelock as OptimisticTimelock;
   const multisigAddressTC = contractAddresses.tribalCouncilSafe as string;
-  const podConfig = {
-    id: TRIBAL_COUNCIL_POD_ID
+  const podConfig: PodConfig = {
+    id: TRIBAL_COUNCIL_POD_ID,
+    timelockAddress: contractAddresses.tribalCouncilTimelock
   };
-  await simulateTimelockProposal(
+  await simulatePodProposal(
     timelockTC,
     multisigAddressTC,
     proposalInfo,
@@ -40,14 +30,14 @@ export async function simulateTCProposal(
   );
 }
 
-export async function simulateTimelockProposal(
+export async function simulatePodProposal(
   timelock: OptimisticTimelock,
   multisigAddress: string,
   proposalInfo: TemplatedProposalDescription,
   contracts: MainnetContracts,
   contractAddresses: NamedAddresses,
   logging = false,
-  podConfig?: PodConfig
+  podConfig: PodConfig
 ) {
   await forceEth(multisigAddress);
   const signer = await getImpersonatedSigner(multisigAddress);
