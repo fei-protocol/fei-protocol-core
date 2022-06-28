@@ -89,7 +89,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 
   const pcvGuardian = contracts.pcvGuardianNew;
 
-  const EXPECTED_WETH_TRANSFER = toBN('21828675312169174908543');
+  const EXPECTED_WETH_TRANSFER = toBN('23129630802267046361289');
   const EXPECTED_LUSD_TRANSFER = toBN('17765325999630072368537481');
   const SANITY_CHECK_DAI_TRANSFER = ethers.constants.WeiPerEther.mul(2_000_000);
 
@@ -111,7 +111,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 
   expect(await wethHoldingDeposit.balance()).to.be.equal(transferAmount.add(initialWethDepositBalance));
   expect(await contracts.weth.balanceOf(wethHoldingDeposit.address)).to.be.equal(
-    transferAmount.add(EXPECTED_WETH_TRANSFER)
+    transferAmount.add(initialWethDepositBalance)
   );
 
   const resistantBalanceAndFei = await wethHoldingDeposit.resistantBalanceAndFei();
@@ -137,7 +137,8 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   // 4. Validate transferred assets were received
 
   // These deposits started off empty
-  expect(await weth.balanceOf(wethHoldingDeposit.address)).to.be.equal(EXPECTED_WETH_TRANSFER);
+  // Minting currently enabled on ETH PSM, so WETH balance may increase
+  expect(await weth.balanceOf(wethHoldingDeposit.address)).to.be.at.least(EXPECTED_WETH_TRANSFER);
   expect(await lusd.balanceOf(lusdHoldingDeposit.address)).to.be.equal(EXPECTED_LUSD_TRANSFER);
   expect(await fei.balanceOf(addresses.daiFixedPricePSM)).to.be.at.least(
     initialDAIPSMFeiBalance.add(SANITY_CHECK_DAI_TRANSFER)

@@ -2,7 +2,7 @@ import { ethers } from 'ethers';
 import { TemplatedProposalDescription } from '@custom-types/types';
 
 const tip_118: TemplatedProposalDescription = {
-  title: 'TIP_118: Deploy ERC20 Holding Deposits, deprecate unused PSMs',
+  title: 'TIP_118: Incentives withdrawal, PSM deprecation, Angle and agEUR redemption',
   commands: [
     // 1. Transfer all assets off the PSMs to the new empty PCV deposits
     // ETH PSM
@@ -83,6 +83,13 @@ const tip_118: TemplatedProposalDescription = {
       arguments: (addresses) => [],
       description: 'Pause redemptions on the Rai Price bound PSM'
     },
+    {
+      target: 'ethPSM',
+      values: '0',
+      method: 'pause()',
+      arguments: (addresses) => [],
+      description: 'Pause the ETH PSM and prevent minting'
+    },
 
     // 4. Unset deprecated PSMs as safe addresses
     {
@@ -124,15 +131,6 @@ const tip_118: TemplatedProposalDescription = {
       arguments: (addresses) => [],
       description: 'Pause the RAI PCV drip controller'
     },
-    {
-      target: 'lusdPCVDripController',
-      values: '0',
-      method: 'pause()',
-      arguments: (addresses) => [],
-      description: 'Pause the LUSD PCV drip controller'
-    },
-
-    // Set new dep
     {
       target: 'lusdPCVDripController',
       values: '0',
