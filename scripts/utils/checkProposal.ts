@@ -4,6 +4,8 @@ import proposals from '@protocol/proposalsConfig';
 
 import * as dotenv from 'dotenv';
 import { execProposal } from './exec';
+import { overwriteChainlinkAggregator } from '@test/helpers';
+import { formatNumber } from './printUtils';
 
 dotenv.config();
 
@@ -11,6 +13,7 @@ dotenv.config();
 const voterAddress = '0xB8f482539F2d3Ae2C9ea6076894df36D1f632775';
 const proposalName = process.env.DEPLOY_FILE;
 const doSetup = process.env.DO_SETUP;
+const checkCrOracle = process.env.READ_CR_ORACLE;
 
 if (!proposalName) {
   throw new Error('DEPLOY_FILE env variable not set');
@@ -28,9 +31,27 @@ async function checkProposal(proposalName: string, doSetup?: string) {
 
   const contractAddresses = getAllContractAddresses();
 
+  if (proposalFuncs.setup.toString().length > 130 && !doSetup) {
+    console.log(`Heads up: setup() is defined in ${proposalName}, but you did not use the DO_SETUP=true env variable`);
+  }
+
   if (doSetup) {
     console.log('Setup');
     await proposalFuncs.setup(contractAddresses, contracts, contracts, true);
+  }
+
+  let crOracleReadingBefore;
+  if (checkCrOracle) {
+    console.log('Reading CR oracle before proposal execution');
+    crOracleReadingBefore = await contracts.collateralizationOracle.pcvStats();
+
+    // persist chainlink ETH/USD reading for BAMM deposit to not revert with 'chainlink is down'
+    const chainlinkEthUsd = await contracts.chainlinkEthUsdOracleWrapper.read();
+    await overwriteChainlinkAggregator(
+      contractAddresses.chainlinkEthUsdOracle,
+      Math.round(chainlinkEthUsd[0] / 1e10),
+      '8'
+    );
   }
 
   const { feiDAO } = contracts;
@@ -54,6 +75,18 @@ async function checkProposal(proposalName: string, doSetup?: string) {
     contracts as unknown as NamedContracts,
     true
   );
+
+  if (checkCrOracle) {
+    console.log('Reading CR oracle after proposal execution');
+    const crOracleReadingAfter = await contracts.collateralizationOracle.pcvStats();
+    const pcvChange =
+      crOracleReadingAfter.protocolControlledValue.toString() / 1 -
+      crOracleReadingBefore.protocolControlledValue.toString() / 1;
+    const feiChange =
+      crOracleReadingAfter.userCirculatingFei.toString() / 1 - crOracleReadingBefore.userCirculatingFei.toString() / 1;
+    console.log('PCV Change :', formatNumber(pcvChange));
+    console.log('FEI Circulating Change :', formatNumber(feiChange));
+  }
 }
 
 checkProposal(proposalName, doSetup)
