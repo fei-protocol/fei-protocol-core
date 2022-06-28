@@ -23,8 +23,7 @@ const collateralizationAddresses: CollateralizationAddressType = {
     'wethHoldingDeposit'
   ],
   agEUR: ['uniswapLensAgEurUniswapGauge', 'agEurUniswapPCVDeposit'],
-  volt: ['voltDepositWrapper', 'voltHoldingDeposit'],
-  rai: ['raiHoldingDeposit']
+  volt: ['voltDepositWrapper', 'voltHoldingDeposit']
 };
 
 export type CollateralizationAddressType = { [key: string]: string[] };
