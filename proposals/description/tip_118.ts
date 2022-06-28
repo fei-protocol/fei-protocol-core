@@ -110,7 +110,8 @@ const tip_118: TemplatedProposalDescription = {
           addresses.wethHoldingDeposit,
           addresses.lusdHoldingDeposit,
           addresses.daiHoldingDeposit,
-          addresses.voltHoldingDeposit
+          addresses.voltHoldingDeposit,
+          addresses.gOHMHoldingPCVDeposit
         ]
       ],
       description: 'Add the holding ERC20 deposits to the Collaterization Oracle'
@@ -124,7 +125,8 @@ const tip_118: TemplatedProposalDescription = {
           addresses.wethHoldingDeposit,
           addresses.lusdHoldingDeposit,
           addresses.daiHoldingDeposit,
-          addresses.voltHoldingDeposit
+          addresses.voltHoldingDeposit,
+          addresses.gOHMHoldingPCVDeposit
         ]
       ],
       description: 'Set all new ERC20 holding deposits as safe addresses on the PCV Guardian'

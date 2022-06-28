@@ -178,6 +178,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await pcvGuardian.isSafeAddress(lusdHoldingDeposit.address)).to.be.true;
   expect(await pcvGuardian.isSafeAddress(voltHoldingDeposit.address)).to.be.true;
   expect(await pcvGuardian.isSafeAddress(daiHoldingDeposit.address)).to.be.true;
+  expect(await pcvGuardian.isSafeAddress(gOHMHoldingPCVDeposit.address)).to.be.true;
 
   // 9. Skimmers are deprecated - paused and do not have PCV_CONTROLLER_ROLE
   const PCV_CONTROLLER_ROLE = ethers.utils.id('PCV_CONTROLLER_ROLE');
