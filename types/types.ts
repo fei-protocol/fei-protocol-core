@@ -65,7 +65,6 @@ export type DependencyMap = { [key: string]: Dependency };
 export enum ProposalCategory {
   DAO,
   DEBUG,
-  OA,
   TC, // Tribal Council
   DEBUG_TC,
   None
@@ -136,6 +135,12 @@ export type TribalChiefPoolConfig = {
   unlocked: boolean;
 };
 
+export interface PcvStats {
+  protocolControlledValue: ethers.BigNumber;
+  userCirculatingFei: ethers.BigNumber;
+  protocolEquity: ethers.BigNumber;
+}
+
 export interface TribalChiefConfig {
   [key: string]: TribalChiefPoolConfig;
 }
@@ -149,12 +154,13 @@ export interface ContractConfig {
 export enum AddressCategory {
   Core = 'Core',
   Governance = 'Governance',
+  Utility = 'Utility',
+  Security = 'Security',
   Peg = 'Peg',
   PCV = 'PCV',
   PCV_V1 = 'PCV_V1',
   Collateralization = 'Collateralization',
   Oracle = 'Oracle',
-  Keeper = 'Keeper',
   Rewards = 'Rewards',
   FeiRari = 'FeiRari',
   Turbo = 'Turbo',

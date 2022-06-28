@@ -59,7 +59,7 @@ const setupIncentivesFixtures = async (
   }
 };
 
-describe('e2e-staking', function () {
+describe.skip('e2e-staking', function () {
   let contracts: NamedContracts;
   let contractAddresses: NamedAddresses;
   let deployAddress: string;

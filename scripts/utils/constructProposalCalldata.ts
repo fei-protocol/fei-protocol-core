@@ -21,6 +21,7 @@ type ExtendedAlphaProposal = {
 
 export interface PodConfig {
   id: number;
+  timelockAddress: string;
 }
 
 /**
@@ -37,10 +38,11 @@ export async function constructProposalCalldata(proposalName: string): Promise<s
 
   console.log(proposals[proposalName].category);
   if (proposals[proposalName].category === ProposalCategory.TC) {
-    const podConfig: PodConfig = { id: TRIBAL_COUNCIL_POD_ID };
+    const podConfig: PodConfig = {
+      id: TRIBAL_COUNCIL_POD_ID,
+      timelockAddress: contractAddresses.tribalCouncilTimelock
+    };
     return getTimelockCalldata(proposal, proposalInfo, podConfig);
-  } else if (proposals[proposalName].category === ProposalCategory.OA) {
-    return getTimelockCalldata(proposal, proposalInfo);
   }
 
   return getDAOCalldata(proposal);
@@ -68,7 +70,7 @@ function getDAOCalldata(proposal: ExtendedAlphaProposal): string {
 function getTimelockCalldata(
   proposal: ExtendedAlphaProposal,
   proposalInfo: TemplatedProposalDescription,
-  podConfig?: PodConfig
+  podConfig: PodConfig
 ): string {
   const timelockControllerInterface = new Interface(TimelockControllerABI);
   const metadataRegistryInterface = new Interface(MetadataRegistryABI);
@@ -82,6 +84,7 @@ function getTimelockCalldata(
   const salt = ethers.utils.id(proposalInfo.title);
   const predecessor = ethers.constants.HashZero;
 
+  // Schedule transaction calldata
   const calldata = timelockControllerInterface.encodeFunctionData('scheduleBatch', [
     proposal.targets,
     proposal.values,
@@ -91,6 +94,7 @@ function getTimelockCalldata(
     345600
   ]);
 
+  // Execute via timelock calldata
   const executeCalldata = timelockControllerInterface.encodeFunctionData('executeBatch', [
     proposal.targets,
     proposal.values,
@@ -99,17 +103,29 @@ function getTimelockCalldata(
     salt
   ]);
 
-  if (podConfig) {
-    const proposalId = computeBatchProposalId(proposal.targets, proposal.values, combinedCalldatas, predecessor, salt);
-    const registerMetadataCalldata = metadataRegistryInterface.encodeFunctionData('registerProposal', [
-      podConfig.id,
-      proposalId,
-      proposalInfo.description
-    ]);
-    return `Calldata: ${calldata}\nMetadata Calldata: ${registerMetadataCalldata}\nExecute Calldata: ${executeCalldata}`;
-  } else {
-    return `Calldata: ${calldata}\nExecute Calldata: ${executeCalldata}`;
-  }
+  // Register metadata calldata
+  const proposalId = computeBatchProposalId(proposal.targets, proposal.values, combinedCalldatas, predecessor, salt);
+  const registerMetadataCalldata = metadataRegistryInterface.encodeFunctionData('registerProposal', [
+    podConfig.id,
+    proposalId,
+    proposalInfo.description
+  ]);
+
+  // Pod execute calldata
+  const podExecutorFunctionFragment = new Interface([
+    'function executeBatch(address timelock,address[] calldata targets,uint256[] calldata values,bytes[] calldata payloads,bytes32 predecessor,bytes32 salt) public'
+  ]);
+
+  const podExecuteCalldata = podExecutorFunctionFragment.encodeFunctionData('executeBatch', [
+    podConfig.timelockAddress,
+    proposal.targets,
+    proposal.values,
+    combinedCalldatas,
+    predecessor,
+    salt
+  ]);
+
+  return `Calldata: ${calldata}\nMetadata Calldata: ${registerMetadataCalldata}\nExecute Calldata: ${executeCalldata}\nPod Executor Calldata: ${podExecuteCalldata}`;
 }
 
 export function computeBatchProposalId(

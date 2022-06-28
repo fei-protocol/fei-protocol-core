@@ -14,17 +14,22 @@ contract CompositeOracle is IOracle, CoreRef {
     IOracle public oracleA;
     /// @notice the second referenced oracle
     IOracle public oracleB;
+    /// @notice if true, result is A/B, otherwise A*B
+    bool public immutable invertOracleB;
 
     /// @notice CompositeOracle constructor
     /// @param _oracleA first referenced oracle
     /// @param _oracleB second referenced oracle
+    /// @param _invertOracleB invert second referenced oracle (returns A/B instead of A*B)
     constructor(
         address _core,
         IOracle _oracleA,
-        IOracle _oracleB
+        IOracle _oracleB,
+        bool _invertOracleB
     ) CoreRef(_core) {
         oracleA = _oracleA;
         oracleB = _oracleB;
+        invertOracleB = _invertOracleB;
     }
 
     /// @notice updates the oracle price
@@ -47,6 +52,7 @@ contract CompositeOracle is IOracle, CoreRef {
         (Decimal.D256 memory priceB, bool validB) = oracleB.read();
         bool valid = !paused() && validA && validB;
 
-        return (priceA.mul(priceB), valid);
+        if (invertOracleB) return (priceA.div(priceB), valid);
+        else return (priceA.mul(priceB), valid);
     }
 }

@@ -175,16 +175,6 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
       );
     }
 
-    if (config.category === ProposalCategory.OA) {
-      this.config.logging && console.log(`Simulating OA proposal...`);
-      await simulateOAProposal(
-        config.proposal,
-        contracts as unknown as MainnetContracts,
-        contractAddresses,
-        this.config.logging
-      );
-    }
-
     if (config.category === ProposalCategory.DEBUG) {
       console.log('Simulating DAO proposal in DEBUG mode (step by step)...');
       console.log('  Title: ', config.proposal.title);
