@@ -88,14 +88,12 @@ export async function simulatePodProposal(
     const schedule = await timelock.connect(signer).scheduleBatch(targets, values, datas, predecessor, salt, delay);
     console.log('Calldata:', schedule.data);
 
-    // If this proposal is for a pod, then register the metadata
-    if (podConfig) {
-      console.log(`Registering proposal ${proposalId} of pod ${podConfig.id}`);
-      const registerTx = await contracts.governanceMetadataRegistry
-        .connect(signer)
-        .registerProposal(podConfig.id, proposalId, proposalInfo.description);
-      console.log('Metadata tx: ', registerTx.data);
-    }
+    // Register the pod's metadata
+    console.log(`Registering proposal ${proposalId} of pod ${podConfig.id}`);
+    const registerTx = await contracts.governanceMetadataRegistry
+      .connect(signer)
+      .registerProposal(podConfig.id, proposalId, proposalInfo.description);
+    console.log('Metadata tx: ', registerTx.data);
   } else {
     console.log('Already scheduled proposal');
   }
