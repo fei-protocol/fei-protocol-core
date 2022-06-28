@@ -8,7 +8,7 @@ import {
   ValidateUpgradeFunc
 } from '@custom-types/types';
 import { BigNumber } from 'ethers';
-import { getImpersonatedSigner } from '@test/helpers';
+import { getImpersonatedSigner, time } from '@test/helpers';
 import { forceEth } from '@test/integration/setup/utils';
 
 /*
@@ -25,9 +25,14 @@ let initialRariDelegatorBalance: BigNumber;
 // Do any deployments
 // This should exclusively include new contract deployments
 const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: NamedAddresses, logging: boolean) => {
-  console.log(`No deploy actions for fip${fipNumber}`);
+  // Deploy implementation
+  const vlAuraDelegatorPCVDepositFactory = await ethers.getContractFactory('VlAuraDelegatorPCVDeposit');
+  const vlAuraDelegatorPCVDepositImplementation = await vlAuraDelegatorPCVDepositFactory.deploy(addresses.core);
+  await vlAuraDelegatorPCVDepositImplementation.deployTransaction.wait();
+  logging && console.log('vlAuraDelegatorPCVDepositImplementation: ', vlAuraDelegatorPCVDepositImplementation.address);
+
   return {
-    // put returned contract objects here
+    vlAuraDelegatorPCVDepositImplementation
   };
 };
 
@@ -114,6 +119,20 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   // 6. Validate TRIBAL_CHIEF_ADMIN_ROLE is revoked
   expect(await core.hasRole(ethers.utils.id('TRIBAL_CHIEF_ADMIN_ROLE'), addresses.tribalCouncilTimelock)).to.be.false;
   expect(await core.hasRole(ethers.utils.id('TRIBAL_CHIEF_ADMIN_ROLE'), addresses.optimisticTimelock)).to.be.false;
+
+  // Aura Airdrop check
+  // We have to fast forward to next week, because AURA locking works per epoch and if we checked
+  // the vlAURA balance right after execution, it would be 0.
+  await time.increase(7 * 24 * 3600 + 1);
+  expect(await contracts.vlAuraDelegatorPCVDeposit.aura()).to.be.equal(addresses.aura);
+  expect(await contracts.vlAuraDelegatorPCVDeposit.auraLocker()).to.be.equal(addresses.vlAura);
+  expect(await contracts.vlAuraDelegatorPCVDeposit.auraMerkleDrop()).to.be.equal(addresses.auraMerkleDrop);
+  expect(await contracts.vlAuraDelegatorPCVDeposit.token()).to.be.equal(addresses.vlAura);
+  expect(await contracts.vlAuraDelegatorPCVDeposit.delegate()).to.be.equal(addresses.eswak);
+  const auraLocked = await contracts.vlAura.balanceOf(contracts.vlAuraDelegatorPCVDeposit.address);
+  expect(auraLocked).to.be.at.least(ethers.utils.parseEther('23438'));
+  const auraBalance = await contracts.vlAuraDelegatorPCVDeposit.balance();
+  expect(auraBalance).to.be.at.least(ethers.utils.parseEther('23438'));
 };
 
 export { deploy, setup, teardown, validate };

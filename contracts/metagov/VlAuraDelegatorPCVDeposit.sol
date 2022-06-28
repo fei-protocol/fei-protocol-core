@@ -14,6 +14,8 @@ interface IAuraLocker {
         uint256 amount;
     }
 
+    function balanceOf(address _user) external view returns (uint256);
+
     function lock(address _account, uint256 _amount) external;
 
     function getReward(address _account, bool _stake) external;

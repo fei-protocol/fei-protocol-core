@@ -365,7 +365,7 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     address: '0xc44902C03093D52213d20E5b06a0Bda4D9Ce6524',
     category: AddressCategory.TBD
   },
-  vlAuraDelegatorPCVDepositImplementation: {
+  vlAuraDelegatorPCVDepositImplementationOld: {
     artifactName: 'VlAuraDelegatorPCVDeposit',
     address: '0xEd47a9519F86a695A212B53B5EBff92aF41741b1',
     category: AddressCategory.TBD
@@ -383,6 +383,11 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   auraMerkleDrop: {
     artifactName: 'IAuraMerkleDrop',
     address: '0x45EB1A004373b1D8457134A2C04a42d69D287724',
+    category: AddressCategory.External
+  },
+  eswak: {
+    artifactName: 'unknown',
+    address: '0x6ef71cA9cD708883E129559F5edBFb9d9D5C6148',
     category: AddressCategory.External
   },
 
