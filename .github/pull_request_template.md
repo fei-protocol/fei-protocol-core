@@ -1,8 +1,6 @@
 # PR Type: Feature|Bug|Release
 
-# PR Title: A Fancy Title Here Please
-
-### PR Description: Replace this text with a description of the PR. It doesn't need to be a novel, but a few sentences should do. Probably about the length of this sample description; perhaps longer if there are enough details. By the way, make sure to delete the checklists not applicable below. Praise Vitalik.
+A description of your PR here.
 
 ### PR Checklist - Feature (Proposal)
 
@@ -10,8 +8,10 @@
 - [ ] Proposal Added to ProposalsConfig
 - [ ] Fork Block Correct
 - [ ] Remove Any .only's on Tests
+- [ ] Deploy Contract If Needed (+ Verify on Etherscan & Add to MainnetAddresses)
 - [ ] Update Documentation If Needed
 - [ ] Update Roles Config
+- [ ] Update Collateralization Oracle If Needed
 - [ ] Proposal Submitted
 
 ### PR Checklist - Feature (Non-Proposal) | Bug
