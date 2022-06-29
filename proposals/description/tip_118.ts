@@ -141,7 +141,7 @@ const tip_118: TemplatedProposalDescription = {
         [addresses.lusdPSM, addresses.ethPSM, addresses.aaveEthPCVDepositWrapper, addresses.voltDepositWrapper]
       ],
       description: `
-      Remove LUSD PSM, ETH PSM, Aave ETH PCV Deposit wrapper and Volt deposit wrapper from CR
+      Remove LUSD PSM, ETH PSM, Aave ETH PCV Deposit wrapper and the Volt deposit wrapper from CR
       `
     },
 
