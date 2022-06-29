@@ -1,25 +1,11 @@
 import { ethers } from 'hardhat';
-import {
-  MainnetContracts,
-  NamedAddresses,
-  ProposalDescription,
-  TemplatedProposalDescription
-} from '@custom-types/types';
+import { MainnetContracts, NamedAddresses, TemplatedProposalDescription } from '@custom-types/types';
 import { OptimisticTimelock } from '@custom-types/contracts';
 import { getImpersonatedSigner, time } from '@test/helpers';
 import { Contract } from '@ethersproject/contracts';
 import { forceEth } from '@test/integration/setup/utils';
-
-export async function simulateOAProposal(
-  proposalInfo: TemplatedProposalDescription,
-  contracts: MainnetContracts,
-  contractAddresses: NamedAddresses,
-  logging = false
-) {
-  const timelockOA = contracts.optimisticTimelock as OptimisticTimelock;
-  const multisigAddressOA = contractAddresses.optimisticMultisig as string;
-  await simulateTimelockProposal(timelockOA, multisigAddressOA, proposalInfo, contracts, contractAddresses, logging);
-}
+import { TRIBAL_COUNCIL_POD_ID } from '@protocol/optimisticGovernance';
+import { PodConfig } from './constructProposalCalldata';
 
 export async function simulateTCProposal(
   proposalInfo: TemplatedProposalDescription,
@@ -29,16 +15,29 @@ export async function simulateTCProposal(
 ) {
   const timelockTC = contracts.tribalCouncilTimelock as OptimisticTimelock;
   const multisigAddressTC = contractAddresses.tribalCouncilSafe as string;
-  await simulateTimelockProposal(timelockTC, multisigAddressTC, proposalInfo, contracts, contractAddresses, logging);
+  const podConfig: PodConfig = {
+    id: TRIBAL_COUNCIL_POD_ID,
+    timelockAddress: contractAddresses.tribalCouncilTimelock
+  };
+  await simulatePodProposal(
+    timelockTC,
+    multisigAddressTC,
+    proposalInfo,
+    contracts,
+    contractAddresses,
+    logging,
+    podConfig
+  );
 }
 
-export async function simulateTimelockProposal(
+export async function simulatePodProposal(
   timelock: OptimisticTimelock,
   multisigAddress: string,
   proposalInfo: TemplatedProposalDescription,
   contracts: MainnetContracts,
   contractAddresses: NamedAddresses,
-  logging = false
+  logging = false,
+  podConfig: PodConfig
 ) {
   await forceEth(multisigAddress);
   const signer = await getImpersonatedSigner(multisigAddress);
@@ -88,6 +87,13 @@ export async function simulateTimelockProposal(
   if (!proposalId || !(await timelock.isOperation(proposalId))) {
     const schedule = await timelock.connect(signer).scheduleBatch(targets, values, datas, predecessor, salt, delay);
     console.log('Calldata:', schedule.data);
+
+    // Register the pod's metadata
+    console.log(`Registering proposal ${proposalId} of pod ${podConfig.id}`);
+    const registerTx = await contracts.governanceMetadataRegistry
+      .connect(signer)
+      .registerProposal(podConfig.id, proposalId, proposalInfo.description);
+    console.log('Metadata tx: ', registerTx.data);
   } else {
     console.log('Already scheduled proposal');
   }
