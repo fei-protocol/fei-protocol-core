@@ -11,11 +11,11 @@ const collateralizationAddresses: CollateralizationAddressType = {
     'rariTimelockFeiOldLens',
     'tribalCouncilTimelockFeiLens'
   ],
-  lusd: ['lusdPSM'],
-  dai: ['compoundDaiPCVDepositWrapper', 'daiFixedPricePSM', 'ethToDaiLensDai'],
+  lusd: ['lusdHoldingDeposit'],
+  dai: ['compoundDaiPCVDepositWrapper', 'daiFixedPricePSM', 'ethToDaiLensDai', 'daiHoldingDeposit'],
   bal: ['balancerDepositBalWeth', 'balancerLensVeBalBal', 'balancerGaugeStaker'],
-  weth: ['ethLidoPCVDeposit', 'ethPSM', 'balancerLensVeBalWeth', 'ethToDaiLensEth', 'aaveEthPCVDepositWrapper'],
-  volt: ['voltDepositWrapper']
+  weth: ['ethLidoPCVDeposit', 'balancerLensVeBalWeth', 'ethToDaiLensEth', 'wethHoldingDeposit'],
+  volt: ['voltHoldingDeposit']
 };
 
 export type CollateralizationAddressType = { [key: string]: string[] };

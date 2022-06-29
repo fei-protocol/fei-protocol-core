@@ -101,7 +101,7 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   lusdPSMFeiSkimmer: {
     artifactName: 'FeiSkimmer',
     address: '0xFc29429D8c8D80320C4AB454131f741F56239c2b',
-    category: AddressCategory.Utility
+    category: AddressCategory.Deprecated
   },
   lusdPCVDripController: {
     artifactName: 'PCVDripController',
@@ -250,7 +250,7 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   lusdPSM: {
     artifactName: 'PegStabilityModule',
     address: '0xb0e731F036AdfDeC12da77c15aaB0F90E8e45A0e',
-    category: AddressCategory.Peg
+    category: AddressCategory.Deprecated
   },
   raiPriceBoundPSM: {
     artifactName: 'PriceBoundPSM',
@@ -260,7 +260,7 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   ethPSM: {
     artifactName: 'PegStabilityModule',
     address: '0x98E5F5706897074a4664DD3a32eB80242d6E694B',
-    category: AddressCategory.Peg
+    category: AddressCategory.Deprecated
   },
   ethPSMRouter: {
     artifactName: 'PSMRouter',
@@ -275,7 +275,7 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   ethPSMFeiSkimmer: {
     artifactName: 'FeiSkimmer',
     address: '0xA8A25F8cbfC5053241aB6FA87b865755dcB5501F',
-    category: AddressCategory.Peg
+    category: AddressCategory.Deprecated
   },
   daiFixedPricePSM: {
     artifactName: 'FixedPricePSM',
@@ -392,7 +392,7 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   aaveEthPCVDepositWrapper: {
     artifactName: 'PCVDepositWrapper',
     address: '0x43Ef03755991056681F01EE2182234eF6aF1f658',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
 
   aaveFeiPCVDepositWrapper: {
@@ -2340,6 +2340,11 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     artifactName: 'OtcEscrow',
     address: '0x14d2F529576d3a5451BfbA370408a899Bb5261a9',
     category: AddressCategory.Deprecated
+  },
+  gOHM: {
+    artifactName: 'IERC20',
+    address: '0x0ab87046fBb341D058F17CBC4c1133F25a20a52f',
+    category: AddressCategory.External
   },
   mergerGate: {
     artifactName: 'MergerGate',
