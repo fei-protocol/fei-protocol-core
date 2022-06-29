@@ -5,7 +5,6 @@ import {
   ContractAccessRights,
   TestCoordinator,
   ContractsAndAddresses,
-  ProposalConfig,
   TemplatedProposalConfig,
   namedContractsToNamedAddresses,
   NamedAddresses,
@@ -21,7 +20,6 @@ import { sudo } from '@scripts/utils/sudo';
 import constructProposal from '@scripts/utils/constructProposal';
 import '@nomiclabs/hardhat-ethers';
 import { resetFork } from '@test/helpers';
-import { simulateOAProposal } from '@scripts/utils/simulateTimelockProposal';
 import { simulateTCProposal } from '@scripts/utils/simulateTimelockProposal';
 import { simulateDEBUGProposal } from '@scripts/utils/simulateDEBUGProposal';
 import { forceEth } from '@test/integration/setup/utils';
