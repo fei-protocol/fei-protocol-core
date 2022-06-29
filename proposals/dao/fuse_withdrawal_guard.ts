@@ -22,6 +22,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses, loggi
     rariPool24FeiPCVDeposit,
     rariPool18FeiPCVDeposit,
     rariPool6FeiPCVDeposit,
+    turboFusePCVDeposit,
     lusdPSM,
     daiFixedPricePSM
   } = addresses;
@@ -42,7 +43,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses, loggi
       rariPool22FeiPCVDeposit,
       rariPool24FeiPCVDeposit,
       rariPool18FeiPCVDeposit,
-      rariPool6FeiPCVDeposit
+      rariPool6FeiPCVDeposit,
+      turboFusePCVDeposit
     ],
     [
       daiFixedPricePSM,
@@ -53,10 +55,11 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses, loggi
       daiFixedPricePSM,
       daiFixedPricePSM,
       daiFixedPricePSM,
+      daiFixedPricePSM,
       daiFixedPricePSM
     ],
-    [fei, dai, lusd, fei, fei, fei, fei, fei, fei],
-    [e18.mul(191_000), e18.mul(64_000), e18.mul(4_000), e18.mul(100_000), 0, 0, 0, 0, 0]
+    [fei, dai, lusd, fei, fei, fei, fei, fei, fei, fei],
+    [e18.mul(191_000), e18.mul(64_000), e18.mul(4_000), e18.mul(100_000), 0, 0, 0, 0, 0, 0]
   );
 
   logging && console.log('FuseWithdrawalGuard deployed to: ', fuseWithdrawalGuard.address);
@@ -90,12 +93,13 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await guard.getAmountToWithdraw(addresses.rariPool24FeiPCVDeposit)).to.be.gt(e18.mul(500));
   expect(await guard.getAmountToWithdraw(addresses.rariPool18FeiPCVDeposit)).to.be.gt(e18.mul(20_000));
   expect(await guard.getAmountToWithdraw(addresses.rariPool6FeiPCVDeposit)).to.be.gt(e18.mul(100));
+  expect(await guard.getAmountToWithdraw(addresses.turboFusePCVDeposit)).to.be.gt(e18.mul(10_000_000));
 
   const lusdPSMBalanceBefore = await contracts.lusd.balanceOf(addresses.lusdPSM);
   const daiPSMBalanceBefore = await contracts.dai.balanceOf(addresses.daiFixedPricePSM);
   const daiPSMFeiBalanceBefore = await contracts.fei.balanceOf(addresses.daiFixedPricePSM);
 
-  for (let i = 0; i < 9; i++) {
+  for (let i = 0; i < 10; i++) {
     expect(await guard.check()).to.be.true;
     await contracts.pcvSentinel.protec(guard.address);
   }
@@ -109,11 +113,12 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await guard.getAmountToWithdraw(addresses.rariPool24FeiPCVDeposit)).to.be.equal(e18.mul(0));
   expect(await guard.getAmountToWithdraw(addresses.rariPool18FeiPCVDeposit)).to.be.equal(e18.mul(0));
   expect(await guard.getAmountToWithdraw(addresses.rariPool6FeiPCVDeposit)).to.be.equal(e18.mul(0));
+  expect(await guard.getAmountToWithdraw(addresses.turboFusePCVDeposit)).to.be.equal(e18.mul(0));
 
   expect(await contracts.lusd.balanceOf(addresses.lusdPSM)).to.be.gt(e18.mul(900_000).add(lusdPSMBalanceBefore));
   expect(await contracts.dai.balanceOf(addresses.daiFixedPricePSM)).to.be.gt(e18.mul(120_000).add(daiPSMBalanceBefore));
   expect(await contracts.fei.balanceOf(addresses.daiFixedPricePSM)).to.be.gt(
-    e18.mul(3_800_000).add(daiPSMFeiBalanceBefore)
+    e18.mul(13_800_000).add(daiPSMFeiBalanceBefore)
   );
 };
 
