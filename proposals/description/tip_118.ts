@@ -234,15 +234,17 @@ const tip_118: TemplatedProposalDescription = {
     }
   ],
   description: `
-  TIP_118: Deploy ERC20 Holding Deposits, deprecate unused PSMs
+  TIP_118: Deploy ERC20 Holding Deposits, deprecate unused PSMs and skimmers
 
   This proposal deploys a new type of PCV deposit, the ERC20HoldingPCVDeposit. This is a deposit which has 
   the deposit() method as a no-op and is intended to just hold assets. 
 
   In addition, it also deprecates the ETH, LUSD and RAI PSMs. This involves transferring all assets off these PSMs, 
-  revoking their MINTER_ROLE, ensuring they are fully paused and pausing the associated PCV drip controllers.
-  
-  Going forward, the only active PSM will be the DAI PSM.
+  revoking their MINTER_ROLE, ensuring they are fully paused. It also pauses the the associated PCV drip controllers and 
+  deprecates the Fei skimmers. Going forward, the only active PSM will be the DAI PSM.
+
+  The DAI FEI skimmer is also activated by granting the PCV_CONTROLLER_ROLE and excess FEI skimmed. gOHM and VOLT are transferred
+  from the DAO timelock to the relevant holding deposits.
   `
 };
 
