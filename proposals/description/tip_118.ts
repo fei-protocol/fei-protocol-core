@@ -100,7 +100,7 @@ const tip_118: TemplatedProposalDescription = {
       description: 'Unset the ETH, LUSD and RAI PSMs as safe addresses'
     },
 
-    // Add new Holding PCV deposits to Collaterization Oracle and set as safe addresses
+    // Update Collaterization Oracle and set safe addresses
     {
       target: 'collateralizationOracle',
       values: '0',
@@ -131,6 +131,18 @@ const tip_118: TemplatedProposalDescription = {
         ]
       ],
       description: 'Set all new ERC20 holding deposits as safe addresses on the PCV Guardian'
+    },
+
+    {
+      target: 'collateralizationOracle',
+      values: '0',
+      method: 'removeDeposits(address[])',
+      arguments: (addresses) => [
+        [addresses.lusdPSM, addresses.ethPSM, addresses.aaveEthPCVDepositWrapper, addresses.voltDepositWrapper]
+      ],
+      description: `
+      Remove LUSD PSM, ETH PSM, Aave ETH PCV Deposit wrapper and Volt deposit wrapper from CR
+      `
     },
 
     ///  PCV DRIP CONTROLLERS

@@ -16,8 +16,7 @@ const collateralizationAddresses: CollateralizationAddressType = {
   bal: ['balancerDepositBalWeth', 'balancerLensVeBalBal', 'balancerGaugeStaker'],
   weth: ['ethLidoPCVDeposit', 'balancerLensVeBalWeth', 'ethToDaiLensEth', 'wethHoldingDeposit'],
   agEUR: ['uniswapLensAgEurUniswapGauge', 'agEurUniswapPCVDeposit'],
-  volt: ['voltHoldingDeposit'],
-  gOHM: ['gOHMHoldingPCVDeposit']
+  volt: ['voltHoldingDeposit']
 };
 
 export type CollateralizationAddressType = { [key: string]: string[] };
