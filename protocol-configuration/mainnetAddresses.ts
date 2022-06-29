@@ -392,7 +392,7 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   aaveEthPCVDepositWrapper: {
     artifactName: 'PCVDepositWrapper',
     address: '0x43Ef03755991056681F01EE2182234eF6aF1f658',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
 
   aaveFeiPCVDepositWrapper: {
