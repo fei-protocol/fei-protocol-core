@@ -11,8 +11,6 @@ import {MainnetAddresses} from "../fixtures/MainnetAddresses.sol";
 import {getCore, getAddresses, FeiTestAddresses} from "../../utils/Fixtures.sol";
 
 contract ERC20HoldingPCVDepositIntegrationTest is DSTest {
-    ERC20HoldingPCVDeposit private emptyDeposit;
-
     Vm public constant vm = Vm(HEVM_ADDRESS);
     address payable receiver = payable(address(3));
 
@@ -20,28 +18,52 @@ contract ERC20HoldingPCVDepositIntegrationTest is DSTest {
     IERC20 weth = IERC20(MainnetAddresses.WETH);
     IERC20 fei = IERC20(MainnetAddresses.FEI);
 
-    function setUp() public {
-        emptyDeposit = new ERC20HoldingPCVDeposit(address(core), weth);
+    uint256 amount = 2 ether;
+
+    /// @notice Validate that can wrap ETH to WETH
+    function testCanWrapEth() public {
+        ERC20HoldingPCVDeposit wethDeposit = new ERC20HoldingPCVDeposit(address(core), weth);
+
+        // Forking mainnet, Foundry uses same address to deploy for all users. This contract gets deployed to
+        // an EOA which already has funds
+        uint256 initialEthBalance = address(wethDeposit).balance;
+        assertEq(wethDeposit.balance(), 0); // will not currently have WETH
+
+        payable(address(wethDeposit)).transfer(amount);
+        assertEq(address(wethDeposit).balance, amount + initialEthBalance);
+        wethDeposit.wrapETH();
+        assertEq(address(wethDeposit).balance, 0);
+
+        // Validate WETH balance is reported correctly for all balance functions
+        assertEq(weth.balanceOf(address(wethDeposit)), amount + initialEthBalance);
+        assertEq(wethDeposit.balance(), amount + initialEthBalance);
+
+        (uint256 resistantBalance, uint256 feiBalance) = wethDeposit.resistantBalanceAndFei();
+        assertEq(resistantBalance, amount + initialEthBalance);
+        assertEq(feiBalance, 0);
     }
 
     /// @notice Validate that can withdraw ETH that was wrapped to WETH
     function testCanWithdraWrappedEth() public {
-        payable(address(emptyDeposit)).transfer(2 ether);
-        emptyDeposit.wrapETH();
+        ERC20HoldingPCVDeposit wethDeposit = new ERC20HoldingPCVDeposit(address(core), weth);
+        uint256 initialEthBalance = address(wethDeposit).balance;
+        assertEq(wethDeposit.balance(), 0);
 
+        // Transfer ETH to the deposit and wrap it
+        payable(address(wethDeposit)).transfer(amount);
+        wethDeposit.wrapETH();
+
+        // Withdraw all wrapped ETH and verify balances report correctly
         vm.prank(MainnetAddresses.FEI_DAO_TIMELOCK);
-        emptyDeposit.withdrawERC20(MainnetAddresses.WETH, receiver, 2 ether);
-        assertEq(weth.balanceOf(receiver), 2 ether);
-    }
+        wethDeposit.withdrawERC20(MainnetAddresses.WETH, receiver, amount + initialEthBalance);
 
-    /// @notice Validate that can wrap ETH to WETH
-    function testCanWrapEth() public {
-        ERC20HoldingPCVDeposit emptyNewDeposit = new ERC20HoldingPCVDeposit(address(core), weth);
-        payable(address(emptyNewDeposit)).transfer(2 ether);
-        emptyNewDeposit.wrapETH();
+        assertEq(weth.balanceOf(receiver), amount + initialEthBalance);
 
-        // Validate WETH balance
-        assertEq(weth.balanceOf(address(emptyNewDeposit)), 2 ether);
+        assertEq(weth.balanceOf(address(wethDeposit)), 0);
+        assertEq(wethDeposit.balance(), 0);
+        (uint256 resistantBalance, uint256 feiBalance) = wethDeposit.resistantBalanceAndFei();
+        assertEq(resistantBalance, 0);
+        assertEq(feiBalance, 0);
     }
 
     /// @notice Validate can not deploy for FEI

@@ -3,6 +3,7 @@ import { expect } from 'chai';
 import {
   DeployUpgradeFunc,
   NamedAddresses,
+  NamedContracts,
   SetupUpgradeFunc,
   TeardownUpgradeFunc,
   ValidateUpgradeFunc
@@ -10,6 +11,7 @@ import {
 import { getImpersonatedSigner } from '@test/helpers';
 import { forceEth } from '@test/integration/setup/utils';
 import { BigNumber } from 'ethers';
+import { ERC20HoldingPCVDeposit } from '@custom-types/contracts';
 
 /*
 
@@ -89,11 +91,11 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const volt = contracts.volt;
   const gOHM = contracts.gOHM;
 
-  const wethHoldingDeposit = contracts.wethHoldingDeposit;
-  const lusdHoldingDeposit = contracts.lusdHoldingDeposit;
-  const voltHoldingDeposit = contracts.voltHoldingDeposit;
-  const daiHoldingDeposit = contracts.daiHoldingDeposit;
-  const gOHMHoldingPCVDeposit = contracts.gOHMHoldingPCVDeposit;
+  const wethHoldingDeposit = contracts.wethHoldingDeposit as ERC20HoldingPCVDeposit;
+  const lusdHoldingDeposit = contracts.lusdHoldingDeposit as ERC20HoldingPCVDeposit;
+  const voltHoldingDeposit = contracts.voltHoldingDeposit as ERC20HoldingPCVDeposit;
+  const daiHoldingDeposit = contracts.daiHoldingDeposit as ERC20HoldingPCVDeposit;
+  const gOHMHoldingPCVDeposit = contracts.gOHMHoldingPCVDeposit as ERC20HoldingPCVDeposit;
 
   const pcvGuardian = contracts.pcvGuardianNew;
 
@@ -108,29 +110,8 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await daiHoldingDeposit.balanceReportedIn()).to.be.equal(addresses.dai);
   expect(await gOHMHoldingPCVDeposit.balanceReportedIn()).to.be.equal(addresses.gOHM);
 
-  // 2. Validate can drop funds on a PCV Deposit and then withdraw with the guardian
-  const initialWethDepositBalance = await wethHoldingDeposit.balance();
-  const transferAmount = ethers.constants.WeiPerEther.mul(1);
-  await forceEth(wethHoldingDeposit.address, transferAmount.toString()); // dropped 1 eth on the holding deposit
-
-  await wethHoldingDeposit.wrapEth(); // wrap the deposited ETH to WETH, balance should have increased by 1 eth
-  expect(await wethHoldingDeposit.balance()).to.be.equal(transferAmount.add(initialWethDepositBalance));
-  expect(await contracts.weth.balanceOf(wethHoldingDeposit.address)).to.be.equal(
-    transferAmount.add(initialWethDepositBalance)
-  );
-
-  const resistantBalanceAndFei = await wethHoldingDeposit.resistantBalanceAndFei();
-  expect(resistantBalanceAndFei[0]).to.be.equal(transferAmount.add(initialWethDepositBalance));
-  expect(resistantBalanceAndFei[1]).to.be.equal(0);
-
-  // Withdraw ERC20
-  const receiver = '0xFc312F21E1D56D8dab5475FB5aaEFfB18B892a85';
-  const guardianSigner = await getImpersonatedSigner(addresses.pcvGuardianNew);
-  await forceEth(addresses.pcvGuardianNew);
-  await wethHoldingDeposit.connect(guardianSigner).withdrawERC20(addresses.weth, receiver, transferAmount);
-
-  expect(await wethHoldingDeposit.balance()).to.be.equal(initialWethDepositBalance);
-  expect(await contracts.weth.balanceOf(receiver)).to.be.equal(transferAmount);
+  // 2. Validate can withdraw funds from a holding deposit
+  await validateHoldingDepositWithdrawal(contracts, addresses);
 
   // 3. Validate deprecated PSMs have no assets
   expect(await fei.balanceOf(ethPSM.address)).to.be.equal(0);
@@ -190,6 +171,38 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 
   // 11. gOHM received funds
   expect(await gOHM.balanceOf(addresses.gOHMHoldingPCVDeposit)).to.be.equal('577180000000000000000');
+};
+
+const validateHoldingDepositWithdrawal = async (contracts: NamedContracts, addresses: NamedAddresses) => {
+  const wethHoldingDeposit = contracts.wethHoldingDeposit as ERC20HoldingPCVDeposit;
+
+  const initialWethDepositBalance = await wethHoldingDeposit.balance(); // weth
+  const initialEthDepositBalance = await wethHoldingDeposit.provider.getBalance(wethHoldingDeposit.address); // eth
+  const transferAmount = ethers.constants.WeiPerEther.mul(1); // amount of ETH to transfer
+
+  const ethWhale = '0x00000000219ab540356cbb839cbe05303d7705fa';
+  const ethWhaleSigner = await getImpersonatedSigner(ethWhale);
+  const depositAddress = addresses.wethHoldingDeposit as string;
+  await ethWhaleSigner.sendTransaction({ to: depositAddress, value: transferAmount });
+
+  await wethHoldingDeposit.wrapETH(); // wrap the deposited ETH to WETH, balance should have increased by 1 eth
+
+  const expectedFinalWethBalance = transferAmount.add(initialWethDepositBalance).add(initialEthDepositBalance);
+  expect(await wethHoldingDeposit.balance()).to.be.equal(expectedFinalWethBalance);
+  expect(await contracts.weth.balanceOf(wethHoldingDeposit.address)).to.be.equal(expectedFinalWethBalance);
+
+  const resistantBalanceAndFei = await wethHoldingDeposit.resistantBalanceAndFei();
+  expect(resistantBalanceAndFei[0]).to.be.equal(expectedFinalWethBalance);
+  expect(resistantBalanceAndFei[1]).to.be.equal(0);
+
+  // Withdraw ERC20
+  const receiver = '0xFc312F21E1D56D8dab5475FB5aaEFfB18B892a85';
+  const guardianSigner = await getImpersonatedSigner(addresses.pcvGuardianNew);
+  await forceEth(addresses.pcvGuardianNew);
+  await wethHoldingDeposit.connect(guardianSigner).withdrawERC20(addresses.weth, receiver, transferAmount);
+
+  expect(await wethHoldingDeposit.balance()).to.be.equal(initialWethDepositBalance.add(initialEthDepositBalance));
+  expect(await contracts.weth.balanceOf(receiver)).to.be.equal(transferAmount);
 };
 
 export { deploy, setup, teardown, validate };
