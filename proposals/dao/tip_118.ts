@@ -109,15 +109,11 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await gOHMHoldingPCVDeposit.balanceReportedIn()).to.be.equal(addresses.gOHM);
 
   // 2. Validate can drop funds on a PCV Deposit and then withdraw with the guardian
-  const wethWhale = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2';
-  await forceEth(wethWhale);
-  const wethWhaleSigner = await getImpersonatedSigner(wethWhale);
-
-  // Transfer to the holding PCV deposit. Validate that the balance reads correctly, then withdraw
   const initialWethDepositBalance = await wethHoldingDeposit.balance();
-  const transferAmount = ethers.constants.WeiPerEther.mul(100);
-  await contracts.weth.connect(wethWhaleSigner).transfer(wethHoldingDeposit.address, transferAmount);
+  const transferAmount = ethers.constants.WeiPerEther.mul(1);
+  await forceEth(wethHoldingDeposit.address, transferAmount.toString()); // dropped 1 eth on the holding deposit
 
+  await wethHoldingDeposit.wrapEth(); // wrap the deposited ETH to WETH, balance should have increased by 1 eth
   expect(await wethHoldingDeposit.balance()).to.be.equal(transferAmount.add(initialWethDepositBalance));
   expect(await contracts.weth.balanceOf(wethHoldingDeposit.address)).to.be.equal(
     transferAmount.add(initialWethDepositBalance)
