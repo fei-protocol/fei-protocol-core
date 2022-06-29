@@ -84,7 +84,7 @@ export interface TemplatedProposalConfig {
   deploy: boolean;
   category: ProposalCategory;
   totalValue: number;
-  proposal: TemplatedProposalDescription;
+  proposal: TemplatedProposalDescription | undefined;
   affectedContractSignoff: string[];
   deprecatedContractSignoff: string[];
   proposalId: string;
