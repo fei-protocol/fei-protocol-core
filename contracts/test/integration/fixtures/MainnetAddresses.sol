@@ -3,6 +3,8 @@ pragma solidity ^0.8.4;
 
 library MainnetAddresses {
     address public constant FEI_DAO_TIMELOCK = 0xd51dbA7a94e1adEa403553A8235C302cEbF41a3c;
+    address public constant TRIBAL_COUNCIL_TIMELOCK = 0xe0C7DE94395B629860Cbb3c42995F300F56e6d7a;
+    address public constant GUARDIAN_MULTISIG = 0xB8f482539F2d3Ae2C9ea6076894df36D1f632775;
     address public constant CORE = 0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9;
     address public constant TRIBE = 0xc7283b66Eb1EB5FB86327f08e1B5816b0720212B;
     address public constant MEMBER_TOKEN = 0x0762aA185b6ed2dCA77945Ebe92De705e0C37AE3;
