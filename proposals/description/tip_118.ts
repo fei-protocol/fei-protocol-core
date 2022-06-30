@@ -83,13 +83,6 @@ const tip_118: TemplatedProposalDescription = {
       arguments: (addresses) => [],
       description: 'Pause redemptions on the Rai Price bound PSM'
     },
-    {
-      target: 'ethPSM',
-      values: '0',
-      method: 'pause()',
-      arguments: (addresses) => [],
-      description: 'Pause the ETH PSM and prevent minting'
-    },
 
     // 4. Unset deprecated PSMs as safe addresses
     {
