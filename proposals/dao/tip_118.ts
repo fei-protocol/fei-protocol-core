@@ -19,7 +19,8 @@ Tribal Council proposal TIP_118
 
 - Deploy ERC20Holding PCV Deposits for remaining PCV assets
 - Deprecate LUSD, RAI and ETH PSMs
-- Pause PCV Drip Controllers
+- Pause PCV Drip Controllers and deprecate skimmers
+- Complete deprecation of TRIBE incentives system by withdrawing excess TRIBE
 
 */
 
@@ -27,7 +28,17 @@ const toBN = BigNumber.from;
 
 const fipNumber = 'tip_118';
 
-let initialDAIPSMFeiBalance: BigNumber;
+let initialCoreTribeBalance: BigNumber;
+let initialRariDelegatorBalance: BigNumber;
+
+const EXPECTED_WETH_TRANSFER = toBN('21716293570455965978548');
+const EXPECTED_LUSD_TRANSFER = toBN('18751528591939383399383172');
+const EXPECTED_VOLT_TRANSFER = ethers.constants.WeiPerEther.mul(10_000_000);
+
+const MIN_EXPECTED_TRIBE_RECOVERY = ethers.constants.WeiPerEther.mul(30_000_000);
+const REMAINING_TRIBE_LP_REWARDS = ethers.constants.WeiPerEther.mul(564_000);
+const EXCESS_RARI_TRIBE = ethers.constants.WeiPerEther.mul(150_000);
+const MAX_REMAINING_CHIEF_BALANCE = ethers.constants.WeiPerEther.mul(50_000);
 
 // Do any deployments
 // This should exclusively include new contract deployments
@@ -67,7 +78,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 // This could include setting up Hardhat to impersonate accounts,
 // ensuring contracts have a specific state, etc.
 const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  initialDAIPSMFeiBalance = await contracts.fei.balanceOf(addresses.daiFixedPricePSM);
+  initialCoreTribeBalance = await contracts.tribe.balanceOf(addresses.core);
+  initialRariDelegatorBalance = await contracts.tribe.balanceOf(addresses.rariRewardsDistributorDelegator);
 };
 
 // Tears down any changes made in setup() that need to be
@@ -99,10 +111,6 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 
   const pcvGuardian = contracts.pcvGuardianNew;
 
-  const EXPECTED_WETH_TRANSFER = toBN('23129630802267046361289');
-  const EXPECTED_LUSD_TRANSFER = toBN('17765325999630072368537481');
-  const EXPECTED_VOLT_TRANSFER = ethers.constants.WeiPerEther.mul(10_000_000);
-
   // 1. Validate all holding PCV Deposits configured correctly
   expect(await wethHoldingDeposit.balanceReportedIn()).to.be.equal(addresses.weth);
   expect(await lusdHoldingDeposit.balanceReportedIn()).to.be.equal(addresses.lusd);
@@ -125,7 +133,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   // These deposits started off empty
   // Minting currently enabled on ETH PSM, so WETH balance may increase
   expect(await weth.balanceOf(wethHoldingDeposit.address)).to.be.at.least(EXPECTED_WETH_TRANSFER);
-  expect(await lusd.balanceOf(lusdHoldingDeposit.address)).to.be.equal(EXPECTED_LUSD_TRANSFER);
+  expect(await lusd.balanceOf(lusdHoldingDeposit.address)).to.be.at.least(EXPECTED_LUSD_TRANSFER);
   expect(await volt.balanceOf(voltHoldingDeposit.address)).to.be.equal(EXPECTED_VOLT_TRANSFER);
 
   // 5. Validate deprecated PSMs have no MINTER_ROLE
@@ -171,6 +179,71 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 
   // 11. gOHM received funds
   expect(await gOHM.balanceOf(addresses.gOHMHoldingPCVDeposit)).to.be.equal('577180000000000000000');
+
+  ////////////// TIP 114: Validate TRIBE incentives system deprecation
+  await validateIncentivesSystemDeprecation(contracts, addresses);
+};
+
+const validateIncentivesSystemDeprecation = async (contracts: NamedContracts, addresses: NamedAddresses) => {
+  const tribe = contracts.tribe;
+  const core = contracts.core;
+  const tribalChief = contracts.tribalChief;
+
+  // 0. Verify all staking token wrapper pending rewards are zero
+  expect(await tribalChief.pendingRewards(3, addresses.stakingTokenWrapperRari)).to.equal(0);
+  expect(await tribalChief.pendingRewards(4, addresses.stakingTokenWrapperGROLaaS)).to.equal(0);
+  expect(await tribalChief.pendingRewards(5, addresses.stakingTokenWrapperFOXLaaS)).to.equal(0);
+  expect(await tribalChief.pendingRewards(6, addresses.stakingTokenWrapperUMALaaS)).to.equal(0);
+  expect(await tribalChief.pendingRewards(7, addresses.stakingTokenWrapperSYNLaaS)).to.equal(0);
+  expect(await tribalChief.pendingRewards(8, addresses.stakingTokenWrapperNEARLaaS)).to.equal(0);
+  expect(await tribalChief.pendingRewards(9, addresses.stakingTokenWrapperKYLINLaaS)).to.equal(0);
+  expect(await tribalChief.pendingRewards(10, addresses.stakingTokenWrapperMStableLaaS)).to.equal(0);
+  expect(await tribalChief.pendingRewards(11, addresses.stakingTokenWrapperPoolTogetherLaaS)).to.equal(0);
+  expect(await tribalChief.pendingRewards(12, addresses.stakingTokenWrapperBribeD3pool)).to.equal(0);
+  expect(await tribalChief.pendingRewards(13, addresses.d3StakingTokenWrapper)).to.equal(0);
+  expect(await tribalChief.pendingRewards(14, addresses.fei3CrvStakingtokenWrapper)).to.equal(0);
+  expect(await tribalChief.pendingRewards(15, addresses.feiDaiStakingTokenWrapper)).to.equal(0);
+  expect(await tribalChief.pendingRewards(16, addresses.feiUsdcStakingTokenWrapper)).to.equal(0);
+  expect(await tribalChief.pendingRewards(17, addresses.stakingTokenWrapperBribe3Crvpool)).to.equal(0);
+
+  // 1. Validate all the locations TRIBE was withdrawn from are empty
+  expect(await tribe.balanceOf(addresses.votiumBriber3Crvpool)).to.equal(0);
+  expect(await tribe.balanceOf(addresses.erc20Dripper)).to.equal(0);
+  expect(await tribe.balanceOf(addresses.votiumBriberD3pool)).to.equal(0);
+
+  // 2. Validate TribalChief has sufficient TRIBE to fund LP staking deposits
+  expect(await tribe.balanceOf(addresses.tribalChief)).to.be.bignumber.at.least(REMAINING_TRIBE_LP_REWARDS);
+
+  // Validate remaining balance of TribalChief is small
+  const finalTribalChiefBalance = await tribe.balanceOf(addresses.tribalChief);
+  console.log('Final TribalChief balance:', finalTribalChiefBalance.toString());
+  expect(finalTribalChiefBalance).to.be.bignumber.lessThan(MAX_REMAINING_CHIEF_BALANCE.add(REMAINING_TRIBE_LP_REWARDS));
+
+  // 3. Validate excess TRIBE was pulled from Rari rewards delegate
+  const finalRariDelegatorBalance = await tribe.balanceOf(addresses.rariRewardsDistributorDelegator);
+  const extractedRariTribe = initialRariDelegatorBalance.sub(finalRariDelegatorBalance);
+  expect(extractedRariTribe).to.be.bignumber.at.least(EXCESS_RARI_TRIBE); // At least check, as rewards may have been claimed also
+
+  // 4. Validate expected TRIBE recovery amount was retrieved
+  const finalCoreTribeBalance = await tribe.balanceOf(addresses.core);
+  const tribeRecovered = finalCoreTribeBalance.sub(initialCoreTribeBalance);
+  console.log('Tribe recovered: ', tribeRecovered.toString());
+  expect(tribeRecovered).to.be.bignumber.at.least(MIN_EXPECTED_TRIBE_RECOVERY);
+
+  // 5. Validate Aave incentives controller proxy admin was changed
+  const aaveLendingPoolAddressesProviderSigner = await getImpersonatedSigner(
+    addresses.aaveLendingPoolAddressesProvider
+  );
+  const proxyABI = ['function admin() returns (address)'];
+  const aaveTribeIncentivesControllerAsProxy = new ethers.Contract(addresses.aaveTribeIncentivesController, proxyABI);
+  await forceEth(addresses.aaveTribeIncentivesController);
+  expect(
+    await aaveTribeIncentivesControllerAsProxy.connect(aaveLendingPoolAddressesProviderSigner).callStatic.admin()
+  ).to.be.equal(addresses.aaveLendingPoolAddressesProvider);
+
+  // 6. Validate TRIBAL_CHIEF_ADMIN_ROLE is revoked
+  expect(await core.hasRole(ethers.utils.id('TRIBAL_CHIEF_ADMIN_ROLE'), addresses.tribalCouncilTimelock)).to.be.false;
+  expect(await core.hasRole(ethers.utils.id('TRIBAL_CHIEF_ADMIN_ROLE'), addresses.optimisticTimelock)).to.be.false;
 };
 
 const validateHoldingDepositWithdrawal = async (contracts: NamedContracts, addresses: NamedAddresses) => {
