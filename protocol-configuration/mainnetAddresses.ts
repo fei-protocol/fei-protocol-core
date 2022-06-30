@@ -188,6 +188,12 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     category: AddressCategory.Governance
   },
 
+  angleEuroRedeemer: {
+    artifactName: 'AngleEuroRedeemer',
+    address: '0x05A842943a56720Ebecd2D5f1fb32E48dB25863C',
+    category: AddressCategory.TBD
+  },
+
   rariGovernanceProxyAdmin: {
     artifactName: 'ProxyAdmin',
     address: '0x1c9aA54a013962C2444ECae06902F31D532c6AD3',
@@ -324,7 +330,7 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   agEurUniswapPCVDeposit: {
     artifactName: 'UniswapPCVDeposit',
     address: '0xE8633C49AcE655EB4A8B720e6b12F09Bd3a97812',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
 
   bammDeposit: {
@@ -487,7 +493,7 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   uniswapLensAgEurUniswapGauge: {
     artifactName: 'UniswapLens',
     address: '0xD2554839c2e8a87Dd2CddD013EF828B6534aBC26',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
 
   compoundFeiPCVDepositWrapper: {
@@ -587,7 +593,7 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   agEurAngleUniswapPCVDeposit: {
     artifactName: 'AngleUniswapPCVDeposit',
     address: '0x7AC2Ab8143634419c5bc230A9f9955C3e29f64Ef',
-    category: AddressCategory.PCV_V1 // Not used anymore, stakes in old rewards contract
+    category: AddressCategory.Deprecated
   },
   balUsdCompositeOracle: {
     artifactName: 'CompositeOracle',
@@ -712,7 +718,7 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   gaugeLensAgEurUniswapGauge: {
     artifactName: 'AngleGaugeLens',
     address: '0x10f59bd0a100bcAD86CaB39751797D952eE1f76f',
-    category: AddressCategory.Oracle
+    category: AddressCategory.Deprecated
   },
   collateralizationOracle: {
     artifactName: 'CollateralizationOracle',
@@ -1130,6 +1136,12 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     category: AddressCategory.External
   },
 
+  angleMultisig: {
+    artifactName: 'unknown',
+    address: '0x0C2553e4B9dFA9f83b1A6D3EAB96c4bAaB42d430',
+    category: AddressCategory.External
+  },
+
   angle: {
     artifactName: 'Tribe', // using Tribe instead of IERC20 to have delegate()
     address: '0x31429d1856ad1377a8a0079410b297e1a9e214c2',
@@ -1163,6 +1175,17 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   angleGaugeUniswapV2FeiAgEur: {
     artifactName: 'ILiquidityGauge',
     address: '0xd6282C5aEAaD4d776B932451C44b8EB453E44244',
+    category: AddressCategory.External
+  },
+
+  anglePoolManagerUsdc: {
+    artifactName: 'IPoolManager',
+    address: '0xe9f183FC656656f1F17af1F2b0dF79b8fF9ad8eD',
+    category: AddressCategory.External
+  },
+  angleStrategyUsdc1: {
+    artifactName: 'IAngleStrategy',
+    address: '0x5fE0E497Ac676d8bA78598FC8016EBC1E6cE14a3',
     category: AddressCategory.External
   },
 
