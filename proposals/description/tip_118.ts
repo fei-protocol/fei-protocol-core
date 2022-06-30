@@ -262,7 +262,7 @@ const tip_118: TemplatedProposalDescription = {
       values: '0',
       method: '_grantComp(address,uint256)',
       arguments: (addresses) => [addresses.core, '150000000000000000000000'],
-      description: `Withdraw excess 164k TRIBE from Rari delegator contract`
+      description: `Withdraw excess 150k TRIBE from Rari delegator contract. There is 164k excess, leaving behind a buffer of 14k`
     },
     {
       target: 'tribalChief',
@@ -277,7 +277,8 @@ const tip_118: TemplatedProposalDescription = {
       (Tribal Chief balance before harvest 
             - (pending rewards, Uniswap-v2 FEI/TRIBE LP + Curve 3crv-FEI metapool LP + G-UNI DAI/FEI 0.05% fee tier)
       
-      Withdrawal amount = 27.4M - 0.60M = 26.8M  (leaving behind an additional ~40k TRIBE)
+      Withdrawal amount = 27.4M - 0.60M = 26.8M  
+      (There is ~564k in pending rewards, leaving behind an additional ~35k TRIBE as buffer)
       `
     },
 
