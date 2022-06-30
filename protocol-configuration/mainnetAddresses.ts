@@ -1401,7 +1401,7 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   },
   daiHoldingPCVDeposit: {
     artifactName: 'ERC20HoldingPCVDeposit',
-    address: '0xC6D675ca5217d39C3A5E366141060fC2D1ea2b82',
+    address: '0x8fFAe111Ab06F532a18418190129373D14570014',
     category: AddressCategory.PCV
   },
 
