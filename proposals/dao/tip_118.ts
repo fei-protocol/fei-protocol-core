@@ -47,7 +47,7 @@ const MAX_REMAINING_CHIEF_BALANCE = ethers.constants.WeiPerEther.mul(50_000);
 // This should exclusively include new contract deployments
 const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: NamedAddresses, logging: boolean) => {
   ////// Deploy empty PCV deposits for remaining PCV assets
-  const ERC20HoldingPCVDepositFactory = await ethers.getContractFactory('ERC20HoldingPCVDeposit');
+  /*const ERC20HoldingPCVDepositFactory = await ethers.getContractFactory('ERC20HoldingPCVDeposit');
   const wethHoldingPCVDeposit = await ERC20HoldingPCVDepositFactory.deploy(addresses.core, addresses.weth);
   await wethHoldingPCVDeposit.deployTransaction.wait();
   logging && console.log('WETH holding deposit deployed to: ', wethHoldingPCVDeposit.address);
@@ -66,7 +66,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 
   const gOHMHoldingPCVDeposit = await ERC20HoldingPCVDepositFactory.deploy(addresses.core, addresses.gOHM);
   await gOHMHoldingPCVDeposit.deployTransaction.wait();
-  logging && console.log('gOHM holding deposit deployed to: ', gOHMHoldingPCVDeposit.address);
+  logging && console.log('gOHM holding deposit deployed to: ', gOHMHoldingPCVDeposit.address);*/
 
   // Deploy agEUR Redeemer contract
   const angleEuroRedeemerFactory = await ethers.getContractFactory('AngleEuroRedeemer');
@@ -75,12 +75,12 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   logging && console.log(`angleEuroRedeemer: ${angleEuroRedeemer.address}`);
 
   return {
-    angleEuroRedeemer,
-    wethHoldingPCVDeposit,
+    angleEuroRedeemer
+    /*wethHoldingPCVDeposit,
     lusdHoldingPCVDeposit,
     voltHoldingPCVDeposit,
     daiHoldingPCVDeposit,
-    gOHMHoldingPCVDeposit
+    gOHMHoldingPCVDeposit*/
   };
 };
 
@@ -92,6 +92,11 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
   // Read Chainlink ETHUSD price & override chainlink storage to make it a fresh value
   const ethPrice = (await contracts.chainlinkEthUsdOracleWrapper.read())[0].toString() / 1e10;
   await overwriteChainlinkAggregator(addresses.chainlinkEthUsdOracle, Math.round(ethPrice).toString(), '8');
+  // chainlink EURUSD
+  const eurPrice = (await contracts.chainlinkEurUsdOracleWrapper.read())[0].toString() / 1e10;
+  await overwriteChainlinkAggregator(addresses.chainlinkEurUsdOracle, Math.round(eurPrice).toString(), '8');
+  // also overwrite chainlink USDCUSD oracle
+  await overwriteChainlinkAggregator('0x8fFfFfd4AfB6115b954Bd326cbe7B4BA576818f6', '100000000', '8');
 
   // read pcvStats before proposal execution
   pcvStatsBefore = await contracts.collateralizationOracle.pcvStats();
@@ -104,6 +109,19 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
     '0'
   );
   await contracts.angleStrategyUsdc1.harvest();
+
+  // Prevent the oracle from being expired
+  // This is because on a local mainnet fork, time is not accurate and Angle Protocol
+  // considers their oracles expired otherwise.
+  const oracleAbi = ['function changeStalePeriod(uint32 _stalePeriod)'];
+  const oracleInterface = new ethers.utils.Interface(oracleAbi);
+  const encodeOracleCall = oracleInterface.encodeFunctionData('changeStalePeriod', ['1000000000']);
+  await (
+    await angleMultisigSigner.sendTransaction({
+      data: encodeOracleCall,
+      to: '0x631C43612C498642211110Ba3026a6773b7fb7Fe' // Angle USDC/EUR oracle
+    })
+  ).wait();
 
   // read DAI PSM balance before proposal execution
   daiBalanceBefore = await contracts.dai.balanceOf(addresses.daiFixedPricePSM);
