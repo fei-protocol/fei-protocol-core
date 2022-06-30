@@ -13,7 +13,7 @@ const tip_118: TemplatedProposalDescription = {
       arguments: (addresses) => [
         addresses.ethPSM, // pcvDeposit
         addresses.weth, // token
-        addresses.wethHoldingDeposit, // to
+        addresses.wethHoldingPCVDeposit, // to
         '10000' // basisPoints, 100%
       ],
       description: 'Migrate WETH from the ETH PSM to the new WETH Holding PCV deposit'
@@ -39,7 +39,7 @@ const tip_118: TemplatedProposalDescription = {
       arguments: (addresses) => [
         addresses.lusdPSM, // pcvDeposit
         addresses.lusd, // token
-        addresses.lusdHoldingDeposit, // to
+        addresses.lusdHoldingPCVDeposit, // to
         '10000' // basisPoints, 100%
       ],
       description: 'Migrate LUSD from the LUSD PSM to the LUSD holding PCV deposit'
@@ -100,10 +100,10 @@ const tip_118: TemplatedProposalDescription = {
       method: 'addDeposits(address[])',
       arguments: (addresses) => [
         [
-          addresses.wethHoldingDeposit,
-          addresses.lusdHoldingDeposit,
-          addresses.daiHoldingDeposit,
-          addresses.voltHoldingDeposit
+          addresses.wethHoldingPCVDeposit,
+          addresses.lusdHoldingPCVDeposit,
+          addresses.daiHoldingPCVDeposit,
+          addresses.voltHoldingPCVDeposit
         ]
       ],
       description: `
@@ -116,10 +116,10 @@ const tip_118: TemplatedProposalDescription = {
       method: 'setSafeAddresses(address[])',
       arguments: (addresses) => [
         [
-          addresses.wethHoldingDeposit,
-          addresses.lusdHoldingDeposit,
-          addresses.daiHoldingDeposit,
-          addresses.voltHoldingDeposit,
+          addresses.wethHoldingPCVDeposit,
+          addresses.lusdHoldingPCVDeposit,
+          addresses.daiHoldingPCVDeposit,
+          addresses.voltHoldingPCVDeposit,
           addresses.gOHMHoldingPCVDeposit
         ]
       ],
@@ -213,7 +213,7 @@ const tip_118: TemplatedProposalDescription = {
       target: 'volt',
       values: '0',
       method: 'transfer(address,uint256)',
-      arguments: (addresses) => [addresses.voltHoldingDeposit, '10000000000000000000000000'],
+      arguments: (addresses) => [addresses.voltHoldingPCVDeposit, '10000000000000000000000000'],
       description: 'Move 10M VOLT from the DAO timelock to the VOLT holding PCV deposit'
     },
 

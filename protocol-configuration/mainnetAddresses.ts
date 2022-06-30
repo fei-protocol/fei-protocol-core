@@ -46,7 +46,11 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     address: '0xB8f482539F2d3Ae2C9ea6076894df36D1f632775',
     category: AddressCategory.Security
   },
-
+  fuseWithdrawalGuard: {
+    artifactName: 'FuseWithdrawalGuard',
+    address: '0xd079ec4b442600a381eAc7E95662eB1b313cd113',
+    category: AddressCategory.Security
+  },
   ratioPCVControllerV2: {
     artifactName: 'RatioPCVControllerV2',
     address: '0x221fff24FB66dA3c722c7C5B856956a6a30C0179',
@@ -976,6 +980,11 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     address: '0x559eBC30b0E58a45Cc9fF573f77EF1e5eb1b3E18',
     category: AddressCategory.Volt
   },
+  voltHoldingPCVDeposit: {
+    artifactName: 'ERC20HoldingPCVDeposit',
+    address: '0xBDC01c9743989429df9a4Fe24c908D87e462AbC1',
+    category: AddressCategory.PCV
+  },
   voltCore: {
     artifactName: 'Core',
     address: '0xEC7AD284f7Ad256b64c6E69b84Eb0F48f42e8196',
@@ -1407,6 +1416,11 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     address: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
     category: AddressCategory.External
   },
+  daiHoldingPCVDeposit: {
+    artifactName: 'ERC20HoldingPCVDeposit',
+    address: '0x8fFAe111Ab06F532a18418190129373D14570014',
+    category: AddressCategory.PCV
+  },
 
   dpi: {
     artifactName: 'IERC20',
@@ -1544,6 +1558,11 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     artifactName: 'IERC20',
     address: '0x5f98805A4E8be255a32880FDeC7F6728C6568bA0',
     category: AddressCategory.External
+  },
+  lusdHoldingPCVDeposit: {
+    artifactName: 'ERC20HoldingPCVDeposit',
+    address: '0x4378De2F2991Fbed6616b34AC7727E7653713712',
+    category: AddressCategory.PCV
   },
 
   masterKashi: {
@@ -1724,6 +1743,11 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     artifactName: 'WETH9',
     address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
     category: AddressCategory.External
+  },
+  wethHoldingPCVDeposit: {
+    artifactName: 'ERC20HoldingPCVDeposit',
+    address: '0xC6D675ca5217d39C3A5E366141060fC2D1ea2b82',
+    category: AddressCategory.PCV
   },
 
   orcaPodController: {
@@ -2351,6 +2375,11 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     artifactName: 'IERC20',
     address: '0x0ab87046fBb341D058F17CBC4c1133F25a20a52f',
     category: AddressCategory.External
+  },
+  gOHMHoldingPCVDeposit: {
+    artifactName: 'ERC20HoldingPCVDeposit',
+    address: '0x2C9980fa0a1ABe4B0cc6263132d8EB41Db9B73Ba',
+    category: AddressCategory.PCV
   },
   mergerGate: {
     artifactName: 'MergerGate',

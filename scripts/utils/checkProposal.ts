@@ -49,7 +49,7 @@ async function checkProposal(proposalName: string, doSetup?: string) {
     const chainlinkEthUsd = await contracts.chainlinkEthUsdOracleWrapper.read();
     await overwriteChainlinkAggregator(
       contractAddresses.chainlinkEthUsdOracle,
-      Math.round(chainlinkEthUsd[0] / 1e10),
+      Math.round(chainlinkEthUsd[0] / 1e10).toString(),
       '8'
     );
   }
