@@ -1,6 +1,6 @@
 // Each contrat will have a different subset of paused state. PSMs are different to normal
 
-export const pauseState: PauseStateConfig = {
+export const pauseStateConfig: PauseStateConfig = {
   ethPSM: {
     paused: true,
     redeemPaused: true
@@ -21,16 +21,12 @@ export const pauseState: PauseStateConfig = {
   }
 };
 
-export type PauseStatePSM = {
+export type PauseState = {
   paused: boolean;
-  redeemPaused: boolean;
+  redeemPaused?: boolean;
   mintPaused?: boolean;
 };
 
-export type PauseState = {
-  paused: boolean;
-};
-
 export type PauseStateConfig = {
-  [key: string]: PauseStatePSM | PauseState;
+  [key: string]: PauseState;
 };
