@@ -98,9 +98,6 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
   // also overwrite chainlink USDCUSD oracle
   await overwriteChainlinkAggregator('0x8fFfFfd4AfB6115b954Bd326cbe7B4BA576818f6', '100000000', '8');
 
-  // read pcvStats before proposal execution
-  pcvStatsBefore = await contracts.collateralizationOracle.pcvStats();
-
   // angle multisig action : make enough USDC collateral available for redemptions
   const angleMultisigSigner = await getImpersonatedSigner(addresses.angleMultisig);
   await forceEth(angleMultisigSigner.address);
@@ -129,6 +126,9 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
   // read initial balances
   initialCoreTribeBalance = await contracts.tribe.balanceOf(addresses.core);
   initialRariDelegatorBalance = await contracts.tribe.balanceOf(addresses.rariRewardsDistributorDelegator);
+
+  // read pcvStats before proposal execution
+  pcvStatsBefore = await contracts.collateralizationOracle.pcvStats();
 };
 
 // Tears down any changes made in setup() that need to be
