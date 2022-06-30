@@ -1121,6 +1121,12 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     category: AddressCategory.External
   },
 
+  angleMultisig: {
+    artifactName: 'unknown',
+    address: '0x0C2553e4B9dFA9f83b1A6D3EAB96c4bAaB42d430',
+    category: AddressCategory.External
+  },
+
   angle: {
     artifactName: 'Tribe', // using Tribe instead of IERC20 to have delegate()
     address: '0x31429d1856ad1377a8a0079410b297e1a9e214c2',

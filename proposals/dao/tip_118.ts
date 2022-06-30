@@ -88,7 +88,7 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
   pcvStatsBefore = await contracts.collateralizationOracle.pcvStats();
 
   // angle multisig action : make enough USDC collateral available for redemptions
-  const angleMultisigSigner = await getImpersonatedSigner('0x0C2553e4B9dFA9f83b1A6D3EAB96c4bAaB42d430');
+  const angleMultisigSigner = await getImpersonatedSigner(addresses.angleMultisig);
   await forceEth(angleMultisigSigner.address);
   await contracts.anglePoolManagerUsdc.connect(angleMultisigSigner).updateStrategyDebtRatio(
     addresses.angleStrategyUsdc1, // USDC strategy has 57M deployed

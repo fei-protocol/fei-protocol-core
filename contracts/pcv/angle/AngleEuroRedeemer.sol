@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.4;
 
-import "./IStableMaster.sol";
-import "../../external/Decimal.sol";
-import "../../oracle/IOracle.sol";
-import "../../refs/CoreRef.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {IStableMaster, IPoolManager} from "./IStableMaster.sol";
+import {Decimal} from "../../external/Decimal.sol";
+import {IOracle} from "../../oracle/IOracle.sol";
+import {CoreRef} from "../../refs/CoreRef.sol";
+import {TribeRoles} from "../../core/TribeRoles.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 interface IMakerPSM {
     function sellGem(address, uint256) external;
@@ -39,19 +40,37 @@ contract AngleEuroRedeemer is CoreRef {
     /// @notice redeem all agEUR held on this contract to USDC using Angle Protocol,
     /// and then use the Maker PSM to convert the USDC to DAI, and send the DAI to
     /// Tribe DAO's FEI/DAI PSM.
-    function redeem() external onlyGuardianOrGovernor {
-        // Read amount of agEUR to redeem & current oracle price
+    function redeem()
+        external
+        hasAnyOfThreeRoles(TribeRoles.GOVERNOR, TribeRoles.GUARDIAN, TribeRoles.PCV_SAFE_MOVER_ROLE)
+    {
+        // Get the amount of agEUR to redeem
         uint256 agEurBalance = AGEUR.balanceOf(address(this));
+        require(agEurBalance != 0, "EMPTY_AGEUR");
+
+        // agEUR -> USDC
+        uint256 redeemedUsdc = _redeemAgEurForUsdc(agEurBalance);
+        // USDC -> DAI
+        uint256 redeemedDai = _redeemUsdcForDai(redeemedUsdc);
+
+        // send DAI to DAI/FEI PSM
+        DAI.transfer(TRIBEDAO_FEI_DAI_PSM, redeemedDai);
+    }
+
+    /// @notice Use Angle Protocol to burn agEUR and receive USDC
+    function _redeemAgEurForUsdc(uint256 agEurToRedeem) internal returns (uint256) {
+        // Read amount of agEUR to redeem & current oracle price
         (Decimal.D256 memory oracleValue, bool oracleValid) = TRIBEDAO_EUR_USD_ORACLE.read();
         require(oracleValid, "ORACLE_INVALID");
         uint256 usdPerEur = oracleValue.mul(1e18).asUint256(); // ~1.05e18
 
         // redeem USDC available
         uint256 usdcAvailableForRedeem = ANGLE_POOLMANAGER_USDC.getBalance();
+        require(usdcAvailableForRedeem != 0, "EMPTY_USDC");
         // scale decimals 6 -> 18
         uint256 agEurSpentToRedeemUsdc = (usdcAvailableForRedeem * 1e12 * 1e18) / (usdPerEur);
-        if (agEurSpentToRedeemUsdc > agEurBalance) {
-            agEurSpentToRedeemUsdc = agEurBalance;
+        if (agEurSpentToRedeemUsdc > agEurToRedeem) {
+            agEurSpentToRedeemUsdc = agEurToRedeem;
         }
         // no need to check stableMaster.collateralMap[PoolManager].stocksUsers because
         // USDC has a lot of stock available (~57M)
@@ -59,6 +78,7 @@ contract AngleEuroRedeemer is CoreRef {
         // max 1% slippage (angle redeem has 0.5% fee, oracle has 0.15% precision)
         // scale decimals 18 -> 6
         uint256 minUsdcOut = (agEurSpentToRedeemUsdc * usdPerEur * 99) / (100 * 1e18 * 1e12);
+        uint256 usdcBalanceBefore = USDC.balanceOf(address(this));
 
         // burn agEUR for USDC
         ANGLE_STABLEMASTER.burn(
@@ -69,25 +89,36 @@ contract AngleEuroRedeemer is CoreRef {
             minUsdcOut
         );
 
+        uint256 usdcRedeemed = USDC.balanceOf(address(this)) - usdcBalanceBefore;
+        require(usdcRedeemed > minUsdcOut, "ANGLE_SLIPPAGE");
+        return usdcRedeemed;
+    }
+
+    /// @notice Use the Maker PSM to convert USDC to DAI
+    function _redeemUsdcForDai(uint256 usdcToRedeem) internal returns (uint256) {
+        // read dai balance before redeeming
+        uint256 daiBalanceBefore = DAI.balanceOf(address(this));
+
         // Use Maker PSM to convert USDC to DAI
-        uint256 redeemedUsdc = USDC.balanceOf(address(this));
-        USDC.approve(MAKER_DAI_USDC_PSM_AUTH, redeemedUsdc);
-        IMakerPSM(MAKER_DAI_USDC_PSM).sellGem(address(this), redeemedUsdc);
+        USDC.approve(MAKER_DAI_USDC_PSM_AUTH, usdcToRedeem);
+        IMakerPSM(MAKER_DAI_USDC_PSM).sellGem(address(this), usdcToRedeem);
 
         // sanity check
         // Maker PSM has no fee for USDC->DAI
-        uint256 redeemedDai = DAI.balanceOf(address(this));
-        require(redeemedUsdc / 1e6 == redeemedDai / 1e18, "PSM_SLIPPAGE");
+        uint256 redeemedDai = DAI.balanceOf(address(this)) - daiBalanceBefore;
+        require(usdcToRedeem / 1e6 == redeemedDai / 1e18, "PSM_SLIPPAGE");
 
-        // send DAI to DAI/FEI PSM
-        DAI.transfer(TRIBEDAO_FEI_DAI_PSM, redeemedDai);
+        return redeemedDai;
     }
 
     /// @notice send all tokens held to the Tribal Council timelock
     /// this contract should never hold agEUR as it will atomically be funded & redeemed,
     /// nor should it hold any DAI/FEI/USDC because the redeemed funds are atomically
     /// sent away, but this function is included for funds recovery in case something goes wrong.
-    function withdrawERC20(address token) external onlyGuardianOrGovernor {
+    function withdrawERC20(address token)
+        external
+        hasAnyOfThreeRoles(TribeRoles.GOVERNOR, TribeRoles.GUARDIAN, TribeRoles.PCV_SAFE_MOVER_ROLE)
+    {
         uint256 balance = IERC20(token).balanceOf(address(this));
         IERC20(token).transfer(TRIBEDAO_TC_TIMELOCK, balance);
     }
