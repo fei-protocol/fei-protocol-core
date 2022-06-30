@@ -50,15 +50,21 @@ describe('e2e-pause-state', function () {
       const onChainContract = contracts[pausedContractName];
 
       const onChainPauseState = await onChainContract.paused();
-      expect(onChainPauseState).to.be.equal(expectedContractPauseConfig.paused);
+      expect(onChainPauseState).to.be.equal(expectedContractPauseConfig.paused, 'paused() state incorrect');
 
       // Validate PSM related pausing
       if (expectedContractPauseConfig.redeemPaused) {
-        expect(await onChainContract.redeemPaused()).to.be.equal(expectedContractPauseConfig.redeemPaused);
+        expect(await onChainContract.redeemPaused()).to.be.equal(
+          expectedContractPauseConfig.redeemPaused,
+          'redeemPaused() state incorrect'
+        );
       }
 
       if (expectedContractPauseConfig.mintPaused) {
-        expect(await onChainContract.mintPaused()).to.be.equal(expectedContractPauseConfig.redeemPaused);
+        expect(await onChainContract.mintPaused()).to.be.equal(
+          expectedContractPauseConfig.mintPaused,
+          'mintPaused() state incorrect'
+        );
       }
     }
   });
