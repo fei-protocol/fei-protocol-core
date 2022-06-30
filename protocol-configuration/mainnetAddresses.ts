@@ -188,6 +188,12 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     category: AddressCategory.Governance
   },
 
+  angleEuroRedeemer: {
+    artifactName: 'AngleEuroRedeemer',
+    address: '0x05A842943a56720Ebecd2D5f1fb32E48dB25863C',
+    category: AddressCategory.TBD
+  },
+
   rariGovernanceProxyAdmin: {
     artifactName: 'ProxyAdmin',
     address: '0x1c9aA54a013962C2444ECae06902F31D532c6AD3',
