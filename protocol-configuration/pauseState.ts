@@ -1,5 +1,3 @@
-// Each contrat will have a different subset of paused state. PSMs are different to normal
-
 export const pauseStateConfig: PauseStateConfig = {
   ethPSM: {
     paused: true,

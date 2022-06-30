@@ -40,10 +40,6 @@ describe('e2e-pause-state', function () {
   });
 
   it('should reflect on-chain protocol pause state', async function () {
-    // Iterate through each contract in the pause state config
-    // Get the pause state from the config
-    // Get the relevant pause state of the corresponding contract on-chain
-    // Ensure they are the same
     const pausedContractNames = Object.keys(pauseStateConfig);
 
     for (let i = 0; i < pausedContractNames.length; i += 1) {
