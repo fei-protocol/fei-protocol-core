@@ -31,7 +31,7 @@ contract AngleEuroRedeemerIntegrationTest is DSTest {
         // redeem
         uint256 daiBalanceBefore = dai.balanceOf(redeemer.TRIBEDAO_FEI_DAI_PSM());
         vm.prank(MainnetAddresses.FEI_DAO_TIMELOCK);
-        redeemer.redeem();
+        redeemer.redeemAgEurToDai();
         uint256 daiRedeemed = dai.balanceOf(redeemer.TRIBEDAO_FEI_DAI_PSM()) - daiBalanceBefore;
         assertGt(daiRedeemed, 0.9e24);
 
@@ -54,7 +54,7 @@ contract AngleEuroRedeemerIntegrationTest is DSTest {
         // on the contract after this redeem call
         uint256 daiBalanceBefore = dai.balanceOf(redeemer.TRIBEDAO_FEI_DAI_PSM());
         vm.prank(MainnetAddresses.FEI_DAO_TIMELOCK);
-        redeemer.redeem();
+        redeemer.redeemAgEurToDai();
         uint256 daiRedeemed = dai.balanceOf(redeemer.TRIBEDAO_FEI_DAI_PSM()) - daiBalanceBefore;
         // test all USDC is redeemed to DAI (1% slippage tolerance)
         assertGt(daiRedeemed, (usdcBalanceAvailable * 1e12 * 99) / 100);
@@ -67,7 +67,7 @@ contract AngleEuroRedeemerIntegrationTest is DSTest {
         AngleEuroRedeemer redeemer = new AngleEuroRedeemer(MainnetAddresses.CORE);
 
         vm.expectRevert(bytes("UNAUTHORIZED"));
-        redeemer.redeem();
+        redeemer.redeemAgEurToDai();
 
         vm.expectRevert(bytes("UNAUTHORIZED"));
         redeemer.withdrawERC20(MainnetAddresses.AGEUR);

@@ -378,13 +378,6 @@ const tip_118: TemplatedProposalDescription = {
       description: 'Move all agEUR to redeemer'
     },
     {
-      target: 'angleEuroRedeemer',
-      values: '0',
-      method: 'redeem()',
-      arguments: (addresses) => [],
-      description: 'Redeem all agEUR for FEI and DAI and send to DAI PSM'
-    },
-    {
       target: 'collateralizationOracle',
       values: '0',
       method: 'removeDeposits(address[])',
@@ -392,11 +385,18 @@ const tip_118: TemplatedProposalDescription = {
       description: 'Remove agEUR addresses from CR oracle'
     },
     {
-      target: 'pcvGuardian',
+      target: 'pcvGuardianNew',
       values: '0',
       method: 'unsetSafeAddress(address)',
       arguments: (addresses) => [addresses.agEurUniswapPCVDeposit],
       description: 'Remove agEurUniswapPCVDeposit from safe addresses'
+    },
+    {
+      target: 'angleEuroRedeemer',
+      values: '0',
+      method: 'redeemAgEurToDai()',
+      arguments: (addresses) => [],
+      description: 'Redeem all agEUR for DAI and send to DAI PSM'
     }
   ],
   description: `

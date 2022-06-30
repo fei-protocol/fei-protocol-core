@@ -40,25 +40,14 @@ contract AngleEuroRedeemer is CoreRef {
     /// @notice redeem all agEUR held on this contract to USDC using Angle Protocol,
     /// and then use the Maker PSM to convert the USDC to DAI, and send the DAI to
     /// Tribe DAO's FEI/DAI PSM.
-    function redeem()
+    function redeemAgEurToDai()
         external
         hasAnyOfThreeRoles(TribeRoles.GOVERNOR, TribeRoles.GUARDIAN, TribeRoles.PCV_SAFE_MOVER_ROLE)
     {
         // Get the amount of agEUR to redeem
         uint256 agEurBalance = AGEUR.balanceOf(address(this));
-        require(agEurBalance != 0, "EMPTY_AGEUR");
 
         // agEUR -> USDC
-        uint256 redeemedUsdc = _redeemAgEurForUsdc(agEurBalance);
-        // USDC -> DAI
-        uint256 redeemedDai = _redeemUsdcForDai(redeemedUsdc);
-
-        // send DAI to DAI/FEI PSM
-        DAI.transfer(TRIBEDAO_FEI_DAI_PSM, redeemedDai);
-    }
-
-    /// @notice Use Angle Protocol to burn agEUR and receive USDC
-    function _redeemAgEurForUsdc(uint256 agEurToRedeem) internal returns (uint256) {
         // Read amount of agEUR to redeem & current oracle price
         (Decimal.D256 memory oracleValue, bool oracleValid) = TRIBEDAO_EUR_USD_ORACLE.read();
         require(oracleValid, "ORACLE_INVALID");
@@ -66,11 +55,10 @@ contract AngleEuroRedeemer is CoreRef {
 
         // redeem USDC available
         uint256 usdcAvailableForRedeem = ANGLE_POOLMANAGER_USDC.getBalance();
-        require(usdcAvailableForRedeem != 0, "EMPTY_USDC");
         // scale decimals 6 -> 18
         uint256 agEurSpentToRedeemUsdc = (usdcAvailableForRedeem * 1e12 * 1e18) / (usdPerEur);
-        if (agEurSpentToRedeemUsdc > agEurToRedeem) {
-            agEurSpentToRedeemUsdc = agEurToRedeem;
+        if (agEurSpentToRedeemUsdc > agEurBalance) {
+            agEurSpentToRedeemUsdc = agEurBalance;
         }
         // no need to check stableMaster.collateralMap[PoolManager].stocksUsers because
         // USDC has a lot of stock available (~57M)
@@ -78,7 +66,6 @@ contract AngleEuroRedeemer is CoreRef {
         // max 1% slippage (angle redeem has 0.5% fee, oracle has 0.15% precision)
         // scale decimals 18 -> 6
         uint256 minUsdcOut = (agEurSpentToRedeemUsdc * usdPerEur * 99) / (100 * 1e18 * 1e12);
-        uint256 usdcBalanceBefore = USDC.balanceOf(address(this));
 
         // burn agEUR for USDC
         ANGLE_STABLEMASTER.burn(
@@ -89,26 +76,23 @@ contract AngleEuroRedeemer is CoreRef {
             minUsdcOut
         );
 
-        uint256 usdcRedeemed = USDC.balanceOf(address(this)) - usdcBalanceBefore;
-        require(usdcRedeemed > minUsdcOut, "ANGLE_SLIPPAGE");
-        return usdcRedeemed;
-    }
-
-    /// @notice Use the Maker PSM to convert USDC to DAI
-    function _redeemUsdcForDai(uint256 usdcToRedeem) internal returns (uint256) {
+        // USDC -> DAI
         // read dai balance before redeeming
         uint256 daiBalanceBefore = DAI.balanceOf(address(this));
 
         // Use Maker PSM to convert USDC to DAI
-        USDC.approve(MAKER_DAI_USDC_PSM_AUTH, usdcToRedeem);
-        IMakerPSM(MAKER_DAI_USDC_PSM).sellGem(address(this), usdcToRedeem);
+        uint256 usdcBalance = USDC.balanceOf(address(this));
+        USDC.approve(MAKER_DAI_USDC_PSM_AUTH, usdcBalance);
+        IMakerPSM(MAKER_DAI_USDC_PSM).sellGem(address(this), usdcBalance);
 
         // sanity check
         // Maker PSM has no fee for USDC->DAI
-        uint256 redeemedDai = DAI.balanceOf(address(this)) - daiBalanceBefore;
-        require(usdcToRedeem / 1e6 == redeemedDai / 1e18, "PSM_SLIPPAGE");
+        uint256 daiBalanceAfter = DAI.balanceOf(address(this));
+        uint256 redeemedDai = daiBalanceAfter - daiBalanceBefore;
+        require(usdcBalance / 1e6 == redeemedDai / 1e18, "PSM_SLIPPAGE");
 
-        return redeemedDai;
+        // send DAI to DAI/FEI PSM
+        DAI.transfer(TRIBEDAO_FEI_DAI_PSM, daiBalanceAfter);
     }
 
     /// @notice send all tokens held to the Tribal Council timelock
