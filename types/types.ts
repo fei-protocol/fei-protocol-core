@@ -16,6 +16,7 @@ import {
   EthCompoundPCVDeposit,
   Fei,
   FeiDAO,
+  GovernanceMetadataRegistry,
   GovernorAlpha,
   IAaveIncentivesController,
   IERC20,
@@ -83,7 +84,7 @@ export interface TemplatedProposalConfig {
   deploy: boolean;
   category: ProposalCategory;
   totalValue: number;
-  proposal: TemplatedProposalDescription;
+  proposal: TemplatedProposalDescription | undefined;
   affectedContractSignoff: string[];
   deprecatedContractSignoff: string[];
   proposalId: string;
@@ -273,6 +274,7 @@ export interface MainnetContracts {
   rewardsDistributorAdmin: RewardsDistributorAdmin;
   restrictedPermissions: RestrictedPermissions;
   tribalCouncilTimelock: TimelockController;
+  governanceMetadataRegistry: GovernanceMetadataRegistry;
 }
 
 export interface MainnetContractAddresses {
@@ -308,6 +310,7 @@ export interface MainnetContractAddresses {
   rariRewardsDistributorDelegator: string;
   restrictedPermissions: string;
   tribalCouncilTimelock: string;
+  governanceMetadataRegistry: string;
 }
 
 export type ContractAccessRights = {

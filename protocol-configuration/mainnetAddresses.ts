@@ -46,7 +46,11 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     address: '0xB8f482539F2d3Ae2C9ea6076894df36D1f632775',
     category: AddressCategory.Security
   },
-
+  fuseWithdrawalGuard: {
+    artifactName: 'FuseWithdrawalGuard',
+    address: '0xd079ec4b442600a381eAc7E95662eB1b313cd113',
+    category: AddressCategory.Security
+  },
   ratioPCVControllerV2: {
     artifactName: 'RatioPCVControllerV2',
     address: '0x221fff24FB66dA3c722c7C5B856956a6a30C0179',
@@ -101,7 +105,7 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   lusdPSMFeiSkimmer: {
     artifactName: 'FeiSkimmer',
     address: '0xFc29429D8c8D80320C4AB454131f741F56239c2b',
-    category: AddressCategory.Utility
+    category: AddressCategory.Deprecated
   },
   lusdPCVDripController: {
     artifactName: 'PCVDripController',
@@ -184,6 +188,12 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     category: AddressCategory.Governance
   },
 
+  angleEuroRedeemer: {
+    artifactName: 'AngleEuroRedeemer',
+    address: '0x05A842943a56720Ebecd2D5f1fb32E48dB25863C',
+    category: AddressCategory.TBD
+  },
+
   rariGovernanceProxyAdmin: {
     artifactName: 'ProxyAdmin',
     address: '0x1c9aA54a013962C2444ECae06902F31D532c6AD3',
@@ -250,7 +260,7 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   lusdPSM: {
     artifactName: 'PegStabilityModule',
     address: '0xb0e731F036AdfDeC12da77c15aaB0F90E8e45A0e',
-    category: AddressCategory.Peg
+    category: AddressCategory.Deprecated
   },
   raiPriceBoundPSM: {
     artifactName: 'PriceBoundPSM',
@@ -260,7 +270,7 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   ethPSM: {
     artifactName: 'PegStabilityModule',
     address: '0x98E5F5706897074a4664DD3a32eB80242d6E694B',
-    category: AddressCategory.Peg
+    category: AddressCategory.Deprecated
   },
   ethPSMRouter: {
     artifactName: 'PSMRouter',
@@ -275,7 +285,7 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   ethPSMFeiSkimmer: {
     artifactName: 'FeiSkimmer',
     address: '0xA8A25F8cbfC5053241aB6FA87b865755dcB5501F',
-    category: AddressCategory.Peg
+    category: AddressCategory.Deprecated
   },
   daiFixedPricePSM: {
     artifactName: 'FixedPricePSM',
@@ -320,7 +330,7 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   agEurUniswapPCVDeposit: {
     artifactName: 'UniswapPCVDeposit',
     address: '0xE8633C49AcE655EB4A8B720e6b12F09Bd3a97812',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
 
   bammDeposit: {
@@ -424,7 +434,7 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   aaveEthPCVDepositWrapper: {
     artifactName: 'PCVDepositWrapper',
     address: '0x43Ef03755991056681F01EE2182234eF6aF1f658',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
 
   aaveFeiPCVDepositWrapper: {
@@ -515,7 +525,7 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   uniswapLensAgEurUniswapGauge: {
     artifactName: 'UniswapLens',
     address: '0xD2554839c2e8a87Dd2CddD013EF828B6534aBC26',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
 
   compoundFeiPCVDepositWrapper: {
@@ -615,7 +625,7 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   agEurAngleUniswapPCVDeposit: {
     artifactName: 'AngleUniswapPCVDeposit',
     address: '0x7AC2Ab8143634419c5bc230A9f9955C3e29f64Ef',
-    category: AddressCategory.PCV_V1 // Not used anymore, stakes in old rewards contract
+    category: AddressCategory.Deprecated
   },
   balUsdCompositeOracle: {
     artifactName: 'CompositeOracle',
@@ -740,7 +750,7 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   gaugeLensAgEurUniswapGauge: {
     artifactName: 'AngleGaugeLens',
     address: '0x10f59bd0a100bcAD86CaB39751797D952eE1f76f',
-    category: AddressCategory.Oracle
+    category: AddressCategory.Deprecated
   },
   collateralizationOracle: {
     artifactName: 'CollateralizationOracle',
@@ -1008,6 +1018,11 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     address: '0x559eBC30b0E58a45Cc9fF573f77EF1e5eb1b3E18',
     category: AddressCategory.Volt
   },
+  voltHoldingPCVDeposit: {
+    artifactName: 'ERC20HoldingPCVDeposit',
+    address: '0xBDC01c9743989429df9a4Fe24c908D87e462AbC1',
+    category: AddressCategory.PCV
+  },
   voltCore: {
     artifactName: 'Core',
     address: '0xEC7AD284f7Ad256b64c6E69b84Eb0F48f42e8196',
@@ -1153,6 +1168,12 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     category: AddressCategory.External
   },
 
+  angleMultisig: {
+    artifactName: 'unknown',
+    address: '0x0C2553e4B9dFA9f83b1A6D3EAB96c4bAaB42d430',
+    category: AddressCategory.External
+  },
+
   angle: {
     artifactName: 'Tribe', // using Tribe instead of IERC20 to have delegate()
     address: '0x31429d1856ad1377a8a0079410b297e1a9e214c2',
@@ -1186,6 +1207,17 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   angleGaugeUniswapV2FeiAgEur: {
     artifactName: 'ILiquidityGauge',
     address: '0xd6282C5aEAaD4d776B932451C44b8EB453E44244',
+    category: AddressCategory.External
+  },
+
+  anglePoolManagerUsdc: {
+    artifactName: 'IPoolManager',
+    address: '0xe9f183FC656656f1F17af1F2b0dF79b8fF9ad8eD',
+    category: AddressCategory.External
+  },
+  angleStrategyUsdc1: {
+    artifactName: 'IAngleStrategy',
+    address: '0x5fE0E497Ac676d8bA78598FC8016EBC1E6cE14a3',
     category: AddressCategory.External
   },
 
@@ -1422,6 +1454,11 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     address: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
     category: AddressCategory.External
   },
+  daiHoldingPCVDeposit: {
+    artifactName: 'ERC20HoldingPCVDeposit',
+    address: '0x8fFAe111Ab06F532a18418190129373D14570014',
+    category: AddressCategory.PCV
+  },
 
   dpi: {
     artifactName: 'IERC20',
@@ -1559,6 +1596,11 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     artifactName: 'IERC20',
     address: '0x5f98805A4E8be255a32880FDeC7F6728C6568bA0',
     category: AddressCategory.External
+  },
+  lusdHoldingPCVDeposit: {
+    artifactName: 'ERC20HoldingPCVDeposit',
+    address: '0x4378De2F2991Fbed6616b34AC7727E7653713712',
+    category: AddressCategory.PCV
   },
 
   masterKashi: {
@@ -1739,6 +1781,11 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     artifactName: 'WETH9',
     address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
     category: AddressCategory.External
+  },
+  wethHoldingPCVDeposit: {
+    artifactName: 'ERC20HoldingPCVDeposit',
+    address: '0xC6D675ca5217d39C3A5E366141060fC2D1ea2b82',
+    category: AddressCategory.PCV
   },
 
   orcaPodController: {
@@ -2361,6 +2408,16 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     artifactName: 'OtcEscrow',
     address: '0x14d2F529576d3a5451BfbA370408a899Bb5261a9',
     category: AddressCategory.Deprecated
+  },
+  gOHM: {
+    artifactName: 'IERC20',
+    address: '0x0ab87046fBb341D058F17CBC4c1133F25a20a52f',
+    category: AddressCategory.External
+  },
+  gOHMHoldingPCVDeposit: {
+    artifactName: 'ERC20HoldingPCVDeposit',
+    address: '0x2C9980fa0a1ABe4B0cc6263132d8EB41Db9B73Ba',
+    category: AddressCategory.PCV
   },
   mergerGate: {
     artifactName: 'MergerGate',

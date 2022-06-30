@@ -5,7 +5,6 @@ import {
   ContractAccessRights,
   TestCoordinator,
   ContractsAndAddresses,
-  ProposalConfig,
   TemplatedProposalConfig,
   namedContractsToNamedAddresses,
   NamedAddresses,
@@ -21,7 +20,6 @@ import { sudo } from '@scripts/utils/sudo';
 import constructProposal from '@scripts/utils/constructProposal';
 import '@nomiclabs/hardhat-ethers';
 import { resetFork } from '@test/helpers';
-import { simulateOAProposal } from '@scripts/utils/simulateTimelockProposal';
 import { simulateTCProposal } from '@scripts/utils/simulateTimelockProposal';
 import { simulateDEBUGProposal } from '@scripts/utils/simulateDEBUGProposal';
 import { forceEth } from '@test/integration/setup/utils';
@@ -156,7 +154,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
     if (config.category === ProposalCategory.DAO) {
       // Simulate the DAO proposal
       const proposal = await constructProposal(
-        config.proposal,
+        config.proposal!,
         contracts as unknown as MainnetContracts,
         contractAddresses,
         this.config.logging
@@ -168,7 +166,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
     if (config.category === ProposalCategory.TC) {
       this.config.logging && console.log(`Simulating Tribal Council proposal...`);
       await simulateTCProposal(
-        config.proposal,
+        config.proposal!,
         contracts as unknown as MainnetContracts,
         contractAddresses,
         this.config.logging
@@ -177,7 +175,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
 
     if (config.category === ProposalCategory.DEBUG) {
       console.log('Simulating DAO proposal in DEBUG mode (step by step)...');
-      console.log('  Title: ', config.proposal.title);
+      console.log('  Title: ', config.proposal!.title);
 
       const signer = await getImpersonatedSigner(contracts.feiDAOTimelock.address);
       await forceEth(contracts.feiDAOTimelock.address);
@@ -187,7 +185,7 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
 
     if (config.category === ProposalCategory.DEBUG_TC) {
       console.log('Simulating TC proposal in DEBUG mode (step by step)...');
-      console.log('  Title: ', config.proposal.title);
+      console.log('  Title: ', config.proposal!.title);
 
       const signer = await getImpersonatedSigner(contracts.tribalCouncilTimelock.address);
       await forceEth(contracts.tribalCouncilTimelock.address);
