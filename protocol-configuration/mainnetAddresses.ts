@@ -46,7 +46,11 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     address: '0xB8f482539F2d3Ae2C9ea6076894df36D1f632775',
     category: AddressCategory.Security
   },
-
+  fuseWithdrawalGuard: {
+    artifactName: 'FuseWithdrawalGuard',
+    address: '0xd079ec4b442600a381eAc7E95662eB1b313cd113',
+    category: AddressCategory.Security
+  },
   ratioPCVControllerV2: {
     artifactName: 'RatioPCVControllerV2',
     address: '0x221fff24FB66dA3c722c7C5B856956a6a30C0179',

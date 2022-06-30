@@ -1,4 +1,6 @@
-import { ProposalCategory, TemplatedProposalsConfigMap } from '@custom-types/types';
+import { ProposalCategory, TemplatedProposalDescription, TemplatedProposalsConfigMap } from '@custom-types/types';
+
+import fip_x from '@proposals/description/fip_x';
 
 import tip_118 from '@proposals/description/tip_118';
 
