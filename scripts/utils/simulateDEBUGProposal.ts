@@ -8,10 +8,10 @@ export async function simulateDEBUGProposal(
   config: TemplatedProposalConfig
 ) {
   let totalGasUsed = 0;
-  for (let i = 0; i < config.proposal.commands.length; i++) {
-    const cmd = config.proposal.commands[i];
+  for (let i = 0; i < config.proposal!.commands.length; i++) {
+    const cmd = config.proposal!.commands[i];
     // build tx & print details
-    console.log('  Step' + (config.proposal.commands.length >= 10 && i < 10 ? ' ' : ''), i, ':', cmd.description);
+    console.log('  Step' + (config.proposal!.commands.length >= 10 && i < 10 ? ' ' : ''), i, ':', cmd.description);
     const to = contractAddresses[cmd.target] || cmd.target;
     const value = cmd.values;
 
