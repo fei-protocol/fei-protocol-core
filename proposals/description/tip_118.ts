@@ -268,15 +268,16 @@ const tip_118: TemplatedProposalDescription = {
       target: 'tribalChief',
       values: '0',
       method: 'governorWithdrawTribe(uint256)',
-      arguments: (addresses) => ['26833947775112516867325654'],
+      arguments: (addresses) => ['26800000000000000000000000'],
       description: `
-      Withdraw remaining TRIBE from the Tribal Chief to the Core Treasury. 
+      Withdraw remaining TRIBE from the Tribal Chief to the Core Treasury, leaving behind enough to fund outstanding
+      rewards.
       
       Withdrawal amount = 
       (Tribal Chief balance before harvest 
             - (pending rewards, Uniswap-v2 FEI/TRIBE LP + Curve 3crv-FEI metapool LP + G-UNI DAI/FEI 0.05% fee tier)
       
-      Withdrawal amount = 27.4M - 0.565M = 26.8M
+      Withdrawal amount = 27.4M - 0.60M = 26.8M  (leaving behind an additional ~40k TRIBE)
       `
     },
 
