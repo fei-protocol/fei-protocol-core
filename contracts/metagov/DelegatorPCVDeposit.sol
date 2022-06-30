@@ -15,7 +15,7 @@ contract DelegatorPCVDeposit is PCVDeposit {
     event DelegateUpdate(address indexed oldDelegate, address indexed newDelegate);
 
     /// @notice the token that is being used for voting
-    ERC20Votes public token;
+    ERC20Votes public immutable token;
 
     /// @notice the snapshot delegate for the deposit
     address public delegate;
