@@ -7,28 +7,45 @@ import {
   TeardownUpgradeFunc,
   ValidateUpgradeFunc
 } from '@custom-types/types';
+import { BigNumber } from 'ethers';
+
+const toBN = BigNumber.from;
 
 /*
 
-DAO Proposal #9001
+Tribal Council Proposal: TIP-119: Add gOHM to Collaterisation Oracle
 
-Description:
-
-Steps:
-  1 - 
-  2 -
-  3 - 
+1. Deploy gOHM oracle
+2. Set oracle on collaterisation oracle
+3. Add gOHM to CR 
 
 */
 
-const fipNumber = '9001'; // Change me!
+const fipNumber = 'tip_119'; // Change me!
 
 // Do any deployments
 // This should exclusively include new contract deployments
 const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: NamedAddresses, logging: boolean) => {
-  console.log(`No deploy actions for fip${fipNumber}`);
+  ////////////// 1. Create and deploy gOHM USD oracle
+  const GOhmEthOracleFactory = await ethers.getContractFactory('GOhmEthOracle');
+  const gOHMEthOracle = await GOhmEthOracleFactory.deploy(addresses.core, addresses.chainlinkOHMV2EthOracle);
+  await gOHMEthOracle.deployed();
+
+  logging && console.log(`Deployed gOHM Eth Oracle at ${gOHMEthOracle.address}`);
+
+  // Create the gOHM USD oracle
+  const CompositeOracleFactory = await ethers.getContractFactory('CompositeOracle');
+  const gOhmUSDOracle = await CompositeOracleFactory.deploy(
+    addresses.core,
+    gOHMEthOracle.address,
+    addresses.chainlinkEthUsdOracleWrapper,
+    false
+  );
+
+  logging && console.log('Deployed gOHM oracle to: ', gOhmUSDOracle.address);
   return {
-    // put returned contract objects here
+    gOhmUSDOracle,
+    gOHMEthOracle
   };
 };
 
@@ -48,7 +65,15 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // Run any validations required on the fip using mocha or console logging
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  console.log(`No actions to complete in validate for fip${fipNumber}`);
+  const gohm = contracts.gohm;
+
+  //////////// 1. Validate gOHM ETH oracle price is valid ////////////
+  // TODO
+
+  ////////////    2. gOHM USD oracle price is valid   //////////////
+  const gOhmUSDPrice = (await contracts.gOhmUSDOracle.read())[0];
+  expect(toBN(gOhmUSDPrice.value)).to.be.bignumber.at.least(ethers.constants.WeiPerEther.mul(2_500)); // $2500
+  expect(toBN(gOhmUSDPrice.value)).to.be.bignumber.at.least(ethers.constants.WeiPerEther.mul(3_400)); // $3400
 };
 
 export { deploy, setup, teardown, validate };

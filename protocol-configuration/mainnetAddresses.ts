@@ -1272,6 +1272,12 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     category: AddressCategory.External
   },
 
+  chainlinkOHMV2EthOracle: {
+    artifactName: 'unknown',
+    address: '0x9a72298ae3886221820b1c878d12d872087d3a23',
+    category: AddressCategory.Oracle
+  },
+
   chainlinkStEthUsdOracle: {
     artifactName: 'unknown',
     address: '0xCfE54B5cD566aB89272946F602D76Ea879CAb4a8',
@@ -1445,6 +1451,21 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     address: '0xA6E8772AF29B29B9202A073F8E36F447689BEEF6',
     category: AddressCategory.External
   },
+  gohm: {
+    artifactName: 'IERC20',
+    address: '0x0ab87046fBb341D058F17CBC4c1133F25a20a52f',
+    category: AddressCategory.External
+  },
+  // gOhmUSDOracle: {
+  //   artifactName: 'CompositeOracle',
+  //   address: '',
+  //   category: AddressCategory.Oracle
+  // },
+  // gOhmEthOracle: {
+  //   artifactName: 'GOhmEthOracle',
+  //   address: '',
+  //   category: AddressCategory.Oracle
+  // },
 
   gUniFeiDaiLP: {
     artifactName: 'unknown',

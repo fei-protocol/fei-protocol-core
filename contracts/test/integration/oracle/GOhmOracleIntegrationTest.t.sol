@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import {DSTest} from "../../utils/DSTest.sol";
 import {StdLib} from "../../utils/StdLib.sol";
-import {GOhmEthOracle} from "../../../oracle/GOhmOracle.sol";
+import {GOhmEthOracle} from "../../../oracle/GOhmETHOracle.sol";
 import {CompositeOracle} from "../../../oracle/CompositeOracle.sol";
 import {MainnetAddresses} from "../fixtures/MainnetAddresses.sol";
 import {Decimal, IOracle} from "../../../oracle/IOracle.sol";
@@ -35,10 +35,10 @@ contract GOhmOracleIntegrationTest is DSTest, StdLib {
         (Decimal.D256 memory gOhmEthPrice, ) = gOhmEthOracle.read();
         console.log("eth price: ", gOhmEthPrice.value);
 
-        // Eth price is ~$1973. gOHM price is ~$3050
-        // Therefore, gOHM price in ETH should be ~ (3050/1973) = 1.55 ETH
+        // Eth price is ~$1000. gOHM price is ~$2400
+        // Therefore, gOHM price in ETH should be ~ (2400/1000) = 2.4 ETH
         assertGt(gOhmEthPrice.value, 1e18);
-        assertLt(gOhmEthPrice.value, 2e18);
+        assertLt(gOhmEthPrice.value, 5e18);
     }
 
     /// @notice Validate that a reasonable USD price can be calculated
@@ -47,14 +47,15 @@ contract GOhmOracleIntegrationTest is DSTest, StdLib {
         CompositeOracle gOhmUSDOracle = new CompositeOracle(
             MainnetAddresses.CORE,
             gOhmEthOracle,
-            chainlinkEthUSDOracleWrapper
+            chainlinkEthUSDOracleWrapper,
+            false
         );
         (Decimal.D256 memory gOhmUSDPrice, ) = gOhmUSDOracle.read();
         console.log("gOhmUSDPrice: ", gOhmUSDPrice.value);
 
         // gOHM price is ~$3000
-        assertGt(gOhmUSDPrice.value / 1e18, 2000);
-        assertLt(gOhmUSDPrice.value / 1e18, 4000);
+        assertGt(gOhmUSDPrice.value / 1e18, 1000);
+        assertLt(gOhmUSDPrice.value / 1e18, 5000);
     }
 
     /// @notice Validate that the Rari gOHM oracle matches the Fei gOHM oracle
