@@ -1,6 +1,5 @@
 import {
   CollateralizationOracle,
-  CollateralizationOracleGuardian,
   CollateralizationOracleWrapper,
   NamedStaticPCVDepositWrapper
 } from '@custom-types/contracts';
