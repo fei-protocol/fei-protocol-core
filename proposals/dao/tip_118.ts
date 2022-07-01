@@ -47,7 +47,7 @@ const MAX_REMAINING_CHIEF_BALANCE = ethers.constants.WeiPerEther.mul(50_000);
 // This should exclusively include new contract deployments
 const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: NamedAddresses, logging: boolean) => {
   ////// Deploy empty PCV deposits for remaining PCV assets
-  /*const ERC20HoldingPCVDepositFactory = await ethers.getContractFactory('ERC20HoldingPCVDeposit');
+  const ERC20HoldingPCVDepositFactory = await ethers.getContractFactory('ERC20HoldingPCVDeposit');
   const wethHoldingPCVDeposit = await ERC20HoldingPCVDepositFactory.deploy(addresses.core, addresses.weth);
   await wethHoldingPCVDeposit.deployTransaction.wait();
   logging && console.log('WETH holding deposit deployed to: ', wethHoldingPCVDeposit.address);
@@ -72,7 +72,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   const angleEuroRedeemerFactory = await ethers.getContractFactory('AngleEuroRedeemer');
   const angleEuroRedeemer = await angleEuroRedeemerFactory.deploy(addresses.core);
   await angleEuroRedeemer.deployed();
-  logging && console.log(`angleEuroRedeemer: ${angleEuroRedeemer.address}`);*/
+  logging && console.log(`angleEuroRedeemer: ${angleEuroRedeemer.address}`);
 
   // Deploy implementation
   const vlAuraDelegatorPCVDepositFactory = await ethers.getContractFactory('VlAuraDelegatorPCVDeposit');
@@ -81,13 +81,13 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   logging && console.log('vlAuraDelegatorPCVDepositImplementation: ', vlAuraDelegatorPCVDepositImplementation.address);
 
   return {
-    vlAuraDelegatorPCVDepositImplementation
-    /*angleEuroRedeemer,
+    vlAuraDelegatorPCVDepositImplementation,
+    angleEuroRedeemer,
     wethHoldingPCVDeposit,
     lusdHoldingPCVDeposit,
     voltHoldingPCVDeposit,
     daiHoldingPCVDeposit,
-    gOHMHoldingPCVDeposit*/
+    gOHMHoldingPCVDeposit
   };
 };
 
