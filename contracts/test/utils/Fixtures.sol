@@ -2,6 +2,7 @@
 pragma solidity ^0.8.4;
 
 import {Core} from "../../core/Core.sol";
+import {TribeRoles} from "../../core/TribeRoles.sol";
 import {Vm} from "./Vm.sol";
 
 struct FeiTestAddresses {
@@ -16,6 +17,8 @@ struct FeiTestAddresses {
     address minterAddress;
     address burnerAddress;
     address guardianAddress;
+    address pcvGuardianAdminAddress;
+    address pcvSafeMoverAddress;
 }
 
 /// @dev Get a list of addresses
@@ -31,7 +34,9 @@ function getAddresses() pure returns (FeiTestAddresses memory) {
         pcvControllerAddress: address(0x8),
         minterAddress: address(0x9),
         burnerAddress: address(0x10),
-        guardianAddress: address(0x11)
+        guardianAddress: address(0x11),
+        pcvGuardianAdminAddress: address(0x12),
+        pcvSafeMoverAddress: address(0x13)
     });
 
     return addresses;
@@ -52,6 +57,11 @@ function getCore() returns (Core) {
     core.grantBurner(addresses.burnerAddress);
     core.grantPCVController(addresses.pcvControllerAddress);
     core.grantGuardian(addresses.guardianAddress);
+
+    core.createRole(TribeRoles.PCV_GUARDIAN_ADMIN, TribeRoles.GOVERNOR);
+    core.grantRole(TribeRoles.PCV_GUARDIAN_ADMIN, addresses.pcvGuardianAdminAddress);
+    core.createRole(TribeRoles.PCV_SAFE_MOVER_ROLE, TribeRoles.GOVERNOR);
+    core.grantRole(TribeRoles.PCV_SAFE_MOVER_ROLE, addresses.pcvSafeMoverAddress);
 
     vm.stopPrank();
     return core;

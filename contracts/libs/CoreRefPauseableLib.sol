@@ -34,6 +34,10 @@ library CoreRefPauseableLib {
         }
     }
 
+    function _paused(address _pauseableCoreRefAddress) internal view returns (bool) {
+        return CoreRef(_pauseableCoreRefAddress).paused();
+    }
+
     function _pause(address _pauseableCoreRefAddress) internal {
         CoreRef(_pauseableCoreRefAddress).pause();
     }
