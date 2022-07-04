@@ -452,26 +452,26 @@ const tip_118: TemplatedProposalDescription = {
   description: `
   TIP_118: Deprecating PSMs, deprecating TRIBE incentives system, redeem agEUR
 
-  This proposal deprecates the ETH, LUSD and RAI PSMs and associated infrastructure as well as completing
-  the TRIBE incentives system deprecation. It also redeems all agEUR in the PCV to DAI.
+  This proposal deprecates the ETH, LUSD and RAI PSMs and completes items from TIP-109: Discontinue TRIBE
+  incentives and TIP-110: Simplify PCV (redeeming all agEUR in the PCV to DAI).
 
   PSM deprecation
   --------------------------------------------
   The proposal deprecates the ETH, LUSD and RAI PSMs. This involves transferring all assets off these PSMs, 
-  revoking their MINTER_ROLE, ensuring they are fully paused. It also pauses the the associated PCV drip controllers and 
+  revoking their MINTER_ROLE and ensuring they are fully paused. It also pauses the the associated PCV drip controllers and 
   deprecates the Fei skimmers. Going forward, the only active PSM will be the DAI PSM.
 
-  The DAI FEI skimmer is also activated by granting the PCV_CONTROLLER_ROLE and excess FEI skimmed. gOHM and VOLT are transferred
+  The DAI FEI skimmer is also activated by granting the PCV_CONTROLLER_ROLE and excess FEI burned. 
+  
+  In addition, a new type of PCV deposit, the ERC20HoldingPCVDeposit, is deployed. This is a deposit which has 
+  the deposit() method as a no-op and is intended to just hold assets. The DAO's gOHM and VOLT assets are transferred
   from the DAO timelock to the relevant holding deposits.
 
-  In addition, a new type of PCV deposit, the ERC20HoldingPCVDeposit, is deployed. This is a deposit which has 
-  the deposit() method as a no-op and is intended to just hold assets. 
 
-
-  TIP-114: Deprecate TRIBE Incentives system
+  TIP-109: Deprecate TRIBE Incentives system (https://tribe.fei.money/t/tip-109-discontinue-tribe-incentives/4291)
   --------------------------------------------
-  The proposal finishes the deprecation of the TRIBE incentives system by withdrawing the excess TRIBE from the system
-  and deprecating the Tribal Chief contract. 
+  The proposal finishes the deprecation of the TRIBE incentives system by withdrawing the excess TRIBE from 
+  the incentives system and deprecating the Tribal Chief contract. 
 
   Specifically it:
   - Withdraws remaining TRIBE from the TribalChief, leaving enough behind to fully fund existing commitments
@@ -480,8 +480,8 @@ const tip_118: TemplatedProposalDescription = {
   - Revokes no longer needed TRIBAL_CHIEF_ADMIN_ROLE roles
   - Transfers the admin of the Aave Fei Incentives Controller Proxy to Aave Governance
 
-  TIP-110: agEUR & Angle redeem
-  --------------------------------------------
+  TIP-110: Simply PCV, specifically the agEUR & Angle redemption (https://tribe.fei.money/t/tip-110-simplify-pcv/4323)
+  -----------------------------------------------
   Convert all agEUR in the PCV to DAI, and deprecate all Angle Protocol-related contracts, except the contract that is holding vote-escrowed ANGLE.
 
   This proposal will perform the following actions :
