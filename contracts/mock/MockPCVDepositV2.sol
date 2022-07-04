@@ -33,12 +33,22 @@ contract MockPCVDepositV2 is IPCVDeposit, CoreRef {
         return (resistantBalance, resistantProtocolOwnedFei);
     }
 
+    // gets the resistant token balance of this deposit
+    function _resistantBalance() external view returns (uint256) {
+        return resistantBalance;
+    }
+
+    // gets the resistant protocol owned fei of this deposit
+    function _resistantFei() external view returns (uint256) {
+        return resistantProtocolOwnedFei;
+    }
+
     // IPCVDeposit V1
-    function deposit() external override {
+    function deposit() external override whenNotPaused {
         resistantBalance = IERC20(balanceReportedIn).balanceOf(address(this));
     }
 
-    function withdraw(address to, uint256 amount) external override {
+    function withdraw(address to, uint256 amount) external override whenNotPaused {
         IERC20(balanceReportedIn).transfer(to, amount);
         resistantBalance = IERC20(balanceReportedIn).balanceOf(address(this));
     }

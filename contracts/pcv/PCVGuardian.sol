@@ -1,12 +1,15 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.4;
 
-import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
-import "../refs/CoreRef.sol";
-import "./IPCVGuardian.sol";
-import "./IPCVDeposit.sol";
-import "../libs/CoreRefPauseableLib.sol";
+import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {ICore} from "../core/ICore.sol";
+import {CoreRef} from "../refs/CoreRef.sol";
+import {IPCVGuardian} from "./IPCVGuardian.sol";
+import {IPCVDeposit} from "./IPCVDeposit.sol";
+import {CoreRefPauseableLib} from "../libs/CoreRefPauseableLib.sol";
 import {TribeRoles} from "../core/TribeRoles.sol";
+import {Constants} from "../Constants.sol";
 
 contract PCVGuardian is IPCVGuardian, CoreRef {
     using CoreRefPauseableLib for address;
@@ -41,7 +44,7 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
     function setSafeAddress(address pcvDeposit)
         external
         override
-        hasAnyOfTwoRoles(TribeRoles.GOVERNOR, TribeRoles.PCV_GUARDIAN_ADMIN)
+        hasAnyOfTwoRoles(TribeRoles.PCV_GUARDIAN_ADMIN, TribeRoles.GOVERNOR)
     {
         _setSafeAddress(pcvDeposit);
     }
@@ -51,9 +54,9 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
     function setSafeAddresses(address[] calldata _safeAddresses)
         external
         override
-        hasAnyOfTwoRoles(TribeRoles.GOVERNOR, TribeRoles.PCV_GUARDIAN_ADMIN)
+        hasAnyOfTwoRoles(TribeRoles.PCV_GUARDIAN_ADMIN, TribeRoles.GOVERNOR)
     {
-        require(_safeAddresses.length != 0, "empty");
+        require(_safeAddresses.length != 0, "PCVGuardian: empty");
         for (uint256 i = 0; i < _safeAddresses.length; i++) {
             _setSafeAddress(_safeAddresses[i]);
         }
@@ -66,7 +69,7 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
     function unsetSafeAddress(address pcvDeposit)
         external
         override
-        hasAnyOfThreeRoles(TribeRoles.GOVERNOR, TribeRoles.GUARDIAN, TribeRoles.PCV_GUARDIAN_ADMIN)
+        hasAnyOfThreeRoles(TribeRoles.PCV_GUARDIAN_ADMIN, TribeRoles.GUARDIAN, TribeRoles.GOVERNOR)
     {
         _unsetSafeAddress(pcvDeposit);
     }
@@ -76,15 +79,54 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
     function unsetSafeAddresses(address[] calldata _safeAddresses)
         external
         override
-        hasAnyOfThreeRoles(TribeRoles.GOVERNOR, TribeRoles.GUARDIAN, TribeRoles.PCV_GUARDIAN_ADMIN)
+        hasAnyOfThreeRoles(TribeRoles.PCV_GUARDIAN_ADMIN, TribeRoles.GUARDIAN, TribeRoles.GOVERNOR)
     {
-        require(_safeAddresses.length != 0, "empty");
+        require(_safeAddresses.length != 0, "PCVGuardian: empty");
         for (uint256 i = 0; i < _safeAddresses.length; i++) {
             _unsetSafeAddress(_safeAddresses[i]);
         }
     }
 
-    /// @notice governor-or-guardian-only method to withdraw funds from a pcv deposit, by calling the withdraw() method on it
+    /// @notice modifier to factorize the logic in all withdrawals :
+    /// - first, ensure the deposit to withdraw from is unpaused
+    /// - second, perform withdrawal
+    /// - third, re-pause deposit if it was paused or if pauseAfter = true
+    /// - finally, call pcvDeposit.deposit() if depositAfter = true
+    modifier beforeAndAfterWithdrawal(
+        address pcvDeposit,
+        address safeAddress,
+        bool pauseAfter,
+        bool depositAfter
+    ) {
+        {
+            // scoped in this modifier to prevent stack to deep errors & enforce consitent acl
+            ICore _core = core();
+            require(
+                _core.hasRole(TribeRoles.GUARDIAN, msg.sender) ||
+                    _core.hasRole(TribeRoles.PCV_SAFE_MOVER_ROLE, msg.sender) ||
+                    _core.hasRole(TribeRoles.GOVERNOR, msg.sender),
+                "UNAUTHORIZED"
+            );
+            require(isSafeAddress(safeAddress), "PCVGuardian: address not whitelisted");
+        }
+
+        bool paused = pcvDeposit._paused();
+        if (paused) {
+            pcvDeposit._unpause();
+        }
+
+        _;
+
+        if (paused || pauseAfter) {
+            pcvDeposit._pause();
+        }
+
+        if (depositAfter) {
+            IPCVDeposit(safeAddress).deposit();
+        }
+    }
+
+    /// @notice withdraw funds from a pcv deposit, by calling the withdraw() method on it
     /// @param pcvDeposit the address of the pcv deposit contract
     /// @param safeAddress the destination address to withdraw to
     /// @param amount the amount to withdraw
@@ -96,25 +138,33 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
         uint256 amount,
         bool pauseAfter,
         bool depositAfter
-    ) external override hasAnyOfThreeRoles(TribeRoles.GOVERNOR, TribeRoles.PCV_SAFE_MOVER_ROLE, TribeRoles.GUARDIAN) {
-        require(isSafeAddress(safeAddress), "Provided address is not a safe address!");
-
-        pcvDeposit._ensureUnpaused();
-
+    ) external override beforeAndAfterWithdrawal(pcvDeposit, safeAddress, pauseAfter, depositAfter) {
         IPCVDeposit(pcvDeposit).withdraw(safeAddress, amount);
-
-        if (pauseAfter) {
-            pcvDeposit._pause();
-        }
-
-        if (depositAfter) {
-            IPCVDeposit(safeAddress).deposit();
-        }
-
         emit PCVGuardianWithdrawal(pcvDeposit, safeAddress, amount);
     }
 
-    /// @notice governor-or-guardian-only method to withdraw funds from a pcv deposit, by calling the withdraw() method on it
+    /// @notice withdraw funds from a pcv deposit, by calling the withdraw() method on it
+    /// @param pcvDeposit the address of the pcv deposit contract
+    /// @param safeAddress the destination address to withdraw to
+    /// @param basisPoints the percent in basis points [1-10000] if the deposit's balance to withdraw
+    /// @param pauseAfter if true, the pcv contract will be paused after the withdraw
+    /// @param depositAfter if true, attempts to deposit to the target PCV deposit
+    function withdrawRatioToSafeAddress(
+        address pcvDeposit,
+        address safeAddress,
+        uint256 basisPoints,
+        bool pauseAfter,
+        bool depositAfter
+    ) external override beforeAndAfterWithdrawal(pcvDeposit, safeAddress, pauseAfter, depositAfter) {
+        require(basisPoints <= Constants.BASIS_POINTS_GRANULARITY, "PCVGuardian: basisPoints too high");
+        uint256 amount = (IPCVDeposit(pcvDeposit).balance() * basisPoints) / Constants.BASIS_POINTS_GRANULARITY;
+        require(amount != 0, "PCVGuardian: no value to withdraw");
+
+        IPCVDeposit(pcvDeposit).withdraw(safeAddress, amount);
+        emit PCVGuardianWithdrawal(pcvDeposit, safeAddress, amount);
+    }
+
+    /// @notice withdraw funds from a pcv deposit, by calling the withdrawETH() method on it
     /// @param pcvDeposit the address of the pcv deposit contract
     /// @param safeAddress the destination address to withdraw to
     /// @param amount the amount of tokens to withdraw
@@ -126,25 +176,33 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
         uint256 amount,
         bool pauseAfter,
         bool depositAfter
-    ) external override hasAnyOfThreeRoles(TribeRoles.GOVERNOR, TribeRoles.PCV_SAFE_MOVER_ROLE, TribeRoles.GUARDIAN) {
-        require(isSafeAddress(safeAddress), "Provided address is not a safe address!");
-
-        pcvDeposit._ensureUnpaused();
-
+    ) external override beforeAndAfterWithdrawal(pcvDeposit, safeAddress, pauseAfter, depositAfter) {
         IPCVDeposit(pcvDeposit).withdrawETH(safeAddress, amount);
-
-        if (pauseAfter) {
-            pcvDeposit._pause();
-        }
-
-        if (depositAfter) {
-            IPCVDeposit(safeAddress).deposit();
-        }
-
         emit PCVGuardianETHWithdrawal(pcvDeposit, safeAddress, amount);
     }
 
-    /// @notice governor-or-guardian-only method to withdraw funds from a pcv deposit, by calling the withdraw() method on it
+    /// @notice withdraw funds from a pcv deposit, by calling the withdrawETH() method on it
+    /// @param pcvDeposit the address of the pcv deposit contract
+    /// @param safeAddress the destination address to withdraw to
+    /// @param basisPoints the percent in basis points [1-10000] if the deposit's balance to withdraw
+    /// @param pauseAfter if true, the pcv contract will be paused after the withdraw
+    /// @param depositAfter if true, attempts to deposit to the target PCV deposit
+    function withdrawETHRatioToSafeAddress(
+        address pcvDeposit,
+        address payable safeAddress,
+        uint256 basisPoints,
+        bool pauseAfter,
+        bool depositAfter
+    ) external override beforeAndAfterWithdrawal(pcvDeposit, safeAddress, pauseAfter, depositAfter) {
+        require(basisPoints <= Constants.BASIS_POINTS_GRANULARITY, "PCVGuardian: basisPoints too high");
+        uint256 amount = (pcvDeposit.balance * basisPoints) / Constants.BASIS_POINTS_GRANULARITY;
+        require(amount != 0, "PCVGuardian: no value to withdraw");
+
+        IPCVDeposit(pcvDeposit).withdrawETH(safeAddress, amount);
+        emit PCVGuardianETHWithdrawal(pcvDeposit, safeAddress, amount);
+    }
+
+    /// @notice withdraw funds from a pcv deposit, by calling the withdrawERC20() method on it
     /// @param pcvDeposit the deposit to pull funds from
     /// @param safeAddress the destination address to withdraw to
     /// @param amount the amount of funds to withdraw
@@ -157,33 +215,42 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
         uint256 amount,
         bool pauseAfter,
         bool depositAfter
-    ) external override hasAnyOfThreeRoles(TribeRoles.GOVERNOR, TribeRoles.PCV_SAFE_MOVER_ROLE, TribeRoles.GUARDIAN) {
-        require(isSafeAddress(safeAddress), "Provided address is not a safe address!");
+    ) external override beforeAndAfterWithdrawal(pcvDeposit, safeAddress, pauseAfter, depositAfter) {
+        IPCVDeposit(pcvDeposit).withdrawERC20(token, safeAddress, amount);
+        emit PCVGuardianERC20Withdrawal(pcvDeposit, safeAddress, token, amount);
+    }
 
-        pcvDeposit._ensureUnpaused();
+    /// @notice withdraw funds from a pcv deposit, by calling the withdrawERC20() method on it
+    /// @param pcvDeposit the deposit to pull funds from
+    /// @param safeAddress the destination address to withdraw to
+    /// @param basisPoints the percent in basis points [1-10000] if the deposit's balance to withdraw
+    /// @param pauseAfter whether to pause the pcv after withdrawing
+    /// @param depositAfter if true, attempts to deposit to the target PCV deposit
+    function withdrawERC20RatioToSafeAddress(
+        address pcvDeposit,
+        address safeAddress,
+        address token,
+        uint256 basisPoints,
+        bool pauseAfter,
+        bool depositAfter
+    ) external override beforeAndAfterWithdrawal(pcvDeposit, safeAddress, pauseAfter, depositAfter) {
+        require(basisPoints <= Constants.BASIS_POINTS_GRANULARITY, "PCVGuardian: basisPoints too high");
+        uint256 amount = (IERC20(token).balanceOf(pcvDeposit) * basisPoints) / Constants.BASIS_POINTS_GRANULARITY;
+        require(amount != 0, "PCVGuardian: no value to withdraw");
 
         IPCVDeposit(pcvDeposit).withdrawERC20(token, safeAddress, amount);
-
-        if (pauseAfter) {
-            pcvDeposit._pause();
-        }
-
-        if (depositAfter) {
-            IPCVDeposit(safeAddress).deposit();
-        }
-
         emit PCVGuardianERC20Withdrawal(pcvDeposit, safeAddress, token, amount);
     }
 
     // ---------- Internal Functions ----------
 
     function _setSafeAddress(address anAddress) internal {
-        require(safeAddresses.add(anAddress), "set");
+        require(safeAddresses.add(anAddress), "PCVGuardian: already a safe address");
         emit SafeAddressAdded(anAddress);
     }
 
     function _unsetSafeAddress(address anAddress) internal {
-        require(safeAddresses.remove(anAddress), "unset");
+        require(safeAddresses.remove(anAddress), "PCVGuardian: not a safe address");
         emit SafeAddressRemoved(anAddress);
     }
 }
