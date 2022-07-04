@@ -295,7 +295,8 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 
   // PCV Equity change should be neutral for this proposal
   expect(Number(eqDiff) / 1e18).to.be.at.least(-10000);
-  expect(Number(eqDiff) / 1e18).to.be.at.most(+10000);
+  // VOLT interest yields ~35k$ in 3 days of proposal time that is fast-forwarded
+  expect(Number(eqDiff) / 1e18).to.be.at.most(+50000);
 
   ////////////// TIP 114: Validate TRIBE incentives system deprecation
   await validateIncentivesSystemDeprecation(contracts, addresses);
