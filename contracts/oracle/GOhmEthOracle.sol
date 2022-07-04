@@ -26,7 +26,7 @@ contract GOhmEthOracle is IOracle, CoreRef {
     using Decimal for Decimal.D256;
 
     /// @notice the referenced chainlink oracle
-    AggregatorV3Interface public chainlinkOHMETHOracle;
+    AggregatorV3Interface public immutable chainlinkOHMETHOracle;
 
     /// @notice Oracle decimals normalizer
     uint256 public oracleDecimalsNormalizer;

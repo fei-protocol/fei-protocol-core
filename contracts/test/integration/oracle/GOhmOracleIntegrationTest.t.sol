@@ -8,8 +8,6 @@ import {CompositeOracle} from "../../../oracle/CompositeOracle.sol";
 import {MainnetAddresses} from "../fixtures/MainnetAddresses.sol";
 import {Decimal, IOracle} from "../../../oracle/IOracle.sol";
 
-import "hardhat/console.sol";
-
 interface RariPriceOracle {
     function price(address) external view returns (uint256);
 }
@@ -33,7 +31,6 @@ contract GOhmOracleIntegrationTest is DSTest, StdLib {
 
     function testValidgOHMPrice() public {
         (Decimal.D256 memory gOhmEthPrice, ) = gOhmEthOracle.read();
-        console.log("eth price: ", gOhmEthPrice.value);
 
         // Eth price is ~$1000. gOHM price is ~$2400
         // Therefore, gOHM price in ETH should be ~ (2400/1000) = 2.4 ETH
@@ -51,7 +48,6 @@ contract GOhmOracleIntegrationTest is DSTest, StdLib {
             false
         );
         (Decimal.D256 memory gOhmUSDPrice, ) = gOhmUSDOracle.read();
-        console.log("gOhmUSDPrice: ", gOhmUSDPrice.value);
 
         // gOHM price is ~$3000
         assertGt(gOhmUSDPrice.value / 1e18, 1000);
@@ -62,7 +58,6 @@ contract GOhmOracleIntegrationTest is DSTest, StdLib {
     function testOracleMatchesRari() public {
         (Decimal.D256 memory gOhmEthPrice, ) = gOhmEthOracle.read();
         uint256 rariOracleGOhmPrice = rariOracle.price(gOHM);
-
         assertEq(gOhmEthPrice.value, rariOracleGOhmPrice);
     }
 }
