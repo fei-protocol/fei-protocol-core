@@ -14,7 +14,7 @@ const tip_119: TemplatedProposalDescription = {
       target: 'collateralizationOracle',
       values: '0',
       method: 'addDeposit(address)',
-      arguments: (addresses) => [addresses.gOHMPCVHoldingDeposit],
+      arguments: (addresses) => [addresses.gOHMHoldingPCVDeposit],
       description: 'Add the gOHM Holding PCV Deposit'
     }
   ],
