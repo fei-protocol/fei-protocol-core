@@ -9,7 +9,7 @@ import {
   PcvStats,
   ValidateUpgradeFunc
 } from '@custom-types/types';
-import { getImpersonatedSigner, overwriteChainlinkAggregator } from '@test/helpers';
+import { getImpersonatedSigner, overwriteChainlinkAggregator, time } from '@test/helpers';
 import { forceEth } from '@test/integration/setup/utils';
 import { BigNumber } from 'ethers';
 import { ERC20HoldingPCVDeposit } from '@custom-types/contracts';
@@ -74,7 +74,14 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   await angleEuroRedeemer.deployed();
   logging && console.log(`angleEuroRedeemer: ${angleEuroRedeemer.address}`);
 
+  // Deploy implementation
+  const vlAuraDelegatorPCVDepositFactory = await ethers.getContractFactory('VlAuraDelegatorPCVDeposit');
+  const vlAuraDelegatorPCVDepositImplementation = await vlAuraDelegatorPCVDepositFactory.deploy(addresses.core);
+  await vlAuraDelegatorPCVDepositImplementation.deployTransaction.wait();
+  logging && console.log('vlAuraDelegatorPCVDepositImplementation: ', vlAuraDelegatorPCVDepositImplementation.address);
+
   return {
+    vlAuraDelegatorPCVDepositImplementation,
     angleEuroRedeemer,
     wethHoldingPCVDeposit,
     lusdHoldingPCVDeposit,
@@ -140,6 +147,20 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // Run any validations required on the fip using mocha or console logging
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
+  // Aura Airdrop check
+  // We have to fast forward to next week, because AURA locking works per epoch and if we checked
+  // the vlAURA balance right after execution, it would be 0.
+  await time.increase(7 * 24 * 3600 + 1);
+  expect(await contracts.vlAuraDelegatorPCVDeposit.aura()).to.be.equal(addresses.aura);
+  expect(await contracts.vlAuraDelegatorPCVDeposit.auraLocker()).to.be.equal(addresses.vlAura);
+  expect(await contracts.vlAuraDelegatorPCVDeposit.auraMerkleDrop()).to.be.equal(addresses.auraMerkleDrop);
+  expect(await contracts.vlAuraDelegatorPCVDeposit.token()).to.be.equal(addresses.vlAura);
+  expect(await contracts.vlAuraDelegatorPCVDeposit.delegate()).to.be.equal(addresses.eswak);
+  const auraLocked = await contracts.vlAura.balanceOf(contracts.vlAuraDelegatorPCVDeposit.address);
+  expect(auraLocked).to.be.at.least(ethers.utils.parseEther('23438'));
+  const auraBalance = await contracts.vlAuraDelegatorPCVDeposit.balance();
+  expect(auraBalance).to.be.at.least(ethers.utils.parseEther('23438'));
+
   ////////// Validate empty PCV deposit deployments
   const core = contracts.core;
   const ethPSM = contracts.ethPSM;
@@ -273,8 +294,9 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   console.log('----------------------------------------------------');
 
   // PCV Equity change should be neutral for this proposal
-  // expect(Number(eqDiff) / 1e18).to.be.at.least(-10000);
-  // expect(Number(eqDiff) / 1e18).to.be.at.most(+10000);
+  expect(Number(eqDiff) / 1e18).to.be.at.least(-10000);
+  // VOLT interest yields ~35k$ in 3 days of proposal time that is fast-forwarded
+  expect(Number(eqDiff) / 1e18).to.be.at.most(+50000);
 
   ////////////// TIP 114: Validate TRIBE incentives system deprecation
   await validateIncentivesSystemDeprecation(contracts, addresses);

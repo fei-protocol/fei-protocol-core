@@ -84,15 +84,6 @@ const tip_118: TemplatedProposalDescription = {
       description: 'Pause redemptions on the Rai Price bound PSM'
     },
 
-    // 4. Unset deprecated PSMs as safe addresses
-    {
-      target: 'pcvGuardianNew',
-      values: '0',
-      method: 'unsetSafeAddresses(address[])',
-      arguments: (addresses) => [[addresses.ethPSM, addresses.lusdPSM, addresses.raiPriceBoundPSM]],
-      description: 'Unset the ETH, LUSD and RAI PSMs as safe addresses'
-    },
-
     // Update Collaterization Oracle and set safe addresses
     {
       target: 'collateralizationOracle',
@@ -124,18 +115,6 @@ const tip_118: TemplatedProposalDescription = {
         ]
       ],
       description: 'Set all new ERC20 holding deposits as safe addresses on the PCV Guardian'
-    },
-
-    {
-      target: 'collateralizationOracle',
-      values: '0',
-      method: 'removeDeposits(address[])',
-      arguments: (addresses) => [
-        [addresses.lusdPSM, addresses.ethPSM, addresses.aaveEthPCVDepositWrapper, addresses.voltDepositWrapper]
-      ],
-      description: `
-      Remove LUSD PSM, ETH PSM, Aave ETH PCV Deposit wrapper and the Volt deposit wrapper from CR
-      `
     },
 
     ///  PCV DRIP CONTROLLERS
@@ -379,50 +358,120 @@ const tip_118: TemplatedProposalDescription = {
       description: 'Move all agEUR to redeemer'
     },
     {
-      target: 'collateralizationOracle',
-      values: '0',
-      method: 'removeDeposits(address[])',
-      arguments: (addresses) => [[addresses.agEurUniswapPCVDeposit, addresses.uniswapLensAgEurUniswapGauge]],
-      description: 'Remove agEUR addresses from CR oracle'
-    },
-    {
-      target: 'pcvGuardianNew',
-      values: '0',
-      method: 'unsetSafeAddress(address)',
-      arguments: (addresses) => [addresses.agEurUniswapPCVDeposit],
-      description: 'Remove agEurUniswapPCVDeposit from safe addresses'
-    },
-    {
       target: 'angleEuroRedeemer',
       values: '0',
       method: 'redeemAgEurToDai()',
       arguments: (addresses) => [],
       description: 'Redeem all agEUR for DAI and send to DAI PSM'
+    },
+
+    // 4. Unset various safe addresses - deprecated PSMs and agEurUniswapPCVDeposit
+    {
+      target: 'pcvGuardianNew',
+      values: '0',
+      method: 'unsetSafeAddresses(address[])',
+      arguments: (addresses) => [
+        [addresses.ethPSM, addresses.lusdPSM, addresses.raiPriceBoundPSM, addresses.agEurUniswapPCVDeposit]
+      ],
+      description:
+        'Unset the ETH, LUSD and RAI PSMs as safe addresses. Unset agEurUniswapPCVDeposit as a safe addresses'
+    },
+
+    // Remove various deposits from CR
+    {
+      target: 'collateralizationOracle',
+      values: '0',
+      method: 'removeDeposits(address[])',
+      arguments: (addresses) => [
+        [
+          addresses.agEurUniswapPCVDeposit,
+          addresses.uniswapLensAgEurUniswapGauge,
+          addresses.lusdPSM,
+          addresses.ethPSM,
+          addresses.aaveEthPCVDepositWrapper,
+          addresses.voltDepositWrapper
+        ]
+      ],
+      description: `
+      Remove agEUR addresses, LUSD PSM, ETH PSM, Aave ETH PCV Deposit wrapper 
+      and the Volt deposit wrapper from CR oracle.
+      `
+    },
+
+    //// AURA Airdrop claim & lock
+    {
+      target: 'proxyAdmin',
+      values: '0',
+      method: 'upgrade(address,address)',
+      arguments: (addresses) => [
+        addresses.vlAuraDelegatorPCVDeposit,
+        addresses.vlAuraDelegatorPCVDepositImplementation
+      ],
+      description: `Upgrade implementation of the vlAuraDelegatorPCVDeposit`
+    },
+    {
+      target: 'vlAuraDelegatorPCVDeposit',
+      values: '0',
+      method: 'initialize(address,address,address)',
+      arguments: (addresses) => [addresses.aura, addresses.vlAura, addresses.auraMerkleDrop],
+      description: `Initialize state of vlAuraDelegatorPCVDeposit`
+    },
+    {
+      target: 'vlAuraDelegatorPCVDeposit',
+      values: '0',
+      method: 'claimAirdropAndLock(bytes32[],uint256)',
+      arguments: (addresses) => [
+        [
+          // merkle proof
+          '0x7a976f1aaae92306705a851e21eca3a2b94e5f13b70ab392ab43de0772ebeec7',
+          '0x5f45f18cae24e95af94aeb735804f6fa3c71737f9bb628a47aa1d10338c8f108',
+          '0x048081e369fa24baee1b7a0cce66539341a6a3e82abe5f1de21a5c34c62c7059',
+          '0xd161606724ac7215eb1d8401a9652d5cd674dcb87b358142e8a1c0606638a155',
+          '0x95c5cd035c6d6b3d680c7f44f39762cd520ae00bb22a97b720c7a5e9f8343bb1',
+          '0xe21283def28f3d19b0ca2e7d5dbc658b36ff156452caccd8b1bec0a3f8e1888d',
+          '0xc0594f46556af78da13a3a6927537d3797d06d1a840809d5a1fe652104558796',
+          '0x1ef501ed5c0808c30fe72e31488aedbb87cc47b6ad57d4f698834a8980828e96',
+          '0x96093189d23ab1dcbc52c1ce8e66c26458fd343bf71e992a3dcddab33732f4e6',
+          '0x343102ed4002e53b89598f5ef4117d269b3ac98666da0b018d37d12c3ccd3e5f',
+          '0x14737b2e4f69768d546edf1c090e03113a5f4dad097fd7e618519c56405a4dc0',
+          '0xc3d849f7a9528b1c7a94b37fa96daddd882b85442a136fd1a2a89b9785392b03',
+          '0x885f3b9b64e16f0a6490c275896092c04f932fd1a484ba7049c7ae632e301a23'
+        ],
+        '23438420626218725374201' // amount
+      ],
+      description: `Claim AURA airdrop and lock`
+    },
+    {
+      target: 'vlAuraDelegatorPCVDeposit',
+      values: '0',
+      method: 'setDelegate(address)',
+      arguments: (addresses) => [addresses.eswak],
+      description: `Set vlAURA delegatee`
     }
   ],
   description: `
   TIP_118: Deprecating PSMs, deprecating TRIBE incentives system, redeem agEUR
 
-  This proposal deprecates the ETH, LUSD and RAI PSMs and associated infrastructure as well as completing
-  the TRIBE incentives system deprecation. It also redeems all agEUR in the PCV to DAI.
+  This proposal deprecates the ETH, LUSD and RAI PSMs and completes items from TIP-109: Discontinue TRIBE
+  incentives and TIP-110: Simplify PCV (redeeming all agEUR in the PCV to DAI).
 
   PSM deprecation
   --------------------------------------------
   The proposal deprecates the ETH, LUSD and RAI PSMs. This involves transferring all assets off these PSMs, 
-  revoking their MINTER_ROLE, ensuring they are fully paused. It also pauses the the associated PCV drip controllers and 
+  revoking their MINTER_ROLE and ensuring they are fully paused. It also pauses the the associated PCV drip controllers and 
   deprecates the Fei skimmers. Going forward, the only active PSM will be the DAI PSM.
 
-  The DAI FEI skimmer is also activated by granting the PCV_CONTROLLER_ROLE and excess FEI skimmed. gOHM and VOLT are transferred
+  The DAI FEI skimmer is also activated by granting the PCV_CONTROLLER_ROLE and excess FEI burned. 
+  
+  In addition, a new type of PCV deposit, the ERC20HoldingPCVDeposit, is deployed. This is a deposit which has 
+  the deposit() method as a no-op and is intended to just hold assets. The DAO's gOHM and VOLT assets are transferred
   from the DAO timelock to the relevant holding deposits.
 
-  In addition, a new type of PCV deposit, the ERC20HoldingPCVDeposit, is deployed. This is a deposit which has 
-  the deposit() method as a no-op and is intended to just hold assets. 
 
-
-  TIP-114: Deprecate TRIBE Incentives system
+  TIP-109: Deprecate TRIBE Incentives system (https://tribe.fei.money/t/tip-109-discontinue-tribe-incentives/4291)
   --------------------------------------------
-  The proposal finishes the deprecation of the TRIBE incentives system by withdrawing the excess TRIBE from the system
-  and deprecating the Tribal Chief contract. 
+  The proposal finishes the deprecation of the TRIBE incentives system by withdrawing the excess TRIBE from 
+  the incentives system and deprecating the Tribal Chief contract. 
 
   Specifically it:
   - Withdraws remaining TRIBE from the TribalChief, leaving enough behind to fully fund existing commitments
@@ -431,8 +480,8 @@ const tip_118: TemplatedProposalDescription = {
   - Revokes no longer needed TRIBAL_CHIEF_ADMIN_ROLE roles
   - Transfers the admin of the Aave Fei Incentives Controller Proxy to Aave Governance
 
-  TIP-110: agEUR & Angle redeem
-  --------------------------------------------
+  TIP-110: Simply PCV, specifically the agEUR & Angle redemption (https://tribe.fei.money/t/tip-110-simplify-pcv/4323)
+  -----------------------------------------------
   Convert all agEUR in the PCV to DAI, and deprecate all Angle Protocol-related contracts, except the contract that is holding vote-escrowed ANGLE.
 
   This proposal will perform the following actions :

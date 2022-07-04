@@ -1,4 +1,4 @@
-import hre, { ethers, artifacts } from 'hardhat';
+import { ethers } from 'hardhat';
 import { expect } from 'chai';
 import {
   DeployUpgradeFunc,
@@ -109,8 +109,8 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   console.log('----------------------------------------------------');
 
   // PCV Equity change should be neutral for this proposal
-  // expect(Number(eqDiff) / 1e18).to.be.at.least(1_000_000);
-  // expect(Number(eqDiff) / 1e18).to.be.at.most(3_000_000);
+  expect(Number(eqDiff) / 1e18).to.be.at.least(1_000_000);
+  expect(Number(eqDiff) / 1e18).to.be.at.most(3_000_000);
 };
 
 export { deploy, setup, teardown, validate };
