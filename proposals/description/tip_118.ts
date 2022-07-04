@@ -84,15 +84,6 @@ const tip_118: TemplatedProposalDescription = {
       description: 'Pause redemptions on the Rai Price bound PSM'
     },
 
-    // 4. Unset deprecated PSMs as safe addresses
-    {
-      target: 'pcvGuardianNew',
-      values: '0',
-      method: 'unsetSafeAddresses(address[])',
-      arguments: (addresses) => [[addresses.ethPSM, addresses.lusdPSM, addresses.raiPriceBoundPSM]],
-      description: 'Unset the ETH, LUSD and RAI PSMs as safe addresses'
-    },
-
     // Update Collaterization Oracle and set safe addresses
     {
       target: 'collateralizationOracle',
@@ -124,18 +115,6 @@ const tip_118: TemplatedProposalDescription = {
         ]
       ],
       description: 'Set all new ERC20 holding deposits as safe addresses on the PCV Guardian'
-    },
-
-    {
-      target: 'collateralizationOracle',
-      values: '0',
-      method: 'removeDeposits(address[])',
-      arguments: (addresses) => [
-        [addresses.lusdPSM, addresses.ethPSM, addresses.aaveEthPCVDepositWrapper, addresses.voltDepositWrapper]
-      ],
-      description: `
-      Remove LUSD PSM, ETH PSM, Aave ETH PCV Deposit wrapper and the Volt deposit wrapper from CR
-      `
     },
 
     ///  PCV DRIP CONTROLLERS
@@ -379,25 +358,44 @@ const tip_118: TemplatedProposalDescription = {
       description: 'Move all agEUR to redeemer'
     },
     {
-      target: 'collateralizationOracle',
-      values: '0',
-      method: 'removeDeposits(address[])',
-      arguments: (addresses) => [[addresses.agEurUniswapPCVDeposit, addresses.uniswapLensAgEurUniswapGauge]],
-      description: 'Remove agEUR addresses from CR oracle'
-    },
-    {
-      target: 'pcvGuardianNew',
-      values: '0',
-      method: 'unsetSafeAddress(address)',
-      arguments: (addresses) => [addresses.agEurUniswapPCVDeposit],
-      description: 'Remove agEurUniswapPCVDeposit from safe addresses'
-    },
-    {
       target: 'angleEuroRedeemer',
       values: '0',
       method: 'redeemAgEurToDai()',
       arguments: (addresses) => [],
       description: 'Redeem all agEUR for DAI and send to DAI PSM'
+    },
+
+    // 4. Unset various safe addresses - deprecated PSMs and agEurUniswapPCVDeposit
+    {
+      target: 'pcvGuardianNew',
+      values: '0',
+      method: 'unsetSafeAddresses(address[])',
+      arguments: (addresses) => [
+        [addresses.ethPSM, addresses.lusdPSM, addresses.raiPriceBoundPSM, addresses.agEurUniswapPCVDeposit]
+      ],
+      description:
+        'Unset the ETH, LUSD and RAI PSMs as safe addresses. Unset agEurUniswapPCVDeposit as a safe addresses'
+    },
+
+    // Remove various deposits from CR
+    {
+      target: 'collateralizationOracle',
+      values: '0',
+      method: 'removeDeposits(address[])',
+      arguments: (addresses) => [
+        [
+          addresses.agEurUniswapPCVDeposit,
+          addresses.uniswapLensAgEurUniswapGauge,
+          addresses.lusdPSM,
+          addresses.ethPSM,
+          addresses.aaveEthPCVDepositWrapper,
+          addresses.voltDepositWrapper
+        ]
+      ],
+      description: `
+      Remove agEUR addresses, LUSD PSM, ETH PSM, Aave ETH PCV Deposit wrapper 
+      and the Volt deposit wrapper from CR oracle.
+      `
     },
 
     //// AURA Airdrop claim & lock
