@@ -81,8 +81,8 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 
   // 2. gOHM USD oracle price is valid
   const gOhmUSDPrice = (await gOhmUSDOracle.read())[0];
-  expect(toBN(gOhmUSDPrice.value)).to.be.bignumber.at.least(ethers.constants.WeiPerEther.mul(2_500)); // $2500
-  expect(toBN(gOhmUSDPrice.value)).to.be.bignumber.at.least(ethers.constants.WeiPerEther.mul(3_400)); // $3400
+  expect(toBN(gOhmUSDPrice.value)).to.be.bignumber.at.least(ethers.constants.WeiPerEther.mul(1_000)); // $1000
+  expect(toBN(gOhmUSDPrice.value)).to.be.bignumber.at.least(ethers.constants.WeiPerEther.mul(5_000)); // $5000
 
   // 3. Verify deposit and oracle added to CR
   expect(await collateralizationOracle.isTokenInPcv(addresses.gohm)).to.be.true;

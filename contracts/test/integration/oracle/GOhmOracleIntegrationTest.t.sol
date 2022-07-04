@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import {DSTest} from "../../utils/DSTest.sol";
 import {StdLib} from "../../utils/StdLib.sol";
-import {GOhmEthOracle} from "../../../oracle/GOhmETHOracle.sol";
+import {GOhmEthOracle} from "../../../oracle/GOhmEthOracle.sol";
 import {CompositeOracle} from "../../../oracle/CompositeOracle.sol";
 import {MainnetAddresses} from "../fixtures/MainnetAddresses.sol";
 import {Decimal, IOracle} from "../../../oracle/IOracle.sol";
