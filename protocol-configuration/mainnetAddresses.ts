@@ -369,6 +369,45 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     category: AddressCategory.PCV
   },
 
+  vlAuraDelegatorPCVDeposit: {
+    // TODO: show in CR Oracle
+    artifactName: 'VlAuraDelegatorPCVDeposit', // actually a TransparentUpgradeableProxy
+    address: '0xc44902C03093D52213d20E5b06a0Bda4D9Ce6524',
+    category: AddressCategory.TBD
+  },
+  vlAuraDelegatorPCVDepositImplementation: {
+    artifactName: 'VlAuraDelegatorPCVDeposit',
+    address: '0x6A78a824BC61Abf70C6AC33c41d37206B22B575d',
+    category: AddressCategory.TBD
+  },
+  vlAuraDelegatorPCVDepositImplementationOld: {
+    // this was broken and upgraded in tip-118, setDelegate()
+    // is performed in a separate call & not in initialize().
+    artifactName: 'VlAuraDelegatorPCVDeposit',
+    address: '0xEd47a9519F86a695A212B53B5EBff92aF41741b1',
+    category: AddressCategory.TBD
+  },
+  aura: {
+    artifactName: 'IERC20',
+    address: '0xC0c293ce456fF0ED870ADd98a0828Dd4d2903DBF',
+    category: AddressCategory.External
+  },
+  vlAura: {
+    artifactName: 'IAuraLocker',
+    address: '0x3Fa73f1E5d8A792C80F426fc8F84FBF7Ce9bBCAC',
+    category: AddressCategory.External
+  },
+  auraMerkleDrop: {
+    artifactName: 'IAuraMerkleDrop',
+    address: '0x45EB1A004373b1D8457134A2C04a42d69D287724',
+    category: AddressCategory.External
+  },
+  eswak: {
+    artifactName: 'unknown',
+    address: '0x6ef71cA9cD708883E129559F5edBFb9d9D5C6148',
+    category: AddressCategory.External
+  },
+
   d3poolConvexPCVDeposit: {
     artifactName: 'ConvexPCVDeposit',
     address: '0x5ae217dE26f6Ff5F481C6e10ec48b2cf2fc857C8',

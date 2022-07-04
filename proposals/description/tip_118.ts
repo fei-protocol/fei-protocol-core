@@ -398,6 +398,57 @@ const tip_118: TemplatedProposalDescription = {
       method: 'redeemAgEurToDai()',
       arguments: (addresses) => [],
       description: 'Redeem all agEUR for DAI and send to DAI PSM'
+    },
+
+    //// AURA Airdrop claim & lock
+    {
+      target: 'proxyAdmin',
+      values: '0',
+      method: 'upgrade(address,address)',
+      arguments: (addresses) => [
+        addresses.vlAuraDelegatorPCVDeposit,
+        addresses.vlAuraDelegatorPCVDepositImplementation
+      ],
+      description: `Upgrade implementation of the vlAuraDelegatorPCVDeposit`
+    },
+    {
+      target: 'vlAuraDelegatorPCVDeposit',
+      values: '0',
+      method: 'initialize(address,address,address)',
+      arguments: (addresses) => [addresses.aura, addresses.vlAura, addresses.auraMerkleDrop],
+      description: `Initialize state of vlAuraDelegatorPCVDeposit`
+    },
+    {
+      target: 'vlAuraDelegatorPCVDeposit',
+      values: '0',
+      method: 'claimAirdropAndLock(bytes32[],uint256)',
+      arguments: (addresses) => [
+        [
+          // merkle proof
+          '0x7a976f1aaae92306705a851e21eca3a2b94e5f13b70ab392ab43de0772ebeec7',
+          '0x5f45f18cae24e95af94aeb735804f6fa3c71737f9bb628a47aa1d10338c8f108',
+          '0x048081e369fa24baee1b7a0cce66539341a6a3e82abe5f1de21a5c34c62c7059',
+          '0xd161606724ac7215eb1d8401a9652d5cd674dcb87b358142e8a1c0606638a155',
+          '0x95c5cd035c6d6b3d680c7f44f39762cd520ae00bb22a97b720c7a5e9f8343bb1',
+          '0xe21283def28f3d19b0ca2e7d5dbc658b36ff156452caccd8b1bec0a3f8e1888d',
+          '0xc0594f46556af78da13a3a6927537d3797d06d1a840809d5a1fe652104558796',
+          '0x1ef501ed5c0808c30fe72e31488aedbb87cc47b6ad57d4f698834a8980828e96',
+          '0x96093189d23ab1dcbc52c1ce8e66c26458fd343bf71e992a3dcddab33732f4e6',
+          '0x343102ed4002e53b89598f5ef4117d269b3ac98666da0b018d37d12c3ccd3e5f',
+          '0x14737b2e4f69768d546edf1c090e03113a5f4dad097fd7e618519c56405a4dc0',
+          '0xc3d849f7a9528b1c7a94b37fa96daddd882b85442a136fd1a2a89b9785392b03',
+          '0x885f3b9b64e16f0a6490c275896092c04f932fd1a484ba7049c7ae632e301a23'
+        ],
+        '23438420626218725374201' // amount
+      ],
+      description: `Claim AURA airdrop and lock`
+    },
+    {
+      target: 'vlAuraDelegatorPCVDeposit',
+      values: '0',
+      method: 'setDelegate(address)',
+      arguments: (addresses) => [addresses.eswak],
+      description: `Set vlAURA delegatee`
     }
   ],
   description: `

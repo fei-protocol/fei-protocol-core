@@ -9,7 +9,7 @@ import {
   PcvStats,
   ValidateUpgradeFunc
 } from '@custom-types/types';
-import { getImpersonatedSigner, overwriteChainlinkAggregator } from '@test/helpers';
+import { getImpersonatedSigner, overwriteChainlinkAggregator, time } from '@test/helpers';
 import { forceEth } from '@test/integration/setup/utils';
 import { BigNumber } from 'ethers';
 import { ERC20HoldingPCVDeposit } from '@custom-types/contracts';
@@ -74,7 +74,14 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   await angleEuroRedeemer.deployed();
   logging && console.log(`angleEuroRedeemer: ${angleEuroRedeemer.address}`);
 
+  // Deploy implementation
+  const vlAuraDelegatorPCVDepositFactory = await ethers.getContractFactory('VlAuraDelegatorPCVDeposit');
+  const vlAuraDelegatorPCVDepositImplementation = await vlAuraDelegatorPCVDepositFactory.deploy(addresses.core);
+  await vlAuraDelegatorPCVDepositImplementation.deployTransaction.wait();
+  logging && console.log('vlAuraDelegatorPCVDepositImplementation: ', vlAuraDelegatorPCVDepositImplementation.address);
+
   return {
+    vlAuraDelegatorPCVDepositImplementation,
     angleEuroRedeemer,
     wethHoldingPCVDeposit,
     lusdHoldingPCVDeposit,
@@ -140,6 +147,20 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // Run any validations required on the fip using mocha or console logging
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
+  // Aura Airdrop check
+  // We have to fast forward to next week, because AURA locking works per epoch and if we checked
+  // the vlAURA balance right after execution, it would be 0.
+  await time.increase(7 * 24 * 3600 + 1);
+  expect(await contracts.vlAuraDelegatorPCVDeposit.aura()).to.be.equal(addresses.aura);
+  expect(await contracts.vlAuraDelegatorPCVDeposit.auraLocker()).to.be.equal(addresses.vlAura);
+  expect(await contracts.vlAuraDelegatorPCVDeposit.auraMerkleDrop()).to.be.equal(addresses.auraMerkleDrop);
+  expect(await contracts.vlAuraDelegatorPCVDeposit.token()).to.be.equal(addresses.vlAura);
+  expect(await contracts.vlAuraDelegatorPCVDeposit.delegate()).to.be.equal(addresses.eswak);
+  const auraLocked = await contracts.vlAura.balanceOf(contracts.vlAuraDelegatorPCVDeposit.address);
+  expect(auraLocked).to.be.at.least(ethers.utils.parseEther('23438'));
+  const auraBalance = await contracts.vlAuraDelegatorPCVDeposit.balance();
+  expect(auraBalance).to.be.at.least(ethers.utils.parseEther('23438'));
+
   ////////// Validate empty PCV deposit deployments
   const core = contracts.core;
   const ethPSM = contracts.ethPSM;
