@@ -56,7 +56,7 @@ jobs:
   test:
     working_directory: ~/repo
     executor: nodeimage
-    parallelism: 17
+    parallelism: 16
     steps:
       - attach_workspace:
           at: ./
