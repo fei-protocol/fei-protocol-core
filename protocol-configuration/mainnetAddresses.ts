@@ -472,7 +472,7 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   feiOATimelockWrapper: {
     artifactName: 'PCVDepositWrapper',
     address: '0x7Eb88140af813294aEDce981b6aC08fcd139d408',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
 
   rariPool19FeiPCVDepositWrapper: {
@@ -502,13 +502,13 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   rariPool128FeiPCVDepositWrapper: {
     artifactName: 'PCVDepositWrapper',
     address: '0xA62ddde8F799873E6FcdbB3aCBbA75da85D9dcdE',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
 
   rariPool22FeiPCVDepositWrapper: {
     artifactName: 'PCVDepositWrapper',
     address: '0xa2BdbCb95d31C85BAE6f0FA42D55F65d609D94eE',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
 
   wethDepositWrapper: {
@@ -815,7 +815,7 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   turboFusePCVDeposit: {
     artifactName: 'ERC20CompoundPCVDeposit',
     address: '0x2c47Fef515d2C70F2427706999E158533F7cF090',
-    category: AddressCategory.Turbo
+    category: AddressCategory.Deprecated
   },
   aaveTribeIncentivesController: {
     artifactName: 'IAaveIncentivesController',
