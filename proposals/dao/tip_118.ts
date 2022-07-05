@@ -223,22 +223,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await raiPSM.mintPaused()).to.be.true;
   expect(await raiPSM.paused()).to.be.true;
 
-  // 7. Validate PSMs are no longer safe addresses
-  expect(await pcvGuardian.isSafeAddress(ethPSM.address)).to.be.false;
-  expect(await pcvGuardian.isSafeAddress(lusdPSM.address)).to.be.false;
-  expect(await pcvGuardian.isSafeAddress(raiPSM.address)).to.be.false;
-  expect(await pcvGuardian.isSafeAddress(addresses.turboFusePCVDeposit)).to.be.false;
-  expect(await pcvGuardian.isSafeAddress(addresses.aaveEthPCVDeposit)).to.be.false;
-  expect(await pcvGuardian.isSafeAddress(addresses.agEurUniswapPCVDeposit)).to.be.false;
-
-  // 8. New ERC20 holding deposits are safe addresses
-  expect(await pcvGuardian.isSafeAddress(wethHoldingPCVDeposit.address)).to.be.true;
-  expect(await pcvGuardian.isSafeAddress(lusdHoldingPCVDeposit.address)).to.be.true;
-  expect(await pcvGuardian.isSafeAddress(voltHoldingPCVDeposit.address)).to.be.true;
-  expect(await pcvGuardian.isSafeAddress(daiHoldingPCVDeposit.address)).to.be.true;
-  expect(await pcvGuardian.isSafeAddress(gOHMHoldingPCVDeposit.address)).to.be.true;
-
-  // 9. Skimmers are deprecated - paused and do not have PCV_CONTROLLER_ROLE
+  // 7. Skimmers are deprecated - paused and do not have PCV_CONTROLLER_ROLE
   const PCV_CONTROLLER_ROLE = ethers.utils.id('PCV_CONTROLLER_ROLE');
   expect(await contracts.ethPSMFeiSkimmer.paused()).to.be.true;
   expect(await core.hasRole(PCV_CONTROLLER_ROLE, addresses.ethPSMFeiSkimmer)).to.be.false;
@@ -246,11 +231,11 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await contracts.lusdPSMFeiSkimmer.paused()).to.be.true;
   expect(await core.hasRole(PCV_CONTROLLER_ROLE, addresses.lusdPSMFeiSkimmer)).to.be.false;
 
-  // 10. daiFixedPricePSMFeiSkimmer granted PCV_CONTROLLER_ROLE and burns Fei
+  // 8. daiFixedPricePSMFeiSkimmer granted PCV_CONTROLLER_ROLE and burns Fei
   expect(await core.hasRole(PCV_CONTROLLER_ROLE, addresses.daiFixedPricePSMFeiSkimmer)).to.be.true;
   expect(await fei.balanceOf(addresses.daiFixedPricePSM)).to.be.equal(ethers.constants.WeiPerEther.mul(20_000_000));
 
-  // 11. gOHM received funds
+  // 9. gOHM received funds
   expect(await gOHM.balanceOf(addresses.gOHMHoldingPCVDeposit)).to.be.equal('577180000000000000000');
 
   // ------------------------------------------------------------

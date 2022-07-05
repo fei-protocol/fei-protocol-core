@@ -102,7 +102,7 @@ const tip_118: TemplatedProposalDescription = {
       gOHM deposit not added as does not yet have an oracle.`
     },
     {
-      target: 'pcvGuardianNew',
+      target: 'pcvGuardian',
       values: '0',
       method: 'setSafeAddresses(address[])',
       arguments: (addresses) => [
@@ -367,7 +367,7 @@ const tip_118: TemplatedProposalDescription = {
 
     // 4. Unset various safe addresses - deprecated PSMs and agEurUniswapPCVDeposit
     {
-      target: 'pcvGuardianNew',
+      target: 'pcvGuardian',
       values: '0',
       method: 'unsetSafeAddresses(address[])',
       arguments: (addresses) => [
@@ -377,11 +377,21 @@ const tip_118: TemplatedProposalDescription = {
           addresses.raiPriceBoundPSM,
           addresses.agEurUniswapPCVDeposit,
           addresses.aaveEthPCVDeposit,
-          addresses.turboFusePCVDeposit
+          addresses.turboFusePCVDeposit,
+          addresses.aaveRaiPCVDeposit,
+          addresses.rariPool9RaiPCVDeposit,
+          addresses.balancerDepositFeiWeth,
+          addresses.d3poolConvexPCVDeposit,
+          addresses.d3poolCurvePCVDeposit,
+          addresses.compoundEthPCVDeposit,
+          addresses.dpiToDaiLBPSwapper,
+          addresses.uniswapPCVDeposit
         ]
       ],
-      description: `Unset as safe addresses the following: ETH, LUSD and RAI PSMs, 
-        agEurUniswapPCVDeposit, aaveEthPCVDeposit and turboFusePCVDeposit`
+      description: `
+      Unset as safe addresses the deprecated PSMs along with various other deprecated 
+      PCV deposits.
+      `
     },
 
     // Remove various deposits from CR
