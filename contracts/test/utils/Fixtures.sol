@@ -6,17 +6,17 @@ import {TribeRoles} from "../../core/TribeRoles.sol";
 import {Vm} from "./Vm.sol";
 
 struct FeiTestAddresses {
-    address userAddress;
-    address secondUserAddress;
-    address beneficiaryAddress1;
-    address beneficiaryAddress2;
-    address governorAddress;
+    address user;
+    address secondUser;
+    address beneficiary1;
+    address beneficiary2;
+    address governor;
     address genesisGroup;
-    address keeperAddress;
-    address pcvControllerAddress;
-    address minterAddress;
-    address burnerAddress;
-    address guardianAddress;
+    address keeper;
+    address pcvController;
+    address minter;
+    address burner;
+    address guardian;
     address pcvGuardianAdmin;
     address pcvSafeMover;
 }
@@ -24,17 +24,17 @@ struct FeiTestAddresses {
 /// @dev Get a list of addresses
 function getAddresses() pure returns (FeiTestAddresses memory) {
     FeiTestAddresses memory addresses = FeiTestAddresses({
-        userAddress: address(0x1),
-        secondUserAddress: address(0x2),
-        beneficiaryAddress1: address(0x3),
-        beneficiaryAddress2: address(0x4),
-        governorAddress: address(0x5),
+        user: address(0x1),
+        secondUser: address(0x2),
+        beneficiary1: address(0x3),
+        beneficiary2: address(0x4),
+        governor: address(0x5),
         genesisGroup: address(0x6),
-        keeperAddress: address(0x7),
-        pcvControllerAddress: address(0x8),
-        minterAddress: address(0x9),
-        burnerAddress: address(0x10),
-        guardianAddress: address(0x11),
+        keeper: address(0x7),
+        pcvController: address(0x8),
+        minter: address(0x9),
+        burner: address(0x10),
+        guardian: address(0x11),
         pcvGuardianAdmin: address(0x12),
         pcvSafeMover: address(0x13)
     });
@@ -49,14 +49,14 @@ function getCore() returns (Core) {
     FeiTestAddresses memory addresses = getAddresses();
 
     // Deploy Core from Governor address
-    vm.startPrank(addresses.governorAddress);
+    vm.startPrank(addresses.governor);
 
     Core core = new Core();
     core.init();
-    core.grantMinter(addresses.minterAddress);
-    core.grantBurner(addresses.burnerAddress);
-    core.grantPCVController(addresses.pcvControllerAddress);
-    core.grantGuardian(addresses.guardianAddress);
+    core.grantMinter(addresses.minter);
+    core.grantBurner(addresses.burner);
+    core.grantPCVController(addresses.pcvController);
+    core.grantGuardian(addresses.guardian);
 
     core.createRole(TribeRoles.PCV_GUARDIAN_ADMIN, TribeRoles.GOVERNOR);
     core.grantRole(TribeRoles.PCV_GUARDIAN_ADMIN, addresses.pcvGuardianAdmin);

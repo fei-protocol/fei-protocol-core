@@ -72,11 +72,6 @@ contract PodExecutorTest is DSTest {
         // 1. Deploy PodExecutor
         podExecutor = new PodExecutor(address(core));
 
-        vm.startPrank(addresses.governorAddress);
-        core.createRole(TribeRoles.GOVERNOR, TribeRoles.GOVERNOR);
-        core.grantRole(TribeRoles.GOVERNOR, addresses.governorAddress);
-        vm.stopPrank();
-
         // 2. Deploy TimelockController. Set podExecutor as EXECUTOR
         uint256 minDelay = 0;
         address[] memory proposers = new address[](1);
@@ -89,11 +84,15 @@ contract PodExecutorTest is DSTest {
 
         // 3. Give timelock some ETH to transfer in proposal
         vm.deal(address(timelock), 10 ether);
+
+        // 4. Initialize time to be >1
+        // TimelockController relies on timestamps being at least _DONE_TIMESTAMP (>1)
+        vm.warp(1000);
     }
 
     /// @notice Validate can pause execution
     function testCanPause() public {
-        vm.prank(addresses.governorAddress);
+        vm.prank(addresses.governor);
         podExecutor.pause();
 
         vm.expectRevert(bytes("Pausable: paused"));

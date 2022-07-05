@@ -56,7 +56,7 @@ contract NopeDAOTest is DSTest {
         // 2. Setup Tribe and transfer some to a test address
         tribeAddress = address(core.tribe());
 
-        vm.prank(addresses.governorAddress);
+        vm.prank(addresses.governor);
         core.allocateTribe(user, excessQuorumTribe);
 
         tribe = ERC20VotesComp(tribeAddress);

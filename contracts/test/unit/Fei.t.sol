@@ -25,15 +25,15 @@ contract FeiTest is DSTest {
 
     function testDeployedMetaData() public {
         assertEq(fei.totalSupply(), 0);
-        assertTrue(core.isGovernor(addresses.governorAddress));
+        assertTrue(core.isGovernor(addresses.governor));
     }
 
     function testMintsFei() public {
         uint256 mintAmount = 100;
 
-        vm.prank(addresses.minterAddress);
-        fei.mint(addresses.userAddress, mintAmount);
+        vm.prank(addresses.minter);
+        fei.mint(addresses.user, mintAmount);
 
-        assertEq(fei.balanceOf(addresses.userAddress), mintAmount);
+        assertEq(fei.balanceOf(addresses.user), mintAmount);
     }
 }
