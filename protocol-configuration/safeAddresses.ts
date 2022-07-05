@@ -3,7 +3,6 @@ export const safeAddressesConfig: SafeAddressStateConfig = [
   'balancerGaugeStaker',
   'veBalDelegatorPCVDeposit',
   'balancerDepositBalWeth',
-  'agEurUniswapPCVDeposit',
   'daiFixedPricePSM',
   'feiDAOTimelock',
   'wethHoldingPCVDeposit',

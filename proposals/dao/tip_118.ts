@@ -179,8 +179,6 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const daiHoldingPCVDeposit = contracts.daiHoldingPCVDeposit as ERC20HoldingPCVDeposit;
   const gOHMHoldingPCVDeposit = contracts.gOHMHoldingPCVDeposit as ERC20HoldingPCVDeposit;
 
-  const pcvGuardian = contracts.pcvGuardianNew;
-
   // 1. Validate all holding PCV Deposits configured correctly
   expect(await wethHoldingPCVDeposit.balanceReportedIn()).to.be.equal(addresses.weth);
   expect(await lusdHoldingPCVDeposit.balanceReportedIn()).to.be.equal(addresses.lusd);
@@ -281,9 +279,12 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   console.log(' Equity diff                            [M]e18 ', Number(eqDiff) / 1e24);
   console.log('----------------------------------------------------');
 
-  // PCV Equity change should be neutral for this proposal
-  expect(Number(eqDiff) / 1e18).to.be.at.least(-10000);
   // VOLT interest yields ~35k$ in 3 days of proposal time that is fast-forwarded
+  // Have removed rariPool128FeiPCVDepositWrapper (~$25k FEI) and rariPool22FeiPCVDepositWrapper (~$34k FEI)
+  // Both configured in fuseWithdrawalGuard
+  // So equity diff may fluctuate from -$24k to +$35k over the next few days
+  // PCV Equity change should be neutral for this proposal
+  expect(Number(eqDiff) / 1e18).to.be.at.least(-50000);
   expect(Number(eqDiff) / 1e18).to.be.at.most(+50000);
 
   ////////////// TIP 109: Validate TRIBE incentives system deprecation
@@ -380,8 +381,8 @@ const validateHoldingDepositWithdrawal = async (contracts: NamedContracts, addre
 
   // Withdraw ERC20
   const receiver = '0xFc312F21E1D56D8dab5475FB5aaEFfB18B892a85';
-  const guardianSigner = await getImpersonatedSigner(addresses.pcvGuardianNew);
-  await forceEth(addresses.pcvGuardianNew);
+  const guardianSigner = await getImpersonatedSigner(addresses.pcvGuardian);
+  await forceEth(addresses.pcvGuardian);
   await wethHoldingPCVDeposit.connect(guardianSigner).withdrawERC20(addresses.weth, receiver, transferAmount);
 
   expect(await wethHoldingPCVDeposit.balance()).to.be.equal(initialWethDepositBalance.add(initialEthDepositBalance));
