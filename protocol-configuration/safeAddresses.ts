@@ -5,7 +5,7 @@ export const safeAddressesConfig: SafeAddressStateConfig = [
   'uniswapPCVDeposit',
   'raiPriceBoundPSM',
   'aaveRaiPCVDeposit',
-  'raiPool9RaiPCVDeposit',
+  'rariPool9RaiPCVDeposit',
   'turboFusePCVDeposit',
   'veBalDelegatorPCVDeposit',
   'balancerDepositFeiWeth',

@@ -81,7 +81,7 @@ describe('e2e-pcv', function () {
 
   describe('PCV Guardian', async () => {
     it('can withdraw PCV and pause', async () => {
-      const pcvGuardian = contracts.pcvGuardianV2;
+      const pcvGuardian = contracts.pcvGuardian;
 
       const amount = await contracts.compoundEthPCVDeposit.balance();
       await pcvGuardian.withdrawToSafeAddress(
@@ -96,7 +96,7 @@ describe('e2e-pcv', function () {
     });
 
     it('can withdraw PCV and pause', async () => {
-      const pcvGuardian = contracts.pcvGuardianV2;
+      const pcvGuardian = contracts.pcvGuardian;
 
       const feiBalanceBefore = await contracts.fei.balanceOf(contractAddresses.feiDAOTimelock);
       await pcvGuardian.withdrawToSafeAddress(

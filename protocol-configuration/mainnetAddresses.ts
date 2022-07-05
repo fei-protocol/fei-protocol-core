@@ -36,7 +36,7 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     address: '0xC297705Acf50134d256187c754B92FA37826C019',
     category: AddressCategory.Security
   },
-  pcvGuardianV2: {
+  pcvGuardian: {
     artifactName: 'PCVGuardian',
     address: '0x02435948F84d7465FB71dE45ABa6098Fc6eC2993',
     category: AddressCategory.Security
