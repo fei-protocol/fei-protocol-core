@@ -56,7 +56,10 @@ describe('e2e-pcv-guardian-safe-addresses', function () {
       const onChainContract = contracts[safeAddressContractName];
 
       // Validate is a safe address
-      expect(await pcvGuardian.isSafeAddress(onChainContract.address)).to.be.true;
+      expect(await pcvGuardian.isSafeAddress(onChainContract.address)).to.be.equal(
+        true,
+        'Expected ' + safeAddressContractName + ' to be a safe address'
+      );
     }
   });
 });
