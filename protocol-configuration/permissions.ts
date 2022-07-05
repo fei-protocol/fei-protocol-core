@@ -5,12 +5,12 @@ export const permissions = {
   PCV_CONTROLLER_ROLE: [
     'feiDAOTimelock',
     'ratioPCVControllerV2',
-    'pcvGuardianNew',
+    'pcvGuardian',
     'daiPCVDripController',
     'ethPSMFeiSkimmer',
     'lusdPSMFeiSkimmer'
   ],
-  GUARDIAN_ROLE: ['guardianMultisig', 'pcvGuardianNew', 'pcvSentinel'],
+  GUARDIAN_ROLE: ['guardianMultisig', 'pcvGuardian', 'pcvSentinel'],
   ORACLE_ADMIN_ROLE: ['tribalCouncilTimelock'],
   SWAP_ADMIN_ROLE: ['pcvEquityMinter', 'tribalCouncilTimelock', 'tribalCouncilSafe'],
   BALANCER_MANAGER_ADMIN_ROLE: [],
