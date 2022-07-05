@@ -2,7 +2,7 @@ import { ethers } from 'ethers';
 import { TemplatedProposalDescription } from '@custom-types/types';
 
 const tip_118: TemplatedProposalDescription = {
-  title: 'TIP_118: Incentives withdrawal, PSM deprecation, agEUR redemption',
+  title: 'TIP_118: PSM deprecation, Incentives withdrawal, agEUR redemption',
   commands: [
     // 1. Transfer all assets off the PSMs to the new empty PCV deposits
     // ETH PSM
