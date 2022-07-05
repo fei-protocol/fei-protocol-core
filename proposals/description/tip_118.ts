@@ -184,7 +184,7 @@ const tip_118: TemplatedProposalDescription = {
       values: '0',
       method: 'skim()',
       arguments: (addresses) => [],
-      description: 'Burn excess Fei on the DAI PSM. Will burn ~95M FEI'
+      description: 'Burn excess Fei on the DAI PSM. Will burn ~135M FEI'
     },
 
     ///// Send VOLT to it's holding ERC20 deposit
