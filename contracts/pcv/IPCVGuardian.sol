@@ -64,7 +64,8 @@ interface IPCVGuardian {
         bool depositAfter
     ) external;
 
-    /// @notice withdraw funds from a pcv deposit, by calling the withdraw() method on it
+    /// @notice withdraw funds from a pcv deposit, by calling the withdraw() method on it.
+    /// The amount withdrawn is expressed as a ratio, basis points are given & not absolute value.
     /// @param pcvDeposit the address of the pcv deposit contract
     /// @param safeAddress the destination address to withdraw to
     /// @param basisPoints the percent in basis points [1-10000] if the deposit's balance to withdraw
@@ -92,7 +93,8 @@ interface IPCVGuardian {
         bool depositAfter
     ) external;
 
-    /// @notice withdraw funds from a pcv deposit, by calling the withdrawETH() method on it
+    /// @notice withdraw funds from a pcv deposit, by calling the withdrawETH() method on it.
+    /// The amount withdrawn is expressed as a ratio, basis points are given & not absolute value.
     /// @param pcvDeposit the address of the pcv deposit contract
     /// @param safeAddress the destination address to withdraw to
     /// @param basisPoints the percent in basis points [1-10000] if the deposit's balance to withdraw
@@ -122,7 +124,8 @@ interface IPCVGuardian {
         bool depositAfter
     ) external;
 
-    /// @notice withdraw funds from a pcv deposit, by calling the withdrawERC20() method on it
+    /// @notice withdraw funds from a pcv deposit, by calling the withdrawERC20() method on it.
+    /// The amount withdrawn is expressed as a ratio, basis points are given & not absolute value.
     /// @param pcvDeposit the deposit to pull funds from
     /// @param safeAddress the destination address to withdraw to
     /// @param token the token to withdraw

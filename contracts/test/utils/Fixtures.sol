@@ -17,8 +17,8 @@ struct FeiTestAddresses {
     address minterAddress;
     address burnerAddress;
     address guardianAddress;
-    address pcvGuardianAdminAddress;
-    address pcvSafeMoverAddress;
+    address pcvGuardianAdmin;
+    address pcvSafeMover;
 }
 
 /// @dev Get a list of addresses
@@ -35,8 +35,8 @@ function getAddresses() pure returns (FeiTestAddresses memory) {
         minterAddress: address(0x9),
         burnerAddress: address(0x10),
         guardianAddress: address(0x11),
-        pcvGuardianAdminAddress: address(0x12),
-        pcvSafeMoverAddress: address(0x13)
+        pcvGuardianAdmin: address(0x12),
+        pcvSafeMover: address(0x13)
     });
 
     return addresses;
@@ -59,9 +59,9 @@ function getCore() returns (Core) {
     core.grantGuardian(addresses.guardianAddress);
 
     core.createRole(TribeRoles.PCV_GUARDIAN_ADMIN, TribeRoles.GOVERNOR);
-    core.grantRole(TribeRoles.PCV_GUARDIAN_ADMIN, addresses.pcvGuardianAdminAddress);
+    core.grantRole(TribeRoles.PCV_GUARDIAN_ADMIN, addresses.pcvGuardianAdmin);
     core.createRole(TribeRoles.PCV_SAFE_MOVER_ROLE, TribeRoles.GOVERNOR);
-    core.grantRole(TribeRoles.PCV_SAFE_MOVER_ROLE, addresses.pcvSafeMoverAddress);
+    core.grantRole(TribeRoles.PCV_SAFE_MOVER_ROLE, addresses.pcvSafeMover);
 
     vm.stopPrank();
     return core;
