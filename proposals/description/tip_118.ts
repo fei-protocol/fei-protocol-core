@@ -374,6 +374,7 @@ const tip_118: TemplatedProposalDescription = {
         [
           addresses.ethPSM,
           addresses.lusdPSM,
+          addresses.raiPriceBoundPSM,
           addresses.agEurUniswapPCVDeposit,
           addresses.aaveEthPCVDeposit,
           addresses.turboFusePCVDeposit
