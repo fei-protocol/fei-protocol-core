@@ -99,7 +99,7 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
         bool depositAfter
     ) {
         {
-            // scoped in this modifier to prevent stack to deep errors & enforce consitent acl
+            // scoped in this modifier to prevent stack to deep errors & enforce consistent acl
             ICore _core = core();
             require(
                 _core.hasRole(TribeRoles.GUARDIAN, msg.sender) ||

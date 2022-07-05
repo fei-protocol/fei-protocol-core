@@ -54,7 +54,7 @@ contract PCVGuardianTest is DSTest {
     }
 
     // should have no safe addresses upon deployment when deployed with no safe addresses
-    function testDeploy1() public {
+    function testDeployWithoutSafeAddresses() public {
         address[] memory safeAddresses = new address[](0);
         PCVGuardian pcvGuardianWithoutAddresses = new PCVGuardian(address(core), safeAddresses);
         address[] memory getSafeAddresses = pcvGuardianWithoutAddresses.getSafeAddresses();
@@ -62,7 +62,7 @@ contract PCVGuardianTest is DSTest {
     }
 
     // should have safe addresses upon deployment when deployed with safe addresses
-    function testDeploy2() public {
+    function testDeployWithSafeAddresses() public {
         address[] memory safeAddresses = new address[](1);
         safeAddresses[0] = address(0x42);
         PCVGuardian pcvGuardianWithoutAddresses = new PCVGuardian(address(core), safeAddresses);
@@ -71,11 +71,11 @@ contract PCVGuardianTest is DSTest {
         assertEq(getSafeAddresses[0], address(0x42));
     }
 
-    // access control and state changes
+    ///////////// ACCESS CONTROL AND STATE CHANGES //////////
 
     // should revert when calling setSafeAddress & setSafeAddresses from a non-privileged address
     // should revert when calling unsetSafeAddress & unsetSafeAddresses from a non-privileged address
-    function testAccessControl1() public {
+    function testAccessControlSetUnsetSafeAddressesUnprivilegedCaller() public {
         address safeAddress = address(0x42);
         address[] memory safeAddresses = new address[](1);
         safeAddresses[0] = safeAddress;
@@ -97,14 +97,14 @@ contract PCVGuardianTest is DSTest {
     //   should allow GUARDIAN
     //   should allow PCV_GUARDIAN_ADMIN
     //   should allow GOVERNOR
-    function testAccessControl2() public {
+    function testAccessControlSetUnsetSafeAddressesPrivilegedCallers() public {
         address safeAddress = address(0x42);
         address[] memory safeAddresses = new address[](1);
         safeAddresses[0] = safeAddress;
 
         // none of the following calls shall revert if access
         // control is properly checked for the various callers
-        vm.startPrank(addresses.pcvGuardianAdminAddress);
+        vm.startPrank(addresses.pcvGuardianAdmin);
         pcvGuardian.setSafeAddress(safeAddress);
         pcvGuardian.unsetSafeAddress(safeAddress);
         pcvGuardian.setSafeAddresses(safeAddresses);
@@ -118,11 +118,11 @@ contract PCVGuardianTest is DSTest {
         pcvGuardian.unsetSafeAddresses(safeAddresses);
         vm.stopPrank();
 
-        vm.prank(addresses.pcvGuardianAdminAddress);
+        vm.prank(addresses.pcvGuardianAdmin);
         pcvGuardian.setSafeAddress(safeAddress);
         vm.prank(addresses.guardianAddress);
         pcvGuardian.unsetSafeAddress(safeAddress);
-        vm.prank(addresses.pcvGuardianAdminAddress);
+        vm.prank(addresses.pcvGuardianAdmin);
         pcvGuardian.setSafeAddresses(safeAddresses);
         vm.prank(addresses.guardianAddress);
         pcvGuardian.unsetSafeAddresses(safeAddresses);
@@ -134,7 +134,7 @@ contract PCVGuardianTest is DSTest {
     // should revert when calling withdrawRatioToSafeAddress from a non-privileged address
     // should revert when calling withdrawETHRatioToSafeAddress from a non-privileged address
     // should revert when calling withdrawERC20RatioToSafeAddress from a non-privileged address
-    function testAccessControl3() public {
+    function testAccessControlWithdrawalsUnprivilegedCaller() public {
         vm.expectRevert("UNAUTHORIZED");
         pcvGuardian.withdrawToSafeAddress(address(pcvDeposit1), address(pcvDeposit2), 1e18, false, false);
         vm.expectRevert("UNAUTHORIZED");
@@ -166,7 +166,7 @@ contract PCVGuardianTest is DSTest {
     // should allow GOVERNOR to perform withdrawals
     // should allow PCV_SAFE_MOVER_ROLE to perform withdrawals
     // should allow GUARDIAN to perform withdrawals
-    function testAccessControl4() public {
+    function testAccessControlWithdrawalsPrivilegedCallers() public {
         // none of the following calls shall revert if access
         // control is properly checked for the various callers
         vm.startPrank(addresses.governorAddress);
@@ -192,7 +192,7 @@ contract PCVGuardianTest is DSTest {
         );
         vm.stopPrank();
 
-        vm.startPrank(addresses.pcvSafeMoverAddress);
+        vm.startPrank(addresses.pcvSafeMover);
         pcvGuardian.withdrawToSafeAddress(address(pcvDeposit1), address(pcvDeposit2), 1, false, false);
         pcvGuardian.withdrawETHToSafeAddress(address(pcvDeposit1), payable(address(pcvDeposit2)), 1, false, false);
         pcvGuardian.withdrawERC20ToSafeAddress(
@@ -261,14 +261,32 @@ contract PCVGuardianTest is DSTest {
     }
 
     // check state changes & getters after set & unset
-    function testStateConsistency1() public {
+    function testIsSafeAddress() public {
+        assertEq(pcvGuardian.isSafeAddress(address(pcvDeposit1)), true);
+        assertEq(pcvGuardian.isSafeAddress(address(pcvDeposit2)), true);
+        assertEq(pcvGuardian.isSafeAddress(address(pcvDeposit3)), false);
+
+        vm.prank(addresses.governorAddress);
+        pcvGuardian.setSafeAddress(address(pcvDeposit3));
+
+        assertEq(pcvGuardian.isSafeAddress(address(pcvDeposit1)), true);
+        assertEq(pcvGuardian.isSafeAddress(address(pcvDeposit2)), true);
+        assertEq(pcvGuardian.isSafeAddress(address(pcvDeposit3)), true);
+
+        vm.prank(addresses.governorAddress);
+        pcvGuardian.unsetSafeAddress(address(pcvDeposit3));
+
+        assertEq(pcvGuardian.isSafeAddress(address(pcvDeposit1)), true);
+        assertEq(pcvGuardian.isSafeAddress(address(pcvDeposit2)), true);
+        assertEq(pcvGuardian.isSafeAddress(address(pcvDeposit3)), false);
+    }
+
+    // check state changes & getters after set & unset
+    function testGetSafeAddresses() public {
         address[] memory getSafeAddresses = pcvGuardian.getSafeAddresses();
         assertEq(getSafeAddresses.length, 2);
         assertEq(getSafeAddresses[0], address(pcvDeposit1));
         assertEq(getSafeAddresses[1], address(pcvDeposit2));
-        assertEq(pcvGuardian.isSafeAddress(address(pcvDeposit1)), true);
-        assertEq(pcvGuardian.isSafeAddress(address(pcvDeposit2)), true);
-        assertEq(pcvGuardian.isSafeAddress(address(pcvDeposit3)), false);
 
         vm.prank(addresses.governorAddress);
         pcvGuardian.setSafeAddress(address(pcvDeposit3));
@@ -278,9 +296,6 @@ contract PCVGuardianTest is DSTest {
         assertEq(getSafeAddresses[0], address(pcvDeposit1));
         assertEq(getSafeAddresses[1], address(pcvDeposit2));
         assertEq(getSafeAddresses[2], address(pcvDeposit3));
-        assertEq(pcvGuardian.isSafeAddress(address(pcvDeposit1)), true);
-        assertEq(pcvGuardian.isSafeAddress(address(pcvDeposit2)), true);
-        assertEq(pcvGuardian.isSafeAddress(address(pcvDeposit3)), true);
 
         vm.prank(addresses.governorAddress);
         pcvGuardian.unsetSafeAddress(address(pcvDeposit3));
@@ -289,29 +304,23 @@ contract PCVGuardianTest is DSTest {
         assertEq(getSafeAddresses.length, 2);
         assertEq(getSafeAddresses[0], address(pcvDeposit1));
         assertEq(getSafeAddresses[1], address(pcvDeposit2));
-        assertEq(pcvGuardian.isSafeAddress(address(pcvDeposit1)), true);
-        assertEq(pcvGuardian.isSafeAddress(address(pcvDeposit2)), true);
-        assertEq(pcvGuardian.isSafeAddress(address(pcvDeposit3)), false);
     }
 
     // can't set an already safe address
-    // can't unset an already unsafe address
-    function testStateConsistency2() public {
-        address safeAddress = address(0x42);
-        vm.startPrank(addresses.governorAddress);
-
-        vm.expectRevert("PCVGuardian: not a safe address");
-        pcvGuardian.unsetSafeAddress(safeAddress);
-
-        pcvGuardian.setSafeAddress(safeAddress);
-
+    function testSetAlreadySafeAddress() public {
+        vm.prank(addresses.governorAddress);
         vm.expectRevert("PCVGuardian: already a safe address");
-        pcvGuardian.setSafeAddress(safeAddress);
-
-        vm.stopPrank();
+        pcvGuardian.setSafeAddress(address(pcvDeposit1));
     }
 
-    // withdrawals
+    // can't unset an already unsafe address
+    function testUnsetUnsafeAddress() public {
+        vm.prank(addresses.governorAddress);
+        vm.expectRevert("PCVGuardian: not a safe address");
+        pcvGuardian.unsetSafeAddress(address(pcvDeposit3));
+    }
+
+    ///////////// WITHDRAWALS //////////
 
     // should not be able to withdraw to a non-safe address
     function testOnlyWithdrawableToSafeAdress() public {
@@ -319,7 +328,7 @@ contract PCVGuardianTest is DSTest {
         vm.expectRevert("PCVGuardian: address not whitelisted");
         pcvGuardian.withdrawToSafeAddress(address(pcvDeposit1), address(pcvDeposit3), 1, false, true);
 
-        vm.prank(addresses.pcvGuardianAdminAddress);
+        vm.prank(addresses.pcvGuardianAdmin);
         pcvGuardian.setSafeAddress(address(pcvDeposit3));
 
         vm.startPrank(addresses.guardianAddress);
@@ -332,24 +341,20 @@ contract PCVGuardianTest is DSTest {
     }
 
     // should withdraw from a pcv deposit
-    // should withdrawETH from a pcv deposit
-    // should withdrawERC20 from a pcv deposit
-    // should withdrawRatio from a pcv deposit
-    // should withdrawETHRatio from a pcv deposit
-    // should withdrawERC20Ratio from a pcv deposit
-    function testWithdrawals() public {
-        // initial state
-        vm.startPrank(addresses.pcvSafeMoverAddress);
+    function testWithdrawToSafeAddress() public {
         assertEq(pcvDeposit1.balance(), 100e18);
         assertEq(pcvDeposit2.balance(), 0);
-        assertEq(address(pcvDeposit1).balance, 1 ether);
-        assertEq(address(pcvDeposit2).balance, 0);
-
-        // withdrawals
+        vm.prank(addresses.pcvSafeMover);
         pcvGuardian.withdrawToSafeAddress(address(pcvDeposit1), address(pcvDeposit2), 1e18, false, true);
         assertEq(pcvDeposit1.balance(), 99e18);
         assertEq(pcvDeposit2.balance(), 1e18);
+    }
 
+    // should withdrawETH from a pcv deposit
+    function testWithdrawETHToSafeAddress() public {
+        assertEq(address(pcvDeposit1).balance, 1 ether);
+        assertEq(address(pcvDeposit2).balance, 0);
+        vm.prank(addresses.pcvSafeMover);
         pcvGuardian.withdrawETHToSafeAddress(
             address(pcvDeposit1),
             payable(address(pcvDeposit2)),
@@ -359,7 +364,13 @@ contract PCVGuardianTest is DSTest {
         );
         assertEq(address(pcvDeposit1).balance, 0.9 ether);
         assertEq(address(pcvDeposit2).balance, 0.1 ether);
+    }
 
+    // should withdrawERC20 from a pcv deposit
+    function testWithdrawERC20ToSafeAddress() public {
+        assertEq(pcvDeposit1.balance(), 100e18);
+        assertEq(pcvDeposit2.balance(), 0);
+        vm.prank(addresses.pcvSafeMover);
         pcvGuardian.withdrawERC20ToSafeAddress(
             address(pcvDeposit1),
             address(pcvDeposit2),
@@ -368,51 +379,51 @@ contract PCVGuardianTest is DSTest {
             false,
             true
         );
-        assertEq(pcvDeposit1.balance(), 98e18);
-        assertEq(pcvDeposit2.balance(), 2e18);
+        assertEq(pcvDeposit1.balance(), 99e18);
+        assertEq(pcvDeposit2.balance(), 1e18);
+    }
 
-        // ratio withdrawals
-        pcvGuardian.withdrawRatioToSafeAddress(address(pcvDeposit1), address(pcvDeposit2), 5000, false, true);
-        assertEq(pcvDeposit1.balance(), 49e18);
-        assertEq(pcvDeposit2.balance(), 51e18);
+    // should withdrawRatio from a pcv deposit
+    function testWithdrawRatioToSafeAddress() public {
+        assertEq(pcvDeposit1.balance(), 100e18);
+        assertEq(pcvDeposit2.balance(), 0);
+        vm.prank(addresses.pcvSafeMover);
+        pcvGuardian.withdrawRatioToSafeAddress(address(pcvDeposit1), address(pcvDeposit2), 5500, false, true);
+        assertEq(pcvDeposit1.balance(), 45e18);
+        assertEq(pcvDeposit2.balance(), 55e18);
+    }
 
+    // should withdrawETHRatio from a pcv deposit
+    function testWithdrawETHRatioToSafeAddress() public {
+        assertEq(address(pcvDeposit1).balance, 1 ether);
+        assertEq(address(pcvDeposit2).balance, 0);
+        vm.prank(addresses.pcvSafeMover);
         pcvGuardian.withdrawETHRatioToSafeAddress(
             address(pcvDeposit1),
             payable(address(pcvDeposit2)),
-            5000,
+            5500,
             false,
             false
         );
         assertEq(address(pcvDeposit1).balance, 0.45 ether);
         assertEq(address(pcvDeposit2).balance, 0.55 ether);
+    }
 
+    // should withdrawERC20Ratio from a pcv deposit
+    function testWithdrawERC20RatioToSafeAddress() public {
+        assertEq(pcvDeposit1.balance(), 100e18);
+        assertEq(pcvDeposit2.balance(), 0);
+        vm.prank(addresses.pcvSafeMover);
         pcvGuardian.withdrawERC20RatioToSafeAddress(
             address(pcvDeposit1),
             address(pcvDeposit2),
             address(token),
-            5000,
+            6700,
             false,
             true
         );
-        assertEq(pcvDeposit1.balance(), 24.5e18);
-        assertEq(pcvDeposit2.balance(), 75.5e18);
-
-        // transfer back all tokens & eth
-        pcvGuardian.withdrawRatioToSafeAddress(address(pcvDeposit2), address(pcvDeposit1), 10000, false, true);
-        pcvGuardian.withdrawETHRatioToSafeAddress(
-            address(pcvDeposit2),
-            payable(address(pcvDeposit1)),
-            10000,
-            false,
-            false
-        );
-        vm.stopPrank();
-
-        // end state = initial state
-        assertEq(pcvDeposit1.balance(), 100e18);
-        assertEq(pcvDeposit2.balance(), 0);
-        assertEq(address(pcvDeposit1).balance, 1 ether);
-        assertEq(address(pcvDeposit2).balance, 0);
+        assertEq(pcvDeposit1.balance(), 33e18);
+        assertEq(pcvDeposit2.balance(), 67e18);
     }
 
     // should withdraw and deposit after
