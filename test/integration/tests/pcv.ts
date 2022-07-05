@@ -86,7 +86,7 @@ describe('e2e-pcv', function () {
       const amount = await contracts.compoundEthPCVDeposit.balance();
       await pcvGuardian.withdrawToSafeAddress(
         contractAddresses.compoundEthPCVDeposit,
-        contractAddresses.aaveEthPCVDeposit,
+        contractAddresses.wethHoldingPCVDeposit,
         amount,
         false,
         true
