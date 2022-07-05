@@ -371,7 +371,13 @@ const tip_118: TemplatedProposalDescription = {
       values: '0',
       method: 'unsetSafeAddresses(address[])',
       arguments: (addresses) => [
-        [addresses.ethPSM, addresses.lusdPSM, addresses.raiPriceBoundPSM, addresses.agEurUniswapPCVDeposit]
+        [
+          addresses.ethPSM,
+          addresses.lusdPSM,
+          addresses.agEurUniswapPCVDeposit,
+          addresses.turboFusePCVDeposit,
+          addresses.aaveEthPCVDeposit
+        ]
       ],
       description:
         'Unset the ETH, LUSD and RAI PSMs as safe addresses. Unset agEurUniswapPCVDeposit as a safe addresses'
@@ -389,7 +395,11 @@ const tip_118: TemplatedProposalDescription = {
           addresses.lusdPSM,
           addresses.ethPSM,
           addresses.aaveEthPCVDepositWrapper,
-          addresses.voltDepositWrapper
+          addresses.voltDepositWrapper,
+          addresses.turboFusePCVDeposit,
+          addresses.feiOATimelockWrapper,
+          addresses.rariPool128FeiPCVDepositWrapper,
+          addresses.rariPool22FeiPCVDepositWrapper
         ]
       ],
       description: `
@@ -478,7 +488,6 @@ const tip_118: TemplatedProposalDescription = {
   - Withdraws all TRIBE from 3Crv and D3 Votium briber contracts
   - Withdraws remaining TRIBE from ERC20 Dripper
   - Revokes no longer needed TRIBAL_CHIEF_ADMIN_ROLE roles
-  - Transfers the admin of the Aave Fei Incentives Controller Proxy to Aave Governance
 
   TIP-110: Simply PCV, specifically the agEUR & Angle redemption (https://tribe.fei.money/t/tip-110-simplify-pcv/4323)
   -----------------------------------------------
@@ -491,6 +500,13 @@ const tip_118: TemplatedProposalDescription = {
   - Remove all agEUR/FEI Uniswap liquidity & burn FEI
   - Redeem agEUR for DAI, and send proceeds to DAI PSM
   - Unset agEUR safe addresses & CR oracle entries
+
+  Additional cleanup items
+  -------------------------------------------
+  - Transfer the admin of the Aave Tribe Incentives Controller Proxy to Aave Governance
+  - Claim 23k AURA airdrop and lock it for 16 weeks to avoid 30% penalty
+
+  Link to the full code changes : https://github.com/fei-protocol/fei-protocol-core/pull/922
   `
 };
 
