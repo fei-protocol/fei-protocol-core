@@ -286,8 +286,12 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   // VOLT interest yields ~35k$ in 3 days of proposal time that is fast-forwarded
   expect(Number(eqDiff) / 1e18).to.be.at.most(+50000);
 
-  ////////////// TIP 114: Validate TRIBE incentives system deprecation
+  ////////////// TIP 109: Validate TRIBE incentives system deprecation
   await validateIncentivesSystemDeprecation(contracts, addresses);
+
+  // Validate DAI PSM redemption spread reduced
+  expect(await contracts.daiFixedPricePSM.redeemFeeBasisPoints()).to.be.equal(ethers.BigNumber.from(3));
+  expect(await contracts.daiFixedPricePSM.mintFeeBasisPoints()).to.be.equal(ethers.BigNumber.from(3));
 };
 
 const validateIncentivesSystemDeprecation = async (contracts: NamedContracts, addresses: NamedAddresses) => {
