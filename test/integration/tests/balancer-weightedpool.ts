@@ -11,7 +11,7 @@ import { ethers } from 'hardhat';
 const toBN = ethers.BigNumber.from;
 const BNe18 = (x: any) => ethers.constants.WeiPerEther.mul(toBN(x));
 
-describe('balancer-weightedpool', function () {
+describe.only('balancer-weightedpool', function () {
   let contracts: NamedContracts;
   let deployAddress: string;
   let e2eCoord: TestEndtoEndCoordinator;
@@ -364,8 +364,11 @@ describe('balancer-weightedpool', function () {
       await contracts.core.connect(daoSigner).grantMinter(balancerDepositFeiWeth.address);
     });
 
-    it('should be able to wrap and unwrap ETH', async function () {
+    it.only('should be able to wrap and unwrap ETH', async function () {
       expect(await contracts.weth.balanceOf(balancerDepositFeiWeth.address)).to.be.equal('0');
+
+      // Why does this contract have ETH in CI?
+      console.log('balancerDepositFeiWeth.address', balancerDepositFeiWeth.address);
       expect((await balance.current(balancerDepositFeiWeth.address)).toString()).to.be.equal('0');
 
       await (
