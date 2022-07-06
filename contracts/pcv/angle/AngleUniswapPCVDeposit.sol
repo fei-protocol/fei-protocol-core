@@ -1,21 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.4;
 
-import "./IStableMaster.sol";
+import "./IAngleStableMaster.sol";
+import "./IAngleStakingRewards.sol";
 import "../uniswap/UniswapPCVDeposit.sol";
-
-// Angle StakingRewards contract
-interface IStakingRewards {
-    function stakingToken() external returns (address);
-
-    function balanceOf(address account) external view returns (uint256);
-
-    function stake(uint256 amount) external;
-
-    function withdraw(uint256 amount) external;
-
-    function getReward() external;
-}
 
 /// @title implementation for Angle PCV Deposit
 /// @author Angle Core Team and Fei Protocol
@@ -23,13 +11,13 @@ contract AngleUniswapPCVDeposit is UniswapPCVDeposit {
     using Decimal for Decimal.D256;
 
     /// @notice the Angle StableMaster contract
-    IStableMaster public immutable stableMaster;
+    IAngleStableMaster public immutable stableMaster;
 
     /// @notice the Angle PoolManager contract
-    IPoolManager public poolManager;
+    IAnglePoolManager public poolManager;
 
     /// @notice the Angle StakingRewards contract
-    IStakingRewards public stakingRewards;
+    IAngleStakingRewards public stakingRewards;
 
     /// @notice Uniswap PCV Deposit constructor
     /// @param _core Fei Core for reference
@@ -45,9 +33,9 @@ contract AngleUniswapPCVDeposit is UniswapPCVDeposit {
         address _oracle,
         address _backupOracle,
         uint256 _maxBasisPointsFromPegLP,
-        IStableMaster _stableMaster,
-        IPoolManager _poolManager,
-        IStakingRewards _stakingRewards
+        IAngleStableMaster _stableMaster,
+        IAnglePoolManager _poolManager,
+        IAngleStakingRewards _stakingRewards
     ) UniswapPCVDeposit(_core, _pair, _router, _oracle, _backupOracle, _maxBasisPointsFromPegLP) {
         stableMaster = _stableMaster;
         poolManager = _poolManager;
@@ -118,14 +106,14 @@ contract AngleUniswapPCVDeposit is UniswapPCVDeposit {
 
     /// @notice set a new stakingRewards address
     /// @param _stakingRewards the new stakingRewards
-    function setStakingRewards(IStakingRewards _stakingRewards) public onlyGovernor {
+    function setStakingRewards(IAngleStakingRewards _stakingRewards) public onlyGovernor {
         require(address(_stakingRewards) != address(0), "AngleUniswapPCVDeposit: zero address");
         stakingRewards = _stakingRewards;
     }
 
     /// @notice set a new poolManager address
     /// @param _poolManager the new poolManager
-    function setPoolManager(IPoolManager _poolManager) public onlyGovernor {
+    function setPoolManager(IAnglePoolManager _poolManager) public onlyGovernor {
         require(address(_poolManager) != address(0), "AngleUniswapPCVDeposit: zero address");
         poolManager = _poolManager;
     }

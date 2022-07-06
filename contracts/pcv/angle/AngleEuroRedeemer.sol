@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.4;
 
-import {IStableMaster, IPoolManager} from "./IStableMaster.sol";
+import {IAngleStableMaster, IAnglePoolManager} from "./IAngleStableMaster.sol";
 import {Decimal} from "../../external/Decimal.sol";
 import {IOracle} from "../../oracle/IOracle.sol";
 import {CoreRef} from "../../refs/CoreRef.sol";
@@ -20,8 +20,10 @@ contract AngleEuroRedeemer is CoreRef {
     constructor(address _core) CoreRef(_core) {}
 
     // Angle Protocol addresses
-    IStableMaster public constant ANGLE_STABLEMASTER = IStableMaster(0x5adDc89785D75C86aB939E9e15bfBBb7Fc086A87);
-    IPoolManager public constant ANGLE_POOLMANAGER_USDC = IPoolManager(0xe9f183FC656656f1F17af1F2b0dF79b8fF9ad8eD);
+    IAngleStableMaster public constant ANGLE_STABLEMASTER =
+        IAngleStableMaster(0x5adDc89785D75C86aB939E9e15bfBBb7Fc086A87);
+    IAnglePoolManager public constant ANGLE_POOLMANAGER_USDC =
+        IAnglePoolManager(0xe9f183FC656656f1F17af1F2b0dF79b8fF9ad8eD);
 
     // Maker addresses
     address public constant MAKER_DAI_USDC_PSM_AUTH = 0x0A59649758aa4d66E25f08Dd01271e891fe52199;
