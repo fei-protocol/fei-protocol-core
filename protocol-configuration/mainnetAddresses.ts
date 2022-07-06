@@ -1710,6 +1710,12 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     category: AddressCategory.External
   },
 
+  reth: {
+    artifactName: 'IRocketTokenRETH',
+    address: '0xae78736Cd615f374D3085123A210448E74Fc6393',
+    category: AddressCategory.External
+  },
+
   orcaPodController: {
     artifactName: 'IControllerV1',
     address: '0x17FDC2Eaf2bd46f3e1052CCbccD9e6AD0296C42c',
