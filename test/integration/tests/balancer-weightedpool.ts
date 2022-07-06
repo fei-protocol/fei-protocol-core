@@ -365,27 +365,34 @@ describe('balancer-weightedpool', function () {
     });
 
     it('should be able to wrap and unwrap ETH', async function () {
+      const initialEthBalance = await balance.current(balancerDepositFeiWeth.address);
       expect(await contracts.weth.balanceOf(balancerDepositFeiWeth.address)).to.be.equal('0');
-
-      console.log('balancerDepositFeiWeth.address', balancerDepositFeiWeth.address);
-      expect((await balance.current(balancerDepositFeiWeth.address)).toString()).to.be.equal('0');
+      expect((await balance.current(balancerDepositFeiWeth.address)).sub(initialEthBalance).toString()).to.be.equal(
+        '0'
+      );
 
       await (
         await ethers.getSigner(deployAddress)
       ).sendTransaction({ to: balancerDepositFeiWeth.address, value: toBN('1000') });
 
       expect(await contracts.weth.balanceOf(balancerDepositFeiWeth.address)).to.be.equal('0');
-      expect((await balance.current(balancerDepositFeiWeth.address)).toString()).to.be.equal(toBN('1000'));
+      expect((await balance.current(balancerDepositFeiWeth.address)).sub(initialEthBalance).toString()).to.be.equal(
+        toBN('1000')
+      );
 
       await balancerDepositFeiWeth.wrapETH();
 
       expect(await contracts.weth.balanceOf(balancerDepositFeiWeth.address)).to.be.equal(toBN('1000'));
-      expect((await balance.current(balancerDepositFeiWeth.address)).toString()).to.be.equal('0');
+      expect((await balance.current(balancerDepositFeiWeth.address)).sub(initialEthBalance).toString()).to.be.equal(
+        '0'
+      );
 
       await balancerDepositFeiWeth.connect(daoSigner).unwrapETH();
 
       expect(await contracts.weth.balanceOf(balancerDepositFeiWeth.address)).to.be.equal('0');
-      expect((await balance.current(balancerDepositFeiWeth.address)).toString()).to.be.equal(toBN('1000'));
+      expect((await balance.current(balancerDepositFeiWeth.address)).sub(initialEthBalance).toString()).to.be.equal(
+        toBN('1000')
+      );
     });
 
     it('should mint associated FEI on deposit', async function () {
