@@ -264,7 +264,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   // check redemptions of agEUR > DAI
   const daiRedeemed = (await contracts.dai.balanceOf(addresses.daiFixedPricePSM)).sub(daiBalanceBefore);
   console.log('daiRedeemed', daiRedeemed.toString() / 1e18);
-  expect(daiRedeemed).to.be.at.least(ethers.utils.parseEther('9400000')); // >9.4M DAI
+  expect(daiRedeemed).to.be.at.least(ethers.utils.parseEther('9000000')); // >9.4M DAI
 
   // check redeemer is empty
   expect(await contracts.agEUR.balanceOf(addresses.angleEuroRedeemer)).to.be.equal('0');
