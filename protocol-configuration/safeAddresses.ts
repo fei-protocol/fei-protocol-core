@@ -1,4 +1,5 @@
 export const safeAddressesConfig: SafeAddressStateConfig = [
+  'rocketPoolPCVDeposit',
   'ethToDaiLBPSwapper',
   'balancerGaugeStaker',
   'dpiToDaiLBPSwapper',
