@@ -493,6 +493,9 @@ const tip_118: TemplatedProposalDescription = {
   This proposal deprecates the ETH, LUSD and RAI PSMs and completes items from TIP-109: Discontinue TRIBE
   incentives and TIP-110: Simplify PCV (redeeming all agEUR in the PCV to DAI).
 
+  Forum post: https://tribe.fei.money/t/tip-118-psm-deprecation-incentives-withdrawal-ageur-redemption/4424 
+  Code changes: https://github.com/fei-protocol/fei-protocol-core/pull/922 
+
   PSM deprecation
   --------------------------------------------
   The proposal deprecates the ETH, LUSD and RAI PSMs. This involves transferring all assets off these PSMs, 
@@ -533,9 +536,6 @@ const tip_118: TemplatedProposalDescription = {
   ----------------------------
   - Transfers the admin of the Aave Tribe Incentives Controller Proxy to Aave Governance
   - Claim 23k AURA airdrop and lock it for 16 weeks to avoid 30% penalty
-
-  Link to the full code changes : https://github.com/fei-protocol/fei-protocol-core/pull/922
-
   `
 };
 
