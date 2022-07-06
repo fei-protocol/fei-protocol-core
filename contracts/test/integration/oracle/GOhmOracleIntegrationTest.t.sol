@@ -34,8 +34,9 @@ contract GOhmOracleIntegrationTest is DSTest, StdLib {
 
         // Eth price is ~$1000. gOHM price is ~$2400
         // Therefore, gOHM price in ETH should be ~ (2400/1000) = 2.4 ETH
-        assertGt(gOhmEthPrice.value, 1e18);
-        assertLt(gOhmEthPrice.value, 5e18);
+        // This is an order of magnitude check only
+        assertGt(gOhmEthPrice.value, 5e17);
+        assertLt(gOhmEthPrice.value, 20e18);
     }
 
     /// @notice Validate that a reasonable USD price can be calculated
