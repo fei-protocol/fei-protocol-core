@@ -366,6 +366,8 @@ describe('balancer-weightedpool', function () {
 
     it('should be able to wrap and unwrap ETH', async function () {
       expect(await contracts.weth.balanceOf(balancerDepositFeiWeth.address)).to.be.equal('0');
+
+      console.log('balancerDepositFeiWeth.address', balancerDepositFeiWeth.address);
       expect((await balance.current(balancerDepositFeiWeth.address)).toString()).to.be.equal('0');
 
       await (
