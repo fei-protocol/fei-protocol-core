@@ -34,14 +34,26 @@ let daiBalanceBefore: BigNumber;
 let initialCoreTribeBalance: BigNumber;
 let initialRariDelegatorBalance: BigNumber;
 
+// WETH being transferred from the ETH PSM to the WETH holding deposit
 const EXPECTED_WETH_TRANSFER = toBN('21716293570455965978548');
+
+// LUSD being transferred from the LUSD PSM to the LUSD holding deposit
 const EXPECTED_LUSD_TRANSFER = toBN('18751528591939383399383172');
+
+// VOLT being transferred from the DAO timelock to the VOLT holding deposit
 const EXPECTED_VOLT_TRANSFER = ethers.constants.WeiPerEther.mul(10_000_000);
 
+// Sanity check minimum amount of TRIBE that should be recovered from the incentives system
 const MIN_EXPECTED_TRIBE_RECOVERY = ethers.constants.WeiPerEther.mul(30_000_000);
+
+// Minimum expected remaining TRIBE LP rewards required to cover outstanding pending rewards
 const REMAINING_TRIBE_LP_REWARDS = ethers.constants.WeiPerEther.mul(564_000);
+
+// Excess TRIBE that can be recovered from the Rari rewards distribution system
 const EXCESS_RARI_TRIBE = ethers.constants.WeiPerEther.mul(150_000);
-const MAX_REMAINING_CHIEF_BALANCE = ethers.constants.WeiPerEther.mul(50_000);
+
+// Maximum remaining excess TRIBE buffer on the TribalChief, beyond the 564k to be paid out
+const MAX_REMAINING_EXCESS_CHIEF_BALANCE = ethers.constants.WeiPerEther.mul(50_000);
 
 // Do any deployments
 // This should exclusively include new contract deployments
@@ -179,8 +191,6 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const daiHoldingPCVDeposit = contracts.daiHoldingPCVDeposit as ERC20HoldingPCVDeposit;
   const gOHMHoldingPCVDeposit = contracts.gOHMHoldingPCVDeposit as ERC20HoldingPCVDeposit;
 
-  const pcvGuardian = contracts.pcvGuardianNew;
-
   // 1. Validate all holding PCV Deposits configured correctly
   expect(await wethHoldingPCVDeposit.balanceReportedIn()).to.be.equal(addresses.weth);
   expect(await lusdHoldingPCVDeposit.balanceReportedIn()).to.be.equal(addresses.lusd);
@@ -223,19 +233,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await raiPSM.mintPaused()).to.be.true;
   expect(await raiPSM.paused()).to.be.true;
 
-  // 7. Validate PSMs are no longer safe addresses
-  expect(await pcvGuardian.isSafeAddress(ethPSM.address)).to.be.false;
-  expect(await pcvGuardian.isSafeAddress(lusdPSM.address)).to.be.false;
-  expect(await pcvGuardian.isSafeAddress(raiPSM.address)).to.be.false;
-
-  // 8. New ERC20 holding deposits are safe addresses
-  expect(await pcvGuardian.isSafeAddress(wethHoldingPCVDeposit.address)).to.be.true;
-  expect(await pcvGuardian.isSafeAddress(lusdHoldingPCVDeposit.address)).to.be.true;
-  expect(await pcvGuardian.isSafeAddress(voltHoldingPCVDeposit.address)).to.be.true;
-  expect(await pcvGuardian.isSafeAddress(daiHoldingPCVDeposit.address)).to.be.true;
-  expect(await pcvGuardian.isSafeAddress(gOHMHoldingPCVDeposit.address)).to.be.true;
-
-  // 9. Skimmers are deprecated - paused and do not have PCV_CONTROLLER_ROLE
+  // 7. Skimmers are deprecated - paused and do not have PCV_CONTROLLER_ROLE
   const PCV_CONTROLLER_ROLE = ethers.utils.id('PCV_CONTROLLER_ROLE');
   expect(await contracts.ethPSMFeiSkimmer.paused()).to.be.true;
   expect(await core.hasRole(PCV_CONTROLLER_ROLE, addresses.ethPSMFeiSkimmer)).to.be.false;
@@ -243,11 +241,11 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await contracts.lusdPSMFeiSkimmer.paused()).to.be.true;
   expect(await core.hasRole(PCV_CONTROLLER_ROLE, addresses.lusdPSMFeiSkimmer)).to.be.false;
 
-  // 10. daiFixedPricePSMFeiSkimmer granted PCV_CONTROLLER_ROLE and burns Fei
+  // 8. daiFixedPricePSMFeiSkimmer granted PCV_CONTROLLER_ROLE and burns Fei
   expect(await core.hasRole(PCV_CONTROLLER_ROLE, addresses.daiFixedPricePSMFeiSkimmer)).to.be.true;
   expect(await fei.balanceOf(addresses.daiFixedPricePSM)).to.be.equal(ethers.constants.WeiPerEther.mul(20_000_000));
 
-  // 11. gOHM received funds
+  // 9. gOHM received funds
   expect(await gOHM.balanceOf(addresses.gOHMHoldingPCVDeposit)).to.be.equal('577180000000000000000');
 
   // ------------------------------------------------------------
@@ -266,7 +264,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   // check redemptions of agEUR > DAI
   const daiRedeemed = (await contracts.dai.balanceOf(addresses.daiFixedPricePSM)).sub(daiBalanceBefore);
   console.log('daiRedeemed', daiRedeemed.toString() / 1e18);
-  expect(daiRedeemed).to.be.at.least(ethers.utils.parseEther('9400000')); // >9.4M DAI
+  expect(daiRedeemed).to.be.at.least(ethers.utils.parseEther('9000000')); // >9.4M DAI
 
   // check redeemer is empty
   expect(await contracts.agEUR.balanceOf(addresses.angleEuroRedeemer)).to.be.equal('0');
@@ -293,13 +291,20 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   console.log(' Equity diff                            [M]e18 ', Number(eqDiff) / 1e24);
   console.log('----------------------------------------------------');
 
-  // PCV Equity change should be neutral for this proposal
-  expect(Number(eqDiff) / 1e18).to.be.at.least(-10000);
   // VOLT interest yields ~35k$ in 3 days of proposal time that is fast-forwarded
+  // Have removed rariPool128FeiPCVDepositWrapper (~$25k FEI) and rariPool22FeiPCVDepositWrapper (~$34k FEI)
+  // Both configured in fuseWithdrawalGuard
+  // So equity diff may fluctuate from -$24k to +$35k over the next few days
+  // PCV Equity change should be neutral for this proposal
+  expect(Number(eqDiff) / 1e18).to.be.at.least(-50000);
   expect(Number(eqDiff) / 1e18).to.be.at.most(+50000);
 
-  ////////////// TIP 114: Validate TRIBE incentives system deprecation
+  ////////////// TIP 109: Validate TRIBE incentives system deprecation
   await validateIncentivesSystemDeprecation(contracts, addresses);
+
+  // Validate DAI PSM redemption spread reduced
+  expect(await contracts.daiFixedPricePSM.redeemFeeBasisPoints()).to.be.equal(ethers.BigNumber.from(3));
+  expect(await contracts.daiFixedPricePSM.mintFeeBasisPoints()).to.be.equal(ethers.BigNumber.from(3));
 };
 
 const validateIncentivesSystemDeprecation = async (contracts: NamedContracts, addresses: NamedAddresses) => {
@@ -335,7 +340,9 @@ const validateIncentivesSystemDeprecation = async (contracts: NamedContracts, ad
   // Validate remaining balance of TribalChief is small
   const finalTribalChiefBalance = await tribe.balanceOf(addresses.tribalChief);
   console.log('Final TribalChief balance:', finalTribalChiefBalance.toString());
-  expect(finalTribalChiefBalance).to.be.bignumber.lessThan(MAX_REMAINING_CHIEF_BALANCE.add(REMAINING_TRIBE_LP_REWARDS));
+  expect(finalTribalChiefBalance).to.be.bignumber.lessThan(
+    MAX_REMAINING_EXCESS_CHIEF_BALANCE.add(REMAINING_TRIBE_LP_REWARDS)
+  );
 
   // 3. Validate excess TRIBE was pulled from Rari rewards delegate
   const finalRariDelegatorBalance = await tribe.balanceOf(addresses.rariRewardsDistributorDelegator);
@@ -388,8 +395,8 @@ const validateHoldingDepositWithdrawal = async (contracts: NamedContracts, addre
 
   // Withdraw ERC20
   const receiver = '0xFc312F21E1D56D8dab5475FB5aaEFfB18B892a85';
-  const guardianSigner = await getImpersonatedSigner(addresses.pcvGuardianNew);
-  await forceEth(addresses.pcvGuardianNew);
+  const guardianSigner = await getImpersonatedSigner(addresses.pcvGuardian);
+  await forceEth(addresses.pcvGuardian);
   await wethHoldingPCVDeposit.connect(guardianSigner).withdrawERC20(addresses.weth, receiver, transferAmount);
 
   expect(await wethHoldingPCVDeposit.balance()).to.be.equal(initialWethDepositBalance.add(initialEthDepositBalance));

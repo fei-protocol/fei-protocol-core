@@ -2,7 +2,7 @@ import { ethers } from 'ethers';
 import { TemplatedProposalDescription } from '@custom-types/types';
 
 const tip_118: TemplatedProposalDescription = {
-  title: 'TIP_118: Incentives withdrawal, PSM deprecation, agEUR redemption',
+  title: 'TIP_118: PSM deprecation, Incentives withdrawal, agEUR redemption',
   commands: [
     // 1. Transfer all assets off the PSMs to the new empty PCV deposits
     // ETH PSM
@@ -84,7 +84,7 @@ const tip_118: TemplatedProposalDescription = {
       description: 'Pause redemptions on the Rai Price bound PSM'
     },
 
-    // Update Collaterization Oracle and set safe addresses
+    // Add new ERC20 Holding deposits to the Collaterization Oracle
     {
       target: 'collateralizationOracle',
       values: '0',
@@ -102,7 +102,7 @@ const tip_118: TemplatedProposalDescription = {
       gOHM deposit not added as does not yet have an oracle.`
     },
     {
-      target: 'pcvGuardianNew',
+      target: 'pcvGuardian',
       values: '0',
       method: 'setSafeAddresses(address[])',
       arguments: (addresses) => [
@@ -184,7 +184,7 @@ const tip_118: TemplatedProposalDescription = {
       values: '0',
       method: 'skim()',
       arguments: (addresses) => [],
-      description: 'Burn excess Fei on the DAI PSM. Will burn ~95M FEI'
+      description: 'Burn excess Fei on the DAI PSM. Will burn ~135M FEI'
     },
 
     ///// Send VOLT to it's holding ERC20 deposit
@@ -205,6 +205,7 @@ const tip_118: TemplatedProposalDescription = {
       description: 'Send 577 gOHM from the DAO timelock to the gOHM holding PCV deposit'
     },
 
+    //////////  TIP 109: Withdraw excess TRIBE from the rewards system
     // Withdraw excess TRIBE from reward system
     {
       target: 'erc20Dripper',
@@ -261,7 +262,6 @@ const tip_118: TemplatedProposalDescription = {
       `
     },
 
-    //////////  TIP 114: Withdraw excess TRIBE from the rewards system
     ////  Revoke roles from contracts that interacted with Tribal Chief and rewards system
     {
       target: 'core',
@@ -367,20 +367,31 @@ const tip_118: TemplatedProposalDescription = {
 
     // 4. Unset various safe addresses - deprecated PSMs and agEurUniswapPCVDeposit
     {
-      target: 'pcvGuardianNew',
+      target: 'pcvGuardian',
       values: '0',
       method: 'unsetSafeAddresses(address[])',
       arguments: (addresses) => [
         [
           addresses.ethPSM,
           addresses.lusdPSM,
+          addresses.raiPriceBoundPSM,
           addresses.agEurUniswapPCVDeposit,
+          addresses.aaveEthPCVDeposit,
           addresses.turboFusePCVDeposit,
-          addresses.aaveEthPCVDeposit
+          addresses.aaveRaiPCVDeposit,
+          addresses.rariPool9RaiPCVDeposit,
+          addresses.balancerDepositFeiWeth,
+          addresses.d3poolConvexPCVDeposit,
+          addresses.d3poolCurvePCVDeposit,
+          addresses.compoundEthPCVDeposit,
+          addresses.dpiToDaiLBPSwapper,
+          addresses.uniswapPCVDeposit
         ]
       ],
-      description:
-        'Unset the ETH, LUSD and RAI PSMs as safe addresses. Unset agEurUniswapPCVDeposit as a safe addresses'
+      description: `
+      Unset as safe addresses the deprecated PSMs along with various other deprecated 
+      PCV deposits.
+      `
     },
 
     // Remove various deposits from CR
@@ -403,9 +414,26 @@ const tip_118: TemplatedProposalDescription = {
         ]
       ],
       description: `
-      Remove agEUR addresses, LUSD PSM, ETH PSM, Aave ETH PCV Deposit wrapper 
-      and the Volt deposit wrapper from CR oracle.
+      Remove agEUR addresses, LUSD PSM, ETH PSM, Aave ETH PCV Deposit wrapper ,
+      Volt deposit wrapper, Turbo Fuse PCV deposit, Fei OA timelock wrapper
+      and various Rari Fuse pool wrappers from CR oracle.
       `
+    },
+
+    //// Tighten DAI PSM redemption spread
+    {
+      target: 'daiFixedPricePSM',
+      values: '0',
+      method: 'setRedeemFee(uint256)',
+      arguments: (addresses) => ['3'],
+      description: 'Set DAI PSM redeem fee to 3bps'
+    },
+    {
+      target: 'daiFixedPricePSM',
+      values: '0',
+      method: 'setMintFee(uint256)',
+      arguments: (addresses) => ['3'],
+      description: 'Set DAI PSM mint fee to 3bps'
     },
 
     //// AURA Airdrop claim & lock
@@ -465,6 +493,9 @@ const tip_118: TemplatedProposalDescription = {
   This proposal deprecates the ETH, LUSD and RAI PSMs and completes items from TIP-109: Discontinue TRIBE
   incentives and TIP-110: Simplify PCV (redeeming all agEUR in the PCV to DAI).
 
+  Forum post: https://tribe.fei.money/t/tip-118-psm-deprecation-incentives-withdrawal-ageur-redemption/4424 
+  Code changes: https://github.com/fei-protocol/fei-protocol-core/pull/922 
+
   PSM deprecation
   --------------------------------------------
   The proposal deprecates the ETH, LUSD and RAI PSMs. This involves transferring all assets off these PSMs, 
@@ -501,12 +532,10 @@ const tip_118: TemplatedProposalDescription = {
   - Redeem agEUR for DAI, and send proceeds to DAI PSM
   - Unset agEUR safe addresses & CR oracle entries
 
-  Additional cleanup items
-  -------------------------------------------
-  - Transfer the admin of the Aave Tribe Incentives Controller Proxy to Aave Governance
+  Additional cleanup items:
+  ----------------------------
+  - Transfers the admin of the Aave Tribe Incentives Controller Proxy to Aave Governance
   - Claim 23k AURA airdrop and lock it for 16 weeks to avoid 30% penalty
-
-  Link to the full code changes : https://github.com/fei-protocol/fei-protocol-core/pull/922
   `
 };
 
