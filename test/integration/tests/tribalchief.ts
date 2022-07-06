@@ -8,7 +8,7 @@ import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
 import { ethers } from 'hardhat';
 
-describe('e2e-tribalchief', function () {
+describe.skip('e2e-tribalchief', function () {
   let contracts: NamedContracts;
   let e2eCoord: TestEndtoEndCoordinator;
   const doLogging = Boolean(process.env.LOGGING);

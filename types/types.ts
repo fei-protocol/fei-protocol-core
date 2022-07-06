@@ -16,6 +16,7 @@ import {
   EthCompoundPCVDeposit,
   Fei,
   FeiDAO,
+  GovernanceMetadataRegistry,
   GovernorAlpha,
   IAaveIncentivesController,
   IERC20,
@@ -64,7 +65,6 @@ export type DependencyMap = { [key: string]: Dependency };
 export enum ProposalCategory {
   DAO,
   DEBUG,
-  OA,
   TC, // Tribal Council
   DEBUG_TC,
   None
@@ -84,7 +84,7 @@ export interface TemplatedProposalConfig {
   deploy: boolean;
   category: ProposalCategory;
   totalValue: number;
-  proposal: TemplatedProposalDescription;
+  proposal: TemplatedProposalDescription | undefined;
   affectedContractSignoff: string[];
   deprecatedContractSignoff: string[];
   proposalId: string;
@@ -135,6 +135,12 @@ export type TribalChiefPoolConfig = {
   unlocked: boolean;
 };
 
+export interface PcvStats {
+  protocolControlledValue: ethers.BigNumber;
+  userCirculatingFei: ethers.BigNumber;
+  protocolEquity: ethers.BigNumber;
+}
+
 export interface TribalChiefConfig {
   [key: string]: TribalChiefPoolConfig;
 }
@@ -148,12 +154,13 @@ export interface ContractConfig {
 export enum AddressCategory {
   Core = 'Core',
   Governance = 'Governance',
+  Utility = 'Utility',
+  Security = 'Security',
   Peg = 'Peg',
   PCV = 'PCV',
   PCV_V1 = 'PCV_V1',
   Collateralization = 'Collateralization',
   Oracle = 'Oracle',
-  Keeper = 'Keeper',
   Rewards = 'Rewards',
   FeiRari = 'FeiRari',
   Turbo = 'Turbo',
@@ -267,6 +274,7 @@ export interface MainnetContracts {
   rewardsDistributorAdmin: RewardsDistributorAdmin;
   restrictedPermissions: RestrictedPermissions;
   tribalCouncilTimelock: TimelockController;
+  governanceMetadataRegistry: GovernanceMetadataRegistry;
 }
 
 export interface MainnetContractAddresses {
@@ -302,6 +310,7 @@ export interface MainnetContractAddresses {
   rariRewardsDistributorDelegator: string;
   restrictedPermissions: string;
   tribalCouncilTimelock: string;
+  governanceMetadataRegistry: string;
 }
 
 export type ContractAccessRights = {

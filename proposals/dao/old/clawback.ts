@@ -187,6 +187,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 
   // Verify can transfer
   const tcTimelockSigner = await getImpersonatedSigner(addresses.tribalCouncilTimelock);
+  await forceEth(addresses.tribalCouncilTimelock);
   const coreBalanceBefore = await tribe.balanceOf(addresses.core);
   await tribe
     .connect(tcTimelockSigner)

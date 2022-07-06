@@ -11,7 +11,10 @@ const fip_x: ProposalDescription = {
       description: ''
     }
   ],
-  description: 'fip_x will change the game!'
+  description: `
+  [TITLE] /n/n
+  [BODY OF PROPOSAL] \n\n
+  `
 };
 
 export default fip_x;

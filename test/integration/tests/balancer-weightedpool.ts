@@ -45,6 +45,11 @@ describe('balancer-weightedpool', function () {
 
     daoSigner = await getImpersonatedSigner(contracts.feiDAOTimelock.address);
     await forceEth(contracts.feiDAOTimelock.address);
+
+    const aaveEthPCVDepositPaused = await contracts.aaveEthPCVDeposit.paused();
+    if (aaveEthPCVDepositPaused) {
+      await contracts.aaveEthPCVDeposit.unpause();
+    }
   });
 
   describe('80% BAL / 20% WETH [existing pool, report in BAL, no FEI]', function () {
@@ -147,6 +152,8 @@ describe('balancer-weightedpool', function () {
       const tribePrice = (await contracts.tribeUsdCompositeOracle.read())[0] / 1e18; // ~= 1
       const tribePerEth = ethPrice / tribePrice; // ~= 4,000
       const tribeToAllocate = BNe18(Math.round(4 * tribePerEth * 10000)).div(10000); // rounding error < slippage tolerance
+      await forceEth(contracts.aaveEthPCVDeposit.address);
+      await contracts.aaveEthPCVDeposit.deposit();
       await contracts.aaveEthPCVDeposit.connect(daoSigner).withdraw(balancerDepositTribeWeth.address, BNe18('1'));
       await contracts.core.connect(daoSigner).allocateTribe(balancerDepositTribeWeth.address, tribeToAllocate);
       expect(await contracts.weth.balanceOf(balancerDepositTribeWeth.address)).to.be.equal(BNe18('1'));
