@@ -52,6 +52,7 @@ contract GovernorCountingFor is DSTest {
     Core private core;
 
     FeiTestAddresses public addresses = getAddresses();
+    uint256 proposalId;
 
     function setUp() public {
         // 1. Setup core
@@ -87,15 +88,37 @@ contract GovernorCountingFor is DSTest {
             bytes32 descriptionHash
         ) = createDummyProposal(address(this), 1 ether);
 
-        nopeDAO.propose(targets, values, calldatas, description);
+        proposalId = nopeDAO.propose(targets, values, calldatas, description);
+    }
+
+    // enum ProposalState {
+    //     Pending,
+    //     Active,
+    //     Canceled,
+    //     Defeated,
+    //     Succeeded,
+    //     Queued,
+    //     Expired,
+    //     Executed
+    // }
+
+    /// @notice Validate initial state of the proposal and no votes
+    function testInitialState() public {
+        assertEq(nopeDAO.COUNTING_MODE(), "quorum=bravo");
+        assertEq(nopeDAO.proposalVotes(proposalId), 0);
+        assertEq(nopeDAO.hasVoted(proposalId, address(this)), false);
+        assertEq(uint8(nopeDAO.state(proposalId)), 0);
     }
 
     /// @notice Validate that a FOR vote is counted
     function testCountForVote() public {
         vm.prank(userWithQuorumTribe);
-        nopeDAO.castVote();
+        nopeDAO.castVote(proposalId, 1);
 
         // Verify proposal state and vote balance
+        assertEq(uint8(nopeDAO.state(proposalId)), 0);
+
+        assertEq(uint8(nopeDAO.state(proposalId)), 0);
     }
 
     /// @notice Validate that multiple FOR votes are counted
