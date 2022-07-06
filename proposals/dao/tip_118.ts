@@ -34,14 +34,26 @@ let daiBalanceBefore: BigNumber;
 let initialCoreTribeBalance: BigNumber;
 let initialRariDelegatorBalance: BigNumber;
 
+// WETH being transferred from the ETH PSM to the WETH holding deposit
 const EXPECTED_WETH_TRANSFER = toBN('21716293570455965978548');
+
+// LUSD being transferred from the LUSD PSM to the LUSD holding deposit
 const EXPECTED_LUSD_TRANSFER = toBN('18751528591939383399383172');
+
+// VOLT being transferred from the DAO timelock to the VOLT holding deposit
 const EXPECTED_VOLT_TRANSFER = ethers.constants.WeiPerEther.mul(10_000_000);
 
+// Sanity check minimum amount of TRIBE that should be recovered from the incentives system
 const MIN_EXPECTED_TRIBE_RECOVERY = ethers.constants.WeiPerEther.mul(30_000_000);
+
+// Minimum expected remaining TRIBE LP rewards required to cover outstanding pending rewards
 const REMAINING_TRIBE_LP_REWARDS = ethers.constants.WeiPerEther.mul(564_000);
+
+// Excess TRIBE that can be recovered from the Rari rewards distribution system
 const EXCESS_RARI_TRIBE = ethers.constants.WeiPerEther.mul(150_000);
-const MAX_REMAINING_CHIEF_BALANCE = ethers.constants.WeiPerEther.mul(50_000);
+
+// Maximum remaining excess TRIBE buffer on the TribalChief, beyond the 564k to be paid out
+const MAX_REMAINING_EXCESS_CHIEF_BALANCE = ethers.constants.WeiPerEther.mul(50_000);
 
 // Do any deployments
 // This should exclusively include new contract deployments
@@ -328,7 +340,9 @@ const validateIncentivesSystemDeprecation = async (contracts: NamedContracts, ad
   // Validate remaining balance of TribalChief is small
   const finalTribalChiefBalance = await tribe.balanceOf(addresses.tribalChief);
   console.log('Final TribalChief balance:', finalTribalChiefBalance.toString());
-  expect(finalTribalChiefBalance).to.be.bignumber.lessThan(MAX_REMAINING_CHIEF_BALANCE.add(REMAINING_TRIBE_LP_REWARDS));
+  expect(finalTribalChiefBalance).to.be.bignumber.lessThan(
+    MAX_REMAINING_EXCESS_CHIEF_BALANCE.add(REMAINING_TRIBE_LP_REWARDS)
+  );
 
   // 3. Validate excess TRIBE was pulled from Rari rewards delegate
   const finalRariDelegatorBalance = await tribe.balanceOf(addresses.rariRewardsDistributorDelegator);
