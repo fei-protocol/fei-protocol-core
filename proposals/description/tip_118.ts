@@ -4,6 +4,7 @@ import { TemplatedProposalDescription } from '@custom-types/types';
 const tip_118: TemplatedProposalDescription = {
   title: 'TIP_118: PSM deprecation, Incentives withdrawal, agEUR redemption',
   commands: [
+    //////////////      PSM DEPRECATION ////////////////
     // 1. Transfer all assets off the PSMs to the new empty PCV deposits
     // ETH PSM
     {
@@ -84,39 +85,6 @@ const tip_118: TemplatedProposalDescription = {
       description: 'Pause redemptions on the Rai Price bound PSM'
     },
 
-    // Add new ERC20 Holding deposits to the Collaterization Oracle
-    {
-      target: 'collateralizationOracle',
-      values: '0',
-      method: 'addDeposits(address[])',
-      arguments: (addresses) => [
-        [
-          addresses.wethHoldingPCVDeposit,
-          addresses.lusdHoldingPCVDeposit,
-          addresses.daiHoldingPCVDeposit,
-          addresses.voltHoldingPCVDeposit
-        ]
-      ],
-      description: `
-      Add the holding ERC20 deposits to the Collaterization Oracle.
-      gOHM deposit not added as does not yet have an oracle.`
-    },
-    {
-      target: 'pcvGuardian',
-      values: '0',
-      method: 'setSafeAddresses(address[])',
-      arguments: (addresses) => [
-        [
-          addresses.wethHoldingPCVDeposit,
-          addresses.lusdHoldingPCVDeposit,
-          addresses.daiHoldingPCVDeposit,
-          addresses.voltHoldingPCVDeposit,
-          addresses.gOHMHoldingPCVDeposit
-        ]
-      ],
-      description: 'Set all new ERC20 holding deposits as safe addresses on the PCV Guardian'
-    },
-
     ///  PCV DRIP CONTROLLERS
     {
       target: 'aaveEthPCVDripController',
@@ -185,6 +153,40 @@ const tip_118: TemplatedProposalDescription = {
       method: 'skim()',
       arguments: (addresses) => [],
       description: 'Burn excess Fei on the DAI PSM. Will burn ~135M FEI'
+    },
+
+    //////////   CONFIGURE NEW ERC20 PCV HOLDING DEPOSITS /////////////
+    // Add new ERC20 Holding deposits to the Collaterization Oracle
+    {
+      target: 'collateralizationOracle',
+      values: '0',
+      method: 'addDeposits(address[])',
+      arguments: (addresses) => [
+        [
+          addresses.wethHoldingPCVDeposit,
+          addresses.lusdHoldingPCVDeposit,
+          addresses.daiHoldingPCVDeposit,
+          addresses.voltHoldingPCVDeposit
+        ]
+      ],
+      description: `
+      Add the holding ERC20 deposits to the Collaterization Oracle.
+      gOHM deposit not added as does not yet have an oracle.`
+    },
+    {
+      target: 'pcvGuardian',
+      values: '0',
+      method: 'setSafeAddresses(address[])',
+      arguments: (addresses) => [
+        [
+          addresses.wethHoldingPCVDeposit,
+          addresses.lusdHoldingPCVDeposit,
+          addresses.daiHoldingPCVDeposit,
+          addresses.voltHoldingPCVDeposit,
+          addresses.gOHMHoldingPCVDeposit
+        ]
+      ],
+      description: 'Set all new ERC20 holding deposits as safe addresses on the PCV Guardian'
     },
 
     ///// Send VOLT to it's holding ERC20 deposit
@@ -278,18 +280,7 @@ const tip_118: TemplatedProposalDescription = {
       description: ' Revoke TRIBAL_CHIEF_ADMIN_ROLE from Tribal Council timelock'
     },
 
-    //// Transfer the admin of the Aave Tribe Incentives Controller Proxy to Aave governance
-    {
-      target: 'proxyAdmin',
-      values: '0',
-      method: 'changeProxyAdmin(address,address)',
-      arguments: (addresses) => [addresses.aaveTribeIncentivesController, addresses.aaveLendingPoolAddressesProvider],
-      description: `
-      Transfer the admin of the Aave Tribe Incentives Controller Proxy to Aave governance, specifically 
-      the LendingPoolAddressesProvider.
-      `
-    },
-
+    ///////  TIP-110: Simplify PCV, redeem agEUR /////////
     //// agEUR Redemption
     {
       target: 'angleDelegatorPCVDeposit',
@@ -365,7 +356,8 @@ const tip_118: TemplatedProposalDescription = {
       description: 'Redeem all agEUR for DAI and send to DAI PSM'
     },
 
-    // 4. Unset various safe addresses - deprecated PSMs and agEurUniswapPCVDeposit
+    /////////////  CLEANUP /////////////////////
+    // Unset various safe addresses - deprecated PSMs and agEurUniswapPCVDeposit
     {
       target: 'pcvGuardian',
       values: '0',
@@ -417,6 +409,18 @@ const tip_118: TemplatedProposalDescription = {
       Remove agEUR addresses, LUSD PSM, ETH PSM, Aave ETH PCV Deposit wrapper ,
       Volt deposit wrapper, Turbo Fuse PCV deposit, Fei OA timelock wrapper
       and various Rari Fuse pool wrappers from CR oracle.
+      `
+    },
+
+    //// Transfer the admin of the Aave Tribe Incentives Controller Proxy to Aave governance
+    {
+      target: 'proxyAdmin',
+      values: '0',
+      method: 'changeProxyAdmin(address,address)',
+      arguments: (addresses) => [addresses.aaveTribeIncentivesController, addresses.aaveLendingPoolAddressesProvider],
+      description: `
+      Transfer the admin of the Aave Tribe Incentives Controller Proxy to Aave governance, specifically 
+      the LendingPoolAddressesProvider.
       `
     },
 
