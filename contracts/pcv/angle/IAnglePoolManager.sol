@@ -2,7 +2,7 @@
 pragma solidity ^0.8.4;
 
 // Angle PoolManager contract
-interface IPoolManager {
+interface IAnglePoolManager {
     function token() external returns (address);
 
     function getBalance() external view returns (uint256);
