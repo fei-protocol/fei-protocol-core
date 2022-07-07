@@ -51,7 +51,7 @@ contract MockEthPCVDeposit is IPCVDeposit {
     }
 
     /// @notice display the related token of the balance reported
-    function balanceReportedIn() public view override returns (address) {
+    function balanceReportedIn() public pure override returns (address) {
         return address(0);
     }
 

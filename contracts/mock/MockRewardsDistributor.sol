@@ -70,18 +70,22 @@ contract MockRewardsDistributor is IRewardsDistributorAdmin, Ownable {
 
     /**
      * @notice Set COMP speed for a single market
-     * @param cToken The market whose COMP speed to update
      */
-    function _setCompSupplySpeed(address cToken, uint256 compSpeed) external override onlyOwner {
+    function _setCompSupplySpeed(
+        address, /* cToken*/
+        uint256 compSpeed
+    ) external override onlyOwner {
         compSupplySpeed = compSpeed;
         emit successSetCompSupplySpeed();
     }
 
     /**
      * @notice Set COMP speed for a single market
-     * @param cToken The market whose COMP speed to update
      */
-    function _setCompBorrowSpeed(address cToken, uint256 compSpeed) external override onlyOwner {
+    function _setCompBorrowSpeed(
+        address, /* cToken*/
+        uint256 compSpeed
+    ) external override onlyOwner {
         compBorrowSpeed = compSpeed;
         emit successSetCompBorrowSpeed();
     }
@@ -108,17 +112,19 @@ contract MockRewardsDistributor is IRewardsDistributorAdmin, Ownable {
 
     /**
      * @notice view function to get the comp supply speeds from the rewards distributor contract
-     * @param cToken The market to view
      */
-    function compSupplySpeeds(address cToken) external view override returns (uint256) {
+    function compSupplySpeeds(
+        address /* cToken*/
+    ) external view override returns (uint256) {
         return compSupplySpeed;
     }
 
     /**
      * @notice view function to get the comp borrow speeds from the rewards distributor contract
-     * @param cToken The market to view
      */
-    function compBorrowSpeeds(address cToken) external view override returns (uint256) {
+    function compBorrowSpeeds(
+        address /* cToken*/
+    ) external view override returns (uint256) {
         return compBorrowSpeed;
     }
 

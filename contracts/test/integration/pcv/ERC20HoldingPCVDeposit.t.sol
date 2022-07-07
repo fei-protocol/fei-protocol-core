@@ -69,6 +69,6 @@ contract ERC20HoldingPCVDepositIntegrationTest is DSTest {
     /// @notice Validate can not deploy for FEI
     function testCanNotDeployForFei() public {
         vm.expectRevert(bytes("FEI not supported"));
-        ERC20HoldingPCVDeposit feiDeposit = new ERC20HoldingPCVDeposit(address(core), fei);
+        new ERC20HoldingPCVDeposit(address(core), fei);
     }
 }

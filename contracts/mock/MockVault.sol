@@ -37,12 +37,16 @@ contract MockVault {
         TWO_TOKEN
     }
 
-    function getPool(bytes32 poolId) external view returns (address poolAddress, PoolSpecialization poolSpec) {
+    function getPool(
+        bytes32 /* poolId*/
+    ) external view returns (address poolAddress, PoolSpecialization poolSpec) {
         poolAddress = address(_pool);
         poolSpec = PoolSpecialization.TWO_TOKEN;
     }
 
-    function getPoolTokens(bytes32 poolId)
+    function getPoolTokens(
+        bytes32 /* poolId*/
+    )
         external
         view
         returns (
@@ -68,8 +72,8 @@ contract MockVault {
     }
 
     function joinPool(
-        bytes32 poolId,
-        address sender,
+        bytes32, /* poolId*/
+        address, /* sender*/
         address recipient,
         JoinPoolRequest memory request
     ) external payable {
@@ -89,7 +93,7 @@ contract MockVault {
     }
 
     function exitPool(
-        bytes32 poolId,
+        bytes32, /* poolId*/
         address sender,
         address payable recipient,
         ExitPoolRequest memory request

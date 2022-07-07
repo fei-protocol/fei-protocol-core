@@ -11,6 +11,7 @@ import {Core} from "../../../core/Core.sol";
 
 /// @notice Fixture to create a dummy proposal. Sends ETH to an address
 function dummyBatchProposals(address[] memory ethReceivers, uint256[] memory amounts)
+    pure
     returns (
         address[] memory,
         uint256[] memory,
@@ -40,6 +41,7 @@ function dummyBatchProposals(address[] memory ethReceivers, uint256[] memory amo
 
 /// @notice Dummy proposal that transfers ETH to a target
 function dummyProposal(address ethReceiver, uint256 amount)
+    pure
     returns (
         address target,
         uint256 value,
