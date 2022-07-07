@@ -90,12 +90,11 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
     /// @notice modifier to factorize the logic in all withdrawals :
     /// - first, ensure the deposit to withdraw from is unpaused
     /// - second, perform withdrawal
-    /// - third, re-pause deposit if it was paused or if pauseAfter = true
+    /// - third, re-pause deposit if it was paused
     /// - finally, call pcvDeposit.deposit() if depositAfter = true
     modifier beforeAndAfterWithdrawal(
         address pcvDeposit,
         address safeAddress,
-        bool pauseAfter,
         bool depositAfter
     ) {
         {
@@ -117,7 +116,7 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
 
         _;
 
-        if (paused || pauseAfter) {
+        if (paused) {
             pcvDeposit._pause();
         }
 
@@ -130,15 +129,13 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
     /// @param pcvDeposit the address of the pcv deposit contract
     /// @param safeAddress the destination address to withdraw to
     /// @param amount the amount to withdraw
-    /// @param pauseAfter if true, the pcv contract will be paused after the withdraw
     /// @param depositAfter if true, attempts to deposit to the target PCV deposit
     function withdrawToSafeAddress(
         address pcvDeposit,
         address safeAddress,
         uint256 amount,
-        bool pauseAfter,
         bool depositAfter
-    ) external override beforeAndAfterWithdrawal(pcvDeposit, safeAddress, pauseAfter, depositAfter) {
+    ) external override beforeAndAfterWithdrawal(pcvDeposit, safeAddress, depositAfter) {
         IPCVDeposit(pcvDeposit).withdraw(safeAddress, amount);
         emit PCVGuardianWithdrawal(pcvDeposit, safeAddress, amount);
     }
@@ -147,15 +144,13 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
     /// @param pcvDeposit the address of the pcv deposit contract
     /// @param safeAddress the destination address to withdraw to
     /// @param basisPoints the percent in basis points [1-10000] if the deposit's balance to withdraw
-    /// @param pauseAfter if true, the pcv contract will be paused after the withdraw
     /// @param depositAfter if true, attempts to deposit to the target PCV deposit
     function withdrawRatioToSafeAddress(
         address pcvDeposit,
         address safeAddress,
         uint256 basisPoints,
-        bool pauseAfter,
         bool depositAfter
-    ) external override beforeAndAfterWithdrawal(pcvDeposit, safeAddress, pauseAfter, depositAfter) {
+    ) external override beforeAndAfterWithdrawal(pcvDeposit, safeAddress, depositAfter) {
         require(basisPoints <= Constants.BASIS_POINTS_GRANULARITY, "PCVGuardian: basisPoints too high");
         uint256 amount = (IPCVDeposit(pcvDeposit).balance() * basisPoints) / Constants.BASIS_POINTS_GRANULARITY;
         require(amount != 0, "PCVGuardian: no value to withdraw");
@@ -168,15 +163,13 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
     /// @param pcvDeposit the address of the pcv deposit contract
     /// @param safeAddress the destination address to withdraw to
     /// @param amount the amount of tokens to withdraw
-    /// @param pauseAfter if true, the pcv contract will be paused after the withdraw
     /// @param depositAfter if true, attempts to deposit to the target PCV deposit
     function withdrawETHToSafeAddress(
         address pcvDeposit,
         address payable safeAddress,
         uint256 amount,
-        bool pauseAfter,
         bool depositAfter
-    ) external override beforeAndAfterWithdrawal(pcvDeposit, safeAddress, pauseAfter, depositAfter) {
+    ) external override beforeAndAfterWithdrawal(pcvDeposit, safeAddress, depositAfter) {
         IPCVDeposit(pcvDeposit).withdrawETH(safeAddress, amount);
         emit PCVGuardianETHWithdrawal(pcvDeposit, safeAddress, amount);
     }
@@ -185,15 +178,13 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
     /// @param pcvDeposit the address of the pcv deposit contract
     /// @param safeAddress the destination address to withdraw to
     /// @param basisPoints the percent in basis points [1-10000] if the deposit's balance to withdraw
-    /// @param pauseAfter if true, the pcv contract will be paused after the withdraw
     /// @param depositAfter if true, attempts to deposit to the target PCV deposit
     function withdrawETHRatioToSafeAddress(
         address pcvDeposit,
         address payable safeAddress,
         uint256 basisPoints,
-        bool pauseAfter,
         bool depositAfter
-    ) external override beforeAndAfterWithdrawal(pcvDeposit, safeAddress, pauseAfter, depositAfter) {
+    ) external override beforeAndAfterWithdrawal(pcvDeposit, safeAddress, depositAfter) {
         require(basisPoints <= Constants.BASIS_POINTS_GRANULARITY, "PCVGuardian: basisPoints too high");
         uint256 amount = (pcvDeposit.balance * basisPoints) / Constants.BASIS_POINTS_GRANULARITY;
         require(amount != 0, "PCVGuardian: no value to withdraw");
@@ -206,16 +197,14 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
     /// @param pcvDeposit the deposit to pull funds from
     /// @param safeAddress the destination address to withdraw to
     /// @param amount the amount of funds to withdraw
-    /// @param pauseAfter whether to pause the pcv after withdrawing
     /// @param depositAfter if true, attempts to deposit to the target PCV deposit
     function withdrawERC20ToSafeAddress(
         address pcvDeposit,
         address safeAddress,
         address token,
         uint256 amount,
-        bool pauseAfter,
         bool depositAfter
-    ) external override beforeAndAfterWithdrawal(pcvDeposit, safeAddress, pauseAfter, depositAfter) {
+    ) external override beforeAndAfterWithdrawal(pcvDeposit, safeAddress, depositAfter) {
         IPCVDeposit(pcvDeposit).withdrawERC20(token, safeAddress, amount);
         emit PCVGuardianERC20Withdrawal(pcvDeposit, safeAddress, token, amount);
     }
@@ -224,16 +213,14 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
     /// @param pcvDeposit the deposit to pull funds from
     /// @param safeAddress the destination address to withdraw to
     /// @param basisPoints the percent in basis points [1-10000] if the deposit's balance to withdraw
-    /// @param pauseAfter whether to pause the pcv after withdrawing
     /// @param depositAfter if true, attempts to deposit to the target PCV deposit
     function withdrawERC20RatioToSafeAddress(
         address pcvDeposit,
         address safeAddress,
         address token,
         uint256 basisPoints,
-        bool pauseAfter,
         bool depositAfter
-    ) external override beforeAndAfterWithdrawal(pcvDeposit, safeAddress, pauseAfter, depositAfter) {
+    ) external override beforeAndAfterWithdrawal(pcvDeposit, safeAddress, depositAfter) {
         require(basisPoints <= Constants.BASIS_POINTS_GRANULARITY, "PCVGuardian: basisPoints too high");
         uint256 amount = (IERC20(token).balanceOf(pcvDeposit) * basisPoints) / Constants.BASIS_POINTS_GRANULARITY;
         require(amount != 0, "PCVGuardian: no value to withdraw");

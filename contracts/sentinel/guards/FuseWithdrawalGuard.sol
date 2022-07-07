@@ -22,7 +22,7 @@ contract FuseWithdrawalGuard is IGuard, CoreRef {
     EnumerableSet.AddressSet private fuseDeposits;
 
     /// @notice the PCV mover contract exposed to guardian role
-    PCVGuardian public constant pcvGuardian = PCVGuardian(0x02435948F84d7465FB71dE45ABa6098Fc6eC2993);
+    PCVGuardian public constant pcvGuardian = PCVGuardian(0x0000000000000000000000000000000000000000); // TODO update
 
     /// @notice the minimum amount of underlying which can be withdrawn from a cToken that registers in the guard.
     /// i.e. if the min is 100 FEI but the amount in the contract is 1 FEI, the amountToWithdraw will return 0 and the check will fail

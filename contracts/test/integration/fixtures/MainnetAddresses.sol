@@ -28,7 +28,6 @@ library MainnetAddresses {
     address public constant LUSD_PSM = 0xb0e731F036AdfDeC12da77c15aaB0F90E8e45A0e;
     address public constant DAI_PSM = 0x2A188F9EB761F70ECEa083bA6c2A40145078dfc2;
 
-    address public constant PCV_GUARDIAN_NEW = 0x02435948F84d7465FB71dE45ABa6098Fc6eC2993;
     address payable public constant PCV_SENTINEL = payable(0xC297705Acf50134d256187c754B92FA37826C019);
 
     address public constant LUSD = 0x5f98805A4E8be255a32880FDeC7F6728C6568bA0;

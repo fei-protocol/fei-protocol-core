@@ -36,21 +36,36 @@ const MainnetContractsConfig: MainnetContractsConfig = {
     address: '0xC297705Acf50134d256187c754B92FA37826C019',
     category: AddressCategory.Security
   },
-  pcvGuardian: {
+  pcvGuardianV1: {
+    artifactName: 'PCVGuardian',
+    address: '0x2D1b1b509B6432A73e3d798572f0648f6453a5D9',
+    category: AddressCategory.Deprecated
+  },
+  pcvGuardianV2: {
     artifactName: 'PCVGuardian',
     address: '0x02435948F84d7465FB71dE45ABa6098Fc6eC2993',
-    category: AddressCategory.Security
+    category: AddressCategory.Deprecated
   },
+  //pcvGuardian: { // V3
+  //  artifactName: 'PCVGuardian',
+  //  address: '...',
+  //  category: AddressCategory.Security
+  //},
   guardianMultisig: {
     artifactName: 'unknown',
     address: '0xB8f482539F2d3Ae2C9ea6076894df36D1f632775',
     category: AddressCategory.Security
   },
-  fuseWithdrawalGuard: {
+  fuseWithdrawalGuardV1: {
     artifactName: 'FuseWithdrawalGuard',
     address: '0xd079ec4b442600a381eAc7E95662eB1b313cd113',
-    category: AddressCategory.Security
+    category: AddressCategory.Deprecated
   },
+  //fuseWithdrawalGuard: {
+  //  artifactName: 'FuseWithdrawalGuard',
+  //  address: '...',
+  //  category: AddressCategory.Security
+  //},
   ratioPCVControllerV2: {
     artifactName: 'RatioPCVControllerV2',
     address: '0x221fff24FB66dA3c722c7C5B856956a6a30C0179',
@@ -1849,11 +1864,6 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   rariGovernanceTokenSushiSwapDistributor: {
     artifactName: 'RariGovernanceTokenUniswapDistributor',
     address: '0x1fa69a416bcf8572577d3949b742fbb0a9cd98c7',
-    category: AddressCategory.Deprecated
-  },
-  pcvGuardianV1: {
-    artifactName: 'PCVGuardian',
-    address: '0x2D1b1b509B6432A73e3d798572f0648f6453a5D9',
     category: AddressCategory.Deprecated
   },
   daiPSM: {
