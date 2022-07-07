@@ -52,6 +52,11 @@ interface IAuraMerkleDrop {
 }
 
 /// @title Vote-locked AURA PCVDeposit
+/// This contract is a derivative of the DelegatorPCVDeposit contract, that performs an
+/// on-chain delegation. This contract is meant to hold AURA and vlAURA tokens, and allow
+/// locking of AURA to vlAURA and renew vlAURA locks, or exit vlAURA locks to get back
+/// liquid AURA. This contract can also claim vlAURA rewards.
+/// The first version of this contract also allows claiming of the AURA airdrop.
 /// @author eswak
 contract VlAuraDelegatorPCVDeposit is DelegatorPCVDeposit {
     using SafeERC20 for IERC20;
@@ -70,6 +75,8 @@ contract VlAuraDelegatorPCVDeposit is DelegatorPCVDeposit {
         )
     {}
 
+    // At deploy time, Aura Protocol wasn't live yet, so we need to set the
+    // contract addresses manually, not in the constructor.
     function initialize(
         address _aura,
         address _auraLocker,

@@ -22,7 +22,7 @@ contract DelegatorPCVDeposit is PCVDeposit {
 
     /// @notice Delegator PCV Deposit constructor
     /// @param _core Fei Core for reference
-    /// @param _token snapshot token
+    /// @param _token token to custody and delegate with
     /// @param _initialDelegate the initial delegate
     constructor(
         address _core,

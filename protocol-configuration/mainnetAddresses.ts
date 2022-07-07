@@ -1194,13 +1194,13 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   },
 
   anglePoolManager: {
-    artifactName: 'IPoolManager',
+    artifactName: 'IAnglePoolManager',
     address: '0x53b981389Cfc5dCDA2DC2e903147B5DD0E985F44',
     category: AddressCategory.External
   },
 
   angleStableMaster: {
-    artifactName: 'IStableMaster',
+    artifactName: 'IAngleStableMaster',
     address: '0x5adDc89785D75C86aB939E9e15bfBBb7Fc086A87',
     category: AddressCategory.External
   },
@@ -1218,7 +1218,7 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   },
 
   anglePoolManagerUsdc: {
-    artifactName: 'IPoolManager',
+    artifactName: 'IAnglePoolManager',
     address: '0xe9f183FC656656f1F17af1F2b0dF79b8fF9ad8eD',
     category: AddressCategory.External
   },
