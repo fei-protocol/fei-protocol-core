@@ -30,10 +30,9 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   );
   const safeAddresses = await pcvGuardianV2.getSafeAddresses();
 
-  console.log('safeAddresses', safeAddresses);
   // Deploy new PCV Guardian v3
   const pcvGuardianFactory = await ethers.getContractFactory('PCVGuardian');
-  const pcvGuardian = await pcvGuardianFactory.deploy(addresses.core, []);
+  const pcvGuardian = await pcvGuardianFactory.deploy(addresses.core, safeAddresses);
   await pcvGuardian.deployed();
   logging && console.log(`pcvGuardian: ${pcvGuardian.address}`);
 
