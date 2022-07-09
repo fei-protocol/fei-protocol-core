@@ -35,8 +35,10 @@ describe('e2e-pause-state', function () {
     config.logging && console.log(`Environment loaded.`);
   });
 
-  it('should reflect on-chain protocol pause state', async function () {
+  it('Procotol State Configuration', async function () {
     for (const contractName of StateConfigEntryNames) {
+      console.log(`Checking ${contractName} state configs...`);
+
       const stateConfigEntry = StateConfig[contractName];
       const contract = contracts[contractName];
 
