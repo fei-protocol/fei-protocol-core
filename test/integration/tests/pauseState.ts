@@ -1,6 +1,6 @@
 import { NamedContracts } from '@custom-types/types';
 import { pauseStateConfig } from '@protocol/pauseState';
-import proposals from '@protocol/proposalsConfig';
+import { ProposalsConfig } from '@protocol/proposalsConfig';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
@@ -32,7 +32,7 @@ describe('e2e-pause-state', function () {
       version: version
     };
 
-    e2eCoord = new TestEndtoEndCoordinator(config, proposals);
+    e2eCoord = new TestEndtoEndCoordinator(config, ProposalsConfig);
 
     doLogging && console.log(`Loading environment...`);
     ({ contracts } = await e2eCoord.loadEnvironment());

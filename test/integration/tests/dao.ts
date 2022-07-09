@@ -1,6 +1,6 @@
 import { Core } from '@custom-types/contracts';
 import { ContractAccessRights, NamedAddresses, NamedContracts } from '@custom-types/types';
-import proposals from '@protocol/proposalsConfig';
+import { ProposalsConfig } from '@protocol/proposalsConfig';
 import { getImpersonatedSigner, increaseTime, latestTime, time } from '@test/helpers';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
 import { forceEth } from '@test/integration/setup/utils';
@@ -36,7 +36,7 @@ describe('e2e-dao', function () {
       version: version
     };
 
-    e2eCoord = new TestEndtoEndCoordinator(config, proposals);
+    e2eCoord = new TestEndtoEndCoordinator(config, ProposalsConfig);
 
     doLogging && console.log(`Loading environment...`);
     ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment());
