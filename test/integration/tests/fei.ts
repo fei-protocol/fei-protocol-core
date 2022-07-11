@@ -56,16 +56,14 @@ describe('e2e-fei', function () {
       );
     });
 
-    /* Tests disabled until restrictedPermissions is deployed. */
-
-    it('burnFrom', async function () {
+    it('burnFrom reverts', async function () {
       expect(await contracts.core.isBurner(deployAddress)).to.be.true;
       expect(fei.connect(deploySigner).burnFrom(ZERO_ADDRESS, 10)).to.be.revertedWith(
         'RestrictedPermissions: Burner deprecated for contract'
       );
     });
 
-    it('burnFrom', async function () {
+    it('burn works', async function () {
       const balanceBefore = await fei.balanceOf(deployAddress);
       await fei.connect(deploySigner).burn(10);
       const balanceAfter = await fei.balanceOf(deployAddress);
@@ -73,7 +71,7 @@ describe('e2e-fei', function () {
       expect(balanceBefore.sub(balanceAfter)).to.be.bignumber.equal(toBN(10));
     });
 
-    it('mint', async function () {
+    it('mints', async function () {
       expect(await contracts.core.isMinter(deployAddress)).to.be.true;
       await fei.connect(deploySigner).mint(contracts.core.address, 10);
 

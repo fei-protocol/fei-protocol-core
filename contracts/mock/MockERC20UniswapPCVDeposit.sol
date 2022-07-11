@@ -19,12 +19,12 @@ contract MockERC20UniswapPCVDeposit is IPCVDeposit {
     }
 
     function withdrawERC20(
-        address token,
+        address _token,
         address to,
         uint256 amount
     ) public override {
-        SafeERC20.safeTransfer(IERC20(token), to, amount);
-        emit WithdrawERC20(msg.sender, to, token, amount);
+        SafeERC20.safeTransfer(IERC20(_token), to, amount);
+        emit WithdrawERC20(msg.sender, to, _token, amount);
     }
 
     function withdrawETH(address payable to, uint256 amountOut) external virtual override {

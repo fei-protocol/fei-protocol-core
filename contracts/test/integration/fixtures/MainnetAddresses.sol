@@ -35,4 +35,5 @@ library MainnetAddresses {
     address public constant AGEUR = 0x1a7e4e63778B4f12a199C062f3eFdD288afCBce8;
     address public constant USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
     address public constant DAI_FIXED_PRICE_PSM = 0x2A188F9EB761F70ECEa083bA6c2A40145078dfc2;
+    address public constant LUSD_HOLDING_PCV_DEPOSIT = 0x4378De2F2991Fbed6616b34AC7727E7653713712;
 }

@@ -36,7 +36,7 @@ contract FuseWithdrawalGuardIntegrationTest is DSTest, StdLib {
         underlyings[1] = MainnetAddresses.LUSD;
 
         destinations[0] = MainnetAddresses.DAI_PSM;
-        destinations[1] = MainnetAddresses.LUSD_PSM;
+        destinations[1] = MainnetAddresses.LUSD_HOLDING_PCV_DEPOSIT;
 
         liquidityToLeaveList[0] = 100_000e18;
         // make liquidity to leave higher than liquidity in contract
@@ -78,7 +78,7 @@ contract FuseWithdrawalGuardIntegrationTest is DSTest, StdLib {
         guard.setWithdrawInfo(
             MainnetAddresses.RARI_POOL_8_LUSD_PCV_DEPOSIT,
             FuseWithdrawalGuard.WithdrawInfo({
-                destination: MainnetAddresses.LUSD_PSM,
+                destination: MainnetAddresses.LUSD_HOLDING_PCV_DEPOSIT,
                 underlying: MainnetAddresses.LUSD,
                 liquidityToLeave: 0
             })
@@ -86,7 +86,7 @@ contract FuseWithdrawalGuardIntegrationTest is DSTest, StdLib {
         // 4. Check preconditions of LUSD pool 8 withdraw
         assertTrue(guard.check());
         uint256 lusdCTokenBalanceBefore = lusd.balanceOf(MainnetAddresses.RARI_POOL_8_LUSD);
-        uint256 lusdPSMBalanceBefore = lusd.balanceOf(MainnetAddresses.LUSD_PSM);
+        uint256 lusdPSMBalanceBefore = lusd.balanceOf(MainnetAddresses.LUSD_HOLDING_PCV_DEPOSIT);
         assertEq(
             guard.getAmountToWithdraw(ERC20CompoundPCVDeposit(MainnetAddresses.RARI_POOL_8_LUSD_PCV_DEPOSIT)),
             lusdCTokenBalanceBefore
@@ -95,7 +95,10 @@ contract FuseWithdrawalGuardIntegrationTest is DSTest, StdLib {
         // 5. Withdraw from pool 8 LUSD.
         sentinel.protec(address(guard));
         assertEq(lusd.balanceOf(MainnetAddresses.RARI_POOL_8_LUSD), 0);
-        assertEq(lusd.balanceOf(MainnetAddresses.LUSD_PSM), lusdPSMBalanceBefore + lusdCTokenBalanceBefore);
+        assertEq(
+            lusd.balanceOf(MainnetAddresses.LUSD_HOLDING_PCV_DEPOSIT),
+            lusdPSMBalanceBefore + lusdCTokenBalanceBefore
+        );
 
         // 6. Check no more withdrawals
         assertFalse(guard.check());

@@ -35,7 +35,7 @@ function createPod(
 function setupTimelock(
     address proposer,
     address executor,
-    address core
+    address /* core*/
 ) returns (TimelockController) {
     address[] memory proposers = new address[](1);
     proposers[0] = proposer;

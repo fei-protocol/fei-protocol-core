@@ -15,7 +15,7 @@ contract MockMerkleOrchard is IMerkleOrchard {
     function claimDistributions(
         address claimer,
         Claim[] memory claims,
-        IERC20[] memory tokens
+        IERC20[] memory /* tokens*/
     ) external override {
         balToken.mint(claimer, claims[0].balance);
     }
