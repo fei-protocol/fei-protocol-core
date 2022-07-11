@@ -51,8 +51,8 @@ contract GOhmOracleIntegrationTest is DSTest, StdLib {
         (Decimal.D256 memory gOhmUSDPrice, ) = gOhmUSDOracle.read();
 
         // gOHM price is ~$3000
-        assertGt(gOhmUSDPrice.value / 1e18, 1000);
-        assertLt(gOhmUSDPrice.value / 1e18, 5000);
+        assertGt(gOhmUSDPrice.value / 1e18, 100);
+        assertLt(gOhmUSDPrice.value / 1e18, 10000);
     }
 
     /// @notice Validate that the Rari gOHM oracle matches the Fei gOHM oracle
