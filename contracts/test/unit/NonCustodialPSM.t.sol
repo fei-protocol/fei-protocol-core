@@ -87,13 +87,13 @@ contract NonCustodialPSMTest is DSTest {
         /// create PSM
         psm = new NonCustodialPSM(oracleParams, multiRateLimitedParams, PSMParams);
 
-        vm.startPrank(addresses.governorAddress);
+        vm.startPrank(addresses.governor);
 
         /// grant the PSM the PCV Controller role
-        core.grantMinter(addresses.governorAddress);
+        core.grantMinter(addresses.governor);
         core.grantMinter(address(rateLimitedMinter));
         core.grantPCVController(address(psm));
-        core.grantPCVController(addresses.governorAddress);
+        core.grantPCVController(addresses.governor);
         rateLimitedMinter.addAddress(address(psm), uint112(rps), uint112(bufferCap));
 
         /// mint fei to the user
@@ -131,7 +131,7 @@ contract NonCustodialPSMTest is DSTest {
     function testGetMaxMintAmountOut() public {
         assertEq(psm.getMaxMintAmountOut(), bufferCap);
 
-        vm.startPrank(addresses.governorAddress);
+        vm.startPrank(addresses.governor);
         fei.mint(address(psm), mintAmount);
         vm.stopPrank();
 
@@ -233,7 +233,7 @@ contract NonCustodialPSMTest is DSTest {
 
     /// @notice replenishable rate limited minter buffer on the PSM gets increased on mint
     function testBufferReplenishmentDoesNotCompound() public {
-        vm.prank(addresses.governorAddress);
+        vm.prank(addresses.governor);
         fei.mint(address(this), mintAmount * 10);
         fei.approve(address(psm), mintAmount * 10);
         /// drain buffer
@@ -287,7 +287,7 @@ contract NonCustodialPSMTest is DSTest {
 
     /// @notice withdraw erc20 succeeds with correct permissions
     function testERC20WithdrawSuccess() public {
-        vm.startPrank(addresses.governorAddress);
+        vm.startPrank(addresses.governor);
 
         core.grantPCVController(address(this));
         underlyingToken.mint(address(psm), mintAmount);
@@ -310,7 +310,7 @@ contract NonCustodialPSMTest is DSTest {
 
     /// @notice set global rate limited minter fails when caller is governor and new address is 0
     function testSetGlobalRateLimitedMinterFailureZeroAddress() public {
-        vm.startPrank(addresses.governorAddress);
+        vm.startPrank(addresses.governor);
 
         vm.expectRevert(bytes("PegStabilityModule: Invalid new GlobalRateLimitedMinter"));
         psm.setGlobalRateLimitedMinter(GlobalRateLimitedMinter(address(0)));
@@ -320,7 +320,7 @@ contract NonCustodialPSMTest is DSTest {
 
     /// @notice set global rate limited minter succeeds when caller is governor
     function testSetGlobalRateLimitedMinterSuccess() public {
-        vm.startPrank(addresses.governorAddress);
+        vm.startPrank(addresses.governor);
 
         psm.setGlobalRateLimitedMinter(GlobalRateLimitedMinter(address(this)));
 
@@ -331,7 +331,7 @@ contract NonCustodialPSMTest is DSTest {
 
     /// @notice set global rate limited minter fails when caller is governor and new address is 0
     function testSetPCVDepositFailureZeroAddress() public {
-        vm.startPrank(addresses.governorAddress);
+        vm.startPrank(addresses.governor);
 
         vm.expectRevert(bytes("PegStabilityModule: Invalid new PCVDeposit"));
         psm.setPCVDeposit(IPCVDeposit(address(0)));
@@ -348,7 +348,7 @@ contract NonCustodialPSMTest is DSTest {
     /* Disabled - we deploy to a pcv deposit v1
     /// @notice set PCV deposit fails when caller is governor and new address is 0
     function testSetPCVDepositFailureUnderlyingTokenMismatch() public {
-        vm.startPrank(addresses.governorAddress);
+        vm.startPrank(addresses.governor);
 
         MockPCVDepositV2 newPCVDeposit = new MockPCVDepositV2(
             address(core),
@@ -367,7 +367,7 @@ contract NonCustodialPSMTest is DSTest {
 
     /// @notice set PCV Deposit succeeds when caller is governor and underlying tokens match
     function testSetPCVDepositSuccess() public {
-        vm.startPrank(addresses.governorAddress);
+        vm.startPrank(addresses.governor);
 
         MockPCVDepositV2 newPCVDeposit = new MockPCVDepositV2(address(core), address(underlyingToken), 0, 0);
 
@@ -380,7 +380,7 @@ contract NonCustodialPSMTest is DSTest {
 
     /// @notice set mint fee succeeds
     function testSetMintFeeSuccess() public {
-        vm.startPrank(addresses.governorAddress);
+        vm.startPrank(addresses.governor);
         psm.setMintFee(100);
         vm.stopPrank();
 
@@ -396,7 +396,7 @@ contract NonCustodialPSMTest is DSTest {
 
     /// @notice set redeem fee succeeds
     function testSetRedeemFeeSuccess() public {
-        vm.startPrank(addresses.governorAddress);
+        vm.startPrank(addresses.governor);
         psm.setRedeemFee(100);
         vm.stopPrank();
 
@@ -412,7 +412,7 @@ contract NonCustodialPSMTest is DSTest {
 
     /// @notice redeem fails when paused
     function testRedeemFailsWhenPaused() public {
-        vm.startPrank(addresses.governorAddress);
+        vm.startPrank(addresses.governor);
         psm.pauseRedeem();
         vm.stopPrank();
 
@@ -422,7 +422,7 @@ contract NonCustodialPSMTest is DSTest {
 
     /// @notice mint fails when paused
     function testMintFailsWhenPaused() public {
-        vm.startPrank(addresses.governorAddress);
+        vm.startPrank(addresses.governor);
         psm.pauseMint();
         vm.stopPrank();
 

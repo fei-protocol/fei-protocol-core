@@ -66,7 +66,7 @@ contract ERC20HoldingPCVDepositTest is DSTest {
     function testWithdraw() public {
         erc20.transfer(address(emptyDeposit), 10);
 
-        vm.prank(addresses.pcvControllerAddress);
+        vm.prank(addresses.pcvController);
         emptyDeposit.withdraw(receiver, 5);
 
         assertEq(erc20.balanceOf(address(emptyDeposit)), 5);
@@ -77,7 +77,7 @@ contract ERC20HoldingPCVDepositTest is DSTest {
     function testCanWithdrawERC20() public {
         erc20.transfer(address(emptyDeposit), 10);
 
-        vm.prank(addresses.pcvControllerAddress);
+        vm.prank(addresses.pcvController);
         emptyDeposit.withdrawERC20(address(erc20), receiver, 5);
 
         assertEq(erc20.balanceOf(address(emptyDeposit)), 5);
@@ -88,7 +88,7 @@ contract ERC20HoldingPCVDepositTest is DSTest {
     function testCanWithdraw() public {
         erc20.transfer(address(emptyDeposit), 10);
 
-        vm.prank(addresses.pcvControllerAddress);
+        vm.prank(addresses.pcvController);
         emptyDeposit.withdraw(receiver, 10);
 
         assertEq(erc20.balanceOf(address(emptyDeposit)), 0);
@@ -100,7 +100,7 @@ contract ERC20HoldingPCVDepositTest is DSTest {
     function testCanWithdrawEth() public {
         payable(address(emptyDeposit)).transfer(1 ether);
 
-        vm.prank(addresses.pcvControllerAddress);
+        vm.prank(addresses.pcvController);
         emptyDeposit.withdrawETH(receiver, 1 ether);
 
         assertEq(address(receiver).balance, 1 ether);

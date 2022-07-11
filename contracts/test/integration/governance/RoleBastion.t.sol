@@ -24,18 +24,18 @@ contract RoleBastionIntegrationTest is DSTest {
         roleBastion = new RoleBastion(address(core));
 
         // 1. Grant tribalCouncil ROLE_ADMIN role
-        vm.startPrank(addresses.governorAddress);
+        vm.startPrank(addresses.governor);
         core.createRole(TribeRoles.ROLE_ADMIN, TribeRoles.GOVERNOR);
         core.grantRole(TribeRoles.ROLE_ADMIN, tribalCouncil);
         vm.stopPrank();
 
         // 2. Grant roleBastion GOVERNOR
-        vm.startPrank(addresses.governorAddress);
+        vm.startPrank(addresses.governor);
         core.grantRole(TribeRoles.GOVERNOR, address(roleBastion));
         vm.stopPrank();
 
         // 3. Create a mock Guardian to pause the contract
-        vm.startPrank(addresses.governorAddress);
+        vm.startPrank(addresses.governor);
         core.createRole(TribeRoles.GUARDIAN, TribeRoles.GOVERNOR);
         core.grantRole(TribeRoles.GUARDIAN, guardian);
         vm.stopPrank();
