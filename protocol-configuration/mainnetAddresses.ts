@@ -1,6 +1,6 @@
 import { AddressCategory } from '../types/types'; // imported without custom path to allow docs to autogen without ts errors
 
-export const MainnetContractsConfigs = {
+export const MainnetContractsConfig = {
   core: {
     artifactName: 'Core',
     address: '0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9',
@@ -2528,6 +2528,6 @@ export const MainnetContractsConfigs = {
   }
 };
 
-export type MainnetContractsType = typeof MainnetContractsConfigs;
+export type MainnetContractsType = typeof MainnetContractsConfig;
 export type MainnetContractsEntryName = keyof MainnetContractsType;
-export const MainnetContractsEntryNames = Object.keys(MainnetContractsConfigs) as MainnetContractsEntryName[];
+export const MainnetContractsEntryNames = Object.keys(MainnetContractsConfig) as MainnetContractsEntryName[];
