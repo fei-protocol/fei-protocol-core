@@ -91,6 +91,10 @@ contract PodExecutorTest is DSTest {
 
         // 3. Give timelock some ETH to transfer in proposal
         vm.deal(address(timelock), 10 ether);
+
+        // 4. Initialize time to be >1
+        // TimelockController relies on timestamps being at least _DONE_TIMESTAMP (>1)
+        vm.warp(1000);
     }
 
     /// @notice Validate can pause execution
