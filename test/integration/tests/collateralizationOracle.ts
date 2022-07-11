@@ -120,7 +120,7 @@ describe('e2e-collateralization', function () {
         );
 
         for (const deposit of deposits) {
-          expect(entry[1].includes(deposit)).to.be.true;
+          expect(entry[1]).to.include(deposit);
         }
       }
     });
