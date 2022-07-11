@@ -14,9 +14,9 @@ contract MockChainlinkOracle is AggregatorV3Interface {
     uint256 _updatedAt;
     uint80 _answeredInRound;
 
-    constructor(int256 value, uint8 decimals) {
+    constructor(int256 value, uint8 oracleDecimals) {
         _value = value;
-        _decimals = decimals;
+        _decimals = oracleDecimals;
         _roundId = 42;
         _startedAt = 1620651856;
         _updatedAt = 1620651856;

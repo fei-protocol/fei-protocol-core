@@ -20,9 +20,9 @@ contract MockTokemakRewards is MockERC20 {
 
     function claim(
         Recipient calldata recipient,
-        uint8 v,
-        bytes32 r,
-        bytes32 s // bytes calldata signature
+        uint8, /* v*/
+        bytes32, /* r*/
+        bytes32 /* s*/ // bytes calldata signature
     ) external {
         rewardsToken.mint(recipient.wallet, recipient.amount);
     }
