@@ -178,7 +178,6 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
     /// @param pcvDeposit the address of the pcv deposit contract
     /// @param safeAddress the destination address to withdraw to
     /// @param basisPoints the percent in basis points [1-10000] if the deposit's balance to withdraw
-    /// @param pauseAfter if true, the pcv contract will be paused after the withdraw
     /// @param depositAfter if true, attempts to deposit to the target PCV deposit
     function withdrawETHRatioToSafeAddress(
         address pcvDeposit,
@@ -214,7 +213,6 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
     /// @param pcvDeposit the deposit to pull funds from
     /// @param safeAddress the destination address to withdraw to
     /// @param basisPoints the percent in basis points [1-10000] if the deposit's balance to withdraw
-    /// @param pauseAfter whether to pause the pcv after withdrawing
     /// @param depositAfter if true, attempts to deposit to the target PCV deposit
     function withdrawERC20RatioToSafeAddress(
         address pcvDeposit,

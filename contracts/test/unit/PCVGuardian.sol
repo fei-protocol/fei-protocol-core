@@ -161,7 +161,7 @@ contract PCVGuardianTest is DSTest {
     function testAccessControlWithdrawalsPrivilegedCallers() public {
         // none of the following calls shall revert if access
         // control is properly checked for the various callers
-        vm.startPrank(addresses.governorAddress);
+        vm.startPrank(addresses.governor);
         pcvGuardian.withdrawToSafeAddress(address(pcvDeposit1), address(pcvDeposit2), 1, false);
         pcvGuardian.withdrawETHToSafeAddress(address(pcvDeposit1), payable(address(pcvDeposit2)), 1, false);
         pcvGuardian.withdrawERC20ToSafeAddress(address(pcvDeposit1), address(pcvDeposit2), address(token), 1, false);
@@ -191,7 +191,7 @@ contract PCVGuardianTest is DSTest {
         );
         vm.stopPrank();
 
-        vm.startPrank(addresses.guardianAddress);
+        vm.startPrank(addresses.guardian);
         pcvGuardian.withdrawToSafeAddress(address(pcvDeposit1), address(pcvDeposit2), 1, false);
         pcvGuardian.withdrawETHToSafeAddress(address(pcvDeposit1), payable(address(pcvDeposit2)), 1, false);
         pcvGuardian.withdrawERC20ToSafeAddress(address(pcvDeposit1), address(pcvDeposit2), address(token), 1, false);
@@ -207,7 +207,7 @@ contract PCVGuardianTest is DSTest {
         vm.stopPrank();
 
         // move back all tokens & eth
-        vm.startPrank(addresses.governorAddress);
+        vm.startPrank(addresses.governor);
         pcvGuardian.withdrawETHRatioToSafeAddress(address(pcvDeposit2), payable(address(pcvDeposit1)), 10000, false);
         pcvGuardian.withdrawERC20RatioToSafeAddress(
             address(pcvDeposit2),
