@@ -111,6 +111,7 @@ describe('e2e-collateralization', function () {
       for (const entry of Object.entries(CollateralizationOracleConfig)) {
         const expectedEntryCount = entry[1].length;
         const tokenAddress = contractAddresses[entry[0]];
+        const entryAddresses = entry[1].map((name) => contractAddresses[name]);
         const deposits = await collateralizationOracle.getDepositsForToken(tokenAddress);
         const actualEntryCount = deposits.length;
 
@@ -120,7 +121,7 @@ describe('e2e-collateralization', function () {
         );
 
         for (const deposit of deposits) {
-          expect(entry[1]).to.include(deposit);
+          expect(entryAddresses).to.include(deposit);
         }
       }
     });
