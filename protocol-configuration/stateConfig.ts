@@ -2,6 +2,8 @@
 // Keys in this config can only be keys of MainnetContractsConfig, configured in mainnetAddresses.ts
 // Values are sets of key-value pairs representing the state var / function call to check & the expected value.
 
+import { BigNumber } from 'ethers';
+
 export const StateConfig = {
   ethPSM: {
     paused: true,
@@ -20,6 +22,10 @@ export const StateConfig = {
     paused: true,
     redeemPaused: true,
     mintPaused: true
+  },
+  fei: {
+    decimals: BigNumber.from(18),
+    name: 'Fei USD'
   }
 };
 
