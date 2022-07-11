@@ -275,7 +275,7 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   ethPSMRouter: {
     artifactName: 'PSMRouter',
     address: '0xFA6a07f3551bF0ceE88D494780ce793AF452Cbca',
-    category: AddressCategory.Peg
+    category: AddressCategory.Deprecated
   },
   tribeReserveStabilizer: {
     artifactName: 'TribeReserveStabilizer',
