@@ -109,6 +109,7 @@ describe('e2e-collateralization', function () {
       const collateralizationOracle = contracts.collateralizationOracle;
 
       for (const entry of Object.entries(CollateralizationOracleConfig)) {
+        console.log(`Checking entry entry: ${entry[0]}:${entry[1]}`);
         const expectedEntryCount = entry[1].length;
         const deposits = await collateralizationOracle.getDepositsForToken(entry[0]);
         const actualEntryCount = deposits.length;
