@@ -1345,7 +1345,7 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   chainlinkOHMV2EthOracle: {
     artifactName: 'unknown',
     address: '0x9a72298ae3886221820b1c878d12d872087d3a23',
-    category: AddressCategory.Oracle
+    category: AddressCategory.External
   },
 
   chainlinkStEthUsdOracle: {

@@ -35,5 +35,10 @@ library MainnetAddresses {
     address public constant DAI = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
     address public constant AGEUR = 0x1a7e4e63778B4f12a199C062f3eFdD288afCBce8;
     address public constant USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
+    address public constant GOHM = 0x0ab87046fBb341D058F17CBC4c1133F25a20a52f;
     address public constant DAI_FIXED_PRICE_PSM = 0x2A188F9EB761F70ECEa083bA6c2A40145078dfc2;
+
+    address public constant RARI_ORACLE = 0x1887118E49e0F4A78Bd71B792a49dE03504A764D;
+    address public constant CHAINLINK_OHM_V2_ETH_ORACLE = 0x9a72298ae3886221820B1c878d12D872087D3a23;
+    address public constant CHAINLINK_ETH_USD_ORACLE = 0xCd3c40AE1256922BA16C7872229385E20Bc8351e;
 }

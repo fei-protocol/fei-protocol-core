@@ -15,18 +15,13 @@ interface RariPriceOracle {
 /// @notice Integration test to validate gOHM oracle price
 contract GOhmOracleIntegrationTest is DSTest, StdLib {
     GOhmEthOracle public gOhmEthOracle;
-
-    address gOHM = 0x0ab87046fBb341D058F17CBC4c1133F25a20a52f;
-    RariPriceOracle public rariOracle = RariPriceOracle(0x1887118E49e0F4A78Bd71B792a49dE03504A764D);
-
-    // Chainlink OHM V2 Oracle reporting in terms of ETH
-    address chainlinkOHMEthOracle = 0x9a72298ae3886221820B1c878d12D872087D3a23;
+    RariPriceOracle public rariOracle = RariPriceOracle(MainnetAddresses.RARI_ORACLE);
 
     // Chainlink ETH Oracle reporting in terms of USD
-    IOracle chainlinkEthUSDOracleWrapper = IOracle(0xCd3c40AE1256922BA16C7872229385E20Bc8351e);
+    IOracle chainlinkEthUSDOracleWrapper = IOracle(MainnetAddresses.CHAINLINK_ETH_USD_ORACLE);
 
     function setUp() public {
-        gOhmEthOracle = new GOhmEthOracle(MainnetAddresses.CORE, chainlinkOHMEthOracle);
+        gOhmEthOracle = new GOhmEthOracle(MainnetAddresses.CORE, MainnetAddresses.CHAINLINK_OHM_V2_ETH_ORACLE);
     }
 
     function testValidgOHMPrice() public {
@@ -58,7 +53,7 @@ contract GOhmOracleIntegrationTest is DSTest, StdLib {
     /// @notice Validate that the Rari gOHM oracle matches the Fei gOHM oracle
     function testOracleMatchesRari() public {
         (Decimal.D256 memory gOhmEthPrice, ) = gOhmEthOracle.read();
-        uint256 rariOracleGOhmPrice = rariOracle.price(gOHM);
+        uint256 rariOracleGOhmPrice = rariOracle.price(MainnetAddresses.GOHM);
         assertEq(gOhmEthPrice.value, rariOracleGOhmPrice);
     }
 }
