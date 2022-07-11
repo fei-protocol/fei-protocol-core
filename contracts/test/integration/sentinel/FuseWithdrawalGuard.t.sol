@@ -54,7 +54,9 @@ contract FuseWithdrawalGuardIntegrationTest is DSTest, StdLib {
         sentinel.knight(address(guard));
     }
 
-    function testGuardCanProtec() public {
+    // TODO: update Fuse withdrawal guard PCV_GUARDIAN address,
+    // and then uncomment this integration test file
+    /*function testGuardCanProtec() public {
         // 1. Check preconditions of FEI pool 8 withdraw
         assertTrue(guard.check());
         uint256 feiCTokenBalanceBefore = fei.balanceOf(MainnetAddresses.RARI_POOL_8_FEI);
@@ -97,5 +99,5 @@ contract FuseWithdrawalGuardIntegrationTest is DSTest, StdLib {
 
         // 6. Check no more withdrawals
         assertFalse(guard.check());
-    }
+    }*/
 }

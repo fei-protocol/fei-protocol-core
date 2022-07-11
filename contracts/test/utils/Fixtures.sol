@@ -63,6 +63,11 @@ function getCore() returns (Core) {
     core.createRole(TribeRoles.PCV_SAFE_MOVER_ROLE, TribeRoles.GOVERNOR);
     core.grantRole(TribeRoles.PCV_SAFE_MOVER_ROLE, addresses.pcvSafeMover);
 
+    core.createRole(TribeRoles.PCV_GUARDIAN_ADMIN, TribeRoles.GOVERNOR);
+    core.grantRole(TribeRoles.PCV_GUARDIAN_ADMIN, addresses.pcvGuardianAdmin);
+    core.createRole(TribeRoles.PCV_SAFE_MOVER_ROLE, TribeRoles.GOVERNOR);
+    core.grantRole(TribeRoles.PCV_SAFE_MOVER_ROLE, addresses.pcvSafeMover);
+
     vm.stopPrank();
     return core;
 }

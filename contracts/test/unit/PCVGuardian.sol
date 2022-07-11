@@ -136,29 +136,21 @@ contract PCVGuardianTest is DSTest {
     // should revert when calling withdrawERC20RatioToSafeAddress from a non-privileged address
     function testAccessControlWithdrawalsUnprivilegedCaller() public {
         vm.expectRevert("UNAUTHORIZED");
-        pcvGuardian.withdrawToSafeAddress(address(pcvDeposit1), address(pcvDeposit2), 1e18, false, false);
+        pcvGuardian.withdrawToSafeAddress(address(pcvDeposit1), address(pcvDeposit2), 1e18, false);
         vm.expectRevert("UNAUTHORIZED");
-        pcvGuardian.withdrawETHToSafeAddress(address(pcvDeposit1), payable(address(pcvDeposit2)), 1e18, false, false);
+        pcvGuardian.withdrawETHToSafeAddress(address(pcvDeposit1), payable(address(pcvDeposit2)), 1e18, false);
         vm.expectRevert("UNAUTHORIZED");
-        pcvGuardian.withdrawERC20ToSafeAddress(
-            address(pcvDeposit1),
-            address(pcvDeposit2),
-            address(token),
-            1e18,
-            false,
-            false
-        );
+        pcvGuardian.withdrawERC20ToSafeAddress(address(pcvDeposit1), address(pcvDeposit2), address(token), 1e18, false);
         vm.expectRevert("UNAUTHORIZED");
-        pcvGuardian.withdrawRatioToSafeAddress(address(pcvDeposit1), address(pcvDeposit2), 1, false, false);
+        pcvGuardian.withdrawRatioToSafeAddress(address(pcvDeposit1), address(pcvDeposit2), 1, false);
         vm.expectRevert("UNAUTHORIZED");
-        pcvGuardian.withdrawETHRatioToSafeAddress(address(pcvDeposit1), payable(address(pcvDeposit2)), 1, false, false);
+        pcvGuardian.withdrawETHRatioToSafeAddress(address(pcvDeposit1), payable(address(pcvDeposit2)), 1, false);
         vm.expectRevert("UNAUTHORIZED");
         pcvGuardian.withdrawERC20RatioToSafeAddress(
             address(pcvDeposit1),
             address(pcvDeposit2),
             address(token),
             1,
-            false,
             false
         );
     }
@@ -169,90 +161,59 @@ contract PCVGuardianTest is DSTest {
     function testAccessControlWithdrawalsPrivilegedCallers() public {
         // none of the following calls shall revert if access
         // control is properly checked for the various callers
-        vm.startPrank(addresses.governor);
-        pcvGuardian.withdrawToSafeAddress(address(pcvDeposit1), address(pcvDeposit2), 1, false, false);
-        pcvGuardian.withdrawETHToSafeAddress(address(pcvDeposit1), payable(address(pcvDeposit2)), 1, false, false);
-        pcvGuardian.withdrawERC20ToSafeAddress(
-            address(pcvDeposit1),
-            address(pcvDeposit2),
-            address(token),
-            1,
-            false,
-            false
-        );
-        pcvGuardian.withdrawRatioToSafeAddress(address(pcvDeposit1), address(pcvDeposit2), 1, false, false);
-        pcvGuardian.withdrawETHRatioToSafeAddress(address(pcvDeposit1), payable(address(pcvDeposit2)), 1, false, false);
+        vm.startPrank(addresses.governorAddress);
+        pcvGuardian.withdrawToSafeAddress(address(pcvDeposit1), address(pcvDeposit2), 1, false);
+        pcvGuardian.withdrawETHToSafeAddress(address(pcvDeposit1), payable(address(pcvDeposit2)), 1, false);
+        pcvGuardian.withdrawERC20ToSafeAddress(address(pcvDeposit1), address(pcvDeposit2), address(token), 1, false);
+        pcvGuardian.withdrawRatioToSafeAddress(address(pcvDeposit1), address(pcvDeposit2), 1, false);
+        pcvGuardian.withdrawETHRatioToSafeAddress(address(pcvDeposit1), payable(address(pcvDeposit2)), 1, false);
         pcvGuardian.withdrawERC20RatioToSafeAddress(
             address(pcvDeposit1),
             address(pcvDeposit2),
             address(token),
             1,
-            false,
             false
         );
         vm.stopPrank();
 
         vm.startPrank(addresses.pcvSafeMover);
-        pcvGuardian.withdrawToSafeAddress(address(pcvDeposit1), address(pcvDeposit2), 1, false, false);
-        pcvGuardian.withdrawETHToSafeAddress(address(pcvDeposit1), payable(address(pcvDeposit2)), 1, false, false);
-        pcvGuardian.withdrawERC20ToSafeAddress(
-            address(pcvDeposit1),
-            address(pcvDeposit2),
-            address(token),
-            1,
-            false,
-            false
-        );
-        pcvGuardian.withdrawRatioToSafeAddress(address(pcvDeposit1), address(pcvDeposit2), 1, false, false);
-        pcvGuardian.withdrawETHRatioToSafeAddress(address(pcvDeposit1), payable(address(pcvDeposit2)), 1, false, false);
+        pcvGuardian.withdrawToSafeAddress(address(pcvDeposit1), address(pcvDeposit2), 1, false);
+        pcvGuardian.withdrawETHToSafeAddress(address(pcvDeposit1), payable(address(pcvDeposit2)), 1, false);
+        pcvGuardian.withdrawERC20ToSafeAddress(address(pcvDeposit1), address(pcvDeposit2), address(token), 1, false);
+        pcvGuardian.withdrawRatioToSafeAddress(address(pcvDeposit1), address(pcvDeposit2), 1, false);
+        pcvGuardian.withdrawETHRatioToSafeAddress(address(pcvDeposit1), payable(address(pcvDeposit2)), 1, false);
         pcvGuardian.withdrawERC20RatioToSafeAddress(
             address(pcvDeposit1),
             address(pcvDeposit2),
             address(token),
             1,
-            false,
             false
         );
         vm.stopPrank();
 
-        vm.startPrank(addresses.guardian);
-        pcvGuardian.withdrawToSafeAddress(address(pcvDeposit1), address(pcvDeposit2), 1, false, false);
-        pcvGuardian.withdrawETHToSafeAddress(address(pcvDeposit1), payable(address(pcvDeposit2)), 1, false, false);
-        pcvGuardian.withdrawERC20ToSafeAddress(
-            address(pcvDeposit1),
-            address(pcvDeposit2),
-            address(token),
-            1,
-            false,
-            false
-        );
-        pcvGuardian.withdrawRatioToSafeAddress(address(pcvDeposit1), address(pcvDeposit2), 1, false, false);
-        pcvGuardian.withdrawETHRatioToSafeAddress(address(pcvDeposit1), payable(address(pcvDeposit2)), 1, false, false);
+        vm.startPrank(addresses.guardianAddress);
+        pcvGuardian.withdrawToSafeAddress(address(pcvDeposit1), address(pcvDeposit2), 1, false);
+        pcvGuardian.withdrawETHToSafeAddress(address(pcvDeposit1), payable(address(pcvDeposit2)), 1, false);
+        pcvGuardian.withdrawERC20ToSafeAddress(address(pcvDeposit1), address(pcvDeposit2), address(token), 1, false);
+        pcvGuardian.withdrawRatioToSafeAddress(address(pcvDeposit1), address(pcvDeposit2), 1, false);
+        pcvGuardian.withdrawETHRatioToSafeAddress(address(pcvDeposit1), payable(address(pcvDeposit2)), 1, false);
         pcvGuardian.withdrawERC20RatioToSafeAddress(
             address(pcvDeposit1),
             address(pcvDeposit2),
             address(token),
             1,
-            false,
             false
         );
         vm.stopPrank();
 
         // move back all tokens & eth
-        vm.startPrank(addresses.governor);
-        pcvGuardian.withdrawETHRatioToSafeAddress(
-            address(pcvDeposit2),
-            payable(address(pcvDeposit1)),
-            10000,
-            false,
-            false
-        );
+        vm.startPrank(addresses.governorAddress);
+        pcvGuardian.withdrawETHRatioToSafeAddress(address(pcvDeposit2), payable(address(pcvDeposit1)), 10000, false);
         pcvGuardian.withdrawERC20RatioToSafeAddress(
             address(pcvDeposit2),
             address(pcvDeposit1),
             address(token),
             10000,
-            false,
             false
         );
         pcvDeposit1.deposit();
@@ -326,17 +287,17 @@ contract PCVGuardianTest is DSTest {
     function testOnlyWithdrawableToSafeAdress() public {
         vm.prank(addresses.guardian);
         vm.expectRevert("PCVGuardian: address not whitelisted");
-        pcvGuardian.withdrawToSafeAddress(address(pcvDeposit1), address(pcvDeposit3), 1, false, true);
+        pcvGuardian.withdrawToSafeAddress(address(pcvDeposit1), address(pcvDeposit3), 1, true);
 
         vm.prank(addresses.pcvGuardianAdmin);
         pcvGuardian.setSafeAddress(address(pcvDeposit3));
 
         vm.startPrank(addresses.guardian);
-        pcvGuardian.withdrawToSafeAddress(address(pcvDeposit1), address(pcvDeposit3), 1, false, true);
-        pcvGuardian.withdrawToSafeAddress(address(pcvDeposit3), address(pcvDeposit1), 1, false, true);
+        pcvGuardian.withdrawToSafeAddress(address(pcvDeposit1), address(pcvDeposit3), 1, true);
+        pcvGuardian.withdrawToSafeAddress(address(pcvDeposit3), address(pcvDeposit1), 1, true);
         pcvGuardian.unsetSafeAddress(address(pcvDeposit3));
         vm.expectRevert("PCVGuardian: address not whitelisted");
-        pcvGuardian.withdrawToSafeAddress(address(pcvDeposit1), address(pcvDeposit3), 1, false, true);
+        pcvGuardian.withdrawToSafeAddress(address(pcvDeposit1), address(pcvDeposit3), 1, true);
         vm.stopPrank();
     }
 
@@ -345,7 +306,7 @@ contract PCVGuardianTest is DSTest {
         assertEq(pcvDeposit1.balance(), 100e18);
         assertEq(pcvDeposit2.balance(), 0);
         vm.prank(addresses.pcvSafeMover);
-        pcvGuardian.withdrawToSafeAddress(address(pcvDeposit1), address(pcvDeposit2), 1e18, false, true);
+        pcvGuardian.withdrawToSafeAddress(address(pcvDeposit1), address(pcvDeposit2), 1e18, true);
         assertEq(pcvDeposit1.balance(), 99e18);
         assertEq(pcvDeposit2.balance(), 1e18);
     }
@@ -355,13 +316,7 @@ contract PCVGuardianTest is DSTest {
         assertEq(address(pcvDeposit1).balance, 1 ether);
         assertEq(address(pcvDeposit2).balance, 0);
         vm.prank(addresses.pcvSafeMover);
-        pcvGuardian.withdrawETHToSafeAddress(
-            address(pcvDeposit1),
-            payable(address(pcvDeposit2)),
-            0.1 ether,
-            false,
-            false
-        );
+        pcvGuardian.withdrawETHToSafeAddress(address(pcvDeposit1), payable(address(pcvDeposit2)), 0.1 ether, false);
         assertEq(address(pcvDeposit1).balance, 0.9 ether);
         assertEq(address(pcvDeposit2).balance, 0.1 ether);
     }
@@ -371,14 +326,7 @@ contract PCVGuardianTest is DSTest {
         assertEq(pcvDeposit1.balance(), 100e18);
         assertEq(pcvDeposit2.balance(), 0);
         vm.prank(addresses.pcvSafeMover);
-        pcvGuardian.withdrawERC20ToSafeAddress(
-            address(pcvDeposit1),
-            address(pcvDeposit2),
-            address(token),
-            1e18,
-            false,
-            true
-        );
+        pcvGuardian.withdrawERC20ToSafeAddress(address(pcvDeposit1), address(pcvDeposit2), address(token), 1e18, true);
         assertEq(pcvDeposit1.balance(), 99e18);
         assertEq(pcvDeposit2.balance(), 1e18);
     }
@@ -388,7 +336,7 @@ contract PCVGuardianTest is DSTest {
         assertEq(pcvDeposit1.balance(), 100e18);
         assertEq(pcvDeposit2.balance(), 0);
         vm.prank(addresses.pcvSafeMover);
-        pcvGuardian.withdrawRatioToSafeAddress(address(pcvDeposit1), address(pcvDeposit2), 5500, false, true);
+        pcvGuardian.withdrawRatioToSafeAddress(address(pcvDeposit1), address(pcvDeposit2), 5500, true);
         assertEq(pcvDeposit1.balance(), 45e18);
         assertEq(pcvDeposit2.balance(), 55e18);
     }
@@ -398,13 +346,7 @@ contract PCVGuardianTest is DSTest {
         assertEq(address(pcvDeposit1).balance, 1 ether);
         assertEq(address(pcvDeposit2).balance, 0);
         vm.prank(addresses.pcvSafeMover);
-        pcvGuardian.withdrawETHRatioToSafeAddress(
-            address(pcvDeposit1),
-            payable(address(pcvDeposit2)),
-            5500,
-            false,
-            false
-        );
+        pcvGuardian.withdrawETHRatioToSafeAddress(address(pcvDeposit1), payable(address(pcvDeposit2)), 5500, false);
         assertEq(address(pcvDeposit1).balance, 0.45 ether);
         assertEq(address(pcvDeposit2).balance, 0.55 ether);
     }
@@ -419,7 +361,6 @@ contract PCVGuardianTest is DSTest {
             address(pcvDeposit2),
             address(token),
             6700,
-            false,
             true
         );
         assertEq(pcvDeposit1.balance(), 33e18);
@@ -433,70 +374,48 @@ contract PCVGuardianTest is DSTest {
 
         assertEq(pcvDeposit1._resistantBalance(), 100e18);
         assertEq(pcvDeposit2._resistantBalance(), 0);
-        pcvGuardian.withdrawToSafeAddress(address(pcvDeposit1), address(pcvDeposit2), 1e18, false, false);
+        pcvGuardian.withdrawToSafeAddress(address(pcvDeposit1), address(pcvDeposit2), 1e18, false);
         assertEq(pcvDeposit1._resistantBalance(), 99e18);
         assertEq(pcvDeposit2._resistantBalance(), 0);
         pcvDeposit2.deposit();
         assertEq(pcvDeposit2._resistantBalance(), 1e18);
-        pcvGuardian.withdrawToSafeAddress(address(pcvDeposit2), address(pcvDeposit1), 1e18, false, true);
+        pcvGuardian.withdrawToSafeAddress(address(pcvDeposit2), address(pcvDeposit1), 1e18, true);
         assertEq(pcvDeposit1._resistantBalance(), 100e18);
         assertEq(pcvDeposit2._resistantBalance(), 0);
 
         vm.stopPrank();
     }
 
-    // should withdraw and pause after
-    // should withdraw and not pause after
-    function testPauseAfter() public {
+    // should revert if trying to depositAfter on a paused safe address
+    function testRevertPausedDepositAfter() public {
         vm.startPrank(addresses.guardian);
-
-        assertEq(pcvDeposit1.paused(), false);
-        assertEq(pcvDeposit2.paused(), false);
-        pcvGuardian.withdrawToSafeAddress(address(pcvDeposit1), address(pcvDeposit2), 1e18, false, true);
-        assertEq(pcvDeposit1.paused(), false);
-        assertEq(pcvDeposit2.paused(), false);
-        pcvGuardian.withdrawToSafeAddress(address(pcvDeposit1), address(pcvDeposit2), 1e18, true, true);
-        assertEq(pcvDeposit1.paused(), true);
-        assertEq(pcvDeposit2.paused(), false);
-
-        pcvDeposit1.unpause();
-        pcvGuardian.withdrawToSafeAddress(address(pcvDeposit2), address(pcvDeposit1), 2e18, false, true);
-
+        pcvDeposit2.pause();
+        vm.expectRevert("Pausable: paused");
+        pcvGuardian.withdrawToSafeAddress(address(pcvDeposit1), address(pcvDeposit2), 1e18, true);
+        pcvDeposit2.unpause();
         vm.stopPrank();
     }
 
-    // should withdraw and unpause before
-    // should withdraw, and pause after
-    // should keep paused state if deposit was paused before withdraw
-    function testUnpauseBefore() public {
+    // should withdraw and unpause before, if the source deposit is paused,
+    // then re-pause it after withdrawal if it was paused
+    function testKeepPausedState() public {
         vm.startPrank(addresses.guardian);
 
         pcvDeposit1.pause();
         assertEq(pcvDeposit1.paused(), true);
         assertEq(pcvDeposit2.paused(), false);
-        pcvGuardian.withdrawToSafeAddress(address(pcvDeposit1), address(pcvDeposit2), 1e18, false, true);
+        pcvGuardian.withdrawToSafeAddress(address(pcvDeposit1), address(pcvDeposit2), 1e18, true);
         assertEq(pcvDeposit1.paused(), true);
         assertEq(pcvDeposit2.paused(), false);
         pcvDeposit1.unpause();
         assertEq(pcvDeposit1.paused(), false);
         assertEq(pcvDeposit2.paused(), false);
-        pcvGuardian.withdrawToSafeAddress(address(pcvDeposit1), address(pcvDeposit2), 1e18, true, true);
-        assertEq(pcvDeposit1.paused(), true);
+        pcvGuardian.withdrawToSafeAddress(address(pcvDeposit1), address(pcvDeposit2), 1e18, true);
+        assertEq(pcvDeposit1.paused(), false);
         assertEq(pcvDeposit2.paused(), false);
 
-        pcvDeposit1.unpause();
-        pcvGuardian.withdrawToSafeAddress(address(pcvDeposit2), address(pcvDeposit1), 2e18, false, true);
+        pcvGuardian.withdrawToSafeAddress(address(pcvDeposit2), address(pcvDeposit1), 2e18, true);
 
-        vm.stopPrank();
-    }
-
-    // should revert if trying to depositAfter on a paused safe address
-    function testRevertPausedAfter() public {
-        vm.startPrank(addresses.guardian);
-        pcvDeposit2.pause();
-        vm.expectRevert("Pausable: paused");
-        pcvGuardian.withdrawToSafeAddress(address(pcvDeposit1), address(pcvDeposit2), 1e18, false, true);
-        pcvDeposit2.unpause();
         vm.stopPrank();
     }
 }

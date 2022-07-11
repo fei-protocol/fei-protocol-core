@@ -57,7 +57,7 @@ function getDAOCalldata(proposal: ExtendedAlphaProposal): string {
     combinedCalldatas.push(`${sighash}${proposal.calldatas[i].slice(2)}`);
   }
 
-  const calldata = feiDAOInterface.encodeFunctionData('propose', [
+  const calldata = feiDAOInterface.encodeFunctionData('propose(address[],uint256[],bytes[],string)', [
     proposal.targets,
     proposal.values,
     combinedCalldatas,
