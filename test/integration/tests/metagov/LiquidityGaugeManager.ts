@@ -3,7 +3,7 @@ import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
 import { ethers } from 'hardhat';
 import { NamedContracts } from '@custom-types/types';
-import proposals from '@protocol/proposalsConfig';
+import { ProposalsConfig } from '@protocol/proposalsConfig';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
 import { getImpersonatedSigner, expectRevert } from '@test/helpers';
 import { forceEth } from '@test/integration/setup/utils';
@@ -29,7 +29,7 @@ describe('e2e-metagov', function () {
       deployAddress,
       version: 1
     };
-    e2eCoord = new TestEndtoEndCoordinator(config, proposals);
+    e2eCoord = new TestEndtoEndCoordinator(config, ProposalsConfig);
     ({ contracts } = await e2eCoord.loadEnvironment());
   });
 

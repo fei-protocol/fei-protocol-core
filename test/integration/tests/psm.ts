@@ -5,7 +5,7 @@ import { ethers } from 'hardhat';
 import { NamedContracts } from '@custom-types/types';
 import { expectRevert, getAddresses, getImpersonatedSigner, time } from '@test/helpers';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
-import proposals from '@protocol/proposalsConfig';
+import { ProposalsConfig } from '@protocol/proposalsConfig';
 import { forceEth } from '@test/integration/setup/utils';
 import { Contract, Signer } from 'ethers';
 import { expectApprox } from '@test/helpers';
@@ -45,7 +45,7 @@ describe('e2e-peg-stability-module', function () {
       version: version
     };
 
-    e2eCoord = new TestEndtoEndCoordinator(config, proposals);
+    e2eCoord = new TestEndtoEndCoordinator(config, ProposalsConfig);
 
     doLogging && console.log(`Loading environment...`);
     ({ contracts } = await e2eCoord.loadEnvironment());

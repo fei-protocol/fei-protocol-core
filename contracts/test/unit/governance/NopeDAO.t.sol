@@ -13,6 +13,7 @@ import {TribeRoles} from "../../../core/TribeRoles.sol";
 
 /// @notice Fixture to create a dummy proposal
 function createDummyProposal(address dummyContract, uint256 newVariable)
+    pure
     returns (
         address[] memory,
         uint256[] memory,

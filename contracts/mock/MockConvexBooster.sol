@@ -14,7 +14,7 @@ contract MockConvexBooster is MockERC20 {
     }
 
     function deposit(
-        uint256 poolId,
+        uint256, /* poolId*/
         uint256 lpTokens,
         bool stake
     ) public returns (bool) {

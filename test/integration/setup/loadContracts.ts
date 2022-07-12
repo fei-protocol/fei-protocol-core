@@ -1,9 +1,9 @@
-import mainnetAddresses from '@protocol/mainnetAddresses';
+import { MainnetContractsConfig, MainnetContractsType } from '@protocol/mainnetAddresses';
 import { ethers } from 'hardhat';
-import { MainnetContracts, MainnetContractsConfig, NamedAddresses } from '@custom-types/types';
+import { MainnetContracts, NamedAddresses } from '@custom-types/types';
 
 export async function getAllContracts(): Promise<MainnetContracts> {
-  const addresses = mainnetAddresses as MainnetContractsConfig;
+  const addresses = MainnetContractsConfig as MainnetContractsType;
   const contractsAsArrayEntries = await Promise.all(
     Object.entries(addresses)
       .filter((entry) => entry[1].artifactName != 'unknown')
@@ -17,10 +17,10 @@ export async function getAllContracts(): Promise<MainnetContracts> {
 
 export function getAllContractAddresses(): NamedAddresses {
   const contracts: NamedAddresses = {};
-  const addresses = mainnetAddresses as MainnetContractsConfig;
+  const addresses = MainnetContractsConfig as MainnetContractsType;
 
   for (const mainnetAddressEntryName in addresses) {
-    const mainnetAddressEntry = addresses[mainnetAddressEntryName];
+    const mainnetAddressEntry = addresses[mainnetAddressEntryName as keyof typeof addresses];
     contracts[mainnetAddressEntryName] = mainnetAddressEntry.address;
   }
 

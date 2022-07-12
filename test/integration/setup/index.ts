@@ -1,4 +1,4 @@
-import { permissions, PermissionsType } from '@protocol/permissions';
+import { PermissionsConfig, PermissionsConfigType } from '@protocol/permissions';
 import { getAllContractAddresses, getAllContracts } from './loadContracts';
 import {
   Config,
@@ -245,9 +245,10 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
     };
 
     // Array of all deployed contracts
-    Object.keys(permissions).map((role) => {
-      const contracts = permissions[role as PermissionsType];
-      const addresses = contracts.map((contractName) => {
+    Object.keys(PermissionsConfig).map((role) => {
+      type permissionsConfigIndexType = keyof typeof PermissionsConfig;
+      const contracts = PermissionsConfig[role as permissionsConfigIndexType];
+      const addresses = contracts.map((contractName: string) => {
         return this.afterUpgradeAddresses[contractName];
       });
 

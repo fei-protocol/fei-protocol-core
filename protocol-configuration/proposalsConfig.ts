@@ -14,5 +14,3 @@ const proposals: TemplatedProposalsConfigMap = {
     category: ProposalCategory.TC
   }
 };
-
-export default proposals;

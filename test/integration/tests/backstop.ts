@@ -1,11 +1,11 @@
+import { NamedAddresses, NamedContracts } from '@custom-types/types';
+import { ProposalsConfig } from '@protocol/proposalsConfig';
+import { overwriteChainlinkAggregator, time } from '@test/helpers';
+import { TestEndtoEndCoordinator } from '@test/integration/setup';
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
 import { ethers } from 'hardhat';
-import { NamedAddresses, NamedContracts } from '@custom-types/types';
-import { resetFork, time, overwriteChainlinkAggregator } from '@test/helpers';
-import proposals from '@protocol/proposalsConfig';
-import { TestEndtoEndCoordinator } from '@test/integration/setup';
 
 const toBN = ethers.BigNumber.from;
 
@@ -37,7 +37,7 @@ describe('e2e-backstop', function () {
       version: version
     };
 
-    e2eCoord = new TestEndtoEndCoordinator(config, proposals);
+    e2eCoord = new TestEndtoEndCoordinator(config, ProposalsConfig);
 
     doLogging && console.log(`Loading environment...`);
     ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment());
@@ -59,7 +59,7 @@ describe('e2e-backstop', function () {
   });
   describe('TribeReserveStabilizer', async function () {
     it('exchangeFei', async function () {
-      const { fei, staticPcvDepositWrapper, tribe, tribeReserveStabilizer, collateralizationOracle } = contracts;
+      const { fei, tribe, tribeReserveStabilizer, collateralizationOracle } = contracts;
 
       // set Chainlink ETHUSD to a fixed 4,000$ value
       await overwriteChainlinkAggregator(contractAddresses.chainlinkEthUsdOracle, '400000000000', '8');

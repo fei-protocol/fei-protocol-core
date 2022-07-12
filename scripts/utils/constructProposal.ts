@@ -1,9 +1,4 @@
-import {
-  MainnetContracts,
-  NamedAddresses,
-  ProposalDescription,
-  TemplatedProposalDescription
-} from '@custom-types/types';
+import { MainnetContracts, NamedAddresses, TemplatedProposalDescription } from '@custom-types/types';
 import { errors, PACKAGE_NAME } from '@idle-finance/hardhat-proposals-plugin/dist/src/constants';
 import {
   AlphaProposal,

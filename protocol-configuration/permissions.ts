@@ -1,4 +1,6 @@
-export const permissions = {
+// This config lists all of the contracts that (should) be hold each listed role.
+
+export const PermissionsConfig = {
   MINTER_ROLE: ['feiDAOTimelock', 'pcvEquityMinter', 'daiFixedPricePSM'],
   BURNER_ROLE: [],
   GOVERN_ROLE: ['core', 'feiDAOTimelock', 'roleBastion'],
@@ -39,4 +41,4 @@ export const permissions = {
   TOKEMAK_DEPOSIT_ADMIN_ROLE: ['feiDAOTimelock', 'tribalCouncilTimelock']
 };
 
-export type PermissionsType = keyof typeof permissions;
+export type PermissionsConfigType = typeof PermissionsConfig;
