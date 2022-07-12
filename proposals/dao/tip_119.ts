@@ -9,6 +9,7 @@ import {
   ValidateUpgradeFunc
 } from '@custom-types/types';
 import { BigNumber } from 'ethers';
+import { overwriteChainlinkAggregator } from '@test/helpers';
 
 const toBN = BigNumber.from;
 
@@ -29,6 +30,14 @@ let pcvStatsBefore: PcvStats;
 // This should exclusively include new contract deployments
 const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: NamedAddresses, logging: boolean) => {
   ////////////// 1. Create and deploy gOHM USD oracle
+  const chainlinkOracleWrapperFactory = await ethers.getContractFactory('ChainlinkOracleWrapper');
+  const chainlinkOhmV2EthOracleWrapper = await chainlinkOracleWrapperFactory.deploy(
+    addresses.core,
+    addresses.chainlinkOHMV2EthOracle
+  );
+  await chainlinkOhmV2EthOracleWrapper.deployed();
+  logging && console.log(`Deployed Chainlink OhmV2 ETH oracle wrapper to: ${chainlinkOhmV2EthOracleWrapper.address}`);
+
   const GOhmEthOracleFactory = await ethers.getContractFactory('GOhmEthOracle');
   const gOhmEthOracle = await GOhmEthOracleFactory.deploy(addresses.core, addresses.chainlinkOHMV2EthOracle);
   await gOhmEthOracle.deployed();
@@ -46,6 +55,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 
   logging && console.log('Deployed gOHM oracle to: ', gOhmUSDOracle.address);
   return {
+    chainlinkOhmV2EthOracleWrapper,
     gOhmUSDOracle,
     gOhmEthOracle
   };
@@ -56,6 +66,12 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 // ensuring contracts have a specific state, etc.
 const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
   pcvStatsBefore = await contracts.collateralizationOracle.pcvStats();
+
+  // make sure ETH oracle is fresh
+  // Read Chainlink OHM : ETH price & override chainlink storage to make it a fresh value.
+  // Otherwise fork block is well out of date, oracle will report invalid and CR will be invalid
+  const ohmPrice = (await contracts.chainlinkOhmV2EthOracleWrapper.read())[0];
+  await overwriteChainlinkAggregator(addresses.chainlinkOHMV2EthOracle, ohmPrice.toString(), '18');
 };
 
 // Tears down any changes made in setup() that need to be

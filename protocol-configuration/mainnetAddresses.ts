@@ -1348,6 +1348,12 @@ export const MainnetContractsConfig = {
     category: AddressCategory.External
   },
 
+  // chainlinkOhmV2EthOracleWrapper: {
+  //   artifactName: 'ChainlinkOracleWrapper',
+  //   address: '',
+  //   category: AddressCategory.Oracle
+  // },
+
   chainlinkStEthUsdOracle: {
     artifactName: 'unknown',
     address: '0xCfE54B5cD566aB89272946F602D76Ea879CAb4a8',
