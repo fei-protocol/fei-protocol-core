@@ -68,13 +68,13 @@ export class SigmaProposal extends AlphaProposal {
 
     await provider.send('evm_setAutomine', [false]);
 
-    console.time('queuetx');
+    console.time('queuetxs');
     for (let i = 0; i < this.targets.length; i++) {
-      console.time(`queuetx-${i}`);
+      //console.time(`queuetx-${i}`);
       await timelock.queueTransaction(this.targets[i], this.values[i], this.signatures[i], this.calldatas[i], eta);
-      console.timeEnd(`queuetx-${i}`);
+      //console.timeEnd(`queuetx-${i}`);
     }
-    console.timeEnd('queuetx');
+    console.timeEnd('queuetxs');
     await this.mineBlocks(1);
     await this.mineBlock(eta.toNumber());
 
@@ -82,9 +82,9 @@ export class SigmaProposal extends AlphaProposal {
 
     await provider.send('evm_setAutomine', [true]);
 
-    console.time('executetx');
+    console.time('executetxs');
     for (let i = 0; i < this.targets.length; i++) {
-      console.time(`executetx-${i}`);
+      //console.time(`executetx-${i}`);
       await timelock
         .executeTransaction(this.targets[i], this.values[i], this.signatures[i], this.calldatas[i], eta)
         .then(
@@ -116,10 +116,10 @@ export class SigmaProposal extends AlphaProposal {
             );
           }
         );
-      console.timeEnd(`executetx-${i}`);
+      //console.timeEnd(`executetx-${i}`);
     }
     await this.mineBlock();
-    console.timeEnd('executetx');
+    console.timeEnd('executetxs');
 
     await provider.send('evm_setAutomine', [false]);
 
