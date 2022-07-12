@@ -1,4 +1,4 @@
-import { Core, Fei, MockERC20, MockOracle, MockPCVDepositV2, PriceBoundPSM } from '@custom-types/contracts';
+import { Core, Fei, MockERC20, MockOracle, MockPCVDepositV2, OracleRef, PriceBoundPSM } from '@custom-types/contracts';
 import { NamedAddresses } from '@custom-types/types';
 import {
   deployDevelopmentWeth,
@@ -12,6 +12,7 @@ import { expect } from 'chai';
 import { Signer, utils } from 'ethers';
 import { keccak256 } from 'ethers/lib/utils';
 import hre, { ethers } from 'hardhat';
+import { connect } from 'http2';
 
 const toBN = ethers.BigNumber.from;
 
@@ -409,6 +410,8 @@ describe('PriceBoundPegStabilityModule', function () {
       });
 
       it('exchanges for appropriate amount of tokens when price is 1:1', async () => {
+        await oracle.setExchangeRateScaledBase(ethers.constants.WeiPerEther);
+        await psm.connect(impersonatedSigners[governorAddress]).setMintFee(mintFeeBasisPoints);
         const mintAmt = toBN(10_000_000);
 
         const userStartingFeiBalance = await fei.balanceOf(userAddress);
@@ -497,6 +500,8 @@ describe('PriceBoundPegStabilityModule', function () {
           psm.connect(impersonatedSigners[userAddress]).mint(userAddress, mintAmount, 0),
           'Pausable: paused'
         );
+
+        await psm.connect(impersonatedSigners[governorAddress]).unpause();
       });
     });
   });
@@ -518,6 +523,7 @@ describe('PriceBoundPegStabilityModule', function () {
       });
 
       it('exchanges 1000 FEI for 975 DAI as fee is 250 bips and exchange rate is 1:1', async () => {
+        await psm.connect(impersonatedSigners[governorAddress]).unpause();
         const oneK = toBN(1000);
         const newRedeemFee = 250;
         await psm.connect(impersonatedSigners[governorAddress]).setRedeemFee(newRedeemFee);
@@ -547,6 +553,7 @@ describe('PriceBoundPegStabilityModule', function () {
       it('exchanges 1000 FEI for 975 DAI as fee is 250 bips and exchange rate is 1:1', async () => {
         const oneK = toBN(1000);
         const newRedeemFee = 250;
+
         await psm.connect(impersonatedSigners[governorAddress]).setRedeemFee(newRedeemFee);
 
         const userStartingFeiBalance = await fei.balanceOf(userAddress);
@@ -599,6 +606,7 @@ describe('PriceBoundPegStabilityModule', function () {
 
       it('redeem succeeds when user has enough funds', async () => {
         await oracle.setExchangeRate(1);
+        await psm.connect(impersonatedSigners[governorAddress]).setRedeemFee(redeemFeeBasisPoints);
         await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, mintAmount);
         await fei.connect(impersonatedSigners[userAddress]).approve(psm.address, mintAmount);
 
@@ -843,6 +851,7 @@ describe('PriceBoundPegStabilityModule', function () {
 
       it('redeem fails when oracle price is $2', async () => {
         await oracle.setExchangeRate(2);
+        await psm.connect(impersonatedSigners[governorAddress]).setRedeemFee(redeemFeeBasisPoints);
         await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, mintAmount);
         await fei.connect(impersonatedSigners[userAddress]).approve(psm.address, mintAmount);
         await expectRevert(
@@ -852,6 +861,8 @@ describe('PriceBoundPegStabilityModule', function () {
       });
 
       it('redeem fails when expected amount out is greater than actual amount out', async () => {
+        await oracle.setExchangeRate(1);
+        await psm.connect(impersonatedSigners[governorAddress]).setRedeemFee(redeemFeeBasisPoints);
         await expectRevert(
           psm.connect(impersonatedSigners[userAddress]).redeem(userAddress, mintAmount, mintAmount),
           'PegStabilityModule: Redeem not enough out'
@@ -991,6 +1002,7 @@ describe('PriceBoundPegStabilityModule', function () {
       });
 
       it('fails when floor is greater than ceiling', async () => {
+        await psm.connect(impersonatedSigners[governorAddress]).setOracleCeilingBasisPoints(ceilingPrice);
         await expectRevert(
           psm.connect(impersonatedSigners[governorAddress]).setOracleFloorBasisPoints(10_300),
           'PegStabilityModule: floor must be less than ceiling'
@@ -1054,74 +1066,6 @@ describe('PriceBoundPegStabilityModule', function () {
         const amount = 10_000_000;
         await asset.mint(psm.address, amount);
         await psm.connect(impersonatedSigners[pcvControllerAddress]).withdraw(userAddress, await psm.balance());
-
-        const endingBalance = await psm.balance();
-        expect(endingBalance).to.be.equal(0);
-        expect(await asset.balanceOf(userAddress)).to.be.equal(amount);
-      });
-    });
-  });
-
-  describe('PCV', function () {
-    describe('allocateSurplus', function () {
-      it('sends surplus to PCVDeposit target when called', async () => {
-        const startingSurplusBalance = await asset.balanceOf(pcvDeposit.address);
-        await asset.mint(psm.address, reservesThreshold.mul(2));
-
-        expect(await psm.hasSurplus()).to.be.true;
-        expect(await psm.reservesSurplus()).to.be.equal(reservesThreshold);
-
-        await psm.allocateSurplus();
-
-        expect(await psm.reservesSurplus()).to.be.equal(0);
-        expect(await psm.hasSurplus()).to.be.false;
-
-        const endingSurplusBalance = await asset.balanceOf(pcvDeposit.address);
-        const endingPSMBalance = await asset.balanceOf(psm.address);
-
-        expect(endingSurplusBalance.sub(startingSurplusBalance)).to.be.equal(reservesThreshold);
-        expect(endingPSMBalance).to.be.equal(reservesThreshold);
-      });
-
-      it('reverts when there is no surplus to allocate', async () => {
-        await asset.mint(psm.address, reservesThreshold);
-
-        expect(await psm.hasSurplus()).to.be.false;
-        expect(await psm.reservesSurplus()).to.be.equal(0);
-
-        await expectRevert(psm.allocateSurplus(), 'PegStabilityModule: No surplus to allocate');
-      });
-    });
-
-    describe('deposit', function () {
-      it('sends surplus to PCVDeposit target when called', async () => {
-        const startingSurplusBalance = await asset.balanceOf(pcvDeposit.address);
-        await asset.mint(psm.address, reservesThreshold.mul(2));
-
-        expect(await psm.hasSurplus()).to.be.true;
-        expect(await psm.reservesSurplus()).to.be.equal(reservesThreshold);
-
-        await psm.deposit();
-
-        expect(await psm.reservesSurplus()).to.be.equal(0);
-        expect(await psm.hasSurplus()).to.be.false;
-
-        const endingSurplusBalance = await asset.balanceOf(pcvDeposit.address);
-        const endingPSMBalance = await asset.balanceOf(psm.address);
-
-        expect(endingSurplusBalance.sub(startingSurplusBalance)).to.be.equal(reservesThreshold);
-        expect(endingPSMBalance).to.be.equal(reservesThreshold);
-      });
-
-      it('succeeds when called and sends no value when reserves are met', async () => {
-        await asset.mint(psm.address, reservesThreshold);
-        expect(await psm.hasSurplus()).to.be.false;
-        expect(await psm.reservesSurplus()).to.be.equal(0);
-
-        await psm.deposit();
-
-        expect(await psm.hasSurplus()).to.be.false;
-        expect(await psm.reservesSurplus()).to.be.equal(0);
       });
     });
   });
