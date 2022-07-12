@@ -76,7 +76,7 @@ contract GOhmEthOracle is IOracle, CoreRef {
             answeredInRound == roundId &&
             updatedAt >= block.timestamp - MAX_ORACLE_UPDATE_TIME;
 
-        // Feth the OHM price and normalise for number of decimals
+        // Fetch the OHM price and normalise for number of decimals
         // OHMV2 chainlink reports in ETH terms
         Decimal.D256 memory ohmEthValue = Decimal.from(uint256(ohmEthPrice)).div(oracleDecimalsNormalizer);
 
