@@ -1,6 +1,6 @@
-import { MainnetContractsConfig, AddressCategory } from '../types/types'; // imported without custom path to allow docs to autogen without ts errors
+import { AddressCategory } from '../types/types'; // imported without custom path to allow docs to autogen without ts errors
 
-const MainnetContractsConfig: MainnetContractsConfig = {
+export const MainnetContractsConfig = {
   core: {
     artifactName: 'Core',
     address: '0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9',
@@ -2528,4 +2528,6 @@ const MainnetContractsConfig: MainnetContractsConfig = {
   }
 };
 
-export default MainnetContractsConfig;
+export type MainnetContractsType = typeof MainnetContractsConfig;
+export type MainnetContractsEntryName = keyof MainnetContractsType;
+export const MainnetContractsEntryNames = Object.keys(MainnetContractsConfig) as MainnetContractsEntryName[];
