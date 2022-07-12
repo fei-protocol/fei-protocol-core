@@ -8,13 +8,15 @@ contract MockStEthToken is MockERC20 {
     uint256 public totalShares;
     mapping(address => uint256) public shares;
 
-    constructor() public {
+    constructor() {
         pooledEth = 1_000_000e18;
         totalShares = 999_999e18;
         shares[address(msg.sender)] = totalShares;
     }
 
-    function submit(address _referral) external payable returns (uint256 amount_) {
+    function submit(
+        address /* _referral*/
+    ) external payable returns (uint256 amount_) {
         amount_ = msg.value;
 
         uint256 _shares = getSharesByPooledEth(amount_);
@@ -82,7 +84,7 @@ contract MockStEthToken is MockERC20 {
         totalEther_ = pooledEth;
     }
 
-    function getTotalShares() public returns (uint256 totalShares_) {
+    function getTotalShares() public view returns (uint256 totalShares_) {
         totalShares_ = totalShares;
     }
 
