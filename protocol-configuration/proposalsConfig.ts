@@ -3,7 +3,7 @@ import { ProposalCategory, TemplatedProposalsConfigMap } from '@custom-types/typ
 import fip_x from '@proposals/description/fip_x';
 import tip_119 from '@proposals/description/tip_119';
 
-export const proposals: TemplatedProposalsConfigMap = {
+export const ProposalsConfig: TemplatedProposalsConfigMap = {
   tip_119: {
     deploy: true, // deploy flag for whether to run deploy action during e2e tests or use mainnet state
     totalValue: 0, // amount of ETH to send to DAO execution
