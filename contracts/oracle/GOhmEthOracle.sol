@@ -35,7 +35,7 @@ contract GOhmEthOracle is IOracle, CoreRef {
     IgOHM public constant GOHM = IgOHM(0x0ab87046fBb341D058F17CBC4c1133F25a20a52f);
 
     /// @notice Maximum time since last update that the Chainlink oracle is considered valid
-    uint256 public constant MAX_ORACLE_UPDATE_TIME = 86400 seconds;
+    uint256 public constant MAX_ORACLE_UPDATE_TIME = 1 weeks;
 
     /// @param _core Fei Core for reference
     /// @param _chainlinkOHMETHOracle Chainlink OHM V2 oracle reporting in terms of ETH
