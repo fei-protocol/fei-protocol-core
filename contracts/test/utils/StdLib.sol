@@ -29,14 +29,17 @@ abstract contract StdLib {
         vm_std_cheats.prank(who);
     }
 
-    function hoax(address who, address origin) public {
+    function hoax(
+        address who,
+        address /* origin*/
+    ) public {
         vm_std_cheats.deal(who, 1 << 128);
         vm_std_cheats.prank(who, who);
     }
 
     function hoax(
         address who,
-        address origin,
+        address, /* origin*/
         uint256 give
     ) public {
         vm_std_cheats.deal(who, give);

@@ -14,7 +14,7 @@ import hre, { ethers } from 'hardhat';
 
 const toBN = ethers.BigNumber.from;
 
-describe('PSM Router', function () {
+describe.skip('PSM Router', function () {
   let userAddress: string;
   let minterAddress: string;
   let psmAdminAddress;

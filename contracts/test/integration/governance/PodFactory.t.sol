@@ -72,7 +72,11 @@ contract PodFactoryIntegrationTest is DSTest {
 
     function testDeployGenesisPod() public {
         IPodFactory.PodConfig memory councilConfig = getCouncilPodParams(podAdmin);
-        (uint256 councilPodId, address councilTimelock, address councilSafe) = factory.deployCouncilPod(councilConfig);
+        (
+            uint256 councilPodId, /*address councilTimelock*/
+            ,
+            address councilSafe
+        ) = factory.deployCouncilPod(councilConfig);
 
         uint256 numMembers = factory.getNumMembers(councilPodId);
         assertEq(numMembers, councilConfig.members.length);
@@ -95,7 +99,7 @@ contract PodFactoryIntegrationTest is DSTest {
 
     function testCanOnlyDeployGenesisOnce() public {
         IPodFactory.PodConfig memory councilConfig = getCouncilPodParams(podAdmin);
-        (uint256 councilPodId, address councilTimelock, address genesisSafe) = factory.deployCouncilPod(councilConfig);
+        factory.deployCouncilPod(councilConfig);
 
         IPodFactory.PodConfig memory config = getPodParamsWithTimelock(podAdmin);
         vm.expectRevert(bytes("Genesis pod already deployed"));
@@ -294,7 +298,11 @@ contract PodFactoryIntegrationTest is DSTest {
         assertEq(address(factory.defaultPodController()), MainnetAddresses.ORCA_POD_CONTROLLER_V1);
 
         vm.prank(feiDAOTimelock);
-        (uint256 podId, address timelock, address safe) = factory.deployCouncilPod(podConfig);
+        (
+            uint256 podId, /*address timelock*/
+            ,
+            address safe
+        ) = factory.deployCouncilPod(podConfig);
 
         // 1. Get pod controller
         address defaultPodController = address(factory.defaultPodController());

@@ -31,7 +31,10 @@ contract MockConvexBaseRewardPool is MockERC20 {
         getReward(msg.sender, claim);
     }
 
-    function getReward(address who, bool claim) public returns (bool) {
+    function getReward(
+        address who,
+        bool /* claim*/
+    ) public returns (bool) {
         if (rewardAmountPerClaim > 0) {
             rewardToken.mint(who, rewardAmountPerClaim);
         }
@@ -40,6 +43,7 @@ contract MockConvexBaseRewardPool is MockERC20 {
 
     function stakeFor(address who, uint256 amount) public returns (bool) {
         _balances[who] = amount;
+        return true;
     }
 
     function balanceOf(address who) public view override returns (uint256) {

@@ -2,24 +2,15 @@ export const safeAddressesConfig: SafeAddressStateConfig = [
   'rocketPoolPCVDeposit',
   'ethToDaiLBPSwapper',
   'balancerGaugeStaker',
-  'dpiToDaiLBPSwapper',
-  'uniswapPCVDeposit',
-  'raiPriceBoundPSM',
-  'aaveRaiPCVDeposit',
-  'rariPool9RaiPCVDeposit',
-  'turboFusePCVDeposit',
   'veBalDelegatorPCVDeposit',
-  'balancerDepositFeiWeth',
   'balancerDepositBalWeth',
-  'agEurUniswapPCVDeposit',
-  'd3poolConvexPCVDeposit',
-  'd3poolCurvePCVDeposit',
-  'lusdPSM',
   'daiFixedPricePSM',
-  'aaveEthPCVDeposit',
-  'ethPSM',
-  'compoundEthPCVDeposit',
-  'feiDAOTimelock'
+  'feiDAOTimelock',
+  'wethHoldingPCVDeposit',
+  'lusdHoldingPCVDeposit',
+  'voltHoldingPCVDeposit',
+  'daiHoldingPCVDeposit',
+  'gOHMHoldingPCVDeposit'
 ];
 
 export type SafeAddressStateConfig = string[];
