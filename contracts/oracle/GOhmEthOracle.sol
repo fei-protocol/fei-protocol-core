@@ -34,6 +34,9 @@ contract GOhmEthOracle is IOracle, CoreRef {
     /// @notice gOHM token address.
     IgOHM public constant GOHM = IgOHM(0x0ab87046fBb341D058F17CBC4c1133F25a20a52f);
 
+    /// @notice Maximum time since last update that the Chainlink oracle is considered valid
+    uint256 public constant MAX_ORACLE_UPDATE_TIME = 86400 seconds;
+
     /// @param _core Fei Core for reference
     /// @param _chainlinkOHMETHOracle Chainlink OHM V2 oracle reporting in terms of ETH
     constructor(address _core, address _chainlinkOHMETHOracle) CoreRef(_core) {
@@ -64,8 +67,14 @@ contract GOhmEthOracle is IOracle, CoreRef {
     /// @return oracle gOHM price in units of ETH
     /// @return true if price is valid
     function read() external view override returns (Decimal.D256 memory, bool) {
-        (uint80 roundId, int256 ohmEthPrice, , , uint80 answeredInRound) = chainlinkOHMETHOracle.latestRoundData();
-        bool valid = !paused() && ohmEthPrice > 0 && answeredInRound == roundId;
+        (uint80 roundId, int256 ohmEthPrice, , uint256 updatedAt, uint80 answeredInRound) = chainlinkOHMETHOracle
+            .latestRoundData();
+        // Valid if not paused, price is greater than 0, Chainlink price answered in this round
+        // and the Chainlink price updated happened at least within the last 24 hours.
+        bool valid = !paused() &&
+            ohmEthPrice > 0 &&
+            answeredInRound == roundId &&
+            updatedAt >= block.timestamp - MAX_ORACLE_UPDATE_TIME;
 
         // Feth the OHM price and normalise for number of decimals
         // OHMV2 chainlink reports in ETH terms
