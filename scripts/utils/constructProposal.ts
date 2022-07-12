@@ -121,9 +121,9 @@ export class SigmaProposal extends AlphaProposal {
     await this.mineBlock();
     console.timeEnd('executetxs');
 
-    await provider.send('evm_setAutomine', [false]);
-
     console.time('getreceipts');
+    await this.mineBlock();
+    await this.mineBlock();
     for (let i = 0; i < this.targets.length; i++) {
       const r = await receipts[i].wait().catch((r) => {
         return r.receipt as ContractReceipt;
@@ -133,7 +133,6 @@ export class SigmaProposal extends AlphaProposal {
       }
     }
     console.timeEnd('getreceipts');
-    await provider.send('evm_setAutomine', [true]);
     await provider.send('hardhat_stopImpersonatingAccount', [this.governor.address]);
     await provider.send('hardhat_stopImpersonatingAccount', [timelock.address]);
   }
