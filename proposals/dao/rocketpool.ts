@@ -58,7 +58,14 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // Run any validations required on the fip using mocha or console logging
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  console.log('----------------------------------------------------');
+  console.log('====================================================');
+  console.log('Simulation: attempt to acquire rETH while slippage is negative (rETH underpeg).');
+  console.log('rETH can be acquired in 2 ways :');
+  console.log(' - swap WETH for rETH on Balancer (metastable pool)');
+  console.log(" - direct ETH deposit in RocketPool's smart contracts");
+  console.log('Simulation at block 15127360, Jul-12-2022 10:44:34 AM +UTC.');
+  console.log('====================================================');
+  console.log("Simulation: move Tribe DAO's WETH to the rocketPoolPCVDeposit.");
   console.log('rocketPoolPCVDeposit.balance()', (await contracts.rocketPoolPCVDeposit.balance()) / 1e18);
   console.log(
     'rocketPoolPCVDeposit WETH     ',
@@ -69,23 +76,42 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
     (await contracts.reth.balanceOf(contracts.rocketPoolPCVDeposit.address)) / 1e18
   );
   console.log('----------------------------------------------------');
+  console.log('Simulation: swap WETH to rETH on Balancer, in chunks for 100 WETH, while underpeg.');
   let i = 0;
   let continueLoops = true;
   while (continueLoops && i <= 100) {
     i++;
-    const previewDeposit = await contracts.rocketPoolPCVDeposit.callStatic.previewDeposit(
+    const previewDepositSwap = await contracts.rocketPoolPCVDeposit.callStatic.previewDepositSwap(
       ethers.utils.parseEther('100')
     );
-    const arbProfit = previewDeposit[2];
+    const arbProfit = previewDepositSwap[2];
     if (arbProfit > 0) {
       console.log('rocketPoolPCVDeposit.deposit(100) #', i, 'Arb available, taking -> ETH profit', arbProfit / 1e18);
-      await contracts.rocketPoolPCVDeposit['deposit(uint256)'](ethers.utils.parseEther('100'));
+      await contracts.rocketPoolPCVDeposit.depositSwap(ethers.utils.parseEther('100'));
     } else {
       console.log('rocketPoolPCVDeposit.deposit(100) #', i, 'No arb available -> stop.');
       continueLoops = false;
     }
   }
   console.log('----------------------------------------------------');
+  console.log('Simulation: PCV Deposit balances after swaps.');
+  console.log('rocketPoolPCVDeposit.balance()', (await contracts.rocketPoolPCVDeposit.balance()) / 1e18);
+  console.log(
+    'rocketPoolPCVDeposit WETH     ',
+    (await contracts.weth.balanceOf(contracts.rocketPoolPCVDeposit.address)) / 1e18
+  );
+  console.log(
+    'rocketPoolPCVDeposit rETH     ',
+    (await contracts.reth.balanceOf(contracts.rocketPoolPCVDeposit.address)) / 1e18
+  );
+  console.log('----------------------------------------------------');
+  console.log('Simulation: direct deposit of ETH in Rocket Pool to get rETH.');
+  const maximumStake = await contracts.rocketPoolPCVDeposit.maximumStake();
+  console.log('rocketPoolPCVDeposit.maximumStake()', maximumStake / 1e18);
+  console.log('rocketPoolPCVDeposit.depositStake(maximumStake)');
+  await contracts.rocketPoolPCVDeposit.depositStake(maximumStake);
+  console.log('----------------------------------------------------');
+  console.log('Simulation: PCV Deposit balance after deposits.');
   console.log('rocketPoolPCVDeposit.balance()', (await contracts.rocketPoolPCVDeposit.balance()) / 1e18);
   console.log(
     'rocketPoolPCVDeposit WETH     ',

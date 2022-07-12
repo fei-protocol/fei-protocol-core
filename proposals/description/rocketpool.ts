@@ -16,9 +16,9 @@ const proposal: TemplatedProposalDescription = {
       values: '0',
       method: 'withdrawToSafeAddress(address,address,uint256,bool,bool)',
       arguments: (addresses) => [
-        addresses.ethPSM,
+        addresses.wethHoldingPCVDeposit,
         addresses.rocketPoolPCVDeposit,
-        ethers.utils.parseEther('10000'),
+        '21716293570455965978548',
         false,
         false
       ],

@@ -7,6 +7,29 @@ import {TribeRoles} from "../../core/TribeRoles.sol";
 import {IVault, IAsset} from "../balancer/IVault.sol";
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "hardhat/console.sol";
+
+// Rocket storage, used to retrieve contract addresses of RocketPool contracts
+interface IRocketStorage {
+    function getAddress(bytes32 _key) external view returns (address);
+}
+
+interface IRocketVault {
+    function balanceOf(string memory _networkContractName) external view returns (uint256);
+}
+
+interface IRocketSettings {
+    // RocketDAOProtocolSettingsDepositInterface
+    function getDepositEnabled() external view returns (bool);
+
+    function getMinimumDeposit() external view returns (uint256);
+
+    function getMaximumDepositPoolSize() external view returns (uint256);
+}
+
+interface IRocketDepositPool {
+    function deposit() external payable;
+}
 
 // rETH Token contract specific functions
 interface IRocketTokenRETH is IERC20 {
@@ -28,6 +51,7 @@ contract RocketPoolPCVDeposit is CoreRef, PCVDeposit {
 
     // ----------- Properties -----------
     // References to external contracts
+    address public constant ROCKET_STORAGE = 0x1d8f8f00cfa6758d7bE78336684788Fb0ee0Fa46;
     address public constant ERC20_RETH = 0xae78736Cd615f374D3085123A210448E74Fc6393;
     address public constant BALANCER_VAULT = 0xBA12222222228d8Ba445958a75a0704d566BF2C8;
     bytes32 public constant BALANCER_POOL = 0x1e19cf2d73a72ef1332c882f20534b6519be0276000200000000000000000112;
@@ -61,19 +85,56 @@ contract RocketPoolPCVDeposit is CoreRef, PCVDeposit {
     /// @notice deposit all WETH held by the contract to get rETH.
     function deposit() external override whenNotPaused {
         uint256 amountIn = IERC20(address(Constants.WETH)).balanceOf(address(this));
-        _deposit(amountIn);
+        _depositSwap(amountIn);
     }
 
     /// @notice deposit a specific amount of WETH held by the contract to get rETH.
-    function deposit(uint256 amountIn) external whenNotPaused {
-        _deposit(amountIn);
+    function depositSwap(uint256 amountIn) external whenNotPaused {
+        _depositSwap(amountIn);
+    }
+
+    /// @notice get the address of a contract of RocketPool
+    function _rocketAddress(string memory name) internal view returns (address) {
+        return IRocketStorage(ROCKET_STORAGE).getAddress(keccak256(abi.encodePacked("contract.address", name)));
+    }
+
+    /// @notice amount of rETH available for staking
+    function maximumStake() public view returns (uint256) {
+        // fetch rocketpool addresses
+        IRocketSettings rocketSettings = IRocketSettings(_rocketAddress("rocketDAOProtocolSettingsDeposit"));
+        IRocketVault rocketVault = IRocketVault(_rocketAddress("rocketVault"));
+
+        if (!rocketSettings.getDepositEnabled()) {
+            return 0;
+        }
+
+        uint256 maxAmountIn = rocketSettings.getMaximumDepositPoolSize() - rocketVault.balanceOf("rocketDepositPool");
+        return maxAmountIn;
+    }
+
+    /// @notice stake a specific amount of WETH held by the contract to get rETH.
+    function depositStake(uint256 amountIn) external whenNotPaused {
+        // withdraw WETH to get naked ETH
+        Constants.WETH.withdraw(amountIn);
+
+        uint256 rethExchangeRate = IRocketTokenRETH(ERC20_RETH).getExchangeRate();
+        uint256 minAmountOut = (amountIn * 1e18) / rethExchangeRate;
+        uint256 balanceBefore = IRocketTokenRETH(ERC20_RETH).balanceOf(address(this));
+
+        // preform deposit
+        IRocketDepositPool rocketDepositPool = IRocketDepositPool(_rocketAddress("rocketDepositPool"));
+        rocketDepositPool.deposit{value: amountIn}();
+
+        // sanity check
+        uint256 balanceAfter = IRocketTokenRETH(ERC20_RETH).balanceOf(address(this));
+        assert((balanceAfter - balanceBefore + 1e10) >= minAmountOut);
     }
 
     /// @notice deposit a specific amount of WETH held by the contract to get rETH.
     /// This internal function does not check the paused state.
     /// rETH is obtained by swapping WETH for rETH in Balancer.
     /// A maximum of {maximumDepositSlippageBps} basis points of slippage is tolerated.
-    function _deposit(uint256 amountIn) internal {
+    function _depositSwap(uint256 amountIn) internal {
         require(amountIn > 0, "RocketPoolPCVDeposit: cannot deposit 0");
 
         uint256 rethExchangeRate = IRocketTokenRETH(ERC20_RETH).getExchangeRate();
@@ -109,7 +170,7 @@ contract RocketPoolPCVDeposit is CoreRef, PCVDeposit {
     }
 
     /// @notice preview a swap of {amountIn} WETH to rETH in the Balancer pool.
-    function previewDeposit(uint256 amountIn)
+    function previewDepositSwap(uint256 amountIn)
         external
         returns (
             int256 rETHout,
