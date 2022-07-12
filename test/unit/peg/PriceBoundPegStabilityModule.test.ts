@@ -1,4 +1,4 @@
-import { Core, Fei, MockERC20, MockOracle, MockPCVDepositV2, OracleRef, PriceBoundPSM } from '@custom-types/contracts';
+import { Core, Fei, MockERC20, MockOracle, MockPCVDepositV2, PriceBoundPSM } from '@custom-types/contracts';
 import { NamedAddresses } from '@custom-types/types';
 import {
   deployDevelopmentWeth,
@@ -12,7 +12,6 @@ import { expect } from 'chai';
 import { Signer, utils } from 'ethers';
 import { keccak256 } from 'ethers/lib/utils';
 import hre, { ethers } from 'hardhat';
-import { connect } from 'http2';
 
 const toBN = ethers.BigNumber.from;
 
