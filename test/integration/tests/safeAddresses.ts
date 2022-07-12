@@ -1,6 +1,6 @@
 import { NamedContracts } from '@custom-types/types';
-import { safeAddressesConfig } from '@protocol/safeAddresses';
-import proposals from '@protocol/proposalsConfig';
+import { ProposalsConfig } from '@protocol/proposalsConfig';
+import { SafeAddressesConfig } from '@protocol/safeAddresses';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
@@ -32,7 +32,7 @@ describe('e2e-pcv-guardian-safe-addresses', function () {
       version: version
     };
 
-    e2eCoord = new TestEndtoEndCoordinator(config, proposals);
+    e2eCoord = new TestEndtoEndCoordinator(config, ProposalsConfig);
 
     doLogging && console.log(`Loading environment...`);
     ({ contracts } = await e2eCoord.loadEnvironment());
@@ -46,11 +46,11 @@ describe('e2e-pcv-guardian-safe-addresses', function () {
     const allAddressesOnChain = await pcvGuardian.getSafeAddresses();
 
     const numAddressesOnChain = allAddressesOnChain.length;
-    const numAddressesLocally = safeAddressesConfig.length;
+    const numAddressesLocally = SafeAddressesConfig.length;
     expect(numAddressesOnChain).to.be.equal(numAddressesLocally, 'Num safe addresses mismatch');
 
-    for (let i = 0; i < safeAddressesConfig.length; i += 1) {
-      const safeAddressContractName = safeAddressesConfig[i];
+    for (let i = 0; i < SafeAddressesConfig.length; i += 1) {
+      const safeAddressContractName = SafeAddressesConfig[i];
 
       // Get the on-chain contract
       const onChainContract = contracts[safeAddressContractName];

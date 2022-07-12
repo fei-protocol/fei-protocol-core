@@ -1,7 +1,7 @@
 import { Fei } from '@custom-types/contracts';
 import { NamedContracts } from '@custom-types/types';
 import { Signer } from '@ethersproject/abstract-signer';
-import proposals from '@protocol/proposalsConfig';
+import { ProposalsConfig } from '@protocol/proposalsConfig';
 import { ZERO_ADDRESS } from '@test/helpers';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
 import chai, { expect } from 'chai';
@@ -38,7 +38,7 @@ describe('e2e-fei', function () {
       version: version
     };
 
-    e2eCoord = new TestEndtoEndCoordinator(config, proposals);
+    e2eCoord = new TestEndtoEndCoordinator(config, ProposalsConfig);
 
     doLogging && console.log(`Loading environment...`);
     ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment());

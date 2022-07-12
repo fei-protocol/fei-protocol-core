@@ -1,5 +1,5 @@
 import { NamedContracts } from '@custom-types/types';
-import proposals from '@protocol/proposalsConfig';
+import { ProposalsConfig } from '@protocol/proposalsConfig';
 import { StateConfig, StateConfigEntryNames } from '@protocol/stateConfig';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
 import chai, { expect } from 'chai';
@@ -28,7 +28,7 @@ describe('e2e-state-config', function () {
       version: 1
     };
 
-    e2eCoord = new TestEndtoEndCoordinator(config, proposals);
+    e2eCoord = new TestEndtoEndCoordinator(config, ProposalsConfig);
 
     config.logging && console.log(`Loading environment...`);
     ({ contracts } = await e2eCoord.loadEnvironment());

@@ -5,7 +5,7 @@ import { Interface } from '@ethersproject/abi';
 import { utils } from 'ethers';
 import { getAllContractAddresses, getAllContracts } from '@test/integration/setup/loadContracts';
 import { ProposalCategory, TemplatedProposalDescription } from '@custom-types/types';
-import proposals from '@protocol/proposalsConfig';
+import { ProposalsConfig } from '@protocol/proposalsConfig';
 import { TRIBAL_COUNCIL_POD_ID } from '@protocol/optimisticGovernance';
 import { abi as TimelockControllerABI } from '../../artifacts/@openzeppelin/contracts/governance/TimelockController.sol/TimelockController.json';
 import { abi as FeiDAOABI } from '../../artifacts/contracts/dao/governor/FeiDAO.sol/FeiDAO.json';
@@ -36,8 +36,8 @@ export async function constructProposalCalldata(proposalName: string): Promise<s
 
   const proposal = (await constructProposal(proposalInfo, contracts, contractAddresses)) as ExtendedAlphaProposal;
 
-  console.log(proposals[proposalName].category);
-  if (proposals[proposalName].category === ProposalCategory.TC) {
+  console.log(ProposalsConfig[proposalName].category);
+  if (ProposalsConfig[proposalName].category === ProposalCategory.TC) {
     const podConfig: PodConfig = {
       id: TRIBAL_COUNCIL_POD_ID,
       timelockAddress: contractAddresses.tribalCouncilTimelock
