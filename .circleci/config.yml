@@ -38,8 +38,8 @@ jobs:
             - artifacts
             - types/contracts
             - cache/solidity-files-cache.json
-      - restore_cache: # Restore the hardhat network fork cache if the hardhat-config hasn't changed
-          key: hardhat-config-{{ checksum "hardhat.config.ts" }}
+      - restore_cache: # Restore the hardhat network fork cache
+          key: hardhat-network-cache
       - persist_to_workspace:
           root: ~/repo
           paths:
@@ -103,7 +103,7 @@ jobs:
       - attach_workspace:
           at: ./
       - restore_cache:
-          key: fork-cache-{{ checksum "hardhat.config.ts" }}
+          key: hardhat-network-cache
       - run:
           name: Run end-to-end tests
           command: |
@@ -125,7 +125,7 @@ jobs:
       - attach_workspace:
           at: ./
       - save_cache: # Save the solidity files cache, the compiled artifacts, and the generated types
-          key: fork-cache-{{ checksum "hardhat.config.ts" }}
+          key: hardhat-network-cache
           paths:
             - cache/hardhat-network-fork
 
