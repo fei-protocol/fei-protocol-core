@@ -1,4 +1,5 @@
 import { Core, Fei, MockERC20, MockOracle, MockPCVDepositV2, PriceBoundPSM } from '@custom-types/contracts';
+import { NamedAddresses } from '@custom-types/types';
 import {
   deployDevelopmentWeth,
   expectRevert,
@@ -41,9 +42,10 @@ describe('PriceBoundPegStabilityModule', function () {
   let oracle: MockOracle;
   let psm: PriceBoundPSM;
   let pcvDeposit: MockPCVDepositV2;
+  let addresses: NamedAddresses;
 
   before(async () => {
-    const addresses = await getAddresses();
+    addresses = await getAddresses();
 
     // add any addresses you want to impersonate here
     const impersonatedAddresses = [
@@ -65,10 +67,6 @@ describe('PriceBoundPegStabilityModule', function () {
     for (const address of impersonatedAddresses) {
       impersonatedSigners[address] = await getImpersonatedSigner(address);
     }
-  });
-
-  beforeEach(async () => {
-    const addresses = await getAddresses();
 
     userAddress = addresses.userAddress;
     governorAddress = addresses.governorAddress;
