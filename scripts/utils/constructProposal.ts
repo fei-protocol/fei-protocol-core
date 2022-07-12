@@ -30,7 +30,7 @@ export class SigmaProposal extends AlphaProposal {
     }
   }
 
-  async simulate(fullSimulation = false, force?: boolean) {
+  async simulate(fullSimulation = true, force?: boolean) {
     if (this.internalState != InternalProposalState.UNSUBMITTED && !force) {
       throw new HardhatPluginError(PACKAGE_NAME, errors.ALREADY_SIMULATED);
     }
