@@ -20,7 +20,9 @@ contract MockTribalChief {
         totalAllocPoint = _totalAllocPoint;
     }
 
-    function poolInfo(uint256 _index)
+    function poolInfo(
+        uint256 /* _index*/
+    )
         external
         view
         returns (

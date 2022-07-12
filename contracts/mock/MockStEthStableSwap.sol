@@ -11,7 +11,7 @@ contract MockStEthStableSwap {
 
     IERC20 public token;
 
-    constructor(address _token1) public {
+    constructor(address _token1) {
         token = IERC20(_token1);
     }
 
@@ -27,7 +27,7 @@ contract MockStEthStableSwap {
 
     function exchange(
         int128 i,
-        int128 j,
+        int128, /* j*/
         uint256 input,
         uint256 min_out
     ) public payable returns (uint256 output) {
@@ -42,8 +42,8 @@ contract MockStEthStableSwap {
     }
 
     function get_dy(
-        int128 i,
-        int128 j,
+        int128, /* i*/
+        int128, /* j*/
         uint256 input
     ) public view returns (uint256 output) {
         output = anti ? (input * (10000 + slippage)) / 10000 : (input * (10000 - slippage)) / 10000;
