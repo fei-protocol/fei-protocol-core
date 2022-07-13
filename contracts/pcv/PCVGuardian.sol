@@ -87,44 +87,6 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
         }
     }
 
-    /// @notice modifier to factorize the logic in all withdrawals :
-    /// - first, ensure the deposit to withdraw from is unpaused
-    /// - second, perform withdrawal
-    /// - third, re-pause deposit if it was paused
-    /// - finally, call pcvDeposit.deposit() if depositAfter = true
-    modifier beforeAndAfterWithdrawal(
-        address pcvDeposit,
-        address safeAddress,
-        bool depositAfter
-    ) {
-        {
-            // scoped in this modifier to prevent stack to deep errors & enforce consistent acl
-            ICore _core = core();
-            require(
-                _core.hasRole(TribeRoles.GUARDIAN, msg.sender) ||
-                    _core.hasRole(TribeRoles.PCV_SAFE_MOVER_ROLE, msg.sender) ||
-                    _core.hasRole(TribeRoles.GOVERNOR, msg.sender),
-                "UNAUTHORIZED"
-            );
-            require(isSafeAddress(safeAddress), "PCVGuardian: address not whitelisted");
-        }
-
-        bool paused = pcvDeposit._paused();
-        if (paused) {
-            pcvDeposit._unpause();
-        }
-
-        _;
-
-        if (paused) {
-            pcvDeposit._pause();
-        }
-
-        if (depositAfter) {
-            IPCVDeposit(safeAddress).deposit();
-        }
-    }
-
     /// @notice withdraw funds from a pcv deposit, by calling the withdraw() method on it
     /// @param pcvDeposit the address of the pcv deposit contract
     /// @param safeAddress the destination address to withdraw to
@@ -227,6 +189,46 @@ contract PCVGuardian is IPCVGuardian, CoreRef {
 
         IPCVDeposit(pcvDeposit).withdrawERC20(token, safeAddress, amount);
         emit PCVGuardianERC20Withdrawal(pcvDeposit, safeAddress, token, amount);
+    }
+
+    // --------------- Modifiers  -------------
+
+    /// @notice modifier to factorize the logic in all withdrawals :
+    /// - first, ensure the deposit to withdraw from is unpaused
+    /// - second, perform withdrawal
+    /// - third, re-pause deposit if it was paused
+    /// - finally, call pcvDeposit.deposit() if depositAfter = true
+    modifier beforeAndAfterWithdrawal(
+        address pcvDeposit,
+        address safeAddress,
+        bool depositAfter
+    ) {
+        {
+            // scoped in this modifier to prevent stack to deep errors & enforce consistent acl
+            ICore _core = core();
+            require(
+                _core.hasRole(TribeRoles.GUARDIAN, msg.sender) ||
+                    _core.hasRole(TribeRoles.PCV_SAFE_MOVER_ROLE, msg.sender) ||
+                    _core.hasRole(TribeRoles.GOVERNOR, msg.sender),
+                "UNAUTHORIZED"
+            );
+            require(isSafeAddress(safeAddress), "PCVGuardian: address not whitelisted");
+        }
+
+        bool paused = pcvDeposit._paused();
+        if (paused) {
+            pcvDeposit._unpause();
+        }
+
+        _;
+
+        if (paused) {
+            pcvDeposit._pause();
+        }
+
+        if (depositAfter) {
+            IPCVDeposit(safeAddress).deposit();
+        }
     }
 
     // ---------- Internal Functions ----------
