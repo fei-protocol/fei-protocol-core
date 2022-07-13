@@ -1,9 +1,12 @@
-import { ProposalCategory, TemplatedProposalDescription, TemplatedProposalsConfigMap } from '@custom-types/types';
+import { ProposalCategory, TemplatedProposalsConfigMap } from '@custom-types/types';
 
 import tip_118 from '@proposals/description/tip_118';
 import pcv_guardian_v3 from '@proposals/description/pcv_guardian_v3';
 
-const proposals: TemplatedProposalsConfigMap = {
+// This config contains each of the active governance proposals in the protocol - DAO, TC, or otherwise.
+// The key for each should be the proposal name or number, and the value should be the TemplatedProposalConfig.
+
+export const ProposalsConfig: TemplatedProposalsConfigMap = {
   pcv_guardian_v3: {
     deploy: true,
     totalValue: 0,
@@ -23,5 +26,3 @@ const proposals: TemplatedProposalsConfigMap = {
     category: ProposalCategory.DAO
   }
 };
-
-export default proposals;

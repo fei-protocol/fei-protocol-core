@@ -1,7 +1,7 @@
 import { ERC20, PodExecutor, TimelockController } from '@custom-types/contracts';
 import { NamedAddresses, NamedContracts } from '@custom-types/types';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
-import proposals from '@protocol/proposalsConfig';
+import { ProposalsConfig } from '@protocol/proposalsConfig';
 import { getImpersonatedSigner, time } from '@test/helpers';
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
@@ -67,7 +67,7 @@ describe('Pod executor', function () {
       version: version
     };
 
-    e2eCoord = new TestEndtoEndCoordinator(config, proposals);
+    e2eCoord = new TestEndtoEndCoordinator(config, ProposalsConfig);
 
     doLogging && console.log(`Loading environment...`);
     ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment());
