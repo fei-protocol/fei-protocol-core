@@ -39,6 +39,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   const fuseWithdrawalGuardFactory = await ethers.getContractFactory('FuseWithdrawalGuard');
   const fuseWithdrawalGuard = await fuseWithdrawalGuardFactory.deploy(
     addresses.core,
+    pcvGuardian.address,
     [
       addresses.rariPool8FeiPCVDeposit,
       addresses.rariPool8DaiPCVDeposit,

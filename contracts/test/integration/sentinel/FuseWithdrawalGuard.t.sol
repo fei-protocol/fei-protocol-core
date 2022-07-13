@@ -6,6 +6,8 @@ import {StdLib} from "../../utils/StdLib.sol";
 import {Vm} from "../../utils/Vm.sol";
 import {MainnetAddresses} from "../fixtures/MainnetAddresses.sol";
 
+import {Core} from "../../../core/Core.sol";
+import "../../../pcv/PCVGuardian.sol";
 import "../../../sentinel/PCVSentinel.sol";
 import "../../../sentinel/guards/FuseWithdrawalGuard.sol";
 
@@ -13,6 +15,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract FuseWithdrawalGuardIntegrationTest is DSTest, StdLib {
     PCVSentinel sentinel;
+    PCVGuardian guardian;
     FuseWithdrawalGuard guard;
 
     IERC20 fei = IERC20(MainnetAddresses.FEI);
@@ -21,6 +24,15 @@ contract FuseWithdrawalGuardIntegrationTest is DSTest, StdLib {
     Vm public constant vm = Vm(HEVM_ADDRESS);
 
     function setUp() public {
+        address[] memory safeAddresses = new address[](2);
+        safeAddresses[0] = MainnetAddresses.DAI_PSM;
+        safeAddresses[1] = MainnetAddresses.LUSD_HOLDING_PCV_DEPOSIT;
+        guardian = new PCVGuardian(MainnetAddresses.CORE, safeAddresses);
+        vm.prank(MainnetAddresses.FEI_DAO_TIMELOCK);
+        Core(MainnetAddresses.CORE).grantGuardian(address(guardian));
+        vm.prank(MainnetAddresses.FEI_DAO_TIMELOCK);
+        Core(MainnetAddresses.CORE).grantPCVController(address(guardian));
+
         sentinel = PCVSentinel(MainnetAddresses.PCV_SENTINEL);
 
         uint256 len = 2;
@@ -44,6 +56,7 @@ contract FuseWithdrawalGuardIntegrationTest is DSTest, StdLib {
 
         guard = new FuseWithdrawalGuard(
             MainnetAddresses.CORE,
+            address(guardian),
             deposits,
             destinations,
             underlyings,
@@ -54,9 +67,7 @@ contract FuseWithdrawalGuardIntegrationTest is DSTest, StdLib {
         sentinel.knight(address(guard));
     }
 
-    // TODO: update Fuse withdrawal guard PCV_GUARDIAN address,
-    // and then uncomment this integration test file
-    /*function testGuardCanProtec() public {
+    function testGuardCanProtec() public {
         // 1. Check preconditions of FEI pool 8 withdraw
         assertTrue(guard.check());
         uint256 feiCTokenBalanceBefore = fei.balanceOf(MainnetAddresses.RARI_POOL_8_FEI);
@@ -102,5 +113,5 @@ contract FuseWithdrawalGuardIntegrationTest is DSTest, StdLib {
 
         // 6. Check no more withdrawals
         assertFalse(guard.check());
-    }*/
+    }
 }

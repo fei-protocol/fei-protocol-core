@@ -2,7 +2,7 @@ import { ethers } from 'hardhat';
 import { TemplatedProposalDescription } from '@custom-types/types';
 
 const proposal: TemplatedProposalDescription = {
-  title: 'TIP-XYZ: PCV Guardian v3',
+  title: 'TIP-120: PCV Guardian v3',
   commands: [
     {
       target: 'core',

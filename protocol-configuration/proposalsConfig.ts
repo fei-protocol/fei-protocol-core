@@ -14,7 +14,7 @@ export const ProposalsConfig: TemplatedProposalsConfigMap = {
     proposalId: '',
     affectedContractSignoff: [],
     deprecatedContractSignoff: [],
-    category: ProposalCategory.DEBUG
+    category: ProposalCategory.TC
   },
   tip_118: {
     deploy: false, // deploy flag for whether to run deploy action during e2e tests or use mainnet state
