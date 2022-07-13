@@ -224,11 +224,18 @@ export const MainnetContractsConfig = {
     category: AddressCategory.Governance
   },
 
-  nopeDAO: {
+  nopeDAOV1: {
     artifactName: 'NopeDAO',
     address: '0x6C7aF43Ce97686e0C8AcbBc03b2E4f313c0394C7',
-    category: AddressCategory.Governance
+    category: AddressCategory.Deprecated
   },
+
+  // TODO: Deploy and complete
+  // nopeDAO: {
+  //   artifactName: 'NopeDAO',
+  //   address: '',
+  //   category: AddressCategory.Governance
+  // },
 
   tribalCouncilTimelock: {
     artifactName: 'TimelockController',
