@@ -1,5 +1,7 @@
-export const permissions = {
-  MINTER_ROLE: ['feiDAOTimelock', 'pcvEquityMinter', 'daiFixedPricePSM', 'ethPSM', 'lusdPSM'],
+// This config lists all of the contracts that (should) be hold each listed role.
+
+export const PermissionsConfig = {
+  MINTER_ROLE: ['feiDAOTimelock', 'pcvEquityMinter', 'daiFixedPricePSM'],
   BURNER_ROLE: [],
   GOVERN_ROLE: ['core', 'feiDAOTimelock', 'roleBastion'],
   PCV_CONTROLLER_ROLE: [
@@ -7,8 +9,7 @@ export const permissions = {
     'ratioPCVControllerV2',
     'pcvGuardian',
     'daiPCVDripController',
-    'ethPSMFeiSkimmer',
-    'lusdPSMFeiSkimmer'
+    'daiFixedPricePSMFeiSkimmer'
   ],
   GUARDIAN_ROLE: ['guardianMultisig', 'pcvGuardian', 'pcvSentinel'],
   ORACLE_ADMIN_ROLE: ['tribalCouncilTimelock'],
@@ -17,7 +18,7 @@ export const permissions = {
   RATE_LIMITED_MINTER_ADMIN: [],
   PARAMETER_ADMIN: [],
   PSM_ADMIN_ROLE: ['tribalCouncilTimelock'],
-  TRIBAL_CHIEF_ADMIN_ROLE: ['optimisticTimelock', 'tribalCouncilTimelock'],
+  TRIBAL_CHIEF_ADMIN_ROLE: [],
   FUSE_ADMIN: ['tribalCouncilTimelock'],
   VOTIUM_ADMIN_ROLE: [],
   PCV_GUARDIAN_ADMIN_ROLE: ['tribalCouncilTimelock'],
@@ -40,4 +41,4 @@ export const permissions = {
   TOKEMAK_DEPOSIT_ADMIN_ROLE: ['feiDAOTimelock', 'tribalCouncilTimelock']
 };
 
-export type PermissionsType = keyof typeof permissions;
+export type PermissionsConfigType = typeof PermissionsConfig;

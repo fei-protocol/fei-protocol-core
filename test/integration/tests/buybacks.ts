@@ -1,6 +1,6 @@
 import { CollateralizationOracle } from '@custom-types/contracts';
 import { NamedAddresses, NamedContracts } from '@custom-types/types';
-import proposals from '@protocol/proposalsConfig';
+import { ProposalsConfig } from '@protocol/proposalsConfig';
 import {
   expectApprox,
   getImpersonatedSigner,
@@ -13,6 +13,7 @@ import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
 import { ethers } from 'hardhat';
+
 const toBN = ethers.BigNumber.from;
 
 describe('e2e-buybacks', function () {
@@ -41,7 +42,7 @@ describe('e2e-buybacks', function () {
       version: version
     };
 
-    e2eCoord = new TestEndtoEndCoordinator(config, proposals);
+    e2eCoord = new TestEndtoEndCoordinator(config, ProposalsConfig);
 
     doLogging && console.log(`Loading environment...`);
     ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment());

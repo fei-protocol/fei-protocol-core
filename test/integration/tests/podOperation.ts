@@ -3,7 +3,7 @@ import { NamedAddresses, NamedContracts } from '@custom-types/types';
 import Safe from '@gnosis.pm/safe-core-sdk';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { MIN_TIMELOCK_DELAY, TRIBAL_COUNCIL_POD_ID, tribeCouncilPodConfig } from '@protocol/optimisticGovernance';
-import proposals from '@protocol/proposalsConfig';
+import { ProposalsConfig } from '@protocol/proposalsConfig';
 import { getImpersonatedSigner, initialiseGnosisSDK, time } from '@test/helpers';
 import { forceEth } from '@test/integration/setup/utils';
 import chai, { expect } from 'chai';
@@ -58,7 +58,7 @@ describe('Pod operation and veto', function () {
       version: version
     };
 
-    e2eCoord = new TestEndtoEndCoordinator(config, proposals);
+    e2eCoord = new TestEndtoEndCoordinator(config, ProposalsConfig);
 
     doLogging && console.log(`Loading environment...`);
     ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment());

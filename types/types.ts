@@ -126,10 +126,6 @@ export interface TemplatedProposalCommand {
   description: string;
 }
 
-export interface MainnetContractsConfig {
-  [key: string]: ContractConfig;
-}
-
 export type TribalChiefPoolConfig = {
   allocPoint: number;
   unlocked: boolean;

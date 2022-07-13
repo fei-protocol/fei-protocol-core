@@ -1,7 +1,7 @@
 import { Fei } from '@custom-types/contracts';
 import { NamedContracts } from '@custom-types/types';
 import { Signer } from '@ethersproject/abstract-signer';
-import proposals from '@protocol/proposalsConfig';
+import { ProposalsConfig } from '@protocol/proposalsConfig';
 import { ZERO_ADDRESS } from '@test/helpers';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
 import chai, { expect } from 'chai';
@@ -38,7 +38,7 @@ describe('e2e-fei', function () {
       version: version
     };
 
-    e2eCoord = new TestEndtoEndCoordinator(config, proposals);
+    e2eCoord = new TestEndtoEndCoordinator(config, ProposalsConfig);
 
     doLogging && console.log(`Loading environment...`);
     ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment());
@@ -56,16 +56,14 @@ describe('e2e-fei', function () {
       );
     });
 
-    /* Tests disabled until restrictedPermissions is deployed. */
-
-    it('burnFrom', async function () {
+    it('burnFrom reverts', async function () {
       expect(await contracts.core.isBurner(deployAddress)).to.be.true;
       expect(fei.connect(deploySigner).burnFrom(ZERO_ADDRESS, 10)).to.be.revertedWith(
         'RestrictedPermissions: Burner deprecated for contract'
       );
     });
 
-    it('burnFrom', async function () {
+    it('burn works', async function () {
       const balanceBefore = await fei.balanceOf(deployAddress);
       await fei.connect(deploySigner).burn(10);
       const balanceAfter = await fei.balanceOf(deployAddress);
@@ -73,7 +71,7 @@ describe('e2e-fei', function () {
       expect(balanceBefore.sub(balanceAfter)).to.be.bignumber.equal(toBN(10));
     });
 
-    it('mint', async function () {
+    it('mints', async function () {
       expect(await contracts.core.isMinter(deployAddress)).to.be.true;
       await fei.connect(deploySigner).mint(contracts.core.address, 10);
 

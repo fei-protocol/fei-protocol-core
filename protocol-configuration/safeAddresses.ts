@@ -1,24 +1,15 @@
-export const safeAddressesConfig: SafeAddressStateConfig = [
+// This config lists all of the addresses that should be "safe" in the PCVGuardian.
+
+export const SafeAddressesConfig = [
   'ethToDaiLBPSwapper',
   'balancerGaugeStaker',
-  'dpiToDaiLBPSwapper',
-  'uniswapPCVDeposit',
-  'raiPriceBoundPSM',
-  'aaveRaiPCVDeposit',
-  'rariPool9RaiPCVDeposit',
-  'turboFusePCVDeposit',
   'veBalDelegatorPCVDeposit',
-  'balancerDepositFeiWeth',
   'balancerDepositBalWeth',
-  'agEurUniswapPCVDeposit',
-  'd3poolConvexPCVDeposit',
-  'd3poolCurvePCVDeposit',
-  'lusdPSM',
   'daiFixedPricePSM',
-  'aaveEthPCVDeposit',
-  'ethPSM',
-  'compoundEthPCVDeposit',
-  'feiDAOTimelock'
+  'feiDAOTimelock',
+  'wethHoldingPCVDeposit',
+  'lusdHoldingPCVDeposit',
+  'voltHoldingPCVDeposit',
+  'daiHoldingPCVDeposit',
+  'gOHMHoldingPCVDeposit'
 ];
-
-export type SafeAddressStateConfig = string[];

@@ -1,24 +1,21 @@
-const collateralizationAddresses: CollateralizationAddressType = {
+// This config lists all of the contracts that should be in the collateralization oracle
+// Key names are the tokens that the contract holds / should be tracked in
+// Values are arrays of contracts that hold that token
+
+export const CollateralizationOracleConfig = {
   fei: [
-    'feiOATimelockWrapper',
     'aaveFeiPCVDepositWrapper',
     'rariPool79FeiPCVDepositWrapper',
-    'rariPool128FeiPCVDepositWrapper',
-    'rariPool22FeiPCVDepositWrapper',
     'feiBuybackLensNoFee',
     'compoundFeiPCVDepositWrapper',
-    'turboFusePCVDeposit',
     'rariTimelockFeiOldLens',
     'tribalCouncilTimelockFeiLens'
   ],
-  lusd: ['lusdPSM'],
-  dai: ['compoundDaiPCVDepositWrapper', 'daiFixedPricePSM', 'ethToDaiLensDai'],
+  lusd: ['lusdHoldingPCVDeposit'],
+  dai: ['compoundDaiPCVDepositWrapper', 'daiFixedPricePSM', 'ethToDaiLensDai', 'daiHoldingPCVDeposit'],
   bal: ['balancerDepositBalWeth', 'balancerLensVeBalBal', 'balancerGaugeStaker'],
-  weth: ['ethLidoPCVDeposit', 'ethPSM', 'balancerLensVeBalWeth', 'ethToDaiLensEth', 'aaveEthPCVDepositWrapper'],
-  agEUR: ['uniswapLensAgEurUniswapGauge', 'agEurUniswapPCVDeposit'],
-  volt: ['voltDepositWrapper']
+  weth: ['ethLidoPCVDeposit', 'balancerLensVeBalWeth', 'ethToDaiLensEth', 'wethHoldingPCVDeposit'],
+  volt: ['voltHoldingPCVDeposit']
 };
 
-export type CollateralizationAddressType = { [key: string]: string[] };
-
-export default collateralizationAddresses;
+export type CollateralizationOracleConfigType = typeof CollateralizationOracleConfig;

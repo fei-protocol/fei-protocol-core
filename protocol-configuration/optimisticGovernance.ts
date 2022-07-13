@@ -1,24 +1,3 @@
-export type PodConfig = {
-  members: string[];
-  threshold: number;
-  label: string;
-  ensString: string;
-  imageUrl: string;
-  minDelay: number;
-  numMembers: number;
-  placeHolderMembers: string[];
-};
-
-export type PodCreationConfig = {
-  members: string[];
-  threshold: number;
-  label: string;
-  ensString: string;
-  imageUrl: string;
-  admin: string;
-  minDelay: number;
-};
-
 export const tribalCouncilMembers = [
   '0xc8eefb8b3d50ca87Da7F99a661720148acf97EfA',
   '0x72b7448f470D07222Dbf038407cD69CC380683F3',
@@ -44,6 +23,7 @@ export const placeHolderCouncilMembers = [
 ];
 
 export const MIN_TIMELOCK_DELAY = 86400; // 1 day
+export const TRIBAL_COUNCIL_POD_ID = 25;
 
 export const tribeCouncilPodConfig: PodConfig = {
   members: tribalCouncilMembers,
@@ -56,4 +36,23 @@ export const tribeCouncilPodConfig: PodConfig = {
   placeHolderMembers: placeHolderCouncilMembers
 };
 
-export const TRIBAL_COUNCIL_POD_ID = 25;
+export type PodConfig = {
+  members: string[];
+  threshold: number;
+  label: string;
+  ensString: string;
+  imageUrl: string;
+  minDelay: number;
+  numMembers: number;
+  placeHolderMembers: string[];
+};
+
+export type PodCreationConfig = {
+  members: string[];
+  threshold: number;
+  label: string;
+  ensString: string;
+  imageUrl: string;
+  admin: string;
+  minDelay: number;
+};

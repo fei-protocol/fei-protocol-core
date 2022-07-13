@@ -16,7 +16,7 @@ contract MockLendingPool {
         address asset,
         uint256 amount,
         address onBehalfOf,
-        uint16 referralCode
+        uint16 /* referralCode*/
     ) external {
         IERC20(asset).transferFrom(msg.sender, address(this), amount);
         aToken.mint(onBehalfOf, amount);
