@@ -43,7 +43,6 @@ contract NopeDAOTest is DSTest {
     address userWithZeroTribe = address(0x3);
 
     uint256 excessQuorumTribe = (11e6) * (10**18);
-    address tribeAddress;
     ERC20VotesComp tribe;
     DummyStorage dummyStorageContract;
 
@@ -59,14 +58,12 @@ contract NopeDAOTest is DSTest {
         core = getCore();
 
         // 2. Setup Tribe and transfer some to a test address
-        tribeAddress = address(core.tribe());
-
         vm.startPrank(addresses.governorAddress);
         core.allocateTribe(userWithTribe, excessQuorumTribe);
         core.allocateTribe(userWithInsufficientTribe, 5e6 * (10**18));
         vm.stopPrank();
 
-        tribe = ERC20VotesComp(tribeAddress);
+        tribe = ERC20VotesComp(address(core.tribe()));
 
         vm.prank(userWithTribe);
         tribe.delegate(userWithTribe);
@@ -96,10 +93,28 @@ contract NopeDAOTest is DSTest {
         assertEq(proposalThreshold, 0);
 
         address token = address(nopeDAO.token());
-        assertEq(token, tribeAddress);
+        assertEq(token, address(tribe));
 
         uint256 userWithTribeVoteWeight = tribe.getCurrentVotes(userWithTribe);
         assertEq(userWithTribeVoteWeight, excessQuorumTribe);
+    }
+
+    /// @notice Validate that a user with no TRIBE can propose
+    function testUserWithNoTribeCanPropose() public {
+        (
+            address[] memory targets,
+            uint256[] memory values,
+            bytes[] memory calldatas,
+            string memory description,
+
+        ) = createDummyProposal(address(10), 2 ether);
+
+        vm.prank(userWithZeroTribe);
+        uint256 noTribeProposalId = nopeDAO.propose(targets, values, calldatas, description);
+        assertEq(uint8(nopeDAO.state(noTribeProposalId)), 0);
+        vm.roll(block.number + 1);
+
+        assertEq(uint8(nopeDAO.state(noTribeProposalId)), 1);
     }
 
     /// @notice Validate the quick reaction governor and that state is set to SUCCEEDED as soon as quorum is reached
