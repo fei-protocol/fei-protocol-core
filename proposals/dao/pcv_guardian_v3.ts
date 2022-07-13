@@ -109,6 +109,22 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // Run any validations required on the fip using mocha or console logging
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
+  // validate that the guardian can use the new PCVGuardian to perform a
+  // ratio PCV movement to a safe address
+  const guardianSigner = await getImpersonatedSigner(addresses.guardianMultisig);
+  const balanceBefore = await contracts.dai.balanceOf(addresses.daiHoldingPCVDeposit);
+  await contracts.pcvGuardian.connect(guardianSigner).withdrawERC20RatioToSafeAddress(
+    addresses.daiFixedPricePSM,
+    addresses.daiHoldingPCVDeposit,
+    addresses.dai,
+    '5000', // 50%
+    true // depositAfter
+  );
+  const balanceAfter = await contracts.dai.balanceOf(addresses.daiHoldingPCVDeposit);
+  expect(balanceBefore).to.be.equal('0');
+  // round to unit because there can be 1 wei of error
+  expect(balanceAfter / 1e18).to.be.equal((await contracts.daiFixedPricePSM.balance()) / 1e18);
+
   // display pcvStats
   console.log('----------------------------------------------------');
   console.log(' pcvStatsBefore.protocolControlledValue [M]e18 ', Number(pcvStatsBefore.protocolControlledValue) / 1e24);
