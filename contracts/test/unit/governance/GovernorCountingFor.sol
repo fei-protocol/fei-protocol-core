@@ -120,7 +120,6 @@ contract GovernorCountingForTest is DSTest {
         assertEq(nopeDAO.getVotes(userWith2MTribe, block.number - 1), 2e6 * (10**18));
     }
 
-
     /// @notice Validate that a FOR vote is counted
     function testCountForVote() public {
         vm.prank(userWith5MTribe);
