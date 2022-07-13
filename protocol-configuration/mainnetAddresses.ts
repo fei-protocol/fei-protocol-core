@@ -1348,11 +1348,11 @@ export const MainnetContractsConfig = {
     category: AddressCategory.External
   },
 
-  // chainlinkOhmV2EthOracleWrapper: {
-  //   artifactName: 'ChainlinkOracleWrapper',
-  //   address: '',
-  //   category: AddressCategory.Oracle
-  // },
+  chainlinkOhmV2EthOracleWrapper: {
+    artifactName: 'ChainlinkOracleWrapper',
+    address: '0xA67541733A5179977bED7d38F95b63b8c5398E18',
+    category: AddressCategory.Oracle
+  },
 
   chainlinkStEthUsdOracle: {
     artifactName: 'unknown',
@@ -1537,16 +1537,16 @@ export const MainnetContractsConfig = {
     address: '0x0ab87046fBb341D058F17CBC4c1133F25a20a52f',
     category: AddressCategory.External
   },
-  // gOhmUSDOracle: {
-  //   artifactName: 'CompositeOracle',
-  //   address: '',
-  //   category: AddressCategory.Oracle
-  // },
-  // gOhmEthOracle: {
-  //   artifactName: 'GOhmEthOracle',
-  //   address: '',
-  //   category: AddressCategory.Oracle
-  // },
+  gOhmUSDOracle: {
+    artifactName: 'CompositeOracle',
+    address: '0x319BCE09E7E3e32dac08206129Df541F189A5Df8',
+    category: AddressCategory.Oracle
+  },
+  gOhmEthOracle: {
+    artifactName: 'GOhmEthOracle',
+    address: '0x49A7e453c164353ac2980ac05756a8C46B062293',
+    category: AddressCategory.Oracle
+  },
 
   gUniFeiDaiLP: {
     artifactName: 'unknown',
