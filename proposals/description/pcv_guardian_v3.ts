@@ -23,14 +23,14 @@ const proposal: TemplatedProposalDescription = {
       values: '0',
       method: 'grantRole(bytes32,address)',
       arguments: (addresses) => [ethers.utils.id('PCV_CONTROLLER_ROLE'), addresses.pcvGuardian],
-      description: 'Grant PCV_CONTROLLER_ROLE from pcvGuardianV3'
+      description: 'Grant PCV_CONTROLLER_ROLE to pcvGuardianV3'
     },
     {
       target: 'core',
       values: '0',
       method: 'grantRole(bytes32,address)',
       arguments: (addresses) => [ethers.utils.id('GUARDIAN_ROLE'), addresses.pcvGuardian],
-      description: 'Grant GUARDIAN_ROLE from pcvGuardianV3'
+      description: 'Grant GUARDIAN_ROLE to pcvGuardianV3'
     },
     {
       target: 'pcvSentinel',
@@ -47,7 +47,10 @@ const proposal: TemplatedProposalDescription = {
       description: 'Knight new fuseWithdrawalGuard guard'
     }
   ],
-  description: `TODO`
+  description: `TIP-120: PCV Guardian v3
+
+PCV Guardian v3 adds features that allow moving a percentage of the funds held by the PCV Deposits. This is useful for the Tribal Council when executing proposals if the amounts of tokens are not known in advance. This capability was existing for the DAO Timelock, but not for the Tribal Council. This proposal does not allow movements of funds to new addresses and does not increase the responsibilities of any role. This proposal also upgrades the Fuse Withdrawal Guard to use the new PCV Guardian v3 to keep this feature active.
+`
 };
 
 export default proposal;
