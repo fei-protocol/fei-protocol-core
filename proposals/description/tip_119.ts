@@ -41,6 +41,14 @@ const tip_119: TemplatedProposalDescription = {
       method: 'deposit()',
       arguments: (addresses) => [],
       description: 'Deposit DAI into Compound'
+    },
+    // 3. Burn FEI on the TC timelock
+    {
+      target: 'fei',
+      values: '0',
+      method: 'burn(uint256)',
+      arguments: (addresses) => ['42905768215167745773610059'],
+      description: 'Burn all FEI on the Tribal Council timelock'
     }
   ],
   description: `
@@ -56,6 +64,7 @@ const tip_119: TemplatedProposalDescription = {
     Will contribute ~$1.5M to PCV equity
   - Swaps the USDC held on the Tribal Council timelock for DAI, via the Maker PSM. 
     Sends it to the Compound DAI PCV deposit. Will contribute ~$1M to PCV equity.
+  - Burns all FEI (~43M) on the Tribal Council timelock.
 
   Adding these assets into the accounting through this proposal, will have the net effect
   of increasing PCV equity by ~$2.5M.
