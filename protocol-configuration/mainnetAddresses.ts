@@ -2557,6 +2557,11 @@ export const MainnetContractsConfig = {
     artifactName: 'IDSSPSM',
     address: '0x89B78CfA322F6C5dE0aBcEecab66Aee45393cC5A',
     category: AddressCategory.External
+  },
+  makerUSDCGemJoin: {
+    artifactName: 'unknown',
+    address: '0x0A59649758aa4d66E25f08Dd01271e891fe52199',
+    categorty: AddressCategory.External
   }
 };
 

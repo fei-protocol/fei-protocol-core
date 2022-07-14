@@ -3,6 +3,7 @@ import { TemplatedProposalDescription } from '@custom-types/types';
 const tip_119: TemplatedProposalDescription = {
   title: 'TIP-119: gOHM to Collaterisation Oracle, Swap USDC',
   commands: [
+    // 1. Track gOHM in the CR
     {
       target: 'collateralizationOracle',
       values: '0',
@@ -16,6 +17,14 @@ const tip_119: TemplatedProposalDescription = {
       method: 'addDeposit(address)',
       arguments: (addresses) => [addresses.gOHMHoldingPCVDeposit],
       description: 'Add the gOHM Holding PCV Deposit. Will contribute ~$1.5M to PCV equity'
+    },
+    // 2. Swap USDC for DAI via Maker PSM
+    {
+      target: 'usdc',
+      values: '0',
+      method: 'approve(address,uint256)',
+      arguments: (addresses) => [addresses.makerUSDCGemJoin, '102474254068000000'],
+      description: 'Approve Maker USDC Gem Join adapter, to allow PSM to pull USDC and swap for DAI'
     },
     {
       target: 'makerUSDCPSM',
