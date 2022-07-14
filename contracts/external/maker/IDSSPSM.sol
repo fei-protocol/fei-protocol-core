@@ -4,7 +4,6 @@ pragma solidity ^0.8.4;
 /// @title Interface for the Maker DAO PSMs
 /// @dev gem refers to collateral tokens
 interface IDSSPSM {
-    
     /// @notice Swap DAI for the underlying collateral type
     function buyGem(address usr, uint256 gemAmt) external;
 
