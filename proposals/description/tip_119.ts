@@ -23,7 +23,7 @@ const tip_119: TemplatedProposalDescription = {
       target: 'usdc',
       values: '0',
       method: 'approve(address,uint256)',
-      arguments: (addresses) => [addresses.makerUSDCGemJoin, '102474254068000000'],
+      arguments: (addresses) => [addresses.makerUSDCGemJoin, '1024742540680'],
       description: 'Approve Maker USDC Gem Join adapter, to allow PSM to pull USDC and swap for DAI'
     },
     {

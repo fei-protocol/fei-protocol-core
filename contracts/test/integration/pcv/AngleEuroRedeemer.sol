@@ -50,7 +50,7 @@ contract AngleEuroRedeemerIntegrationTest is DSTest {
         ageur.transfer(address(redeemer), usdcBalanceAvailable * 1e12);
 
         // redeem
-        // 1 agEUR is worth more than 1 USDC, so there should be some agEUR left
+        // 1 agEUR could be worth more than 1 USDC, so there could be some agEUR left
         // on the contract after this redeem call
         uint256 daiBalanceBefore = dai.balanceOf(redeemer.TRIBEDAO_FEI_DAI_PSM());
         vm.prank(MainnetAddresses.FEI_DAO_TIMELOCK);
@@ -58,8 +58,6 @@ contract AngleEuroRedeemerIntegrationTest is DSTest {
         uint256 daiRedeemed = dai.balanceOf(redeemer.TRIBEDAO_FEI_DAI_PSM()) - daiBalanceBefore;
         // test all USDC is redeemed to DAI (1% slippage tolerance)
         assertGt(daiRedeemed, (usdcBalanceAvailable * 1e12 * 99) / 100);
-        // test the contract is still holding some agEUR
-        assertGt(ageur.balanceOf(address(redeemer)), 0);
     }
 
     /// @notice Test access control on the public functions
