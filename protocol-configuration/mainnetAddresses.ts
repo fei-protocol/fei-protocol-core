@@ -2553,7 +2553,7 @@ export const MainnetContractsConfig = {
     address: '0x625cf6AA7DafB154F3Eb6BE87592110e30290dEe',
     category: AddressCategory.TBD
   },
-  makerDAOUSDCPSM: {
+  makerUSDCPSM: {
     artifactName: 'IDSSPSM',
     address: '0x89B78CfA322F6C5dE0aBcEecab66Aee45393cC5A',
     category: AddressCategory.External
