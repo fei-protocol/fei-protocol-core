@@ -240,11 +240,12 @@ contract NopeDAOIntegrationTest is DSTest {
         );
 
         // 3. Create Nope using the convenience propose method
+        string memory description = "Convenience method created Nope";
         uint256 nopeDAOProposalId = nopeDAO.propose(
             podId,
             timelockProposalId,
             podAdmin,
-            "Convenience method created Nope"
+            description
         );
         vm.roll(block.number + 1);
 
@@ -254,7 +255,7 @@ contract NopeDAOIntegrationTest is DSTest {
         assertEq(uint8(nopeDAO.state(nopeDAOProposalId)), 4);
 
         // 5. Execute Nope
-        nopeDAO.execute(targets, values, calldatas, descriptionHash);
+        nopeDAO.execute(podId, timelockProposalId, podAdmin, description);
 
         // 6. Verify timelocked pod proposal was cancelled
         assertEq(timelockContract.getTimestamp(timelockProposalId), 0);

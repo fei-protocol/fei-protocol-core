@@ -87,30 +87,77 @@ contract NopeDAO is Governor, GovernorSettings, GovernorVotesComp, GovernorQuick
     }
 
     /// @notice Custom, convenience propose method to veto an optimistic pod proposal
+    /// @param podId The podId of the pod to veto
+    /// @param timelockProposalId The timelock proposal ID of the proposal to be vetoed
+    /// @param podAdminGateway The pod admin gateway contract that administers the veto
+    /// @param description Description of the proposal
     function propose(
         uint256 podId,
         bytes32 timelockProposalId,
         address podAdminGateway,
         string memory description
     ) public returns (uint256) {
-        address[] memory targets = new address[](1);
+        (address[] memory targets, uint256[] memory values, bytes[] memory calldatas) = getPodVetoParams(
+            podId,
+            timelockProposalId,
+            podAdminGateway
+        );
+        return propose(targets, values, calldatas, description);
+    }
+
+    function proposalThreshold() public view override(Governor, GovernorSettings) returns (uint256) {
+        return super.proposalThreshold();
+    }
+
+    /// @notice Construct DAO proposal parameters from the veto parameters, such as podId
+    /// @param podId The podId of the pod to veto
+    /// @param timelockProposalId The timelock proposal ID of the proposal to be vetoed
+    /// @param podAdminGateway The pod admin gateway contract that administers the veto
+    function getPodVetoParams(
+        uint256 podId,
+        bytes32 timelockProposalId,
+        address podAdminGateway
+    )
+        internal
+        pure
+        returns (
+            address[] memory targets,
+            uint256[] memory values,
+            bytes[] memory calldatas
+        )
+    {
+        targets = new address[](1);
         targets[0] = podAdminGateway;
 
-        uint256[] memory values = new uint256[](1);
+        values = new uint256[](1);
         values[0] = uint256(0);
 
-        bytes[] memory calldatas = new bytes[](1);
+        calldatas = new bytes[](1);
         bytes memory data = abi.encodePacked(
             bytes4(keccak256(bytes("veto(uint256,bytes32)"))),
             podId,
             timelockProposalId
         );
         calldatas[0] = data;
-        return propose(targets, values, calldatas, description);
     }
 
-    function proposalThreshold() public view override(Governor, GovernorSettings) returns (uint256) {
-        return super.proposalThreshold();
+    /// @notice Convenience propose method based on veto parameters
+    /// @param podId The podId of the pod to veto
+    /// @param timelockProposalId The timelock proposal ID of the proposal to be vetoed
+    /// @param podAdminGateway The pod admin gateway contract that administers the veto
+    /// @param description Description of the proposal
+    function execute(
+        uint256 podId,
+        bytes32 timelockProposalId,
+        address podAdminGateway,
+        string memory description
+    ) public {
+        (address[] memory targets, uint256[] memory values, bytes[] memory calldatas) = getPodVetoParams(
+            podId,
+            timelockProposalId,
+            podAdminGateway
+        );
+        execute(targets, values, calldatas, keccak256(bytes(description)));
     }
 
     function _execute(
