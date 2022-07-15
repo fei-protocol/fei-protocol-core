@@ -7,35 +7,10 @@ import {Core} from "../../../core/Core.sol";
 import {Vm} from "../../utils/Vm.sol";
 import {DSTest} from "../../utils/DSTest.sol";
 import {NopeDAO} from "../../../dao/nopeDAO/NopeDAO.sol";
-import {getCore, getAddresses, FeiTestAddresses, DummyStorage} from "../../utils/Fixtures.sol";
+import {getCore, getAddresses, FeiTestAddresses} from "../../utils/Fixtures.sol";
+import {DummyStorage, createDummyStorageVarProposal} from "../../utils/GovFixtures.sol";
 import {Tribe} from "../../../tribe/Tribe.sol";
 import {TribeRoles} from "../../../core/TribeRoles.sol";
-
-/// @notice Fixture to create a dummy proposal
-function createDummyProposal(address dummyContract, uint256 newVariable)
-    pure
-    returns (
-        address[] memory,
-        uint256[] memory,
-        bytes[] memory,
-        string memory,
-        bytes32
-    )
-{
-    address[] memory targets = new address[](1);
-    targets[0] = dummyContract;
-
-    uint256[] memory values = new uint256[](1);
-    values[0] = uint256(0);
-
-    bytes[] memory calldatas = new bytes[](1);
-    bytes memory data = abi.encodePacked(bytes4(keccak256(bytes("setVariable(uint256)"))), newVariable);
-    calldatas[0] = data;
-
-    string memory description = "Dummy proposal";
-    bytes32 descriptionHash = keccak256(bytes(description));
-    return (targets, values, calldatas, description, descriptionHash);
-}
 
 contract NopeDAOTest is DSTest {
     address userWithTribe = address(0x1);
@@ -105,7 +80,7 @@ contract NopeDAOTest is DSTest {
             bytes[] memory calldatas,
             string memory description,
 
-        ) = createDummyProposal(address(10), 2 ether);
+        ) = createDummyStorageVarProposal(address(10), 2 ether);
 
         vm.prank(userWithZeroTribe);
         uint256 noTribeProposalId = nopeDAO.propose(targets, values, calldatas, description);
@@ -124,7 +99,7 @@ contract NopeDAOTest is DSTest {
             bytes[] memory calldatas,
             string memory description,
 
-        ) = createDummyProposal(address(dummyStorageContract), newVariable);
+        ) = createDummyStorageVarProposal(address(dummyStorageContract), newVariable);
 
         // Propose and validate state
         uint256 proposalId = nopeDAO.propose(targets, values, calldatas, description);
@@ -158,7 +133,7 @@ contract NopeDAOTest is DSTest {
             bytes[] memory calldatas,
             string memory description,
             bytes32 descriptionHash
-        ) = createDummyProposal(address(dummyStorageContract), newVariable);
+        ) = createDummyStorageVarProposal(address(dummyStorageContract), newVariable);
 
         vm.prank(userWithTribe);
         uint256 proposalId = nopeDAO.propose(targets, values, calldatas, description);
@@ -190,7 +165,7 @@ contract NopeDAOTest is DSTest {
             bytes[] memory calldatas,
             string memory description,
             bytes32 descriptionHash
-        ) = createDummyProposal(address(dummyStorageContract), uint256(10));
+        ) = createDummyStorageVarProposal(address(dummyStorageContract), uint256(10));
 
         vm.prank(userWithZeroTribe);
         uint256 proposalId = nopeDAO.propose(targets, values, calldatas, description);
@@ -208,7 +183,7 @@ contract NopeDAOTest is DSTest {
             bytes[] memory calldatas,
             string memory description,
             bytes32 descriptionHash
-        ) = createDummyProposal(address(dummyStorageContract), uint256(10));
+        ) = createDummyStorageVarProposal(address(dummyStorageContract), uint256(10));
 
         vm.prank(userWithInsufficientTribe);
         uint256 proposalId = nopeDAO.propose(targets, values, calldatas, description);

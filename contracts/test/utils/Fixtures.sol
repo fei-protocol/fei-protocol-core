@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.4;
 
+import {ERC20VotesComp} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20VotesComp.sol";
 import {Core} from "../../core/Core.sol";
 import {Vm} from "./Vm.sol";
 
@@ -55,17 +56,4 @@ function getCore() returns (Core) {
 
     vm.stopPrank();
     return core;
-}
-
-/// @notice Dummy contract used to test NopeDAO and Safe proposals
-contract DummyStorage {
-    uint256 private variable = 5;
-
-    function getVariable() external view returns (uint256) {
-        return variable;
-    }
-
-    function setVariable(uint256 x) external {
-        variable = x;
-    }
 }

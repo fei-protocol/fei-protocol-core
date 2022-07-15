@@ -13,7 +13,7 @@ import {PodFactory} from "../../../pods/PodFactory.sol";
 import {MainnetAddresses} from "../fixtures/MainnetAddresses.sol";
 import {deployPodWithSystem} from "../fixtures/Orca.sol";
 import {PodAdminGateway} from "../../../pods/PodAdminGateway.sol";
-import {DummyStorage} from "../../utils/Fixtures.sol";
+import {DummyStorage} from "../../utils/GovFixtures.sol";
 import {IPodFactory} from "../../../pods/interfaces/IPodFactory.sol";
 
 contract NopeDAOIntegrationTest is DSTest {

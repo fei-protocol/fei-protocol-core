@@ -14,7 +14,7 @@ import {PodAdminGateway} from "../../../pods/PodAdminGateway.sol";
 
 import {DSTest} from "../../utils/DSTest.sol";
 import {mintOrcaTokens, getPodParamsWithTimelock, getCouncilPodParams, getPodParamsWithNoTimelock} from "../fixtures/Orca.sol";
-import {DummyStorage} from "../../utils/Fixtures.sol";
+import {DummyStorage} from "../../utils/GovFixtures.sol";
 import {Vm} from "../../utils/Vm.sol";
 import {MainnetAddresses} from "../fixtures/MainnetAddresses.sol";
 
