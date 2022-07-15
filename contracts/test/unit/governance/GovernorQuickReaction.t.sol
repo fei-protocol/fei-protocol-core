@@ -8,7 +8,7 @@ import {Vm} from "../../utils/Vm.sol";
 import {DSTest} from "../../utils/DSTest.sol";
 import {NopeDAO} from "../../../dao/nopeDAO/NopeDAO.sol";
 import {getCore, getAddresses, FeiTestAddresses} from "../../utils/Fixtures.sol";
-import {DummyStorage, createDummyStorageVarProposal, getDAOMembers} from "../../utils/GovFixtures.sol";
+import {DummyStorage, createDummyEthProposal, getDAOMembers} from "../../utils/GovFixtures.sol";
 import {Tribe} from "../../../tribe/Tribe.sol";
 import {TribeRoles} from "../../../core/TribeRoles.sol";
 
@@ -24,7 +24,7 @@ contract GovernorQuickReactionTest is DSTest {
     NopeDAO private nopeDAO;
 
     FeiTestAddresses public addresses = getAddresses();
-    uint256 proposalId;
+    address ethReceiver = address(1);
 
     function setUp() public {
         // 1. Setup Core and TRIBE
@@ -42,28 +42,70 @@ contract GovernorQuickReactionTest is DSTest {
         // 3. Deploy NopeDAO
         nopeDAO = new NopeDAO(tribe, address(core));
 
-        // 4. Seed NopeDAO with ETH so in theory could execute the proposal
+        // 4. Seed NopeDAO with ETH so it can execute the proposal
         vm.deal(address(nopeDAO), 10 ether);
+    }
 
-        // 5. Random address creates the nopeDAO proposal
+    /// @notice Validate that a pending proposal can not be executed
+    function testCanNotExecutePendingProposal() public {
         (
             address[] memory targets,
             uint256[] memory values,
             bytes[] memory calldatas,
             string memory description,
+            bytes32 descriptionHash
+        ) = createDummyEthProposal(ethReceiver, 1 ether);
 
-        ) = createDummyStorageVarProposal(address(this), 1 ether);
+        uint256 proposalId = nopeDAO.propose(targets, values, calldatas, description);
+        assertEq(uint8(nopeDAO.state(proposalId)), 0);
 
-        proposalId = nopeDAO.propose(targets, values, calldatas, description);
-        vm.roll(block.number + 1); // Make block number non-zero, for getVotes accounting
+        vm.expectRevert(bytes("Governor: proposal not successful"));
+        nopeDAO.execute(targets, values, calldatas, descriptionHash);
     }
 
-    /// @notice Validate that a pending proposal can not be executed
-    function testCanNotExecutePendingProposal() public {}
-
     /// @notice Validate that an active proposal with quorum not met, can not be executed
-    function testCanNotExecuteActiveUnsuccessfulProposal() public {}
+    function testCanNotExecuteActiveUnsuccessfulProposal() public {
+        (
+            address[] memory targets,
+            uint256[] memory values,
+            bytes[] memory calldatas,
+            string memory description,
+            bytes32 descriptionHash
+        ) = createDummyEthProposal(ethReceiver, 1 ether);
+
+        uint256 proposalId = nopeDAO.propose(targets, values, calldatas, description);
+        vm.roll(block.number + 1); // Make vote active
+        assertEq(uint8(nopeDAO.state(proposalId)), 1);
+
+        vm.expectRevert(bytes("Governor: proposal not successful"));
+        nopeDAO.execute(targets, values, calldatas, descriptionHash);
+    }
 
     /// @notice Validate can quick reaction execute successful proposal
-    function testQuickReactionProposal() public {}
+    function testQuickReactionProposal() public {
+        uint256 ethTransferAmount = 1 ether;
+        uint256 initialEthBalance = ethReceiver.balance;
+        (
+            address[] memory targets,
+            uint256[] memory values,
+            bytes[] memory calldatas,
+            string memory description,
+            bytes32 descriptionHash
+        ) = createDummyEthProposal(ethReceiver, ethTransferAmount);
+
+        uint256 proposalId = nopeDAO.propose(targets, values, calldatas, description);
+        vm.roll(block.number + 1); // Make vote active
+
+        vm.prank(userWithQuorumTribe);
+        nopeDAO.castVote(proposalId, 1);
+
+        // Validate succeeded
+        assertEq(uint8(nopeDAO.state(proposalId)), 4);
+
+        nopeDAO.execute(targets, values, calldatas, descriptionHash);
+
+        // Verify this contract got 1 eth
+        uint256 ethBalanceIncrease = ethReceiver.balance - initialEthBalance;
+        assertEq(ethBalanceIncrease, ethTransferAmount);
+    }
 }

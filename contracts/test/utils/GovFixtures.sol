@@ -77,7 +77,7 @@ function createDummyEthProposal(address ethReceiver, uint256 ethAmount)
     values[0] = ethAmount;
 
     bytes[] memory calldatas = new bytes[](1);
-    bytes memory data = abi.encodePacked(bytes4(keccak256(bytes("transfer(uint256)"))), ethAmount);
+    bytes memory data = "";
     calldatas[0] = data;
 
     string memory description = "Dummy proposal to send ETH";
