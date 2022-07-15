@@ -35,6 +35,8 @@ contract NopeDAOIntegrationTest is DSTest {
 
     Vm public constant vm = Vm(HEVM_ADDRESS);
 
+    DummyStorage private dummyContract;
+
     function setUp() public {
         nopeDAO = new NopeDAO(tribe, MainnetAddresses.CORE);
 
@@ -61,6 +63,10 @@ contract NopeDAOIntegrationTest is DSTest {
             MainnetAddresses.FEI_DAO_TIMELOCK,
             vm
         );
+
+        // Deploy dummy storage contract which will execute vetos against
+        dummyContract = new DummyStorage();
+        assertEq(dummyContract.getVariable(), 5);
     }
 
     /// @notice Validate that inital setup worked
@@ -107,8 +113,6 @@ contract NopeDAOIntegrationTest is DSTest {
 
     /// @notice Validate that NopeDAO can not update it's own governor settings
     function testCanNotUpdateOwnGovernorSettings() public {
-        vm.roll(block.number + 1);
-
         address[] memory targets = new address[](1);
         targets[0] = address(nopeDAO);
 
@@ -144,12 +148,6 @@ contract NopeDAOIntegrationTest is DSTest {
 
     /// @notice Validate that the NopeDAO can veto a proposal in a pod timelock
     function testNope() public {
-        vm.roll(block.number + 1);
-
-        // 1. Deploy Dummy contract to perform a transaction on
-        DummyStorage dummyContract = new DummyStorage();
-        assertEq(dummyContract.getVariable(), 5);
-
         TimelockController timelockContract = TimelockController(payable(podTimelock));
 
         // 2. Schedle a transaction from the Pod's safe address to timelock. Transaction sets a variable on a dummy contract
@@ -195,15 +193,13 @@ contract NopeDAOIntegrationTest is DSTest {
         bytes32 descriptionHash = keccak256(bytes(description));
 
         uint256 nopeDAOProposalId = nopeDAO.propose(targets, values, calldatas, description);
-
-        // 5. Have user with >quorum delegated TRIBE veto
         vm.roll(block.number + 1);
-        // Cast a vote for the proposal, in excess of quorum
+
+        // 5. Have user with >quorum delegated TRIBE veto vote for proposal
         vm.prank(user);
         nopeDAO.castVote(nopeDAOProposalId, 1);
 
-        uint8 state = uint8(nopeDAO.state(nopeDAOProposalId));
-        assertEq(state, uint8(4));
+        assertEq(uint8(nopeDAO.state(nopeDAOProposalId)), 4);
 
         // Will send cancel transaction to podAdminGateway
         nopeDAO.execute(targets, values, calldatas, descriptionHash);
@@ -211,5 +207,56 @@ contract NopeDAOIntegrationTest is DSTest {
         // 6. Verify that timelocked transaction was vetoed
         uint256 proposalTimestampReady = timelockContract.getTimestamp(timelockProposalId);
         assertEq(proposalTimestampReady, 0);
+    }
+
+    /// @notice Validate that the convenience propose method which takes a podId works
+    function testConveniencePropose() public {
+        // 1. Schedle a transaction from the Pod's safe address to timelock
+        TimelockController timelockContract = TimelockController(payable(podTimelock));
+
+        uint256 newDummyContractVar = 10;
+        bytes memory timelockExecutionTxData = abi.encodePacked(
+            bytes4(keccak256(bytes("setVariable(uint256)"))),
+            newDummyContractVar
+        );
+
+        vm.prank(safe);
+        timelockContract.schedule(
+            address(dummyContract),
+            0,
+            timelockExecutionTxData,
+            bytes32(0),
+            bytes32("1"),
+            podConfig.minDelay
+        );
+
+        // 2. Get timelocked proposal ID
+        bytes32 timelockProposalId = timelockContract.hashOperation(
+            address(dummyContract),
+            0,
+            timelockExecutionTxData,
+            bytes32(0),
+            bytes32("1")
+        );
+
+        // 3. Create Nope using the convenience propose method
+        uint256 nopeDAOProposalId = nopeDAO.propose(
+            podId,
+            timelockProposalId,
+            podAdmin,
+            "Convenience method created Nope"
+        );
+        vm.roll(block.number + 1);
+
+        // 4. Vote for Nope
+        vm.prank(user);
+        nopeDAO.castVote(nopeDAOProposalId, 1);
+        assertEq(uint8(nopeDAO.state(nopeDAOProposalId)), 4);
+
+        // 5. Execute Nope
+        nopeDAO.execute(targets, values, calldatas, descriptionHash);
+
+        // 6. Verify timelocked pod proposal was cancelled
+        assertEq(timelockContract.getTimestamp(timelockProposalId), 0);
     }
 }
