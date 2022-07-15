@@ -119,10 +119,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const finalTCUSDCBalance = await contracts.usdc.balanceOf(addresses.tribalCouncilTimelock);
   expect(finalTCUSDCBalance).to.be.equal(0);
 
-  // 5. Verify all FEI on TC timelock is burned
-  expect(await contracts.fei.balanceOf(addresses.tribalCouncilTimelock)).to.be.equal(0);
-
-  // 6. Verify pcvStats increased as expected
+  // 5. Verify pcvStats increased as expected
   // display pcvStats
   console.log('----------------------------------------------------');
   console.log(' pcvStatsBefore.protocolControlledValue [M]e18 ', Number(pcvStatsBefore.protocolControlledValue) / 1e24);
