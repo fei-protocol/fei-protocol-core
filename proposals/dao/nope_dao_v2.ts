@@ -16,6 +16,7 @@ Description:
 1. Deploy the new NopeDAO
 2. Revoke the powers of the previous NopeDAO
 3. Grant powers to the new NopeDAO
+4. Transfer admin of the POD_VETO_ADMIN role to the DAO timelock
 
 */
 
@@ -51,14 +52,20 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   // 1. Validate new NopeDAO configured
   expect(await contracts.nopeDAO.quorum(0)).to.be.equal(ethers.constants.WeiPerEther.mul(10_000_000));
   expect(await contracts.nopeDAO.votingDelay()).to.be.equal(0);
-  expect(await contracts.nopeDAO.votingPeriod()).to.be.equal((86400 * 4) / 13); // Measured in blocks by OZ, assumed 13s block time
+
+  // Measured in blocks by OZ, assumed 13s block time. (86400 * 4) / 13
+  expect(await contracts.nopeDAO.votingPeriod()).to.be.equal(26585);
   expect(await contracts.nopeDAO.token()).to.be.equal(addresses.tribe);
 
   // 2. Validate old NopeDAO powers revoked
-  expect(await contracts.core.hasRole(ethers.utils.id('POD_VETO_ADMIN'), addresses.nopeDAOV1)).to.be.false;
+  const POD_VETO_ADMIN = ethers.utils.id('POD_VETO_ADMIN');
+  expect(await contracts.core.hasRole(POD_VETO_ADMIN, addresses.nopeDAOV1)).to.be.false;
 
   // 3. Validate new NopeDAO has relevant powers
-  expect(await contracts.core.hasRole(ethers.utils.id('POD_VETO_ADMIN'), addresses.nopeDAO)).to.be.true;
+  expect(await contracts.core.hasRole(POD_VETO_ADMIN, addresses.nopeDAO)).to.be.true;
+
+  // 4. Validate POD_VETO_ADMIN role admin is now GOVERN_ROLE
+  expect(await contracts.core.getRoleAdmin(POD_VETO_ADMIN)).to.be.equal(ethers.utils.id('GOVERN_ROLE'));
 };
 
 export { deploy, setup, teardown, validate };
