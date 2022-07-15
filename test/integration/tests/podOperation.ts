@@ -231,7 +231,7 @@ describe('Pod operation and veto', function () {
     await nopeDAO.connect(userWithTribe).castVote(nopeDAOProposalId, 1);
 
     const descriptionHash = ethers.utils.id(description);
-    await nopeDAO.execute(targets, values, calldatas, descriptionHash);
+    await nopeDAO['execute(address[],uint256[],bytes[],bytes32)'](targets, values, calldatas, descriptionHash);
 
     // Validate proposal was nope'd
     const readyTimestamp = await podTimelock.getTimestamp(timelockProposalId);
@@ -340,7 +340,7 @@ describe('Pod operation and veto', function () {
     await nopeDAO.connect(userWithTribe).castVote(nopeDAOProposalId, 1);
 
     const descriptionHash = ethers.utils.id(description);
-    await nopeDAO.execute(targets, values, calldatas, descriptionHash);
+    await nopeDAO['execute(address[],uint256[],bytes[],bytes32)'](targets, values, calldatas, descriptionHash);
 
     // Validate proposal was nope'd
     const readyTimestamp = await tribalCouncilTimelock.getTimestamp(timelockProposalId);
