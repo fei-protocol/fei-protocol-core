@@ -1,8 +1,9 @@
 import { TemplatedProposalDescription } from '@custom-types/types';
 
 const tip_119: TemplatedProposalDescription = {
-  title: 'TIP-119: Add gOHM to Collaterisation Oracle',
+  title: 'TIP-119: gOHM to Collaterisation Oracle, Swap USDC',
   commands: [
+    // 1. Track gOHM in the CR
     {
       target: 'collateralizationOracle',
       values: '0',
@@ -15,15 +16,49 @@ const tip_119: TemplatedProposalDescription = {
       values: '0',
       method: 'addDeposit(address)',
       arguments: (addresses) => [addresses.gOHMHoldingPCVDeposit],
-      description: 'Add the gOHM Holding PCV Deposit'
+      description: 'Add the gOHM Holding PCV Deposit. Will contribute ~$1.5M to PCV equity'
+    },
+    // 2. Swap USDC for DAI via Maker PSM
+    {
+      target: 'usdc',
+      values: '0',
+      method: 'approve(address,uint256)',
+      arguments: (addresses) => [addresses.makerUSDCGemJoin, '1024742540680'],
+      description: 'Approve Maker USDC Gem Join adapter, to allow PSM to pull USDC and swap for DAI'
+    },
+    {
+      target: 'makerUSDCPSM',
+      values: '0',
+      method: 'sellGem(address,uint256)',
+      arguments: (addresses) => [addresses.compoundDaiPCVDeposit, '1024742540680'],
+      description: `
+      Swap ~$1m USDC for DAI, via the feeless Maker PSM and send to the Compound PCV DAI deposit
+      `
+    },
+    {
+      target: 'compoundDaiPCVDeposit',
+      values: '0',
+      method: 'deposit()',
+      arguments: (addresses) => [],
+      description: 'Deposit DAI into Compound'
     }
   ],
   description: `
-  TIP-119: Add gOHM to Collaterisation Oracle
+  TIP-119: gOHM to Collaterisation Oracle, Swap USDC
 
-  Register the gOHM USD oracle on the Collaterisation Oracle.
+  This proposal is a technical maintenance and cleanup proposal which performs
+  various updates to the Collaterisation Oracle so that it most accurately reflects
+  the current PCV holdings. 
 
-  Then register the gOHM Holding PCV Deposit.
+  Specifically, it:
+  - Registers the gOHM USD oracle on the Collaterisation Oracle
+  - Adds the gOHM Holding PCV deposit to the Collaterisation Oracle. 
+    Will contribute ~$1.5M to PCV equity
+  - Swaps the USDC held on the Tribal Council timelock for DAI, via the Maker PSM. 
+    Sends it to the Compound DAI PCV deposit. Will contribute ~$1M to PCV equity.
+
+  Adding these assets into the accounting through this proposal, will have the net effect
+  of increasing PCV equity by ~$2.5M.
   `
 };
 

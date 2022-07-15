@@ -15,16 +15,21 @@ const toBN = BigNumber.from;
 
 /*
 
-Tribal Council Proposal: TIP-119: Add gOHM to Collaterisation Oracle
+TIP-119: gOHM to Collaterisation Oracle, Swap USDC
 
 1. Deploy gOHM oracle
 2. Set oracle on collaterisation oracle
-3. Add gOHM to CR 
+3. Add gOHM holding deposit to CR 
+4. Swap USDC on TC timelock for DAI
 
 */
 
 const fipNumber = 'tip_119';
+
+const MINIMUM_DAI_FROM_SALE = ethers.constants.WeiPerEther.mul(1_000_000);
+
 let pcvStatsBefore: PcvStats;
+let initialCompoundDAIBalance: BigNumber;
 
 // Do any deployments
 // This should exclusively include new contract deployments
@@ -72,6 +77,8 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
   // Otherwise fork block is well out of date, oracle will report invalid and CR will be invalid
   const ohmPrice = (await contracts.chainlinkOhmV2EthOracleWrapper.read())[0];
   await overwriteChainlinkAggregator(addresses.chainlinkOHMV2EthOracle, ohmPrice.toString(), '18');
+
+  initialCompoundDAIBalance = await contracts.compoundDaiPCVDeposit.balance();
 };
 
 // Tears down any changes made in setup() that need to be
@@ -104,7 +111,15 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await collateralizationOracle.isTokenInPcv(addresses.gohm)).to.be.true;
   expect(await collateralizationOracle.depositToToken(gOHMHoldingPCVDeposit.address)).to.be.equal(addresses.gohm);
 
-  // 4. Verify pcvStats increased as expected
+  // 4. Verify USDC sold for DAI
+  const finalCompoundDaiBalance = await contracts.compoundDaiPCVDeposit.balance();
+  const depositDAIIncrease = finalCompoundDaiBalance.sub(initialCompoundDAIBalance);
+  expect(depositDAIIncrease).to.be.bignumber.greaterThan(MINIMUM_DAI_FROM_SALE);
+
+  const finalTCUSDCBalance = await contracts.usdc.balanceOf(addresses.tribalCouncilTimelock);
+  expect(finalTCUSDCBalance).to.be.equal(0);
+
+  // 5. Verify pcvStats increased as expected
   // display pcvStats
   console.log('----------------------------------------------------');
   console.log(' pcvStatsBefore.protocolControlledValue [M]e18 ', Number(pcvStatsBefore.protocolControlledValue) / 1e24);
@@ -124,8 +139,8 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   console.log(' Equity diff                            [M]e18 ', Number(eqDiff) / 1e24);
   console.log('----------------------------------------------------');
 
-  // PCV Equity change should be neutral for this proposal
-  expect(Number(eqDiff) / 1e18).to.be.at.least(1_000_000);
+  // PCV Equity increase should be ~$2.5M
+  expect(Number(eqDiff) / 1e18).to.be.at.least(2_000_000);
   expect(Number(eqDiff) / 1e18).to.be.at.most(3_000_000);
 };
 
