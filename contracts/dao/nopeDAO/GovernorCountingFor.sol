@@ -70,7 +70,6 @@ abstract contract GovernorCountingFor is Governor {
         uint256 weight,
         bytes memory // params
     ) internal virtual override {
-        // support could be any value in theory. Need to restrict. Only support votes in favour
         ProposalVote storage proposalvote = _proposalVotes[proposalId];
 
         require(!proposalvote.hasVoted[account], "GovernorCountingFor: vote already cast");
