@@ -73,8 +73,6 @@ contract NopeDAOTest is DSTest {
 
         // 4. Deploy dummy contract which proposals will interact with
         dummyStorageContract = new DummyStorage();
-
-        vm.roll(block.number + 1); // Make block number non-zero, for getVotes accounting
     }
 
     /// @notice Validate initial state of the NopeDAO
@@ -111,10 +109,10 @@ contract NopeDAOTest is DSTest {
 
         vm.prank(userWithZeroTribe);
         uint256 noTribeProposalId = nopeDAO.propose(targets, values, calldatas, description);
-        assertEq(uint8(nopeDAO.state(noTribeProposalId)), 0);
+        assertEq(uint8(nopeDAO.state(noTribeProposalId)), 0); // Pending
         vm.roll(block.number + 1);
 
-        assertEq(uint8(nopeDAO.state(noTribeProposalId)), 1);
+        assertEq(uint8(nopeDAO.state(noTribeProposalId)), 1); // Active
     }
 
     /// @notice Validate the quick reaction governor and that state is set to SUCCEEDED as soon as quorum is reached
@@ -221,31 +219,6 @@ contract NopeDAOTest is DSTest {
         // Cast a vote for the proposal, in excess of quorum
         vm.prank(userWithInsufficientTribe);
         nopeDAO.castVote(proposalId, 1);
-
-        // Validate execution fails
-        vm.expectRevert(bytes("Governor: proposal not successful"));
-        nopeDAO.execute(targets, values, calldatas, descriptionHash);
-    }
-
-    /// @notice Validate that only FOR votes are possible
-    function testOnlyForVotesPossible() public {
-        (
-            address[] memory targets,
-            uint256[] memory values,
-            bytes[] memory calldatas,
-            string memory description,
-            bytes32 descriptionHash
-        ) = createDummyProposal(address(dummyStorageContract), uint256(10));
-
-        vm.prank(userWithInsufficientTribe);
-        uint256 proposalId = nopeDAO.propose(targets, values, calldatas, description);
-
-        // Advance past the 1 voting block
-        vm.roll(block.number + 1);
-
-        // Cast a vote for the proposal, in excess of quorum
-        vm.prank(userWithTribe);
-        nopeDAO.castVote(proposalId, 0);
 
         // Validate execution fails
         vm.expectRevert(bytes("Governor: proposal not successful"));
