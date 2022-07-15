@@ -32,7 +32,7 @@ contract GovernorCountingForTest is DSTest {
         Core core = getCore();
         tribe = ERC20VotesComp(address(core.tribe()));
 
-        // 1. Get various users with delegated TRIBE
+        // 2. Get various users with delegated TRIBE
         (userWithQuorumTribe, userWith5MTribe, userWith2MTribe, userWithZeroTribe) = getDAOMembers(
             core,
             tribe,

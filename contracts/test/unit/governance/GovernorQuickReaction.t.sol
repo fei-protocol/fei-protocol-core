@@ -8,50 +8,36 @@ import {Vm} from "../../utils/Vm.sol";
 import {DSTest} from "../../utils/DSTest.sol";
 import {NopeDAO} from "../../../dao/nopeDAO/NopeDAO.sol";
 import {getCore, getAddresses, FeiTestAddresses} from "../../utils/Fixtures.sol";
-import {DummyStorage, createDummyStorageVarProposal} from "../../utils/GovFixtures.sol";
+import {DummyStorage, createDummyStorageVarProposal, getDAOMembers} from "../../utils/GovFixtures.sol";
 import {Tribe} from "../../../tribe/Tribe.sol";
 import {TribeRoles} from "../../../core/TribeRoles.sol";
 
-/// @dev Validates vote counting functionality of the GovernorCountingFor module. Module is abstract
-///      so instantiated as a NopeDAO
-contract GovernorCountingForTest is DSTest {
-    address userWithQuorumTribe = address(0x1);
-    address userWith5MTribe = address(0x2);
-    address userWith2MTribe = address(0x3);
-    address userWithZeroTribe = address(0x4);
-
-    uint256 excessQuorumTribe = (11e6) * (10**18);
+/// @dev Validates quick reaction governor module, used in the NopeDAO to veto a proposal
+contract GovernorQuickReactionTest is DSTest {
+    address userWithQuorumTribe;
+    address userWith5MTribe;
+    address userWith2MTribe;
+    address userWithZeroTribe;
     ERC20VotesComp tribe;
 
     Vm public constant vm = Vm(HEVM_ADDRESS);
     NopeDAO private nopeDAO;
-    Core private core;
 
     FeiTestAddresses public addresses = getAddresses();
     uint256 proposalId;
 
     function setUp() public {
-        // 1. Setup core
-        core = getCore();
-
-        // 2. Setup Tribe, grant to test addresses and delegate
-        vm.startPrank(addresses.governorAddress);
-        core.allocateTribe(userWithQuorumTribe, excessQuorumTribe);
-        core.allocateTribe(userWith5MTribe, 5e6 * (10**18));
-        core.allocateTribe(userWith2MTribe, 2e6 * (10**18));
-        vm.stopPrank();
-
+        // 1. Setup Core and TRIBE
+        Core core = getCore();
         tribe = ERC20VotesComp(address(core.tribe()));
 
-        // Delegate TRIBE to users, allowing them to vote
-        vm.prank(userWithQuorumTribe);
-        tribe.delegate(userWithQuorumTribe);
-
-        vm.prank(userWith5MTribe);
-        tribe.delegate(userWith5MTribe);
-
-        vm.prank(userWith2MTribe);
-        tribe.delegate(userWith2MTribe);
+        // 2. Get various users with delegated TRIBE
+        (userWithQuorumTribe, userWith5MTribe, userWith2MTribe, userWithZeroTribe) = getDAOMembers(
+            core,
+            tribe,
+            addresses.governorAddress,
+            vm
+        );
 
         // 3. Deploy NopeDAO
         nopeDAO = new NopeDAO(tribe, address(core));
@@ -71,4 +57,13 @@ contract GovernorCountingForTest is DSTest {
         proposalId = nopeDAO.propose(targets, values, calldatas, description);
         vm.roll(block.number + 1); // Make block number non-zero, for getVotes accounting
     }
+
+    /// @notice Validate that a pending proposal can not be executed
+    function testCanNotExecutePendingProposal() public {}
+
+    /// @notice Validate that an active proposal with quorum not met, can not be executed
+    function testCanNotExecuteActiveUnsuccessfulProposal() public {}
+
+    /// @notice Validate can quick reaction execute successful proposal
+    function testQuickReactionProposal() public {}
 }
