@@ -86,6 +86,29 @@ contract NopeDAO is Governor, GovernorSettings, GovernorVotesComp, GovernorQuick
         return super.propose(targets, values, calldatas, description);
     }
 
+    /// @notice Custom, convenience propose method to veto an optimistic pod proposal
+    function propose(
+        uint256 podId,
+        bytes32 timelockProposalId,
+        address podAdminGateway,
+        string memory description
+    ) public returns (uint256) {
+        address[] memory targets = new address[](1);
+        targets[0] = podAdminGateway;
+
+        uint256[] memory values = new uint256[](1);
+        values[0] = uint256(0);
+
+        bytes[] memory calldatas = new bytes[](1);
+        bytes memory data = abi.encodePacked(
+            bytes4(keccak256(bytes("veto(uint256,bytes32)"))),
+            podId,
+            timelockProposalId
+        );
+        calldatas[0] = data;
+        return propose(targets, values, calldatas, description);
+    }
+
     function proposalThreshold() public view override(Governor, GovernorSettings) returns (uint256) {
         return super.proposalThreshold();
     }
