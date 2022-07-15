@@ -241,12 +241,7 @@ contract NopeDAOIntegrationTest is DSTest {
 
         // 3. Create Nope using the convenience propose method
         string memory description = "Convenience method created Nope";
-        uint256 nopeDAOProposalId = nopeDAO.propose(
-            podId,
-            timelockProposalId,
-            podAdmin,
-            description
-        );
+        uint256 nopeDAOProposalId = nopeDAO.propose(podId, timelockProposalId, podAdmin, description);
         vm.roll(block.number + 1);
 
         // 4. Vote for Nope

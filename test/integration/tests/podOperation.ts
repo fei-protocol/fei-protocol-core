@@ -217,7 +217,12 @@ describe('Pod operation and veto', function () {
     const targets = [contractAddresses.podAdminGateway];
     const values = [0];
 
-    const proposeTx = await nopeDAO.propose(targets, values, calldatas, description);
+    const proposeTx = await nopeDAO['propose(address[],uint256[],bytes[],string)'](
+      targets,
+      values,
+      calldatas,
+      description
+    );
     const result = (await proposeTx.wait()).events!.find((elem: any) => elem.event === 'ProposalCreated');
     const args = result!.args!;
     const nopeDAOProposalId = args.proposalId;
@@ -322,7 +327,12 @@ describe('Pod operation and veto', function () {
     const targets = [contractAddresses.podAdminGateway];
     const values = [0];
 
-    const proposeTx = await nopeDAO.propose(targets, values, calldatas, description);
+    const proposeTx = await nopeDAO['propose(address[],uint256[],bytes[],string)'](
+      targets,
+      values,
+      calldatas,
+      description
+    );
     const { args } = (await proposeTx.wait()).events.find((elem: any) => elem.event === 'ProposalCreated');
     const nopeDAOProposalId = args.proposalId;
 
