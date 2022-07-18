@@ -51,7 +51,7 @@
   "dependencies": {
     "@balancer-labs/v2-pool-weighted": "^2.0.1",
     "@chainlink/contracts": "^0.1.7",
-    "@gnosis.pm/safe-core-sdk": "^2.1.0",
+    "@gnosis.pm/safe-core-sdk": "^2.2.1",
     "@gnosis.pm/safe-deployments": "^1.15.0",
     "@gnosis.pm/safe-ethers-lib": "^1.2.1",
     "@nomiclabs/hardhat-waffle": "^2.0.3",
