@@ -96,7 +96,7 @@
     "mocha-junit-reporter": "^2.0.2",
     "mocha-multi-reporters": "^1.5.1",
     "prettier": "^2.7.1",
-    "prettier-plugin-solidity": "^1.0.0-dev.22",
+    "prettier-plugin-solidity": "^1.0.0-dev.23",
     "solhint": "^3.3.7",
     "solhint-plugin-prettier": "^0.0.5",
     "solidity-coverage": "^0.7.21",
