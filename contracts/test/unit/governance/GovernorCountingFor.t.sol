@@ -60,14 +60,14 @@ contract GovernorCountingForTest is DSTest {
     }
 
     // enum ProposalState {
-    //     Pending,
-    //     Active,
-    //     Canceled,
-    //     Defeated,
-    //     Succeeded,
-    //     Queued,
-    //     Expired,
-    //     Executed
+    //     Pending, 0
+    //     Active, 1
+    //     Canceled, 2
+    //     Defeated, 3
+    //     Succeeded, 4
+    //     Queued, 5
+    //     Expired, 6
+    //     Executed 7
     // }
 
     /// @notice Validate initial state of the proposal and no votes

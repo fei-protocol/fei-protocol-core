@@ -108,4 +108,32 @@ contract GovernorQuickReactionTest is DSTest {
         uint256 ethBalanceIncrease = ethReceiver.balance - initialEthBalance;
         assertEq(ethBalanceIncrease, ethTransferAmount);
     }
+
+    /// @notice Validate proposal failed if quorum not met after voting period ended
+    function testStateAfterVotingPeriodEnded() public {
+        (
+            address[] memory targets,
+            uint256[] memory values,
+            bytes[] memory calldatas,
+            string memory description,
+            bytes32 descriptionHash
+        ) = createDummyEthProposal(ethReceiver, 1 ether);
+
+        uint256 proposalId = nopeDAO.propose(targets, values, calldatas, description);
+        uint256 votingPeriod = nopeDAO.votingPeriod(); // measured in blocks
+
+        // Fast forward to end of voting, add a buffer
+        vm.roll(block.number + votingPeriod + 1000);
+
+        // Verify state marked as failed
+        assertEq(uint8(nopeDAO.state(proposalId)), 3); // Defeated
+
+        // Verify can not execute proposal or vote on it
+        vm.prank(userWithQuorumTribe);
+        vm.expectRevert(bytes("Governor: vote not currently active"));
+        nopeDAO.castVote(proposalId, 1);
+
+        vm.expectRevert(bytes("Governor: proposal not successful"));
+        nopeDAO.execute(targets, values, calldatas, descriptionHash);
+    }
 }
