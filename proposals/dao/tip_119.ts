@@ -151,8 +151,8 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(Number(eqDiff) / 1e18).to.be.at.most(3_000_000);
 
   // 6. Verify ETH withdrawn from Fuse pool 146
-  const finalWethBalance = await contracts.wethHoldingPCVDeposit.balance();
-  expect(finalWethBalance).to.be.bignumber.greaterThan(initialWethBalance.add(CETHER_WITHDRAW));
+  const balanceDiff = (await contracts.wethHoldingPCVDeposit.balance()).sub(initialWethBalance);
+  expect(balanceDiff).to.be.equal(CETHER_WITHDRAW);
 };
 
 export { deploy, setup, teardown, validate };

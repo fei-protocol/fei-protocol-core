@@ -43,7 +43,7 @@ const tip_119: TemplatedProposalDescription = {
       arguments: (addresses) => [],
       description: 'Deposit DAI into Compound'
     },
-    // 3. Withdraw ~$50k ETH from Fuse pool 146
+    // 3. Withdraw ~$50k ETH from Fuse pool 146 to the WETH Holding Deposit
     {
       target: 'pcvGuardian',
       values: '0',
@@ -56,6 +56,13 @@ const tip_119: TemplatedProposalDescription = {
         true // deposit after
       ], // ~$50k ETH
       description: 'Withdraw $50k ETH from Rari Fuse pool 146, send to WETH Holding Deposit'
+    },
+    {
+      target: 'wethHoldingPCVDeposit',
+      values: '0',
+      method: 'wrapETH()',
+      arguments: (addresses) => [],
+      description: 'Wrap the ETH to WETH on the WETH Holding Deposit'
     }
   ],
   description: `
