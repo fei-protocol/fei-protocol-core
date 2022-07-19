@@ -1,3 +1,4 @@
+import { ethers } from 'ethers';
 import { TemplatedProposalDescription } from '@custom-types/types';
 
 const tip_119: TemplatedProposalDescription = {
@@ -42,18 +43,19 @@ const tip_119: TemplatedProposalDescription = {
       arguments: (addresses) => [],
       description: 'Deposit DAI into Compound'
     },
-    // 3. Add Fuse pool 146 to Fuse withdrawal guard
+    // 3. Withdraw ~$50k ETH from Fuse pool 146
     {
-      target: 'fuseWithdrawalGuard',
+      target: 'pcvGuardian',
       values: '0',
-      method: 'setWithdrawInfo(address,address,address,uint96)',
+      method: 'withdrawToSafeAddress(address,address,uint256,bool,bool)',
       arguments: (addresses) => [
         addresses.rariPool146EthPCVDeposit,
         addresses.wethHoldingPCVDeposit,
-        addresses.weth,
-        0
-      ],
-      description: 'Add Fuse pool 146 to the guard, to allow available ETH to be withdrawn'
+        ethers.constants.WeiPerEther.mul(37),
+        false, // do not pause
+        true // deposit after
+      ], // ~$50k ETH
+      description: 'Withdraw $50k ETH from Rari Fuse pool 146, send to WETH Holding Deposit'
     }
   ],
   description: `
@@ -69,7 +71,7 @@ const tip_119: TemplatedProposalDescription = {
     Will contribute ~$1.5M to PCV equity
   - Swaps the USDC held on the Tribal Council timelock for DAI, via the Maker PSM. 
     Sends it to the Compound DAI PCV deposit. Will contribute ~$1M to PCV equity.
-  - Adds the Fuse pool 146 PCV deposit to the guard, to allow available ETH to be withdrawn.
+  - Withdraws ~$50k ETH from Rari Fuse pool 146.
 
   Adding these assets into the accounting through this proposal, will have the net effect
   of increasing PCV equity by ~$2.5M.

@@ -12,7 +12,6 @@ import { BigNumber } from 'ethers';
 import { overwriteChainlinkAggregator } from '@test/helpers';
 
 const toBN = BigNumber.from;
-const e18 = ethers.constants.WeiPerEther;
 
 /*
 
@@ -28,10 +27,15 @@ TIP-119: gOHM to Collaterisation Oracle, Swap USDC
 
 const fipNumber = 'tip_119';
 
+// Minimum expected DAI from exchanging USDC with DAI via the Maker PSM
 const MINIMUM_DAI_FROM_SALE = ethers.constants.WeiPerEther.mul(1_000_000);
+
+// ETH withdrawn from the CEther token in Fuse pool 146
+const CETHER_WITHDRAW = ethers.constants.WeiPerEther.mul(37);
 
 let pcvStatsBefore: PcvStats;
 let initialCompoundDAIBalance: BigNumber;
+let initialWethBalance: BigNumber;
 
 // Do any deployments
 // This should exclusively include new contract deployments
@@ -81,6 +85,7 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
   await overwriteChainlinkAggregator(addresses.chainlinkOHMV2EthOracle, ohmPrice.toString(), '18');
 
   initialCompoundDAIBalance = await contracts.compoundDaiPCVDeposit.balance();
+  initialWethBalance = await contracts.wethHoldingPCVDeposit.balance();
 };
 
 // Tears down any changes made in setup() that need to be
@@ -145,21 +150,9 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(Number(eqDiff) / 1e18).to.be.at.least(2_000_000);
   expect(Number(eqDiff) / 1e18).to.be.at.most(3_000_000);
 
-  // 6. Verify that can withdraw ETH via the guard
-  const guard = contracts.fuseWithdrawalGuard;
-  expect(await guard.getAmountToWithdraw(addresses.rariPool146EthPCVDeposit)).to.be.gt(e18.mul(50)); // 50 ETH, ~$100K
-
-  const wethBalanceBefore = await contracts.weth.balanceOf(addresses.wethHoldingPCVDeposit);
-  for (let i = 0; i < 11; i++) {
-    expect(await guard.check()).to.be.true;
-    await contracts.pcvSentinel.protec(guard.address);
-  }
-
-  expect(await guard.check()).to.be.false;
-  expect(await guard.getAmountToWithdraw(addresses.rariPool146EthPCVDeposit)).to.be.equal(e18.mul(0));
-  expect(await contracts.weth.balanceOf(addresses.wethHoldingPCVDeposit)).to.be.gt(
-    e18.mul(100_000).add(wethBalanceBefore)
-  );
+  // 6. Verify ETH withdrawn from Fuse pool 146
+  const finalWethBalance = await contracts.wethHoldingPCVDeposit.balance();
+  expect(finalWethBalance).to.be.bignumber.greaterThan(initialWethBalance.add(CETHER_WITHDRAW));
 };
 
 export { deploy, setup, teardown, validate };
