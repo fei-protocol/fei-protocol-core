@@ -41,6 +41,13 @@ const tip_119: TemplatedProposalDescription = {
       method: 'deposit()',
       arguments: (addresses) => [],
       description: 'Deposit DAI into Compound'
+    },
+    {
+      target: 'pcvGuardian',
+      values: '0',
+      method: 'setSafeAddress(address)',
+      arguments: (addresses) => [addresses.lusdToDaiCurveSwapper],
+      description: 'Set LUSD->DAI Curve Swapper as a safe address'
     }
   ],
   description: `

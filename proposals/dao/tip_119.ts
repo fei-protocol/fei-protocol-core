@@ -9,7 +9,7 @@ import {
   ValidateUpgradeFunc
 } from '@custom-types/types';
 import { BigNumber } from 'ethers';
-import { overwriteChainlinkAggregator } from '@test/helpers';
+import { getImpersonatedSigner, overwriteChainlinkAggregator } from '@test/helpers';
 
 const toBN = BigNumber.from;
 
@@ -35,34 +35,64 @@ let initialCompoundDAIBalance: BigNumber;
 // This should exclusively include new contract deployments
 const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: NamedAddresses, logging: boolean) => {
   ////////////// 1. Create and deploy gOHM USD oracle
-  const chainlinkOracleWrapperFactory = await ethers.getContractFactory('ChainlinkOracleWrapper');
-  const chainlinkOhmV2EthOracleWrapper = await chainlinkOracleWrapperFactory.deploy(
+  // const chainlinkOracleWrapperFactory = await ethers.getContractFactory('ChainlinkOracleWrapper');
+  // const chainlinkOhmV2EthOracleWrapper = await chainlinkOracleWrapperFactory.deploy(
+  //   addresses.core,
+  //   addresses.chainlinkOHMV2EthOracle
+  // );
+  // await chainlinkOhmV2EthOracleWrapper.deployed();
+  // logging && console.log(`Deployed Chainlink OhmV2 ETH oracle wrapper to: ${chainlinkOhmV2EthOracleWrapper.address}`);
+
+  // const GOhmEthOracleFactory = await ethers.getContractFactory('GOhmEthOracle');
+  // const gOhmEthOracle = await GOhmEthOracleFactory.deploy(addresses.core, addresses.chainlinkOHMV2EthOracle);
+  // await gOhmEthOracle.deployed();
+
+  // logging && console.log(`Deployed gOHM Eth Oracle at ${gOhmEthOracle.address}`);
+
+  // // Create the gOHM USD oracle
+  // const CompositeOracleFactory = await ethers.getContractFactory('CompositeOracle');
+  // const gOhmUSDOracle = await CompositeOracleFactory.deploy(
+  //   addresses.core,
+  //   gOhmEthOracle.address,
+  //   addresses.chainlinkEthUsdOracleWrapper,
+  //   false
+  // );
+
+  // logging && console.log('Deployed gOHM oracle to: ', gOhmUSDOracle.address);
+
+  // Create LUSD->DAI Swapper
+  const curveSwapperFactory = await ethers.getContractFactory('CurveSwapper');
+  const lusdToDaiCurveSwapper = await curveSwapperFactory.deploy(
     addresses.core,
-    addresses.chainlinkOHMV2EthOracle
+    addresses.lusdCurveMetapool,
+    addresses.lusd,
+    addresses.dai,
+    addresses.compoundDaiPCVDeposit,
+    50 // minimum 995 DAI per 1000 LUSD
   );
-  await chainlinkOhmV2EthOracleWrapper.deployed();
-  logging && console.log(`Deployed Chainlink OhmV2 ETH oracle wrapper to: ${chainlinkOhmV2EthOracleWrapper.address}`);
+  await lusdToDaiCurveSwapper.deployed();
+  logging && console.log(`lusdToDaiCurveSwapper: ${lusdToDaiCurveSwapper.address}`);
 
-  const GOhmEthOracleFactory = await ethers.getContractFactory('GOhmEthOracle');
-  const gOhmEthOracle = await GOhmEthOracleFactory.deploy(addresses.core, addresses.chainlinkOHMV2EthOracle);
-  await gOhmEthOracle.deployed();
-
-  logging && console.log(`Deployed gOHM Eth Oracle at ${gOhmEthOracle.address}`);
-
-  // Create the gOHM USD oracle
-  const CompositeOracleFactory = await ethers.getContractFactory('CompositeOracle');
-  const gOhmUSDOracle = await CompositeOracleFactory.deploy(
+  // Create LUSD->DAI Swap Guard
+  const curveSwapperGuardFactory = await ethers.getContractFactory('CurveSwapperGuard');
+  const lusdToDaiSwapperGuard = await curveSwapperGuardFactory.deploy(
     addresses.core,
-    gOhmEthOracle.address,
-    addresses.chainlinkEthUsdOracleWrapper,
-    false
+    addresses.pcvGuardian,
+    lusdToDaiCurveSwapper.address,
+    addresses.lusdHoldingPCVDeposit,
+    addresses.compoundDaiPCVDeposit,
+    ethers.utils.parseEther('10000000'), // activate if <10M DAI reserves
+    ethers.utils.parseEther('5000000') // swap in chunks of 5M LUSD
   );
+  await lusdToDaiSwapperGuard.deployed();
+  logging && console.log(`lusdToDaiSwapperGuard: ${lusdToDaiSwapperGuard.address}`);
 
-  logging && console.log('Deployed gOHM oracle to: ', gOhmUSDOracle.address);
   return {
-    chainlinkOhmV2EthOracleWrapper,
-    gOhmUSDOracle,
-    gOhmEthOracle
+    lusdToDaiCurveSwapper,
+    lusdToDaiSwapperGuard
+    //chainlinkOhmV2EthOracleWrapper,
+    //gOhmUSDOracle,
+    //gOhmEthOracle
   };
 };
 
@@ -142,6 +172,42 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   // PCV Equity increase should be ~$2.5M
   expect(Number(eqDiff) / 1e18).to.be.at.least(2_000_000);
   expect(Number(eqDiff) / 1e18).to.be.at.most(3_000_000);
+
+  // Validate LUSD to DAI swapper config
+  expect(await contracts.lusdToDaiCurveSwapper.curvePool()).to.be.equal(addresses.lusdCurveMetapool);
+  expect(await contracts.lusdToDaiCurveSwapper.tokenSpent()).to.be.equal(addresses.lusd);
+  expect(await contracts.lusdToDaiCurveSwapper.tokenReceived()).to.be.equal(addresses.dai);
+  expect(await contracts.lusdToDaiCurveSwapper.maxSlippageBps()).to.be.equal('50');
+  expect(await contracts.lusdToDaiCurveSwapper.tokenReceivingAddress()).to.be.equal(addresses.compoundDaiPCVDeposit);
+  expect(await contracts.lusdToDaiCurveSwapper.i()).to.be.equal('0');
+  expect(await contracts.lusdToDaiCurveSwapper.j()).to.be.equal('1');
+
+  // Validate Guard trigger of the swapper and swap effect
+  const guardianSigner = await getImpersonatedSigner(addresses.guardianMultisig);
+  // Knight the guard
+  await contracts.pcvSentinel.connect(guardianSigner).knight(contracts.lusdToDaiSwapperGuard.address);
+  // Should not be able to protec at first
+  expect(await contracts.lusdToDaiSwapperGuard.check()).to.be.equal(false);
+  // Create protec-able conditions
+  await contracts.pcvGuardian.connect(guardianSigner).withdrawToSafeAddress(
+    addresses.compoundDaiPCVDeposit,
+    addresses.daiFixedPricePSM,
+    (await contracts.compoundDaiPCVDeposit.balance()).sub(ethers.utils.parseEther('9000000')), // all but 9M
+    false,
+    false
+  );
+  // Should be able to protec
+  expect(await contracts.lusdToDaiSwapperGuard.check()).to.be.equal(true);
+  // Read before/after balances and perform protec
+  const daiBalanceBefore = await contracts.compoundDaiPCVDeposit.balance();
+  const lusdBalanceBefore = await contracts.lusdHoldingPCVDeposit.balance();
+  await contracts.pcvSentinel.protec(contracts.lusdToDaiSwapperGuard.address);
+  const daiBalanceAfter = await contracts.compoundDaiPCVDeposit.balance();
+  const lusdBalanceAfter = await contracts.lusdHoldingPCVDeposit.balance();
+  // Check received DAI amount
+  expect(daiBalanceAfter.sub(daiBalanceBefore)).to.be.at.least(ethers.utils.parseEther('4975000')); // ~5M
+  // Check spent LUSD amount
+  expect(lusdBalanceBefore.sub(lusdBalanceAfter)).to.be.equal(ethers.utils.parseEther('5000000')); // 5M
 };
 
 export { deploy, setup, teardown, validate };

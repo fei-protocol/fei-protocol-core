@@ -11,5 +11,6 @@ export const SafeAddressesConfig = [
   'lusdHoldingPCVDeposit',
   'voltHoldingPCVDeposit',
   'daiHoldingPCVDeposit',
-  'gOHMHoldingPCVDeposit'
+  'gOHMHoldingPCVDeposit',
+  'lusdToDaiCurveSwapper'
 ];

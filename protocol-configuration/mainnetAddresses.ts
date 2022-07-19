@@ -66,6 +66,13 @@ export const MainnetContractsConfig = {
     address: '0x05FD907528cf725C6F6d1D28E14619A313513Ba8',
     category: AddressCategory.Deprecated
   },
+
+  lusdCurveMetapool: {
+    artifactName: 'ICurvePool',
+    address: '0xEd279fDD11cA84bEef15AF5D39BB4d4bEE23F0cA',
+    category: AddressCategory.External
+  },
+
   fuseFixer: {
     artifactName: 'FuseFixer',
     address: '0xFE7547F583aAe1212e72e063Aac25057C06c4797',
