@@ -41,6 +41,19 @@ const tip_119: TemplatedProposalDescription = {
       method: 'deposit()',
       arguments: (addresses) => [],
       description: 'Deposit DAI into Compound'
+    },
+    // 3. Add Fuse pool 146 to Fuse withdrawal guard
+    {
+      target: 'fuseWithdrawalGuard',
+      values: '0',
+      method: 'setWithdrawInfo(address,address,address,uint96)',
+      arguments: (addresses) => [
+        addresses.rariPool146EthPCVDeposit,
+        addresses.wethHoldingPCVDeposit,
+        addresses.weth,
+        0
+      ],
+      description: 'Add Fuse pool 146 to the guard, to allow available ETH to be withdrawn'
     }
   ],
   description: `
@@ -56,6 +69,7 @@ const tip_119: TemplatedProposalDescription = {
     Will contribute ~$1.5M to PCV equity
   - Swaps the USDC held on the Tribal Council timelock for DAI, via the Maker PSM. 
     Sends it to the Compound DAI PCV deposit. Will contribute ~$1M to PCV equity.
+  - Adds the Fuse pool 146 PCV deposit to the guard, to allow available ETH to be withdrawn.
 
   Adding these assets into the accounting through this proposal, will have the net effect
   of increasing PCV equity by ~$2.5M.

@@ -12,6 +12,7 @@ import { BigNumber } from 'ethers';
 import { overwriteChainlinkAggregator } from '@test/helpers';
 
 const toBN = BigNumber.from;
+const e18 = ethers.constants.WeiPerEther;
 
 /*
 
@@ -21,6 +22,7 @@ TIP-119: gOHM to Collaterisation Oracle, Swap USDC
 2. Set oracle on collaterisation oracle
 3. Add gOHM holding deposit to CR 
 4. Swap USDC on TC timelock for DAI
+5. Add Fuse pool 146 deposit to the Fuse withdrawal guard
 
 */
 
@@ -142,6 +144,22 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   // PCV Equity increase should be ~$2.5M
   expect(Number(eqDiff) / 1e18).to.be.at.least(2_000_000);
   expect(Number(eqDiff) / 1e18).to.be.at.most(3_000_000);
+
+  // 6. Verify that can withdraw ETH via the guard
+  const guard = contracts.fuseWithdrawalGuard;
+  expect(await guard.getAmountToWithdraw(addresses.rariPool146EthPCVDeposit)).to.be.gt(e18.mul(50)); // 50 ETH, ~$100K
+
+  const wethBalanceBefore = await contracts.weth.balanceOf(addresses.wethHoldingPCVDeposit);
+  for (let i = 0; i < 11; i++) {
+    expect(await guard.check()).to.be.true;
+    await contracts.pcvSentinel.protec(guard.address);
+  }
+
+  expect(await guard.check()).to.be.false;
+  expect(await guard.getAmountToWithdraw(addresses.rariPool146EthPCVDeposit)).to.be.equal(e18.mul(0));
+  expect(await contracts.weth.balanceOf(addresses.wethHoldingPCVDeposit)).to.be.gt(
+    e18.mul(100_000).add(wethBalanceBefore)
+  );
 };
 
 export { deploy, setup, teardown, validate };
