@@ -31,7 +31,7 @@ const fipNumber = 'tip_119';
 const MINIMUM_DAI_FROM_SALE = ethers.constants.WeiPerEther.mul(1_000_000);
 
 // ETH withdrawn from the CEther token in Fuse pool 146
-const CETHER_WITHDRAW = ethers.constants.WeiPerEther.mul(37);
+const CETHER_WITHDRAW = toBN('37610435021674550600');
 
 let pcvStatsBefore: PcvStats;
 let initialCompoundDAIBalance: BigNumber;
@@ -153,6 +153,9 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   // 6. Verify ETH withdrawn from Fuse pool 146
   const balanceDiff = (await contracts.wethHoldingPCVDeposit.balance()).sub(initialWethBalance);
   expect(balanceDiff).to.be.equal(CETHER_WITHDRAW);
+
+  // Verify cToken has no more ETH left
+  expect(await contracts.wethHoldingPCVDeposit.provider.getBalance(addresses.rariPool146Eth)).to.be.equal(0);
 };
 
 export { deploy, setup, teardown, validate };

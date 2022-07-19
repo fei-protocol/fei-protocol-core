@@ -51,7 +51,7 @@ const tip_119: TemplatedProposalDescription = {
       arguments: (addresses) => [
         addresses.rariPool146EthPCVDeposit,
         addresses.wethHoldingPCVDeposit,
-        ethers.constants.WeiPerEther.mul(37),
+        '37610435021674550600',
         false, // do not pause
         true // deposit after
       ], // ~$50k ETH
