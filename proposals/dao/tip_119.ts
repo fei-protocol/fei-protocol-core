@@ -28,8 +28,11 @@ const fipNumber = 'tip_119';
 
 const MINIMUM_DAI_FROM_SALE = ethers.constants.WeiPerEther.mul(1_000_000);
 
+const FEI_LOAN_PAID_BACK = ethers.constants.WeiPerEther.mul(10_170_000);
+
 let pcvStatsBefore: PcvStats;
 let initialCompoundDAIBalance: BigNumber;
+let initialFeiTotalSupply: BigNumber;
 
 // Do any deployments
 // This should exclusively include new contract deployments
@@ -142,6 +145,13 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   // PCV Equity increase should be ~$2.5M
   expect(Number(eqDiff) / 1e18).to.be.at.least(2_000_000);
   expect(Number(eqDiff) / 1e18).to.be.at.most(3_000_000);
+
+  // 6. Verify VOLT OTC executed
+  expect(await contracts.voltHoldingPCVDeposit.balance()).to.be.equal(0);
+  expect(await contracts.volt.balanceOf(addresses.tribalCouncilTimelock)).to.be.equal(0);
+
+  const feiTotalSupplyDiff = (await contracts.fei.totalSupply()).sub(initialFeiTotalSupply);
+  expect(feiTotalSupplyDiff).to.be.equal(FEI_LOAN_PAID_BACK);
 };
 
 export { deploy, setup, teardown, validate };
