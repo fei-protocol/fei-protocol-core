@@ -1,4 +1,8 @@
+import { ethers } from 'ethers';
 import { TemplatedProposalDescription } from '@custom-types/types';
+
+// Amount of VOLT to swap in the OTC for 10.17M FEI
+const VOLT_OTC_AMOUNT = ethers.constants.WeiPerEther.mul(10_000_000);
 
 const tip_119: TemplatedProposalDescription = {
   title: 'TIP-119: gOHM to Collaterisation Oracle, Swap USDC',
@@ -41,6 +45,41 @@ const tip_119: TemplatedProposalDescription = {
       method: 'deposit()',
       arguments: (addresses) => [],
       description: 'Deposit DAI into Compound'
+    },
+    // 3. Exxecute the VOLT <> FEI OTC, so Volt can pay back their FEI loan
+    {
+      target: 'pcvGuardian',
+      values: '0',
+      method: 'withdrawToSafeAddress(address,address,uint256,bool,bool)',
+      arguments: (addresses) => [
+        addresses.voltHoldingPCVDeposit,
+        addresses.tribalCouncilTimelock,
+        VOLT_OTC_AMOUNT,
+        false, // do not pause
+        false // do not deposit
+      ],
+      description: 'Move all 10M VOLT to the TC timelock'
+    },
+    {
+      target: 'volt',
+      values: '0',
+      method: 'approve(address,uint256)',
+      arguments: (addresses) => [addresses.voltOTCEscrow, VOLT_OTC_AMOUNT],
+      description: 'Approve the VOLT <> FEI OTC Escrow contract'
+    },
+    {
+      target: 'voltOTCEscrow',
+      values: '0',
+      method: 'swap()',
+      arguments: (addresses) => [],
+      description: 'Execute the VOLT <> FEI OTC swap, to receive 10.17 FEI and send out 10M VOLT'
+    },
+    {
+      target: 'fei',
+      values: '0',
+      method: 'burn(uint256)',
+      arguments: (addresses) => [ethers.constants.WeiPerEther.mul(10_170_000)],
+      description: 'Burn all 10.17M FEI received from the OTC'
     }
   ],
   description: `
@@ -56,6 +95,7 @@ const tip_119: TemplatedProposalDescription = {
     Will contribute ~$1.5M to PCV equity
   - Swaps the USDC held on the Tribal Council timelock for DAI, via the Maker PSM. 
     Sends it to the Compound DAI PCV deposit. Will contribute ~$1M to PCV equity.
+  - Fund the VOLT OTC escrow contract and swap 10M VOLT for 10.17M FEI. Burn the received FEI.
 
   Adding these assets into the accounting through this proposal, will have the net effect
   of increasing PCV equity by ~$2.5M.
