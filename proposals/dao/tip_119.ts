@@ -21,17 +21,24 @@ TIP-119: gOHM to Collaterisation Oracle, Swap USDC
 2. Set oracle on collaterisation oracle
 3. Add gOHM holding deposit to CR 
 4. Swap USDC on TC timelock for DAI
+5. Add Fuse pool 146 deposit to the Fuse withdrawal guard
 
 */
 
 const fipNumber = 'tip_119';
 
+// Minimum expected DAI from exchanging USDC with DAI via the Maker PSM
 const MINIMUM_DAI_FROM_SALE = ethers.constants.WeiPerEther.mul(1_000_000);
 
+// FEI being paid back by Volt in return for 10M VOLT
 const FEI_LOAN_PAID_BACK = ethers.constants.WeiPerEther.mul(10_170_000);
+
+// ETH withdrawn from the CEther token in Fuse pool 146
+const CETHER_WITHDRAW = ethers.constants.WeiPerEther.mul(37);
 
 let pcvStatsBefore: PcvStats;
 let initialCompoundDAIBalance: BigNumber;
+let initialWethBalance: BigNumber;
 let initialFeiTotalSupply: BigNumber;
 
 // Do any deployments
@@ -82,6 +89,7 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
   await overwriteChainlinkAggregator(addresses.chainlinkOHMV2EthOracle, ohmPrice.toString(), '18');
 
   initialCompoundDAIBalance = await contracts.compoundDaiPCVDeposit.balance();
+  initialWethBalance = await contracts.wethHoldingPCVDeposit.balance();
 };
 
 // Tears down any changes made in setup() that need to be
@@ -146,7 +154,11 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(Number(eqDiff) / 1e18).to.be.at.least(2_000_000);
   expect(Number(eqDiff) / 1e18).to.be.at.most(3_000_000);
 
-  // 6. Verify VOLT OTC executed
+  // 6. Verify ETH withdrawn from Fuse pool 146
+  const balanceDiff = (await contracts.wethHoldingPCVDeposit.balance()).sub(initialWethBalance);
+  expect(balanceDiff).to.be.equal(CETHER_WITHDRAW);
+
+  // 7. Verify VOLT OTC executed
   expect(await contracts.voltHoldingPCVDeposit.balance()).to.be.equal(0);
   expect(await contracts.volt.balanceOf(addresses.tribalCouncilTimelock)).to.be.equal(0);
 

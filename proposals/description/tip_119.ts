@@ -46,7 +46,30 @@ const tip_119: TemplatedProposalDescription = {
       arguments: (addresses) => [],
       description: 'Deposit DAI into Compound'
     },
-    // 3. Exxecute the VOLT <> FEI OTC, so Volt can pay back their FEI loan
+
+    // 3. Withdraw ~$50k ETH from Fuse pool 146 to the WETH Holding Deposit
+    {
+      target: 'pcvGuardian',
+      values: '0',
+      method: 'withdrawToSafeAddress(address,address,uint256,bool,bool)',
+      arguments: (addresses) => [
+        addresses.rariPool146EthPCVDeposit,
+        addresses.wethHoldingPCVDeposit,
+        ethers.constants.WeiPerEther.mul(37),
+        false, // do not pause
+        true // deposit after
+      ],
+      description: 'Withdraw $50k ETH from Rari Fuse pool 146, send to WETH Holding Deposit'
+    },
+    {
+      target: 'wethHoldingPCVDeposit',
+      values: '0',
+      method: 'wrapETH()',
+      arguments: (addresses) => [],
+      description: 'Wrap the ETH to WETH on the WETH Holding Deposit'
+    },
+
+    // 4. Execute the VOLT <> FEI OTC, so Volt can pay back their FEI loan
     {
       target: 'pcvGuardian',
       values: '0',
@@ -78,8 +101,8 @@ const tip_119: TemplatedProposalDescription = {
       target: 'fei',
       values: '0',
       method: 'burn(uint256)',
-      arguments: (addresses) => [ethers.constants.WeiPerEther.mul(10_170_000)],
-      description: 'Burn all 10.17M FEI received from the OTC'
+      arguments: (addresses) => [],
+      description: 'Burn all 10.17M FEI received from VOLT OTC'
     }
   ],
   description: `
@@ -96,6 +119,7 @@ const tip_119: TemplatedProposalDescription = {
   - Swaps the USDC held on the Tribal Council timelock for DAI, via the Maker PSM. 
     Sends it to the Compound DAI PCV deposit. Will contribute ~$1M to PCV equity.
   - Fund the VOLT OTC escrow contract and swap 10M VOLT for 10.17M FEI. Burn the received FEI.
+  - Withdraws ~$50k ETH from Rari Fuse pool 146.
 
   Adding these assets into the accounting through this proposal, will have the net effect
   of increasing PCV equity by ~$2.5M.
