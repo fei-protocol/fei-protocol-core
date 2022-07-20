@@ -166,6 +166,9 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 
   const feiTotalSupplyDiff = (await contracts.fei.totalSupply()).sub(initialFeiTotalSupply);
   expect(feiTotalSupplyDiff).to.be.equal(FEI_LOAN_PAID_BACK);
+
+  // 8. Verify Tribal Council timelock is not a safe address
+  expect(await contracts.pcvGuardian.isSafeAddress(addresses.tribalCouncilTimelock)).to.be.false;
 };
 
 export { deploy, setup, teardown, validate };

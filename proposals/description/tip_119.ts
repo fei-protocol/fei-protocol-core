@@ -70,6 +70,19 @@ const tip_119: TemplatedProposalDescription = {
     },
 
     // 4. Execute the VOLT <> FEI OTC, so Volt can pay back their FEI loan
+    // Temporarily set the TC timelock as a safe address, so can move the VOLT there
+    // to faciliate the swap
+    {
+      target: 'pcvGuardian',
+      values: '0',
+      method: 'setSafeAddress(address)',
+      arguments: (addresses) => [addresses.tribalCouncilTimelock],
+      description: `
+      Temporarily set the Tribal Council timelock as a safe address to move
+      the VOLT there for the swap
+      `
+    },
+
     {
       target: 'pcvGuardian',
       values: '0',
@@ -83,6 +96,16 @@ const tip_119: TemplatedProposalDescription = {
       ],
       description: 'Move all 10M VOLT to the TC timelock'
     },
+
+    // Revoke TC timelock as a safe address
+    {
+      target: 'pcvGuardian',
+      values: '0',
+      method: 'unsetSafeAddress(address)',
+      arguments: (addresses) => [addresses.tribalCouncilTimelock],
+      description: 'Unset the Tribal Council timelock as a safe address'
+    },
+
     {
       target: 'volt',
       values: '0',
