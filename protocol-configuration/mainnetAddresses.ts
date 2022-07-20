@@ -2298,12 +2298,11 @@ export const MainnetContractsConfig = {
     address: '0x6Cfed416f0729d5754f13fDDf297789079208E2e',
     category: AddressCategory.Deprecated
   },
-  // TODO
-  // voltOTCEscrow: {
-  //   artifactName: 'OtcEscrow',
-  //   address: '',
-  //   category: AddressCategory.External
-  // },
+  voltOTCEscrow: {
+    artifactName: 'OtcEscrow',
+    address: '0x590eb1a809377f786a11fa1968eF8c15eB44A12F',
+    category: AddressCategory.External
+  },
   ethPCVDripper: {
     artifactName: 'IPCVDeposit',
     address: '0xDa079A280FC3e33Eb11A78708B369D5Ca2da54fE',
