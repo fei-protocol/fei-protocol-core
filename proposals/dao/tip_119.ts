@@ -9,7 +9,8 @@ import {
   ValidateUpgradeFunc
 } from '@custom-types/types';
 import { BigNumber } from 'ethers';
-import { overwriteChainlinkAggregator } from '@test/helpers';
+import { getImpersonatedSigner, overwriteChainlinkAggregator } from '@test/helpers';
+import { forceEth } from '@test/integration/setup/utils';
 
 const toBN = BigNumber.from;
 
@@ -90,6 +91,15 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
 
   initialCompoundDAIBalance = await contracts.compoundDaiPCVDeposit.balance();
   initialWethBalance = await contracts.wethHoldingPCVDeposit.balance();
+  initialFeiTotalSupply = await contracts.fei.totalSupply();
+
+  // Prepare OTC escrow contract on the Volt side, mock transferring Fei to it
+  const voltSafe = '0xcBB83206698E8788F85EFbEeeCAd17e53366EBDf';
+  const voltSafeSigner = await getImpersonatedSigner(voltSafe);
+  await forceEth(voltSafe);
+  await contracts.fei
+    .connect(voltSafeSigner)
+    .transfer(addresses.voltOTCEscrow, ethers.constants.WeiPerEther.mul(10_170_000));
 };
 
 // Tears down any changes made in setup() that need to be
@@ -164,7 +174,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await contracts.voltHoldingPCVDeposit.balance()).to.be.equal(0);
   expect(await contracts.volt.balanceOf(addresses.tribalCouncilTimelock)).to.be.equal(0);
 
-  const feiTotalSupplyDiff = (await contracts.fei.totalSupply()).sub(initialFeiTotalSupply);
+  const feiTotalSupplyDiff = initialFeiTotalSupply.sub(await contracts.fei.totalSupply());
   expect(feiTotalSupplyDiff).to.be.equal(FEI_LOAN_PAID_BACK);
 
   // 8. Verify Tribal Council timelock is not a safe address

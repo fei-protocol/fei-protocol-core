@@ -4,6 +4,9 @@ import { TemplatedProposalDescription } from '@custom-types/types';
 // Amount of VOLT to swap in the OTC for 10.17M FEI
 const VOLT_OTC_AMOUNT = ethers.constants.WeiPerEther.mul(10_000_000);
 
+// Amount of FEI being burned from OTC with VOLT
+const FEI_BURN_AMOUNT = ethers.constants.WeiPerEther.mul(10_170_000);
+
 const tip_119: TemplatedProposalDescription = {
   title: 'TIP-119: gOHM to Collaterisation Oracle, Swap USDC',
   commands: [
@@ -124,7 +127,7 @@ const tip_119: TemplatedProposalDescription = {
       target: 'fei',
       values: '0',
       method: 'burn(uint256)',
-      arguments: (addresses) => [],
+      arguments: (addresses) => [FEI_BURN_AMOUNT],
       description: 'Burn all 10.17M FEI received from VOLT OTC'
     },
     // Remove VOLT from Collaterisation Oracle

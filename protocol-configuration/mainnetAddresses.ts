@@ -526,7 +526,7 @@ export const MainnetContractsConfig = {
   voltDepositWrapper: {
     artifactName: 'ERC20PCVDepositWrapper',
     address: '0x564eFCe5c6873219a7FbE450187c23254E3d62a4',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
 
   uniswapLensAgEurUniswapGauge: {
