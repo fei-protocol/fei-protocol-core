@@ -1033,12 +1033,12 @@ export const MainnetContractsConfig = {
   voltCore: {
     artifactName: 'Core',
     address: '0xEC7AD284f7Ad256b64c6E69b84Eb0F48f42e8196',
-    category: AddressCategory.Volt
+    category: AddressCategory.Deprecated
   },
   voltFeiSwapContract: {
     artifactName: 'OtcEscrow',
     address: '0xeF152E462B59940616E667E801762dA9F2AF97b9',
-    category: AddressCategory.Volt
+    category: AddressCategory.Deprecated
   },
   voltFusePCVDeposit: {
     artifactName: 'ERC20CompoundPCVDeposit',
