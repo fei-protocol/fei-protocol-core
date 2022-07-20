@@ -103,6 +103,14 @@ const tip_119: TemplatedProposalDescription = {
       method: 'burn(uint256)',
       arguments: (addresses) => [],
       description: 'Burn all 10.17M FEI received from VOLT OTC'
+    },
+    // Remove VOLT from Collaterisation Oracle
+    {
+      target: 'collateralizationOracle',
+      values: '0',
+      method: 'removeDeposit(address)',
+      arguments: (addresses) => [addresses.voltHoldingPCVDeposit],
+      description: 'Remove empty VOLT holding deposit from CR'
     }
   ],
   description: `
@@ -119,6 +127,7 @@ const tip_119: TemplatedProposalDescription = {
   - Swaps the USDC held on the Tribal Council timelock for DAI, via the Maker PSM. 
     Sends it to the Compound DAI PCV deposit. Will contribute ~$1M to PCV equity.
   - Fund the VOLT OTC escrow contract and swap 10M VOLT for 10.17M FEI. Burn the received FEI.
+  - Remove VOLT holding deposit from CR
   - Withdraws ~$50k ETH from Rari Fuse pool 146.
 
   Adding these assets into the accounting through this proposal, will have the net effect

@@ -1028,7 +1028,7 @@ export const MainnetContractsConfig = {
   voltHoldingPCVDeposit: {
     artifactName: 'ERC20HoldingPCVDeposit',
     address: '0xBDC01c9743989429df9a4Fe24c908D87e462AbC1',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
   voltCore: {
     artifactName: 'Core',
@@ -1048,12 +1048,12 @@ export const MainnetContractsConfig = {
   voltOraclePassthrough: {
     artifactName: 'IOracle',
     address: '0x84dc71500D504163A87756dB6368CC8bB654592f',
-    category: AddressCategory.Volt
+    category: AddressCategory.Deprecated
   },
   voltOracle: {
     artifactName: 'CompositeOracle',
     address: '0x8A1f9707AbeE2102Da45a2392f2F992BA22Ff446',
-    category: AddressCategory.Oracle
+    category: AddressCategory.Deprecated
   },
   dpiToDaiLBPPool: {
     artifactName: 'IWeightedPool',
