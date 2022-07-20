@@ -97,9 +97,7 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
   const voltSafe = '0xcBB83206698E8788F85EFbEeeCAd17e53366EBDf';
   const voltSafeSigner = await getImpersonatedSigner(voltSafe);
   await forceEth(voltSafe);
-  await contracts.fei
-    .connect(voltSafeSigner)
-    .transfer(addresses.voltOTCEscrow, ethers.constants.WeiPerEther.mul(10_170_000));
+  await contracts.fei.connect(voltSafeSigner).transfer(addresses.voltOTCEscrow, FEI_LOAN_PAID_BACK);
 };
 
 // Tears down any changes made in setup() that need to be
