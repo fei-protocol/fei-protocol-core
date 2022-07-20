@@ -18,7 +18,13 @@ contract DummyStorage {
     }
 }
 
-/// @notice Setup various users with Tribe delegated to them for DAO voting
+/// @notice Create users with various amounts of TRIBE delegated to them
+///         which can then be used to vote on proposals in tests. Four users
+///         are created, with the assumption being that quorum is 10M TRIBE:
+///         userWithQuorumTribe -> 10M TRIBE (at quorum)
+///         userWith5MTribe -> 5M TRIBE (not quorum)
+///         userWith2MTribe -> 2M TRIBE (not quorum)
+///         userWithZeroTribe -> 0M TRIBE (not quorum)
 function getDAOMembers(
     Core core,
     ERC20VotesComp tribe,
@@ -39,7 +45,7 @@ function getDAOMembers(
     address userWith2MTribe = address(0x102);
     address userWithZeroTribe = address(0x103);
 
-    // 2. Setup Tribe, grant to test addresses and delegate
+    // Setup Tribe, grant to test addresses and delegate
     vm.startPrank(governor);
     core.allocateTribe(userWithQuorumTribe, excessQuorumTribe);
     core.allocateTribe(userWith5MTribe, 5e6 * (10**18));
