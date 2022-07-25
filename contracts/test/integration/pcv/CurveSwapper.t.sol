@@ -26,6 +26,8 @@ contract CurveSwapperIntegrationTest is DSTest {
         curveSwapper = new CurveSwapper(
             address(core), // core
             MainnetAddresses.CURVE_LUSD_METAPOOL, // curvePool
+            0, // i
+            1, // j
             MainnetAddresses.LUSD, // tokenSpent
             MainnetAddresses.DAI, // tokenReceived
             address(this), // tokenReceivingAddress

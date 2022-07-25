@@ -71,6 +71,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   const lusdToDaiCurveSwapper = await curveSwapperFactory.deploy(
     addresses.core,
     addresses.lusdCurveMetapool,
+    '0', // i
+    '1', // j
     addresses.lusd,
     addresses.dai,
     addresses.compoundDaiPCVDeposit,
