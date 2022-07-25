@@ -21,15 +21,21 @@ TIP-119: gOHM to Collaterisation Oracle, Swap USDC
 2. Set oracle on collaterisation oracle
 3. Add gOHM holding deposit to CR 
 4. Swap USDC on TC timelock for DAI
+5. Add Fuse pool 146 deposit to the Fuse withdrawal guard
 
 */
 
 const fipNumber = 'tip_119';
 
+// Minimum expected DAI from exchanging USDC with DAI via the Maker PSM
 const MINIMUM_DAI_FROM_SALE = ethers.constants.WeiPerEther.mul(1_000_000);
+
+// ETH withdrawn from the CEther token in Fuse pool 146
+const CETHER_WITHDRAW = toBN('37610435021674550600');
 
 let pcvStatsBefore: PcvStats;
 let initialCompoundDAIBalance: BigNumber;
+let initialWethBalance: BigNumber;
 
 // Do any deployments
 // This should exclusively include new contract deployments
@@ -109,6 +115,7 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
   await overwriteChainlinkAggregator(addresses.chainlinkOHMV2EthOracle, ohmPrice.toString(), '18');
 
   initialCompoundDAIBalance = await contracts.compoundDaiPCVDeposit.balance();
+  initialWethBalance = await contracts.wethHoldingPCVDeposit.balance();
 };
 
 // Tears down any changes made in setup() that need to be
@@ -172,6 +179,13 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   // PCV Equity increase should be ~$2.5M
   expect(Number(eqDiff) / 1e18).to.be.at.least(2_000_000);
   expect(Number(eqDiff) / 1e18).to.be.at.most(3_000_000);
+
+  // 6. Verify ETH withdrawn from Fuse pool 146
+  const balanceDiff = (await contracts.wethHoldingPCVDeposit.balance()).sub(initialWethBalance);
+  expect(balanceDiff).to.be.equal(CETHER_WITHDRAW);
+
+  // Verify cToken has no more ETH left
+  expect(await contracts.wethHoldingPCVDeposit.provider.getBalance(addresses.rariPool146Eth)).to.be.equal(0);
 
   // Validate LUSD to DAI swapper config
   expect(await contracts.lusdToDaiCurveSwapper.curvePool()).to.be.equal(addresses.lusdCurveMetapool);
