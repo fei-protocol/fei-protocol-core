@@ -15,9 +15,12 @@ contract CurveSwapperGuard is IGuard, CoreRef {
     address public immutable curveSwapper;
     /// @notice the source deposit to withdraw from
     address public immutable sourceDeposit;
-    /// @notice the PCV Deposit to read balance from
+    /// @notice the PCV Deposit to read balance from.
+    /// Swaps will only be performed if this inspected deposit has a balancer
+    /// lower than `inspectedDepositMinBalance`.
     address public immutable inspectedDeposit;
-    /// @notice the minimum balance under which a swap can be triggered
+    /// @notice the minimum balance of `inspectedDeposit`
+    /// under which a swap can be triggered.
     uint256 public immutable inspectedDepositMinBalance;
     /// @notice the amount of tokens to swap
     uint256 public immutable swapSize;

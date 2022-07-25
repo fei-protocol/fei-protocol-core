@@ -50,6 +50,8 @@ contract CurveSwapper is CoreRef, IPCVSwapper {
     @notice constructor for CurveSwapper
     @param _core Core contract to reference
     @param _curvePool the Curve pool used to swap
+    @param _i underlying index in the `_curvePool` of the `_tokenSpent`
+    @param _j underlying index in the `_curvePool` of the `_tokenReceived`
     @param _tokenSpent the token to be auctioned
     @param _tokenReceived the token to buy
     @param _tokenReceivingAddress the address to send `tokenReceived`
@@ -58,71 +60,20 @@ contract CurveSwapper is CoreRef, IPCVSwapper {
     constructor(
         address _core,
         address _curvePool,
+        int128 _i,
+        int128 _j,
         address _tokenSpent,
         address _tokenReceived,
         address _tokenReceivingAddress,
         uint256 _maxSlippageBps
     ) CoreRef(_core) {
         curvePool = _curvePool;
+        i = _i;
+        j = _j;
         tokenSpent = _tokenSpent;
         tokenReceived = _tokenReceived;
         _setReceivingAddress(_tokenReceivingAddress);
         _setMaximumSlippage(_maxSlippageBps);
-
-        // find the i and j index for underlying swap, where
-        // i = _tokenSpent, and j = _tokenReceived
-        address coins0 = ICurvePool(_curvePool).coins(0);
-        address coins1 = ICurvePool(_curvePool).coins(1);
-        address _basePool;
-        int128 _i;
-        int128 _j;
-        if (_tokenSpent == coins0) {
-            _basePool = coins1;
-            if (coins1 == ERC20_3CRV) _basePool = CURVE_3POOL;
-
-            _i = 0;
-            bool j1 = ICurvePool(_basePool).coins(0) == _tokenReceived;
-            if (j1) _j = 1;
-            else {
-                bool j2 = ICurvePool(_basePool).coins(1) == _tokenReceived;
-                if (j2) _j = 2;
-                else {
-                    bool j3 = ICurvePool(_basePool).coins(2) == _tokenReceived;
-                    if (j3) {
-                        _j = 3;
-                    } else {
-                        address coins3 = ICurvePool(_basePool).coins(3);
-                        require(_tokenReceived == coins3, "CurveSwapper: tokenReceived not found");
-                        _j = 4;
-                    }
-                }
-            }
-        } else {
-            require(_tokenSpent == coins1, "CurveSwapper: tokenSpent not found");
-            _basePool = coins0;
-            if (coins0 == ERC20_3CRV) _basePool = CURVE_3POOL;
-
-            _j = 0;
-            bool i1 = ICurvePool(_basePool).coins(0) == _tokenSpent;
-            if (i1) _i = 1;
-            else {
-                bool i2 = ICurvePool(_basePool).coins(1) == _tokenSpent;
-                if (i2) _i = 2;
-                else {
-                    bool i3 = ICurvePool(_basePool).coins(2) == _tokenSpent;
-                    if (i3) {
-                        _i = 3;
-                    } else {
-                        address coins3 = ICurvePool(_basePool).coins(3);
-                        require(_tokenSpent == coins3, "CurveSwapper: tokenSpent not found");
-                        _i = 4;
-                    }
-                }
-            }
-        }
-
-        i = _i;
-        j = _j;
     }
 
     /// @notice performs a swap
@@ -169,10 +120,8 @@ contract CurveSwapper is CoreRef, IPCVSwapper {
     }
 
     function _setReceivingAddress(address newTokenReceivingAddress) internal {
-        require(newTokenReceivingAddress != address(0), "CurveSwapper: zero address");
-        address oldTokenReceivingAddress = tokenReceivingAddress;
+        emit UpdateReceivingAddress(tokenReceivingAddress, newTokenReceivingAddress);
         tokenReceivingAddress = newTokenReceivingAddress;
-        emit UpdateReceivingAddress(oldTokenReceivingAddress, newTokenReceivingAddress);
     }
 
     /// @notice Sets the maximum slippage vs 1:1 price accepted during swap.
