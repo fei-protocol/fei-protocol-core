@@ -1,6 +1,12 @@
 import { ethers } from 'ethers';
 import { TemplatedProposalDescription } from '@custom-types/types';
 
+// Amount of VOLT to swap in the OTC for 10.17M FEI
+const VOLT_OTC_AMOUNT = ethers.constants.WeiPerEther.mul(10_000_000);
+
+// Amount of FEI being burned from OTC with VOLT
+const FEI_BURN_AMOUNT = ethers.constants.WeiPerEther.mul(10_170_000);
+
 const tip_119: TemplatedProposalDescription = {
   title: 'TIP-119: gOHM to Collaterisation Oracle, Swap USDC',
   commands: [
@@ -43,6 +49,7 @@ const tip_119: TemplatedProposalDescription = {
       arguments: (addresses) => [],
       description: 'Deposit DAI into Compound'
     },
+
     // 3. Withdraw ~$50k ETH from Fuse pool 146 to the WETH Holding Deposit
     {
       target: 'pcvGuardian',
@@ -54,7 +61,7 @@ const tip_119: TemplatedProposalDescription = {
         '37610435021674550600',
         false, // do not pause
         true // deposit after
-      ], // ~$50k ETH
+      ],
       description: 'Withdraw $50k ETH from Rari Fuse pool 146, send to WETH Holding Deposit'
     },
     {
@@ -63,6 +70,73 @@ const tip_119: TemplatedProposalDescription = {
       method: 'wrapETH()',
       arguments: (addresses) => [],
       description: 'Wrap the ETH to WETH on the WETH Holding Deposit'
+    },
+
+    // 4. Execute the VOLT <> FEI OTC, so Volt can pay back their FEI loan
+    // Temporarily set the TC timelock as a safe address, so can move the VOLT there
+    // to faciliate the swap
+    {
+      target: 'pcvGuardian',
+      values: '0',
+      method: 'setSafeAddress(address)',
+      arguments: (addresses) => [addresses.tribalCouncilTimelock],
+      description: `
+      Temporarily set the Tribal Council timelock as a safe address to move
+      the VOLT there for the swap
+      `
+    },
+
+    {
+      target: 'pcvGuardian',
+      values: '0',
+      method: 'withdrawToSafeAddress(address,address,uint256,bool,bool)',
+      arguments: (addresses) => [
+        addresses.voltHoldingPCVDeposit,
+        addresses.tribalCouncilTimelock,
+        VOLT_OTC_AMOUNT,
+        false, // do not pause
+        false // do not deposit
+      ],
+      description: 'Move all 10M VOLT to the TC timelock'
+    },
+
+    // Revoke TC timelock as a safe address
+    {
+      target: 'pcvGuardian',
+      values: '0',
+      method: 'unsetSafeAddress(address)',
+      arguments: (addresses) => [addresses.tribalCouncilTimelock],
+      description: 'Unset the Tribal Council timelock as a safe address'
+    },
+
+    {
+      target: 'volt',
+      values: '0',
+      method: 'approve(address,uint256)',
+      arguments: (addresses) => [addresses.voltOTCEscrow, VOLT_OTC_AMOUNT],
+      description: 'Approve the VOLT <> FEI OTC Escrow contract'
+    },
+    {
+      target: 'voltOTCEscrow',
+      values: '0',
+      method: 'swap()',
+      arguments: (addresses) => [],
+      description: 'Execute the VOLT <> FEI OTC swap, to receive 10.17 FEI and send out 10M VOLT'
+    },
+    {
+      target: 'fei',
+      values: '0',
+      method: 'burn(uint256)',
+      arguments: (addresses) => [FEI_BURN_AMOUNT],
+      description: 'Burn all 10.17M FEI received from VOLT OTC'
+    },
+    // Remove VOLT from Collaterisation Oracle
+    {
+      target: 'collateralizationOracle',
+      values: '0',
+      method: 'removeDeposit(address)',
+      arguments: (addresses) => [addresses.voltHoldingPCVDeposit],
+      description: 'Remove empty VOLT holding deposit from CR'
     }
   ],
   description: `
@@ -78,6 +152,8 @@ const tip_119: TemplatedProposalDescription = {
     Will contribute ~$1.5M to PCV equity
   - Swaps the USDC held on the Tribal Council timelock for DAI, via the Maker PSM. 
     Sends it to the Compound DAI PCV deposit. Will contribute ~$1M to PCV equity.
+  - Fund the VOLT OTC escrow contract and swap 10M VOLT for 10.17M FEI. Burn the received FEI.
+  - Remove VOLT holding deposit from CR
   - Withdraws ~$50k ETH from Rari Fuse pool 146.
 
   Adding these assets into the accounting through this proposal, will have the net effect

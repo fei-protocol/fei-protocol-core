@@ -526,7 +526,7 @@ export const MainnetContractsConfig = {
   voltDepositWrapper: {
     artifactName: 'ERC20PCVDepositWrapper',
     address: '0x564eFCe5c6873219a7FbE450187c23254E3d62a4',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
 
   uniswapLensAgEurUniswapGauge: {
@@ -1028,17 +1028,17 @@ export const MainnetContractsConfig = {
   voltHoldingPCVDeposit: {
     artifactName: 'ERC20HoldingPCVDeposit',
     address: '0xBDC01c9743989429df9a4Fe24c908D87e462AbC1',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
   voltCore: {
     artifactName: 'Core',
     address: '0xEC7AD284f7Ad256b64c6E69b84Eb0F48f42e8196',
-    category: AddressCategory.Volt
+    category: AddressCategory.Deprecated
   },
   voltFeiSwapContract: {
     artifactName: 'OtcEscrow',
     address: '0xeF152E462B59940616E667E801762dA9F2AF97b9',
-    category: AddressCategory.Volt
+    category: AddressCategory.Deprecated
   },
   voltFusePCVDeposit: {
     artifactName: 'ERC20CompoundPCVDeposit',
@@ -1048,12 +1048,12 @@ export const MainnetContractsConfig = {
   voltOraclePassthrough: {
     artifactName: 'IOracle',
     address: '0x84dc71500D504163A87756dB6368CC8bB654592f',
-    category: AddressCategory.Volt
+    category: AddressCategory.Deprecated
   },
   voltOracle: {
     artifactName: 'CompositeOracle',
     address: '0x8A1f9707AbeE2102Da45a2392f2F992BA22Ff446',
-    category: AddressCategory.Oracle
+    category: AddressCategory.Deprecated
   },
   dpiToDaiLBPPool: {
     artifactName: 'IWeightedPool',
@@ -2297,6 +2297,11 @@ export const MainnetContractsConfig = {
     artifactName: 'OtcEscrow',
     address: '0x6Cfed416f0729d5754f13fDDf297789079208E2e',
     category: AddressCategory.Deprecated
+  },
+  voltOTCEscrow: {
+    artifactName: 'OtcEscrow',
+    address: '0x590eb1a809377f786a11fa1968eF8c15eB44A12F',
+    category: AddressCategory.External
   },
   ethPCVDripper: {
     artifactName: 'IPCVDeposit',

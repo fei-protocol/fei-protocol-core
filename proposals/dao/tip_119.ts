@@ -9,7 +9,8 @@ import {
   ValidateUpgradeFunc
 } from '@custom-types/types';
 import { BigNumber } from 'ethers';
-import { overwriteChainlinkAggregator } from '@test/helpers';
+import { getImpersonatedSigner, overwriteChainlinkAggregator } from '@test/helpers';
+import { forceEth } from '@test/integration/setup/utils';
 
 const toBN = BigNumber.from;
 
@@ -30,12 +31,16 @@ const fipNumber = 'tip_119';
 // Minimum expected DAI from exchanging USDC with DAI via the Maker PSM
 const MINIMUM_DAI_FROM_SALE = ethers.constants.WeiPerEther.mul(1_000_000);
 
+// FEI being paid back by Volt in return for 10M VOLT
+const FEI_LOAN_PAID_BACK = ethers.constants.WeiPerEther.mul(10_170_000);
+
 // ETH withdrawn from the CEther token in Fuse pool 146
 const CETHER_WITHDRAW = toBN('37610435021674550600');
 
 let pcvStatsBefore: PcvStats;
 let initialCompoundDAIBalance: BigNumber;
 let initialWethBalance: BigNumber;
+let initialFeiTotalSupply: BigNumber;
 
 // Do any deployments
 // This should exclusively include new contract deployments
@@ -86,6 +91,13 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
 
   initialCompoundDAIBalance = await contracts.compoundDaiPCVDeposit.balance();
   initialWethBalance = await contracts.wethHoldingPCVDeposit.balance();
+  initialFeiTotalSupply = await contracts.fei.totalSupply();
+
+  // Prepare OTC escrow contract on the Volt side, mock transferring Fei to it
+  const voltSafe = '0xcBB83206698E8788F85EFbEeeCAd17e53366EBDf';
+  const voltSafeSigner = await getImpersonatedSigner(voltSafe);
+  await forceEth(voltSafe);
+  await contracts.fei.connect(voltSafeSigner).transfer(addresses.voltOTCEscrow, FEI_LOAN_PAID_BACK);
 };
 
 // Tears down any changes made in setup() that need to be
@@ -154,8 +166,17 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const balanceDiff = (await contracts.wethHoldingPCVDeposit.balance()).sub(initialWethBalance);
   expect(balanceDiff).to.be.equal(CETHER_WITHDRAW);
 
-  // Verify cToken has no more ETH left
   expect(await contracts.wethHoldingPCVDeposit.provider.getBalance(addresses.rariPool146Eth)).to.be.equal(0);
+
+  // 7. Verify VOLT OTC executed
+  expect(await contracts.voltHoldingPCVDeposit.balance()).to.be.equal(0);
+  expect(await contracts.volt.balanceOf(addresses.tribalCouncilTimelock)).to.be.equal(0);
+
+  const feiTotalSupplyDiff = initialFeiTotalSupply.sub(await contracts.fei.totalSupply());
+  expect(feiTotalSupplyDiff).to.be.equal(FEI_LOAN_PAID_BACK);
+
+  // 8. Verify Tribal Council timelock is not a safe address
+  expect(await contracts.pcvGuardian.isSafeAddress(addresses.tribalCouncilTimelock)).to.be.false;
 };
 
 export { deploy, setup, teardown, validate };
