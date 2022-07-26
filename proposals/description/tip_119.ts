@@ -8,7 +8,7 @@ const VOLT_OTC_AMOUNT = ethers.constants.WeiPerEther.mul(10_000_000);
 const FEI_BURN_AMOUNT = ethers.constants.WeiPerEther.mul(10_170_000);
 
 const tip_119: TemplatedProposalDescription = {
-  title: 'TIP-119: gOHM to Collaterisation Oracle, Swap USDC, Perform FEI <> VOLT OTC',
+  title: 'TIP-119: Collaterisation Oracle updates, Swap USDC, Perform FEI <> VOLT OTC',
   commands: [
     // 1. Track gOHM in the CR
     {
@@ -140,7 +140,7 @@ const tip_119: TemplatedProposalDescription = {
     }
   ],
   description: `
-  TIP-119: gOHM to Collaterisation Oracle, Swap USDC, Perform FEI <> VOLT OTC
+  TIP-119: Collaterisation Oracle updates, Swap USDC, Perform FEI <> VOLT OTC
 
   This proposal is a technical maintenance and cleanup proposal which performs
   various updates to the Collaterisation Oracle so that it most accurately reflects
