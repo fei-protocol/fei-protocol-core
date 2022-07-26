@@ -8,7 +8,7 @@ const VOLT_OTC_AMOUNT = ethers.constants.WeiPerEther.mul(10_000_000);
 const FEI_BURN_AMOUNT = ethers.constants.WeiPerEther.mul(10_170_000);
 
 const tip_119: TemplatedProposalDescription = {
-  title: 'TIP-119: gOHM to Collaterisation Oracle, Swap USDC',
+  title: 'TIP-119: Collaterisation Oracle updates, Swap USDC, Perform FEI <> VOLT OTC',
   commands: [
     // 1. Track gOHM in the CR
     {
@@ -97,7 +97,7 @@ const tip_119: TemplatedProposalDescription = {
         false, // do not pause
         false // do not deposit
       ],
-      description: 'Move all 10M VOLT to the TC timelock'
+      description: 'Move all 10M VOLT to the TC timelock in preparation for an OTC swap'
     },
 
     // Revoke TC timelock as a safe address
@@ -121,7 +121,7 @@ const tip_119: TemplatedProposalDescription = {
       values: '0',
       method: 'swap()',
       arguments: (addresses) => [],
-      description: 'Execute the VOLT <> FEI OTC swap, to receive 10.17 FEI and send out 10M VOLT'
+      description: 'Execute the VOLT <> FEI OTC swap, to receive 10.17M FEI and send out 10M VOLT'
     },
     {
       target: 'fei',
@@ -140,11 +140,14 @@ const tip_119: TemplatedProposalDescription = {
     }
   ],
   description: `
-  TIP-119: gOHM to Collaterisation Oracle, Swap USDC
+  TIP-119: Collaterisation Oracle updates, Swap USDC, Perform FEI <> VOLT OTC
 
   This proposal is a technical maintenance and cleanup proposal which performs
   various updates to the Collaterisation Oracle so that it most accurately reflects
   the current PCV holdings. 
+  
+  It also performs the FEI <> VOLT OTC swap, to allow the Volt team to repay their loan.
+  Forum post for Volt repaying their loan: https://tribe.fei.money/t/tip-xxx-accept-repayment-of-volt-launch-liquidity-backstop/4429
 
   Specifically, it:
   - Registers the gOHM USD oracle on the Collaterisation Oracle
@@ -153,6 +156,7 @@ const tip_119: TemplatedProposalDescription = {
   - Swaps the USDC held on the Tribal Council timelock for DAI, via the Maker PSM. 
     Sends it to the Compound DAI PCV deposit. Will contribute ~$1M to PCV equity.
   - Fund the VOLT OTC escrow contract and swap 10M VOLT for 10.17M FEI. Burn the received FEI.
+    (https://tribe.fei.money/t/tip-xxx-accept-repayment-of-volt-launch-liquidity-backstop/4429)
   - Remove VOLT holding deposit from CR
   - Withdraws ~$50k ETH from Rari Fuse pool 146.
 

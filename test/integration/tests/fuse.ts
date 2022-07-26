@@ -68,9 +68,8 @@ describe('e2e-fuse', function () {
       const signer = await getImpersonatedSigner(deployAddress);
 
       doLogging && console.log('Seeding d3');
-      await d3
-        .connect(await getImpersonatedSigner(d3Whale))
-        .transfer(deployAddress, ethers.constants.WeiPerEther.mul(1_000_000));
+      const transferAmount = ethers.constants.WeiPerEther.mul(100_000);
+      await d3.connect(await getImpersonatedSigner(d3Whale)).transfer(deployAddress, transferAmount);
 
       doLogging && console.log('Approving d3');
       await d3.connect(signer).approve(fD3.address, ethers.constants.MaxUint256);
@@ -79,17 +78,15 @@ describe('e2e-fuse', function () {
       const fd3BalanceBefore = await fD3.balanceOfUnderlying(deployAddress);
 
       doLogging && console.log('Minting fD3');
-      await fD3.connect(signer).mint(ethers.constants.WeiPerEther.mul(1_000_000));
+      await fD3.connect(signer).mint(transferAmount);
 
       expect(await contracts.convexD3poolRewards.balanceOf(plugin)).to.be.equal(
-        d3RewardsBalanceBefore.add(ethers.constants.WeiPerEther.mul(1_000_000))
+        d3RewardsBalanceBefore.add(transferAmount)
       );
-      expect(await fD3.balanceOfUnderlying(deployAddress)).to.be.equal(
-        fd3BalanceBefore.add(ethers.constants.WeiPerEther.mul(1_000_000))
-      );
+      expect(await fD3.balanceOfUnderlying(deployAddress)).to.be.equal(fd3BalanceBefore.add(transferAmount));
 
       doLogging && console.log('Redeeming Underlying');
-      await fD3.connect(signer).redeemUnderlying(ethers.constants.WeiPerEther.mul(1_000_000));
+      await fD3.connect(signer).redeemUnderlying(transferAmount);
 
       expect(await contracts.convexD3poolRewards.balanceOf(plugin)).to.be.equal(d3RewardsBalanceBefore);
       expect(await fD3.balanceOfUnderlying(deployAddress)).to.be.equal(fd3BalanceBefore);
