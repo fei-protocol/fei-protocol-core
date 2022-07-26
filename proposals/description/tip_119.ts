@@ -97,7 +97,7 @@ const tip_119: TemplatedProposalDescription = {
         false, // do not pause
         false // do not deposit
       ],
-      description: 'Move all 10M VOLT to the TC timelock'
+      description: 'Move all 10M VOLT to the TC timelock in preparation for an OTC swap'
     },
 
     // Revoke TC timelock as a safe address
