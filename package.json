@@ -55,7 +55,7 @@
     "@gnosis.pm/safe-deployments": "^1.15.0",
     "@gnosis.pm/safe-ethers-lib": "^1.2.1",
     "@nomiclabs/hardhat-waffle": "^2.0.3",
-    "@openzeppelin/contracts": "4.7.0",
+    "@openzeppelin/contracts": "4.7.1",
     "@openzeppelin/test-environment": "^0.1.7",
     "@openzeppelin/test-helpers": "^0.5.15",
     "@orcaprotocol/contracts": "^5.4.3",
