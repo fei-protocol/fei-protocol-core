@@ -1055,6 +1055,16 @@ export const MainnetContractsConfig = {
     address: '0x8A1f9707AbeE2102Da45a2392f2F992BA22Ff446',
     category: AddressCategory.Deprecated
   },
+  voltSafe: {
+    artifactName: 'unknown',
+    address: '0xcBB83206698E8788F85EFbEeeCAd17e53366EBDf',
+    category: AddressCategory.Volt
+  },
+  voltOptimisticTimelock: {
+    artifactName: 'unknown',
+    address: '0x860fa85f04f9d35b3471d8f7f7fa3ad31ce4d5ae',
+    category: AddressCategory.Volt
+  },
   dpiToDaiLBPPool: {
     artifactName: 'IWeightedPool',
     address: '0xd10386804959a121a8a487e49f45aa9f5a2eb2a0',

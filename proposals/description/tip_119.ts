@@ -121,7 +121,7 @@ const tip_119: TemplatedProposalDescription = {
       values: '0',
       method: 'swap()',
       arguments: (addresses) => [],
-      description: 'Execute the VOLT <> FEI OTC swap, to receive 10.17 FEI and send out 10M VOLT'
+      description: 'Execute the VOLT <> FEI OTC swap, to receive 10.17M FEI and send out 10M VOLT'
     },
     {
       target: 'fei',

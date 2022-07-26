@@ -34,6 +34,9 @@ const MINIMUM_DAI_FROM_SALE = ethers.constants.WeiPerEther.mul(1_000_000);
 // FEI being paid back by Volt in return for 10M VOLT
 const FEI_LOAN_PAID_BACK = ethers.constants.WeiPerEther.mul(10_170_000);
 
+// Amount of VOLT to swap in the OTC for 10.17M FEI
+const VOLT_OTC_AMOUNT = ethers.constants.WeiPerEther.mul(10_000_000);
+
 // ETH withdrawn from the CEther token in Fuse pool 146
 const CETHER_WITHDRAW = toBN('37610435021674550600');
 
@@ -41,6 +44,7 @@ let pcvStatsBefore: PcvStats;
 let initialCompoundDAIBalance: BigNumber;
 let initialWethBalance: BigNumber;
 let initialFeiTotalSupply: BigNumber;
+let initialVoltTimelockBalance: BigNumber;
 
 // Do any deployments
 // This should exclusively include new contract deployments
@@ -92,11 +96,11 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
   initialCompoundDAIBalance = await contracts.compoundDaiPCVDeposit.balance();
   initialWethBalance = await contracts.wethHoldingPCVDeposit.balance();
   initialFeiTotalSupply = await contracts.fei.totalSupply();
+  initialVoltTimelockBalance = await contracts.volt.balanceOf(addresses.voltOptimisticTimelock);
 
   // Prepare OTC escrow contract on the Volt side, mock transferring Fei to it
-  const voltSafe = '0xcBB83206698E8788F85EFbEeeCAd17e53366EBDf';
-  const voltSafeSigner = await getImpersonatedSigner(voltSafe);
-  await forceEth(voltSafe);
+  const voltSafeSigner = await getImpersonatedSigner(addresses.voltSafe);
+  await forceEth(addresses.voltSafe);
   await contracts.fei.connect(voltSafeSigner).transfer(addresses.voltOTCEscrow, FEI_LOAN_PAID_BACK);
 };
 
@@ -174,6 +178,12 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 
   const feiTotalSupplyDiff = initialFeiTotalSupply.sub(await contracts.fei.totalSupply());
   expect(feiTotalSupplyDiff).to.be.equal(FEI_LOAN_PAID_BACK);
+
+  // Verify Volt optimistic timelock received their VOLT tokens
+  const voltOptimisticTimelockDiff = (await contracts.volt.balanceOf(addresses.voltOptimisticTimelock)).sub(
+    initialVoltTimelockBalance
+  );
+  expect(voltOptimisticTimelockDiff).to.be.equal(VOLT_OTC_AMOUNT);
 
   // 8. Verify Tribal Council timelock is not a safe address
   expect(await contracts.pcvGuardian.isSafeAddress(addresses.tribalCouncilTimelock)).to.be.false;
