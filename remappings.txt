@@ -2,3 +2,8 @@
 @chainlink/=node_modules/@chainlink/
 @uniswap/=node_modules/@uniswap/
 @rari-capital/=node_modules/@rari-capital/
+@orcaprotocol/=node_modules/@orcaprotocol/
+@ensdomains/=node_modules/@ensdomains/
+@gnosis.pm/=node_modules/@gnosis.pm/
+ds-test/=contracts/test/libs/forge-std/lib/ds-test/src/
+forge-std/=contracts/test/libs/forge-std/src/

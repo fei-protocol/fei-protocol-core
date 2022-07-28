@@ -6,13 +6,12 @@ export const CollateralizationOracleConfig = {
   fei: [
     'aaveFeiPCVDepositWrapper',
     'rariPool79FeiPCVDepositWrapper',
-    'feiBuybackLensNoFee',
     'compoundFeiPCVDepositWrapper',
     'rariTimelockFeiOldLens',
     'tribalCouncilTimelockFeiLens'
   ],
-  lusd: ['lusdHoldingPCVDeposit'],
-  dai: ['compoundDaiPCVDepositWrapper', 'daiFixedPricePSM', 'ethToDaiLensDai', 'daiHoldingPCVDeposit'],
+  lusd: ['lusdToDaiLensLusd'],
+  dai: ['simpleFeiDaiPSM', 'ethToDaiLensDai', 'daiHoldingPCVDeposit', 'lusdToDaiLensDai'],
   bal: ['balancerDepositBalWeth', 'balancerLensVeBalBal', 'balancerGaugeStaker'],
   weth: ['ethLidoPCVDeposit', 'balancerLensVeBalWeth', 'ethToDaiLensEth', 'wethHoldingPCVDeposit']
 };

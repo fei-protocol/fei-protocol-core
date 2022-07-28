@@ -151,6 +151,11 @@ describe('Pod operation and veto', function () {
     const podTimelockSigner = await getImpersonatedSigner(podTimelock.address);
     const EXECUTOR_ROLE = await podTimelock.EXECUTOR_ROLE();
     await podTimelock.connect(podTimelockSigner).grantRole(EXECUTOR_ROLE, contractAddresses.podExecutorV2);
+
+    // Delegate an address with enough TRIBE to vote
+    const treasurySigner = await getImpersonatedSigner(contractAddresses.core);
+    await forceEth(contractAddresses.core);
+    await contracts.tribe.connect(treasurySigner).delegate(contractAddresses.guardianMultisig);
   });
 
   it('should allow a proposal to be proposed and executed', async () => {
@@ -202,6 +207,7 @@ describe('Pod operation and veto', function () {
     // 2. Have a member with >quorum TRIBE vote for proposal
     // 3. Validate that proposal is executed
     const userWithTribe = await getImpersonatedSigner(contractAddresses.guardianMultisig);
+
     const timelockProposalId = await podTimelock.hashOperation(
       contractAddresses.governanceMetadataRegistry,
       0,
