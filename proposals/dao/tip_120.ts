@@ -48,12 +48,12 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   const lusdToDaiSwapperGuard = await curveSwapperGuardFactory.deploy(
     addresses.core,
     addresses.pcvGuardian,
-    lusdToDaiCurveSwapper.address,
-    addresses.lusdHoldingPCVDeposit,
-    addresses.daiHoldingPCVDeposit,
-    ethers.utils.parseEther('1000000000'), // activate if <1B DAI reserves (i.e. active all the time, convert all DAI)
-    ethers.utils.parseEther('5000000') // swap in chunks of 5M LUSD
+    lusdToDaiCurveSwapper.address, // curveSwapper
+    addresses.lusdHoldingPCVDeposit, // sourceDeposit
+    '0', // activate if >0 LUSD reserves (i.e. active all the time, convert all to DAI)
+    ethers.utils.parseEther('5000000') // swap in chunks of maximum 5M LUSD
   );
+
   await lusdToDaiSwapperGuard.deployed();
   logging && console.log(`lusdToDaiSwapperGuard: ${lusdToDaiSwapperGuard.address}`);
 
@@ -112,7 +112,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await contracts.lusdToDaiCurveSwapper.tokenSpent()).to.be.equal(addresses.lusd);
   expect(await contracts.lusdToDaiCurveSwapper.tokenReceived()).to.be.equal(addresses.dai);
   expect(await contracts.lusdToDaiCurveSwapper.maxSlippageBps()).to.be.equal('0');
-  expect(await contracts.lusdToDaiCurveSwapper.tokenReceivingAddress()).to.be.equal(addresses.compoundDaiPCVDeposit);
+  expect(await contracts.lusdToDaiCurveSwapper.tokenReceivingAddress()).to.be.equal(addresses.daiHoldingPCVDeposit);
   expect(await contracts.lusdToDaiCurveSwapper.i()).to.be.equal('0');
   expect(await contracts.lusdToDaiCurveSwapper.j()).to.be.equal('1');
 
@@ -120,28 +120,36 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const guardianSigner = await getImpersonatedSigner(addresses.guardianMultisig);
   // Knight the guard
   await contracts.pcvSentinel.connect(guardianSigner).knight(contracts.lusdToDaiSwapperGuard.address);
-  // Should not be able to protec at first
-  expect(await contracts.lusdToDaiSwapperGuard.check()).to.be.equal(false);
-  // Create protec-able conditions
-  await contracts.pcvGuardian.connect(guardianSigner).withdrawToSafeAddress(
-    addresses.compoundDaiPCVDeposit,
-    addresses.daiFixedPricePSM,
-    (await contracts.compoundDaiPCVDeposit.balance()).sub(ethers.utils.parseEther('9000000')), // all but 9M
-    false,
-    false
-  );
-  // Should be able to protec
-  expect(await contracts.lusdToDaiSwapperGuard.check()).to.be.equal(true);
-  // Read before/after balances and perform protec
-  const daiBalanceBefore = await contracts.compoundDaiPCVDeposit.balance();
-  const lusdBalanceBefore = await contracts.lusdHoldingPCVDeposit.balance();
-  await contracts.pcvSentinel.protec(contracts.lusdToDaiSwapperGuard.address);
-  const daiBalanceAfter = await contracts.compoundDaiPCVDeposit.balance();
-  const lusdBalanceAfter = await contracts.lusdHoldingPCVDeposit.balance();
-  // Check received DAI amount
-  expect(daiBalanceAfter.sub(daiBalanceBefore)).to.be.at.least(ethers.utils.parseEther('5000000')); // 5M
-  // Check spent LUSD amount
-  expect(lusdBalanceBefore.sub(lusdBalanceAfter)).to.be.equal(ethers.utils.parseEther('5000000')); // 5M
+  // While there is LUSD left, swap to DAI
+  let canProtec = await contracts.lusdToDaiSwapperGuard.check();
+  expect(canProtec).to.be.equal(true);
+  let totalDaiReceived: any = ethers.utils.parseEther('0');
+  let totalLusdSpent: any = ethers.utils.parseEther('0');
+  while (canProtec) {
+    const lusdBalanceBefore = await contracts.lusdHoldingPCVDeposit.balance();
+    const daiBalanceBefore = await contracts.daiHoldingPCVDeposit.balance();
+
+    await contracts.pcvSentinel.protec(contracts.lusdToDaiSwapperGuard.address);
+
+    const lusdBalanceAfter = await contracts.lusdHoldingPCVDeposit.balance();
+    const daiBalanceAfter = await contracts.daiHoldingPCVDeposit.balance();
+
+    const receivedDai = daiBalanceAfter.sub(daiBalanceBefore);
+    const spentLusd = lusdBalanceBefore.sub(lusdBalanceAfter);
+    console.log('Protec : spend', spentLusd.toString() / 1e18, 'LUSD to get', receivedDai.toString() / 1e18, 'DAI');
+    expect(receivedDai).to.be.at.least(spentLusd);
+    totalDaiReceived = totalDaiReceived.add(receivedDai);
+    totalLusdSpent = totalLusdSpent.add(spentLusd);
+
+    canProtec = await contracts.lusdToDaiSwapperGuard.check();
+  }
+  console.log('Total LUSD spent :', totalLusdSpent.toString() / 1e18);
+  console.log('Total DAI received :', totalDaiReceived.toString() / 1e18);
+
+  // At the end, no LUSD left
+  expect(await contracts.lusdHoldingPCVDeposit.balance()).to.be.equal('0');
+  // and we should have > 18.7M DAI (the initial LUSD balance)
+  expect(await contracts.daiHoldingPCVDeposit.balance()).to.be.at.least(ethers.utils.parseEther('18751529'));
 };
 
 export { deploy, setup, teardown, validate };

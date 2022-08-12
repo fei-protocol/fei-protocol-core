@@ -15,37 +15,30 @@ contract CurveSwapperGuard is IGuard, CoreRef {
     address public immutable curveSwapper;
     /// @notice the source deposit to withdraw from
     address public immutable sourceDeposit;
-    /// @notice the PCV Deposit to read balance from.
-    /// Swaps will only be performed if this inspected deposit has a balancer
-    /// lower than `inspectedDepositMinBalance`.
-    address public immutable inspectedDeposit;
-    /// @notice the minimum balance of `inspectedDeposit`
-    /// under which a swap can be triggered.
-    uint256 public immutable inspectedDepositMinBalance;
-    /// @notice the amount of tokens to swap
-    uint256 public immutable swapSize;
+    /// @notice the minimum amount of tokens to keep on the source deposit
+    uint256 public immutable minSourceBalance;
+    /// @notice the max amount of tokens to swap per tx
+    uint256 public immutable maxSwapSize;
 
     constructor(
         address _core,
         address _pcvGuardian,
         address _curveSwapper,
         address _sourceDeposit,
-        address _inspectedDeposit,
-        uint256 _inspectedDepositMinBalance,
-        uint256 _swapSize
+        uint256 _minSourceBalance,
+        uint256 _maxSwapSize
     ) CoreRef(_core) {
         pcvGuardian = _pcvGuardian;
         curveSwapper = _curveSwapper;
         sourceDeposit = _sourceDeposit;
-        inspectedDeposit = _inspectedDeposit;
-        inspectedDepositMinBalance = _inspectedDepositMinBalance;
-        swapSize = _swapSize;
+        minSourceBalance = _minSourceBalance;
+        maxSwapSize = _maxSwapSize;
     }
 
     /// @notice check if contract can be called. If any deposit has a nonzero withdraw amount available, then return true.
     function check() external view override returns (bool) {
-        uint256 balance = IPCVDeposit(inspectedDeposit).balance();
-        return balance < inspectedDepositMinBalance && balance >= swapSize;
+        uint256 balance = IPCVDeposit(sourceDeposit).balance();
+        return balance > minSourceBalance;
     }
 
     /// @notice return calldata to perform 1 swap
@@ -59,8 +52,14 @@ contract CurveSwapperGuard is IGuard, CoreRef {
             uint256[] memory values
         )
     {
-        uint256 balance = IPCVDeposit(inspectedDeposit).balance();
-        if (balance < inspectedDepositMinBalance && balance >= swapSize) {
+        uint256 balance = IPCVDeposit(sourceDeposit).balance();
+        if (balance > minSourceBalance) {
+            uint256 swapSize = maxSwapSize;
+            uint256 remainingBalanceToSwap = balance - minSourceBalance;
+            if (remainingBalanceToSwap < maxSwapSize) {
+                swapSize = remainingBalanceToSwap;
+            }
+
             // initialize arrays
             targets = new address[](2);
             datas = new bytes[](2);
