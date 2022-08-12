@@ -111,7 +111,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await contracts.lusdToDaiCurveSwapper.curvePool()).to.be.equal(addresses.lusdCurveMetapool);
   expect(await contracts.lusdToDaiCurveSwapper.tokenSpent()).to.be.equal(addresses.lusd);
   expect(await contracts.lusdToDaiCurveSwapper.tokenReceived()).to.be.equal(addresses.dai);
-  expect(await contracts.lusdToDaiCurveSwapper.maxSlippageBps()).to.be.equal('50');
+  expect(await contracts.lusdToDaiCurveSwapper.maxSlippageBps()).to.be.equal('0');
   expect(await contracts.lusdToDaiCurveSwapper.tokenReceivingAddress()).to.be.equal(addresses.compoundDaiPCVDeposit);
   expect(await contracts.lusdToDaiCurveSwapper.i()).to.be.equal('0');
   expect(await contracts.lusdToDaiCurveSwapper.j()).to.be.equal('1');
@@ -139,7 +139,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const daiBalanceAfter = await contracts.compoundDaiPCVDeposit.balance();
   const lusdBalanceAfter = await contracts.lusdHoldingPCVDeposit.balance();
   // Check received DAI amount
-  expect(daiBalanceAfter.sub(daiBalanceBefore)).to.be.at.least(ethers.utils.parseEther('4975000')); // ~5M
+  expect(daiBalanceAfter.sub(daiBalanceBefore)).to.be.at.least(ethers.utils.parseEther('5000000')); // 5M
   // Check spent LUSD amount
   expect(lusdBalanceBefore.sub(lusdBalanceAfter)).to.be.equal(ethers.utils.parseEther('5000000')); // 5M
 };
