@@ -74,7 +74,6 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   );
 
   logging && console.log('Deployed gOHM oracle to: ', gOhmUSDOracle.address);
-
   return {
     chainlinkOhmV2EthOracleWrapper,
     gOhmUSDOracle,
