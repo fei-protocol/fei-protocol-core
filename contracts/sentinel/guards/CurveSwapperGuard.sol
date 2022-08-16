@@ -15,8 +15,6 @@ contract CurveSwapperGuard is IGuard, CoreRef {
     address public immutable curveSwapper;
     /// @notice the source deposit to withdraw from
     address public immutable sourceDeposit;
-    /// @notice the minimum amount of tokens to keep on the source deposit
-    uint256 public immutable minSourceBalance;
     /// @notice the max amount of tokens to swap per tx
     uint256 public immutable maxSwapSize;
 
@@ -25,20 +23,18 @@ contract CurveSwapperGuard is IGuard, CoreRef {
         address _pcvGuardian,
         address _curveSwapper,
         address _sourceDeposit,
-        uint256 _minSourceBalance,
         uint256 _maxSwapSize
     ) CoreRef(_core) {
         pcvGuardian = _pcvGuardian;
         curveSwapper = _curveSwapper;
         sourceDeposit = _sourceDeposit;
-        minSourceBalance = _minSourceBalance;
         maxSwapSize = _maxSwapSize;
     }
 
     /// @notice check if contract can be called. If any deposit has a nonzero withdraw amount available, then return true.
     function check() external view override returns (bool) {
         uint256 balance = IPCVDeposit(sourceDeposit).balance();
-        return balance > minSourceBalance;
+        return balance > 0;
     }
 
     /// @notice return calldata to perform 1 swap
@@ -53,11 +49,10 @@ contract CurveSwapperGuard is IGuard, CoreRef {
         )
     {
         uint256 balance = IPCVDeposit(sourceDeposit).balance();
-        if (balance > minSourceBalance) {
+        if (balance > 0) {
             uint256 swapSize = maxSwapSize;
-            uint256 remainingBalanceToSwap = balance - minSourceBalance;
-            if (remainingBalanceToSwap < maxSwapSize) {
-                swapSize = remainingBalanceToSwap;
+            if (balance < maxSwapSize) {
+                swapSize = balance;
             }
 
             // initialize arrays

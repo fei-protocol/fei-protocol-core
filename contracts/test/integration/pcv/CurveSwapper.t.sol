@@ -7,6 +7,7 @@ import {DSTest} from "../../utils/DSTest.sol";
 import {CurveSwapper} from "../../../pcv/curve/CurveSwapper.sol";
 import {Core} from "../../../core/Core.sol";
 import {MainnetAddresses} from "../fixtures/MainnetAddresses.sol";
+import {MockPCVDepositV2} from "../../../mock/MockPCVDepositV2.sol";
 
 contract CurveSwapperIntegrationTest is DSTest {
     Vm public constant vm = Vm(HEVM_ADDRESS);
@@ -15,6 +16,7 @@ contract CurveSwapperIntegrationTest is DSTest {
     Core private core = Core(MainnetAddresses.CORE);
 
     CurveSwapper private curveSwapper;
+    MockPCVDepositV2 private receivingPCVDeposit;
 
     // dummy function to avoid errors
     // the CurveSwapper will call deposit() on the
@@ -23,6 +25,13 @@ contract CurveSwapperIntegrationTest is DSTest {
 
     // Deploy
     function setUp() public {
+        receivingPCVDeposit = new MockPCVDepositV2(
+            address(core), // core
+            MainnetAddresses.DAI, // token
+            0, // resistantBalance
+            0 // resistantFei
+        );
+
         curveSwapper = new CurveSwapper(
             address(core), // core
             MainnetAddresses.CURVE_LUSD_METAPOOL, // curvePool
@@ -30,7 +39,7 @@ contract CurveSwapperIntegrationTest is DSTest {
             1, // j
             MainnetAddresses.LUSD, // tokenSpent
             MainnetAddresses.DAI, // tokenReceived
-            address(this), // tokenReceivingAddress
+            address(receivingPCVDeposit), // tokenReceivingAddress
             10000 // maxSlippageBps
         );
 
@@ -48,7 +57,7 @@ contract CurveSwapperIntegrationTest is DSTest {
         assertEq(curveSwapper.tokenSpent(), MainnetAddresses.LUSD);
         assertEq(curveSwapper.tokenReceived(), MainnetAddresses.DAI);
         assertEq(curveSwapper.maxSlippageBps(), 10000);
-        assertEq(curveSwapper.tokenReceivingAddress(), address(this));
+        assertEq(curveSwapper.tokenReceivingAddress(), address(receivingPCVDeposit));
         assertEq(curveSwapper.i(), 0);
         assertEq(curveSwapper.j(), 1);
     }
@@ -90,7 +99,7 @@ contract CurveSwapperIntegrationTest is DSTest {
     function testSwap() public {
         // swapper and target should start empty
         assertEq(IERC20(MainnetAddresses.LUSD).balanceOf(address(curveSwapper)), 0);
-        assertEq(IERC20(MainnetAddresses.DAI).balanceOf(address(this)), 0);
+        assertEq(IERC20(MainnetAddresses.DAI).balanceOf(address(receivingPCVDeposit)), 0);
 
         // fund swapper
         address lusdHolder = 0x66017D22b0f8556afDd19FC67041899Eb65a21bb;
@@ -104,6 +113,6 @@ contract CurveSwapperIntegrationTest is DSTest {
 
         // check
         assertEq(IERC20(MainnetAddresses.LUSD).balanceOf(address(curveSwapper)), 0);
-        assertGt(IERC20(MainnetAddresses.DAI).balanceOf(address(this)), 97500 ether);
+        assertGt(IERC20(MainnetAddresses.DAI).balanceOf(address(receivingPCVDeposit)), 97500 ether);
     }
 }
