@@ -73,12 +73,10 @@ describe('e2e-dao', function () {
       ];
       const description: any[] = [];
 
-      await hre.network.provider.request({
-        method: 'hardhat_impersonateAccount',
-        params: [contractAddresses.guardianMultisig]
-      });
-
-      const signer = await ethers.getSigner(contractAddresses.guardianMultisig);
+      const treasurySigner = await getImpersonatedSigner(contractAddresses.core);
+      await forceEth(contractAddresses.core);
+      await contracts.tribe.connect(treasurySigner).delegate(contractAddresses.guardianMultisig);
+      const signer = await getImpersonatedSigner(contractAddresses.guardianMultisig);
 
       // Propose
       // note ethers.js requires using this notation when two overloaded methods exist)

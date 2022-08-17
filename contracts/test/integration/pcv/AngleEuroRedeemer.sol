@@ -22,6 +22,10 @@ contract AngleEuroRedeemerIntegrationTest is DSTest {
 
     /// @notice Validate a full redeem flow
     function testRedeemWorks() public {
+        // Seed Angle USDC Pool Manager with USDC
+        vm.prank(MainnetAddresses.MAKER_USDC_PSM);
+        usdc.transfer(ANGLE_POOLMANAGER_USDC, 5e13);
+
         AngleEuroRedeemer redeemer = new AngleEuroRedeemer(MainnetAddresses.CORE);
 
         // seed redeemer with agEUR
