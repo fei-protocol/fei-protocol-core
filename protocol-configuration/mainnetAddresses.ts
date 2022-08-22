@@ -80,7 +80,7 @@ export const MainnetContractsConfig = {
   noFeeFeiTribeLBPSwapper: {
     artifactName: 'BalancerLBPSwapper',
     address: '0xC05FAF6C5C4bC1bD841AdFC92b3D3f20180F26E8',
-    category: AddressCategory.Utility
+    category: AddressCategory.Deprecated
   },
   pcvEquityMinter: {
     artifactName: 'PCVEquityMinter',
@@ -454,7 +454,7 @@ export const MainnetContractsConfig = {
   compoundDaiPCVDepositWrapper: {
     artifactName: 'PCVDepositWrapper',
     address: '0xfDe7077AAEcDaf2C4B85261Aa858c96A7E737a61',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
 
   compoundEthPCVDepositWrapper: {
@@ -466,7 +466,7 @@ export const MainnetContractsConfig = {
   feiBuybackLensNoFee: {
     artifactName: 'BPTLens',
     address: '0x89DfBC12001b41985eFAbd7dFCae6a77B22E4Ec3',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
 
   feiOATimelockWrapper: {
@@ -555,7 +555,7 @@ export const MainnetContractsConfig = {
   compoundDaiPCVDeposit: {
     artifactName: 'ERC20CompoundPCVDeposit',
     address: '0xe0f73b8d76D2Ad33492F995af218b03564b8Ce20',
-    category: AddressCategory.PCV_V1
+    category: AddressCategory.Deprecated
   },
 
   compoundEthPCVDeposit: {
@@ -1361,7 +1361,7 @@ export const MainnetContractsConfig = {
   chainlinkOhmV2EthOracleWrapper: {
     artifactName: 'ChainlinkOracleWrapper',
     address: '0xA67541733A5179977bED7d38F95b63b8c5398E18',
-    category: AddressCategory.Oracle
+    category: AddressCategory.Deprecated
   },
 
   chainlinkStEthUsdOracle: {
@@ -1550,12 +1550,12 @@ export const MainnetContractsConfig = {
   gOhmUSDOracle: {
     artifactName: 'CompositeOracle',
     address: '0x319BCE09E7E3e32dac08206129Df541F189A5Df8',
-    category: AddressCategory.Oracle
+    category: AddressCategory.Deprecated
   },
   gOhmEthOracle: {
     artifactName: 'GOhmEthOracle',
     address: '0x49A7e453c164353ac2980ac05756a8C46B062293',
-    category: AddressCategory.Oracle
+    category: AddressCategory.Deprecated
   },
 
   gUniFeiDaiLP: {
@@ -2466,7 +2466,7 @@ export const MainnetContractsConfig = {
   gOHMHoldingPCVDeposit: {
     artifactName: 'ERC20HoldingPCVDeposit',
     address: '0x2C9980fa0a1ABe4B0cc6263132d8EB41Db9B73Ba',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
   mergerGate: {
     artifactName: 'MergerGate',

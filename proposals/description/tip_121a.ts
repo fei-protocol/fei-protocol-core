@@ -1,0 +1,169 @@
+import { ethers } from 'ethers';
+import { TemplatedProposalDescription } from '@custom-types/types';
+
+const tip_121a: TemplatedProposalDescription = {
+  title: 'TIP-121a: PCV Consolidation, part 1',
+  commands: [
+    // 1. WETH -> DAI auction
+    {
+      target: 'ethToDaiLBPSwapper',
+      values: '0',
+      method: 'setReceivingAddress(address)',
+      arguments: (addresses) => [addresses.daiHoldingPCVDeposit],
+      description: 'Set the target of the WETH>DAI auction'
+    },
+    {
+      target: 'compoundDaiPCVDeposit',
+      values: '0',
+      method: 'withdraw(address,uint256)',
+      arguments: (addresses) => [
+        addresses.ethToDaiLBPSwapper, // to
+        ethers.utils.parseEther('3000000') // amount, 3M
+      ],
+      description: 'Move 3M DAI to the WETH>DAI swapper'
+    },
+    {
+      target: 'ratioPCVControllerV2',
+      values: '0',
+      method: 'withdrawRatio(address,address,uint256)',
+      arguments: (addresses) => [
+        addresses.wethHoldingPCVDeposit, // pcvDeposit
+        addresses.ethToDaiLBPSwapper, // to
+        '10000' // basisPoints, 100%
+      ],
+      description: 'Move all WETH to the WETH>DAI swapper'
+    },
+    {
+      target: 'ethToDaiLBPSwapper',
+      values: '0',
+      method: 'swap()',
+      arguments: (addresses) => [],
+      description: 'Start WETH>DAI swap (over 2 days)'
+    },
+
+    // 2. LUSD -> DAI auction
+    {
+      target: 'compoundDaiPCVDeposit',
+      values: '0',
+      method: 'withdraw(address,uint256)',
+      arguments: (addresses) => [
+        addresses.lusdToDaiSwapper, // to
+        ethers.utils.parseEther('2000000') // amount, 2M
+      ],
+      description: 'Move 2M DAI to the LUSD>DAI swapper'
+    },
+    {
+      target: 'ratioPCVControllerV2',
+      values: '0',
+      method: 'withdrawRatio(address,address,uint256)',
+      arguments: (addresses) => [
+        addresses.lusdHoldingPCVDeposit, // pcvDeposit
+        addresses.lusdToDaiSwapper, // to
+        '10000' // basisPoints, 100%
+      ],
+      description: 'Move all LUSD to the LUSD>DAI swapper'
+    },
+    {
+      target: 'lusdToDaiSwapper',
+      values: '0',
+      method: 'forceSwap()',
+      arguments: (addresses) => [],
+      description: 'Start LUSD>DAI swap (over 1 day)'
+    },
+
+    // 3. Deprecate DAI compound PCVDeposit
+    {
+      target: 'daiFixedPricePSM',
+      values: '0',
+      method: 'setSurplusTarget(address)',
+      arguments: (addresses) => [addresses.daiHoldingPCVDeposit],
+      description: 'Update DAI PSM to allocate surplus to daiHoldingPCVDeposit'
+    },
+    {
+      target: 'daiPCVDripController',
+      values: '0',
+      method: 'setSource(address)',
+      arguments: (addresses) => [addresses.daiHoldingPCVDeposit],
+      description: 'Update DAI Drip controller to pull from daiHoldingPCVDeposit'
+    },
+    {
+      target: 'ratioPCVControllerV2',
+      values: '0',
+      method: 'withdrawRatio(address,address,uint256)',
+      arguments: (addresses) => [
+        addresses.compoundDaiPCVDeposit, // pcvDeposit
+        addresses.daiHoldingPCVDeposit, // to
+        '10000' // basisPoints, 100%
+      ],
+      description: 'Move all DAI out of Compound, to the daiHoldingPCVDeposit'
+    },
+
+    // 4. Deprecate buyback contracts
+    {
+      target: 'noFeeFeiTribeLBPSwapper',
+      values: '0',
+      method: 'exitPool(address)',
+      arguments: (addresses) => [addresses.daiFixedPricePSM],
+      description: 'Move all FEI/TRIBE from the buyback pool to the DAI PSM'
+    },
+    {
+      target: 'ratioPCVControllerV2',
+      values: '0',
+      method: 'withdrawRatioERC20(address,address,address,uint256)',
+      arguments: (addresses) => [
+        addresses.daiFixedPricePSM, // pcvDeposit
+        addresses.tribe, // token
+        addresses.core, // to
+        '10000' // basisPoints, 100%
+      ],
+      description: 'Move all TRIBE from DAI PSM to the DAO Treasury'
+    },
+
+    // 5. Olympus OTC
+    {
+      target: 'gOHMHoldingPCVDeposit',
+      values: '0',
+      method: 'withdraw(address,uint256)',
+      arguments: (addresses) => [
+        addresses.ohmEscrowUnwind, // to
+        '577180000000000000000' // amount
+      ],
+      description: 'Fund OTC contract for unwind of Olympus treasury swap'
+    },
+
+    // Finally, update CR oracle
+    {
+      target: 'collateralizationOracle',
+      values: '0',
+      method: 'addDeposits(address[])',
+      arguments: (addresses) => [[addresses.lusdToDaiLensDai, addresses.lusdToDaiLensLusd]],
+      description: `Update CR Oracle`
+    },
+    {
+      target: 'collateralizationOracle',
+      values: '0',
+      method: 'removeDeposits(address[])',
+      arguments: (addresses) => [
+        [
+          addresses.compoundDaiPCVDepositWrapper,
+          addresses.lusdHoldingPCVDeposit,
+          addresses.wethHoldingPCVDeposit,
+          addresses.feiBuybackLensNoFee,
+          addresses.gOHMHoldingPCVDeposit
+        ]
+      ],
+      description: `Update CR Oracle`
+    }
+  ],
+  description: `
+  TIP-121a: PCV Consolidation, part 1
+
+  - Sell 22k WETH to DAI through a 2-day LBP auction on Balancer
+  - Sell 18.7M LUSD to DAI through a 1-day LBP auction on Balancer
+  - Move all protocol-owned DAI out of Compound
+  - Finalize the deprecation of TRIBE buyback contracts
+  - Move gOHM to an OTC contract where Olympus can get it back by returning TRIBE (FIP-108)
+  `
+};
+
+export default tip_121a;
