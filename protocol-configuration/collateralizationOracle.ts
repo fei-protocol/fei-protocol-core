@@ -6,15 +6,14 @@ export const CollateralizationOracleConfig = {
   fei: [
     'aaveFeiPCVDepositWrapper',
     'rariPool79FeiPCVDepositWrapper',
-    'feiBuybackLensNoFee',
     'compoundFeiPCVDepositWrapper',
     'rariTimelockFeiOldLens',
     'tribalCouncilTimelockFeiLens'
   ],
-  lusd: ['lusdHoldingPCVDeposit'],
-  dai: ['compoundDaiPCVDepositWrapper', 'daiFixedPricePSM', 'ethToDaiLensDai', 'daiHoldingPCVDeposit'],
+  lusd: ['lusdToDaiLensLusd'],
+  dai: ['daiFixedPricePSM', 'ethToDaiLensDai', 'daiHoldingPCVDeposit', 'lusdToDaiLensDai'],
   bal: ['balancerDepositBalWeth', 'balancerLensVeBalBal', 'balancerGaugeStaker'],
-  weth: ['ethLidoPCVDeposit', 'balancerLensVeBalWeth', 'ethToDaiLensEth', 'wethHoldingPCVDeposit']
+  weth: ['ethLidoPCVDeposit', 'balancerLensVeBalWeth', 'ethToDaiLensEth']
 };
 
 export type CollateralizationOracleConfigType = typeof CollateralizationOracleConfig;
