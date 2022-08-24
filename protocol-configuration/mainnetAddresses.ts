@@ -1161,6 +1161,12 @@ export const MainnetContractsConfig = {
     category: AddressCategory.External
   },
 
+  cFei: {
+    artifactName: 'IERC20',
+    address: '0x7713DD9Ca933848F6819F38B8352D9A15EA73F67',
+    category: AddressCategory.External
+  },
+
   aFeiStableDebt: {
     artifactName: 'IERC20',
     address: '0xd89cF9E8A858F8B4b31Faf793505e112d6c17449',

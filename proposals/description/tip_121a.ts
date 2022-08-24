@@ -131,6 +131,46 @@ const tip_121a: TemplatedProposalDescription = {
       description: 'Fund OTC contract for unwind of Olympus treasury swap'
     },
 
+    // 6. Guards updates
+    {
+      target: 'pcvSentinel',
+      values: '0',
+      method: 'knight(address)',
+      arguments: (addresses) => [addresses.maxFeiWithdrawalGuard],
+      description: 'Knight new Guard to withdraw FEI from various markets'
+    },
+    {
+      target: 'fuseWithdrawalGuard',
+      values: '0',
+      method: 'setWithdrawInfo(address,(address,address,uint96))',
+      arguments: (addresses) => [addresses.rariPool8FeiPCVDeposit, [addresses.daiFixedPricePSM, addresses.fei, '0']],
+      description: 'Update Fuse Withdrawal Guard'
+    },
+    {
+      target: 'fuseWithdrawalGuard',
+      values: '0',
+      method: 'setWithdrawInfo(address,(address,address,uint96))',
+      arguments: (addresses) => [addresses.rariPool8DaiPCVDeposit, [addresses.daiFixedPricePSM, addresses.dai, '0']],
+      description: 'Update Fuse Withdrawal Guard'
+    },
+    {
+      target: 'fuseWithdrawalGuard',
+      values: '0',
+      method: 'setWithdrawInfo(address,(address,address,uint96))',
+      arguments: (addresses) => [
+        addresses.rariPool8LusdPCVDeposit,
+        [addresses.lusdHoldingPCVDeposit, addresses.lusd, '0']
+      ],
+      description: 'Update Fuse Withdrawal Guard'
+    },
+    {
+      target: 'fuseWithdrawalGuard',
+      values: '0',
+      method: 'setWithdrawInfo(address,(address,address,uint96))',
+      arguments: (addresses) => [addresses.rariPool79FeiPCVDeposit, [addresses.daiFixedPricePSM, addresses.fei, '0']],
+      description: 'Update Fuse Withdrawal Guard'
+    },
+
     // Finally, update CR oracle
     {
       target: 'collateralizationOracle',

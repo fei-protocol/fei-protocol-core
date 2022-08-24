@@ -115,7 +115,32 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 
   logging && console.log('ohmEscrowUnwind:', ohmEscrowUnwind.address);
 
+  // Deploy the FEI Withdrawal Guard
+  const MaxFeiWithdrawalGuard = await ethers.getContractFactory('MaxFeiWithdrawalGuard');
+  const maxFeiWithdrawalGuard = await MaxFeiWithdrawalGuard.deploy(
+    addresses.core,
+    [
+      // deposits
+      addresses.aaveFeiPCVDeposit,
+      addresses.compoundFeiPCVDeposit
+    ],
+    [
+      // destinations
+      addresses.daiFixedPricePSM,
+      addresses.daiFixedPricePSM
+    ],
+    [
+      // liquiditySources
+      addresses.aFei,
+      addresses.cFei
+    ]
+  );
+  await maxFeiWithdrawalGuard.deployTransaction.wait();
+
+  logging && console.log('maxFeiWithdrawalGuard:', maxFeiWithdrawalGuard.address);
+
   return {
+    maxFeiWithdrawalGuard,
     lusdToDaiSwapper,
     lusdToDaiLensDai,
     lusdToDaiLensLusd,
@@ -199,6 +224,36 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const daoTribeBalanceAfterOtc = await contracts.tribe.balanceOf(addresses.core);
   expect(daoTribeBalanceAfterOtc.sub(tribeInDaoTreasuryAfter)).to.be.equal(otcTribeAmount);
   expect(await contracts.gOHMHoldingPCVDeposit.balance()).to.be.equal(0);
+
+  // Execute maxFeiWithdrawalGuard actions
+  let i = 0;
+  while (await contracts.maxFeiWithdrawalGuard.check()) {
+    const protecActions = await contracts.maxFeiWithdrawalGuard.getProtecActions();
+    const depositAddress = '0x' + protecActions.datas[0].slice(34, 74);
+    const depositLabel = getAddressLabel(addresses, depositAddress);
+    const withdrawAmountHex = '0x' + protecActions.datas[0].slice(138, 202);
+    const withdrawAmountNum = Number(withdrawAmountHex) / 1e18;
+    console.log('maxFeiWithdrawalGuard protec action #', ++i, depositLabel, 'withdraw', withdrawAmountNum);
+    await contracts.pcvSentinel.protec(contracts.maxFeiWithdrawalGuard.address);
+  }
+  // Execute fuseWithdrawalGuard actions
+  i = 0;
+  while (await contracts.fuseWithdrawalGuard.check()) {
+    const protecActions = await contracts.fuseWithdrawalGuard.getProtecActions();
+    const depositAddress = '0x' + protecActions.datas[0].slice(34, 74);
+    const depositLabel = getAddressLabel(addresses, depositAddress);
+    const withdrawAmountHex = '0x' + protecActions.datas[0].slice(138, 202);
+    const withdrawAmountNum = Number(withdrawAmountHex) / 1e18;
+    console.log('fuseWithdrawalGuard   protec action #', ++i, depositLabel, 'withdraw', withdrawAmountNum);
+    await contracts.pcvSentinel.protec(contracts.fuseWithdrawalGuard.address);
+  }
 };
 
 export { deploy, setup, teardown, validate };
+
+function getAddressLabel(addresses: NamedAddresses, address: string) {
+  for (const key in addresses) {
+    if (address.toLowerCase() == addresses[key].toLowerCase()) return key;
+  }
+  return '???';
+}
