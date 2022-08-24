@@ -34,6 +34,17 @@ const tip_121a: TemplatedProposalDescription = {
       description: 'Move all WETH to the WETH>DAI swapper'
     },
     {
+      target: 'ratioPCVControllerV2',
+      values: '0',
+      method: 'withdrawWrapETH(address,address,uint256)',
+      arguments: (addresses) => [
+        addresses.rariPool146EthPCVDeposit, // from
+        addresses.ethToDaiLBPSwapper, // to
+        '71347946884944201518' // 71.34 ETH in Fuse pool 146
+      ],
+      description: 'Move all ETH in Fuse pool 146 to the WETH>DAI swapper'
+    },
+    {
       target: 'ethToDaiLBPSwapper',
       values: '0',
       method: 'swap()',
@@ -147,7 +158,6 @@ const tip_121a: TemplatedProposalDescription = {
         [
           addresses.compoundDaiPCVDepositWrapper,
           addresses.lusdHoldingPCVDeposit,
-          addresses.wethHoldingPCVDeposit,
           addresses.feiBuybackLensNoFee,
           addresses.gOHMHoldingPCVDeposit
         ]

@@ -46,6 +46,11 @@ export const MainnetContractsConfig = {
     address: '0xB8f482539F2d3Ae2C9ea6076894df36D1f632775',
     category: AddressCategory.Security
   },
+  olympusMultisig: {
+    artifactName: 'unknown',
+    address: '0x245cc372C84B3645Bf0Ffe6538620B04a217988B',
+    category: AddressCategory.External
+  },
   fuseWithdrawalGuard: {
     artifactName: 'FuseWithdrawalGuard',
     address: '0xd079ec4b442600a381eAc7E95662eB1b313cd113',

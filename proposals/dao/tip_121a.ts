@@ -11,10 +11,9 @@ import {
 import { BigNumber } from 'ethers';
 import { getImpersonatedSigner, overwriteChainlinkAggregator } from '@test/helpers';
 import { TransactionResponse } from '@ethersproject/providers';
+import { forceEth } from '@test/integration/setup/utils';
 
-const OLYMPUS_MULTISIG = '0x245cc372C84B3645Bf0Ffe6538620B04a217988B';
-
-const fipNumber = 'tip_121a';
+const fipNumber = '121a';
 const e18 = ethers.utils.parseEther;
 
 let pcvStatsBefore: PcvStats;
@@ -36,8 +35,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
       _decimalsNormalizer: 0
     },
     24 * 3600, // 1 day
-    '50000000000000000', // small weight 5%
-    '950000000000000000', // large weight 95%
+    '20000000000000000', // small weight 2%
+    '980000000000000000', // large weight 98%
     addresses.lusd,
     addresses.dai,
     addresses.daiHoldingPCVDeposit, // send DAI to Compound DAI deposit, where it can then be dripped to PSM
@@ -57,7 +56,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     'LUSD->DAI Auction Pool', // pool name
     'apLUSD-DAI', // lbp token symbol
     [addresses.lusd, addresses.dai], // pool contains [LUSD, DAI]
-    [ethers.constants.WeiPerEther.mul(95).div(100), ethers.constants.WeiPerEther.mul(5).div(100)], // initial weights 5%/95%
+    [ethers.constants.WeiPerEther.mul(98).div(100), ethers.constants.WeiPerEther.mul(2).div(100)], // initial weights 5%/95%
     ethers.constants.WeiPerEther.mul(5).div(10_000), // 0.05% swap fees
     lusdToDaiSwapper.address, // pool owner = fei protocol swapper
     true
@@ -105,7 +104,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   const ohmEscrowUnwind = await (
     await ethers.getContractFactory('OtcEscrow')
   ).deploy(
-    OLYMPUS_MULTISIG, // beneficiary = Olympus multisig
+    addresses.olympusMultisig, // beneficiary = Olympus multisig
     addresses.core, // recipient = Tribe DAO
     addresses.tribe, // receivedToken
     addresses.gOHM, // sentToken
@@ -168,14 +167,14 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 
   // Check lenses & balances
   // LUSD -> DAI pool lenses
-  expect((await contracts.lusdToDaiLensDai.resistantBalanceAndFei())[0]).to.be.at.least(e18('1000000')); // 1M DAI
+  expect((await contracts.lusdToDaiLensDai.resistantBalanceAndFei())[0]).to.be.at.least(e18('350000')); // 350k DAI
   expect((await contracts.lusdToDaiLensDai.resistantBalanceAndFei())[1]).to.be.equal('0'); // 0 FEI
   expect((await contracts.lusdToDaiLensLusd.resistantBalanceAndFei())[0]).to.be.at.least(e18('18500000')); // 18.5M LUSD
   expect((await contracts.lusdToDaiLensLusd.resistantBalanceAndFei())[1]).to.be.equal('0'); // 0 FEI
   // LUSD -> DAI pool balances
   const lusdPoolTokens = await contracts.balancerVault.getPoolTokens(poolId);
   expect(lusdPoolTokens.balances[0]).to.be.at.least(e18('18500000')); // 18.5M LUSD
-  expect(lusdPoolTokens.balances[1]).to.be.at.least(e18('1000000')); // 1M DAI
+  expect(lusdPoolTokens.balances[1]).to.be.at.least(e18('350000')); // 350k DAI
   // WETH -> DAI pool balances
   const wethPoolTokens = await contracts.balancerVault.getPoolTokens(
     '0x34809aedf93066b49f638562c42a9751edb36df5000200000000000000000223'
@@ -191,9 +190,52 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await contracts.wethHoldingPCVDeposit.balance()).to.be.equal('0');
   expect(await contracts.daiHoldingPCVDeposit.balance()).to.be.at.least(e18('57500000')); // > 57.5M DAI
 
+  // Validate that a swap can occur
+  const daiWhale = '0x5d3a536e4d6dbd6114cc1ead35777bab948e3643';
+  const daiWhaleSigner = await getImpersonatedSigner(daiWhale);
+  await forceEth(daiWhale);
+
+  const initialUserLusdBalance = await contracts.lusd.balanceOf(daiWhale);
+  const initialUserDaiBalance = await contracts.dai.balanceOf(daiWhale);
+
+  const amountIn = ethers.constants.WeiPerEther.mul(10_000);
+  await contracts.dai.connect(daiWhaleSigner).approve(addresses.balancerVault, amountIn);
+  await contracts.balancerVault.connect(daiWhaleSigner).swap(
+    {
+      poolId: poolId,
+      kind: 0,
+      assetIn: addresses.dai,
+      assetOut: addresses.lusd,
+      amount: amountIn,
+      userData: '0x'
+    },
+    {
+      sender: daiWhale,
+      fromInternalBalance: false,
+      recipient: daiWhale,
+      toInternalBalance: false
+    },
+    0,
+    '10000000000000000000000' // deadline
+  );
+
+  const postUserLusdBalance = await contracts.lusd.balanceOf(daiWhale);
+  const postUserDaiBalance = await contracts.dai.balanceOf(daiWhale);
+
+  const daiSpent = initialUserDaiBalance.sub(postUserDaiBalance);
+  expect(daiSpent).to.be.bignumber.equal(amountIn);
+
+  const lusdGained = postUserLusdBalance.sub(initialUserLusdBalance);
+  expect(lusdGained).to.be.bignumber.at.least(ethers.constants.WeiPerEther.mul(9_500));
+  expect(lusdGained).to.be.bignumber.at.most(ethers.constants.WeiPerEther.mul(11_000));
+
+  // Put in 10k DAI, got out ~10k LUSD
+  console.log('DAI spent: ', daiSpent / 1e18);
+  console.log('LUSD gained: ', lusdGained / 1e18);
+
   // Execute OTC (impersonate Olympus multisig) to check it functions properly
   const otcTribeAmount = '3753510000000000000000000';
-  const olympusSigner = await getImpersonatedSigner(OLYMPUS_MULTISIG);
+  const olympusSigner = await getImpersonatedSigner(addresses.olympusMultisig);
   await contracts.tribe.connect(olympusSigner).approve(addresses.ohmEscrowUnwind, otcTribeAmount);
   await contracts.ohmEscrowUnwind.connect(olympusSigner).swap();
   const daoTribeBalanceAfterOtc = await contracts.tribe.balanceOf(addresses.core);
