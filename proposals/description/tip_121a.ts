@@ -77,9 +77,16 @@ const tip_121a: TemplatedProposalDescription = {
     {
       target: 'lusdToDaiSwapper',
       values: '0',
+      method: 'setSwapFrequency(uint256)',
+      arguments: (addresses) => ['172800'],
+      description: 'set swap frequency to 2 days'
+    },
+    {
+      target: 'lusdToDaiSwapper',
+      values: '0',
       method: 'forceSwap()',
       arguments: (addresses) => [],
-      description: 'Start LUSD>DAI swap (over 1 day)'
+      description: 'Start LUSD>DAI swap (over 2 days)'
     },
 
     // 3. Deprecate DAI compound PCVDeposit
@@ -154,14 +161,10 @@ const tip_121a: TemplatedProposalDescription = {
       target: 'fuseWithdrawalGuard',
       values: '0',
       method: 'setWithdrawInfo(address,(address,address,uint96))',
-      arguments: (addresses) => [addresses.rariPool8FeiPCVDeposit, [addresses.daiFixedPricePSM, addresses.fei, '0']],
-      description: 'Update Fuse Withdrawal Guard'
-    },
-    {
-      target: 'fuseWithdrawalGuard',
-      values: '0',
-      method: 'setWithdrawInfo(address,(address,address,uint96))',
-      arguments: (addresses) => [addresses.rariPool8DaiPCVDeposit, [addresses.daiFixedPricePSM, addresses.dai, '0']],
+      arguments: (addresses) => [
+        addresses.rariPool8FeiPCVDeposit,
+        [addresses.daiFixedPricePSM, addresses.fei, '150000000000000000000000']
+      ],
       description: 'Update Fuse Withdrawal Guard'
     },
     {
@@ -170,7 +173,7 @@ const tip_121a: TemplatedProposalDescription = {
       method: 'setWithdrawInfo(address,(address,address,uint96))',
       arguments: (addresses) => [
         addresses.rariPool8LusdPCVDeposit,
-        [addresses.lusdHoldingPCVDeposit, addresses.lusd, '0']
+        [addresses.lusdHoldingPCVDeposit, addresses.lusd, '3000000000000000000000']
       ],
       description: 'Update Fuse Withdrawal Guard'
     },
