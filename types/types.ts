@@ -164,7 +164,8 @@ export enum AddressCategory {
   Deprecated = 'Deprecated',
   Fuse = 'Fuse',
   Volt = 'Volt',
-  TBD = 'TBD'
+  TBD = 'TBD',
+  Distribution = 'Distribution'
 }
 
 export type NamedContracts = { [key: string]: ethers.Contract };
