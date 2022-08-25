@@ -212,10 +212,12 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect((await contracts.feiBuybackLensNoFee.resistantBalanceAndFei())[0]).to.be.at.most(e18('1')); // <1 FEI
   expect((await contracts.feiBuybackLensNoFee.resistantBalanceAndFei())[1]).to.be.at.most(e18('1')); // <1 FEI
   // moved funds on various pcv deposits
-  expect(await contracts.compoundDaiPCVDeposit.balance()).to.be.at.most(e18('1')); // <1 DAI left in Compound
+  expect(await contracts.compoundDaiPCVDeposit.balance()).to.be.at.most(e18('10')); // <10 DAI left in Compound
   expect(await contracts.lusdHoldingPCVDeposit.balance()).to.be.equal('0');
   expect(await contracts.wethHoldingPCVDeposit.balance()).to.be.equal('0');
   expect(await contracts.daiHoldingPCVDeposit.balance()).to.be.at.least(e18('57500000')); // > 57.5M DAI
+
+  expect(await contracts.lusdToDaiSwapper.duration()).to.be.equal('172800'); // 2 days
 
   // Validate that a swap can occur
   const daiWhale = '0x5d3a536e4d6dbd6114cc1ead35777bab948e3643';
