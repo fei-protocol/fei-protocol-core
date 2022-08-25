@@ -2,7 +2,7 @@ import { ethers } from 'ethers';
 import { TemplatedProposalDescription } from '@custom-types/types';
 
 const tip_121a: TemplatedProposalDescription = {
-  title: 'TIP-121a: PCV Consolidation, part 1',
+  title: 'TIP-121a: Consolidation',
   commands: [
     // 1. WETH -> DAI auction
     {
@@ -166,13 +166,14 @@ const tip_121a: TemplatedProposalDescription = {
     }
   ],
   description: `
-  TIP-121a: PCV Consolidation, part 1
+  TIP-121a: Consolidation
 
   - Sell 22k WETH to DAI through a 2-day LBP auction on Balancer
-  - Sell 18.7M LUSD to DAI through a 1-day LBP auction on Balancer
+  - Sell 18.7M LUSD to DAI through a 2-day LBP auction on Balancer
   - Move all protocol-owned DAI out of Compound
   - Finalize the deprecation of TRIBE buyback contracts
   - Move gOHM to an OTC contract where Olympus can get it back by returning TRIBE (FIP-108)
+  - Withdraw as much as possible protocol FEI when liquidity available from various PCV deployments
   `
 };
 
