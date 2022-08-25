@@ -166,6 +166,8 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // Run any validations required on the fip using mocha or console logging
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
+  poolId = '0x8485b36623632ffa5e486008df4d0b6d363defdb00020000000000000000034a'; // LUSD>DAI pool
+
   // display pcvStats
   console.log('----------------------------------------------------');
   console.log(' pcvStatsBefore.protocolControlledValue [M]e18 ', Number(pcvStatsBefore.protocolControlledValue) / 1e24);

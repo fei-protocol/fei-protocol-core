@@ -56,6 +56,11 @@ export const MainnetContractsConfig = {
     address: '0xd079ec4b442600a381eAc7E95662eB1b313cd113',
     category: AddressCategory.Security
   },
+  maxFeiWithdrawalGuard: {
+    artifactName: 'MaxFeiWithdrawalGuard',
+    address: '0x2Ee70721909b9673C6f5029243804b98C12a1bF2',
+    category: AddressCategory.Security
+  },
   ratioPCVControllerV2: {
     artifactName: 'RatioPCVControllerV2',
     address: '0x221fff24FB66dA3c722c7C5B856956a6a30C0179',
@@ -116,6 +121,11 @@ export const MainnetContractsConfig = {
     artifactName: 'PCVDripController',
     address: '0x59fA1bB4fBd7fcB055476645F228f13ac14754a8',
     category: AddressCategory.Deprecated
+  },
+  lusdToDaiSwapper: {
+    artifactName: 'BalancerLBPSwapper',
+    address: '0x09d26e0D6e40b285854C964FF8Dd672b524E235c',
+    category: AddressCategory.Utility
   },
   collateralizationOracleKeeper: {
     artifactName: 'CollateralizationOracleKeeper',
@@ -328,6 +338,18 @@ export const MainnetContractsConfig = {
   ethToDaiLensEth: {
     artifactName: 'BPTLens',
     address: '0xf24401F6992FaEAcbc5d6C6991db15B5F8364A1B',
+    category: AddressCategory.PCV
+  },
+
+  lusdToDaiLensDai: {
+    artifactName: 'BPTLens',
+    address: '0x49194B3a9330316dC24e806B06a276794e1116DD',
+    category: AddressCategory.PCV
+  },
+
+  lusdToDaiLensLusd: {
+    artifactName: 'BPTLens',
+    address: '0x35cA36B69a4169B6BF71E6b64a03C2B2A6834ad0',
     category: AddressCategory.PCV
   },
 
@@ -1099,6 +1121,12 @@ export const MainnetContractsConfig = {
   ethToDaiLBPPool: {
     artifactName: 'IWeightedPool',
     address: '0x34809aEDF93066b49F638562c42A9751eDb36DF5',
+    category: AddressCategory.External
+  },
+  lusdToDaiLBPPool: {
+    // poolId: 0x8485b36623632ffa5e486008df4d0b6d363defdb00020000000000000000034a
+    artifactName: 'IWeightedPool',
+    address: '0x8485b36623632ffa5e486008df4d0b6d363defdb',
     category: AddressCategory.External
   },
 
@@ -2517,6 +2545,11 @@ export const MainnetContractsConfig = {
   ohmEscrow: {
     artifactName: 'OtcEscrow',
     address: '0x14d2F529576d3a5451BfbA370408a899Bb5261a9',
+    category: AddressCategory.Deprecated
+  },
+  ohmEscrowUnwind: {
+    artifactName: 'OtcEscrow',
+    address: '0x01e292c0fBe4C35aE3af981a37Af30ca86d5a712',
     category: AddressCategory.Deprecated
   },
   gOHM: {
