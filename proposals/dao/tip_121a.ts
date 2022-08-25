@@ -39,7 +39,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     '980000000000000000', // large weight 98%
     addresses.lusd,
     addresses.dai,
-    addresses.daiHoldingPCVDeposit, // send DAI to Compound DAI deposit, where it can then be dripped to PSM
+    addresses.daiHoldingPCVDeposit, // send DAI to holding deposit, where it can then be dripped to PSM
     ethers.utils.parseEther('100000') // minimum size of a pool which the swapper is used against
   );
 
