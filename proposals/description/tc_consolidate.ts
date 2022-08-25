@@ -9,7 +9,12 @@ const CLAWED_BACK_FEI_UPPER_BOUND = '2897332829955035696312531';
 // Clawed back TRIBE upper bound
 const CLAWED_BACK_TRIBE_UPPER_BOUND = '3068505367127310595321005';
 
-const fip_x: TemplatedProposalDescription = {
+// Tribal Council timelock asset balances
+const TC_LQTY_BALANCE = '1101298805118942906652299';
+const TC_IDLE_BALANCE = '16014201190265555827419';
+const TC_FOX_BALANCE = '15316691965631380244403204';
+
+const tc_consolidate: TemplatedProposalDescription = {
   title: 'TIP-122: Tribal Council consolidation',
   commands: [
     // 1. Burn the existing FEI on the TC timelock
@@ -57,6 +62,29 @@ const fip_x: TemplatedProposalDescription = {
       Approve the DAO timelock to move all TRIBE clawed back from the Rari Infra team.
       It will later send it to Core.
       `
+    },
+    // 4. Send IDLE to TC safe
+    {
+      target: 'idle',
+      values: '0',
+      method: 'transfer(address,uint256)',
+      arguments: (addresses) => [addresses.tribalCouncilSafe, TC_IDLE_BALANCE],
+      description: 'Send all 16k IDLE to the TC safe'
+    },
+    // 5. Send all remaining assets to the DAO timelock
+    {
+      target: 'lqty',
+      values: '0',
+      method: 'transfer(address,uint256)',
+      arguments: (addresses) => [addresses.feiDAOTimelock, TC_LQTY_BALANCE],
+      description: 'Send all 1.1M LQTY to the DAO timelock'
+    },
+    {
+      target: 'fox',
+      values: '0',
+      method: 'transfer(address,uint256)',
+      arguments: (addresses) => [addresses.feiDAOTimelock, TC_FOX_BALANCE],
+      description: 'Send all 15.3M FOX to the DAO timelock'
     }
   ],
   description: `
@@ -65,9 +93,9 @@ const fip_x: TemplatedProposalDescription = {
   1. Burn existing Fei held by the TC timelock
   2. End vesting of Rari Infrastructure team timelocks
   3. Grant FEI and TRIBE approvals to the DAO timelock, so funds can be later moved in a DAO vote
-  4. Send INDEX to Tribal Council Safe
+  4. Send IDLE to Tribal Council Safe
   5. Send all remaining assets to the DAO timelock
   `
 };
 
-export default fip_x;
+export default tc_consolidate;
