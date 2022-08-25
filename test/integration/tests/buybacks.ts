@@ -84,6 +84,11 @@ describe('e2e-buybacks', function () {
       // set Chainlink ETHUSD to a fixed 4,000$ value
       await overwriteChainlinkAggregator(contractAddresses.chainlinkEthUsdOracle, '400000000000', '8');
 
+      // set Chainlink OHM_V2:USD to a fixed ~$14.5 value
+      // Need to override the chainlink storage to make it a fresh value because otherwise
+      // fork block is well out of date, oracle will report invalid and the CR will be invalid
+      await overwriteChainlinkAggregator(contractAddresses.chainlinkOHMV2EthOracle, '8748580000000000', '18');
+
       await collateralizationOracle.update();
 
       await core.allocateTribe(noFeeFeiTribeLBPSwapper.address, ethers.constants.WeiPerEther.mul(1_000_000));

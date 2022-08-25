@@ -9,8 +9,7 @@ import {
   ValidateUpgradeFunc
 } from '@custom-types/types';
 import { BigNumber } from 'ethers';
-import { getImpersonatedSigner, overwriteChainlinkAggregator } from '@test/helpers';
-import { forceEth } from '@test/integration/setup/utils';
+import { overwriteChainlinkAggregator } from '@test/helpers';
 
 const toBN = BigNumber.from;
 
@@ -97,11 +96,6 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
   initialWethBalance = await contracts.wethHoldingPCVDeposit.balance();
   initialFeiTotalSupply = await contracts.fei.totalSupply();
   initialVoltTimelockBalance = await contracts.volt.balanceOf(addresses.voltOptimisticTimelock);
-
-  // Prepare OTC escrow contract on the Volt side, mock transferring Fei to it
-  const voltSafeSigner = await getImpersonatedSigner(addresses.voltSafe);
-  await forceEth(addresses.voltSafe);
-  await contracts.fei.connect(voltSafeSigner).transfer(addresses.voltOTCEscrow, FEI_LOAN_PAID_BACK);
 };
 
 // Tears down any changes made in setup() that need to be
@@ -170,7 +164,11 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const balanceDiff = (await contracts.wethHoldingPCVDeposit.balance()).sub(initialWethBalance);
   expect(balanceDiff).to.be.equal(CETHER_WITHDRAW);
 
-  expect(await contracts.wethHoldingPCVDeposit.provider.getBalance(addresses.rariPool146Eth)).to.be.equal(0);
+  expect(
+    toBN(await contracts.wethHoldingPCVDeposit.provider.getBalance(addresses.rariPool146Eth))
+  ).to.be.bignumber.lessThan(
+    ethers.constants.WeiPerEther.mul(10) // Withdrawn ~38 ETH. Should be less than 10 ETH remaining
+  );
 
   // 7. Verify VOLT OTC executed
   expect(await contracts.voltHoldingPCVDeposit.balance()).to.be.equal(0);

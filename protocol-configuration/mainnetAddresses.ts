@@ -133,6 +133,11 @@ export const MainnetContractsConfig = {
     address: '0xd51dbA7a94e1adEa403553A8235C302cEbF41a3c',
     category: AddressCategory.Governance
   },
+  feiLabs: {
+    artifactName: 'unknown',
+    address: '0x3A24fea1509e1BaeB2D2A7C819A191AA441825ea',
+    category: AddressCategory.Governance
+  },
   optimisticMultisig: {
     artifactName: 'unknown',
     address: '0x35ED000468f397AA943009bD60cc6d2d9a7d32fF',
@@ -886,6 +891,21 @@ export const MainnetContractsConfig = {
     artifactName: 'IConvexERC4626',
     address: '0xaa189e7f4aac757216b62849f78f1236749ba814',
     category: AddressCategory.FeiRari
+  },
+  uniswapFeiTribeLiquidityTimelock: {
+    artifactName: 'FeiTribeLiquidityTimelockInterface',
+    address: '0x7D809969f6A04777F0A87FF94B57E56078E5fE0F',
+    category: AddressCategory.Distribution
+  },
+  investorUniswapFeiTribeTimelock: {
+    artifactName: 'LinearUnlockTimelock',
+    address: '0x2ef97E5ce736bF81703C4F5C7D5273238b8688EB',
+    category: AddressCategory.Distribution
+  },
+  uniswapLiquidityRemover: {
+    artifactName: 'UniswapLiquidityRemover',
+    address: '0x378CFc826f9235587e50c1BcE0fA108AF5B9B7dA',
+    category: AddressCategory.Distribution
   },
 
   rariCErc20PluginImpl: {
@@ -1884,6 +1904,36 @@ export const MainnetContractsConfig = {
     address: '0x5346b4ff3e924508d33d93f352d11e392a7a9d3b',
     category: AddressCategory.External
   },
+  tribeFeiLabsDel1: {
+    artifactName: 'unknown',
+    address: '0x107d1c9ef7a2ddb6a4aecfdcd6658355c7435a43',
+    category: AddressCategory.External
+  },
+  tribeFeiLabsDel2: {
+    artifactName: 'unknown',
+    address: '0xe0ac4559739bd36f0913fb0a3f5bfc19bcbacd52',
+    category: AddressCategory.External
+  },
+  tribeFeiLabsDel3: {
+    artifactName: 'unknown',
+    address: '0x486c33760ad3f6d9cf4a63493773e2b69635d602',
+    category: AddressCategory.External
+  },
+  tribeFeiLabsDel4: {
+    artifactName: 'unknown',
+    address: '0x70b6ab736be7672c917a1ab11e67b5bc9fddeca9',
+    category: AddressCategory.External
+  },
+  tribeFeiLabsDel5: {
+    artifactName: 'unknown',
+    address: '0xc8eefb8b3d50ca87da7f99a661720148acf97efa',
+    category: AddressCategory.External
+  },
+  tribeFeiLabsDel6: {
+    artifactName: 'unknown',
+    address: '0x66b9d411e14fbc86424367b67933945fd7e40b11',
+    category: AddressCategory.External
+  },
   feiTribeLBPSwapper: {
     artifactName: 'BalancerLBPSwapper',
     address: '0x16ef9601076d45e8cc564cDD91E5dF3Ae83dD3B3',
@@ -2539,6 +2589,12 @@ export const MainnetContractsConfig = {
     address: '0x4bFa2625D50b68D622D1e71c82ba6Db99BA0d17F',
     category: AddressCategory.Deprecated
   },
+  feiLabsVestingTimelock: {
+    artifactName: 'TimelockedDelegator',
+    address: '0x38afbf8128cc54323e216acde9516d281c4f1e5f',
+    category: AddressCategory.Distribution
+  },
+
   pegExchanger: {
     artifactName: 'PegExchanger',
     address: '0xc09BB5ECf865e6f69Fe62A43c27f036A426909f7',
