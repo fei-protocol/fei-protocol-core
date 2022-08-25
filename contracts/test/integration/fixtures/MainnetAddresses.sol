@@ -22,8 +22,15 @@ library MainnetAddresses {
     address public constant RARI_POOL_8_DAI_PCV_DEPOSIT = 0x9CC46aB5A714f7cd24C59f33C5769039B5872491;
     address public constant RARI_POOL_79_FEI_PCV_DEPOSIT = 0x76dFcf06E7D7B8248094DC319b284fB244f06309;
 
+    address public constant RARI_POOL_79_FEI = 0x41c7B863FdDa5eb7CF8D8f748B136d10d7AEC631;
     address public constant RARI_POOL_8_FEI = 0xd8553552f8868C1Ef160eEdf031cF0BCf9686945;
     address public constant RARI_POOL_8_LUSD = 0x647A36d421183a0a9Fa62717a64B664a24E469C7;
+
+    address public constant AAVE_FEI_PCV_DEPOSIT = 0xaFBd7Bd91B4c1Dd289EE47a4F030FBeDfa7ABc12;
+    address public constant AFEI = 0x683923dB55Fead99A79Fa01A27EeC3cB19679cC3;
+
+    address public constant COMPOUND_FEI_PCV_DEPOSIT = 0xe1F2a7342459b54fBFea9F40695cdD46EFadEEeE;
+    address public constant CFEI = 0x7713DD9Ca933848F6819F38B8352D9A15EA73F67;
 
     address public constant LUSD_PSM = 0xb0e731F036AdfDeC12da77c15aaB0F90E8e45A0e;
     address public constant DAI_PSM = 0x2A188F9EB761F70ECEa083bA6c2A40145078dfc2;
