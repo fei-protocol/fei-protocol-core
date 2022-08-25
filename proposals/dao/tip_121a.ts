@@ -188,7 +188,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   // check amount of TRIBE returned in DAO treasury from buybacks pool
   const tribeInDaoTreasuryAfter = await contracts.tribe.balanceOf(addresses.core);
   const tribeReturnedToDaoTreasury = tribeInDaoTreasuryAfter.sub(tribeInDaoTreasuryBefore);
-  expect(tribeReturnedToDaoTreasury).to.be.at.least(e18('2200000')); // 2.2M TRIBE
+  expect(tribeReturnedToDaoTreasury).to.be.at.least(e18('2100000')); // 2.1M TRIBE
 
   // Check lenses & balances
   // LUSD -> DAI pool lenses
