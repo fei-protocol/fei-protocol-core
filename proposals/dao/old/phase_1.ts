@@ -10,7 +10,7 @@ import {
 } from '@custom-types/types';
 import { getImpersonatedSigner } from '@test/helpers';
 import { BigNumber } from 'ethers';
-import { abi as timelockABI } from '../../artifacts/contracts/timelocks/TimelockedDelegator.sol/TimelockedDelegator.json';
+import { abi as timelockABI } from '../../../artifacts/contracts/timelocks/TimelockedDelegator.sol/TimelockedDelegator.json';
 import { ERC20, LinearUnlockTimelock } from '@custom-types/contracts';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { forceEth } from '@test/integration/setup/utils';
