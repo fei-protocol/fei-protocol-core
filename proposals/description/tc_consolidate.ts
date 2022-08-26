@@ -15,7 +15,7 @@ const TC_IDLE_BALANCE = '16014201190265555827419';
 const TC_FOX_BALANCE = '15316691965631380244403204';
 
 const tc_consolidate: TemplatedProposalDescription = {
-  title: 'TIP-122: Tribal Council consolidation',
+  title: 'TIP-122: End Rari team vesting and consolidate Tribal Council assets',
   commands: [
     // 1. Burn the existing FEI on the TC timelock
     {
@@ -88,13 +88,25 @@ const tc_consolidate: TemplatedProposalDescription = {
     }
   ],
   description: `
-  TIP-122: Tribal Council consolidation
+  TIP-122: End Rari team vesting and consolidate Tribal Council assets
 
-  1. Burn existing Fei held by the TC timelock
-  2. End vesting of Rari Infrastructure team timelocks
-  3. Grant FEI and TRIBE approvals to the DAO timelock, so funds can be later moved in a DAO vote
-  4. Send IDLE to Tribal Council Safe
-  5. Send all remaining assets to the DAO timelock
+  This proposal ends the vesting of the Rari Infrastructure team by clawing back their Fei and Tribe timelocks. It also consolidates the assets present on the Tribal Council timelock.
+
+  End of Rari Team Vesting
+  —--------------------------------
+  The Rari Infrastructure team has two timelocks in which funds are vesting. There is a FEI vesting timelock (https://etherscan.io/address/0x5d39721BA1c734b395C2CAdbdeeC178F688F6ec9) and a TRIBE vesting timelock (https://etherscan.io/address/0x20bC8FE104fadED2D0aD9634D745f1488f9991eF). There is ~2.8M FEI and ~2.8M TRIBE available to be clawed back from these timelocks. 
+
+  The funds will be returned to the Tribal Council timelock. An approval is granted to the DAO timelock to later allow the DAO to move the recovered FEI and TRIBE. 
+
+  Asset consolidation
+  —-------------------------
+  The Tribal Council timelock has various assets which are being consolidated and moved off the timelock:
+  ~43M FEI is being burned
+  ~1.1M LQTY is being sent to the DAO timelock
+  ~15.3M FOX is being sent to the DAO timelock
+  ~16k IDLE is being sent to the Tribal Council Safe, where it will then be sold
+
+  The optimistic governance process used by the Tribe DAO and the role of the NopeDAO is documented here: https://docs.tribedao.xyz/docs/Governance/Overview 
   `
 };
 
