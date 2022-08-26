@@ -83,35 +83,20 @@ describe('e2e-pcv', function () {
     it('can withdraw PCV and pause', async () => {
       const pcvGuardian = contracts.pcvGuardian;
 
-      const amount = await contracts.compoundEthPCVDeposit.balance();
+      const daiBalanceBefore = await contracts.dai.balanceOf(contractAddresses.feiDAOTimelock);
       await pcvGuardian.withdrawToSafeAddress(
-        contractAddresses.compoundEthPCVDeposit,
-        contractAddresses.wethHoldingPCVDeposit,
-        amount,
-        false,
-        true
-      );
-
-      expect(await ethers.provider.getBalance(contractAddresses.aaveEthPCVDeposit)).to.be.bignumber.equal(toBN(0));
-    });
-
-    it('can withdraw PCV and pause', async () => {
-      const pcvGuardian = contracts.pcvGuardian;
-
-      const feiBalanceBefore = await contracts.fei.balanceOf(contractAddresses.feiDAOTimelock);
-      await pcvGuardian.withdrawToSafeAddress(
-        contractAddresses.rariPool8FeiPCVDeposit,
+        contractAddresses.daiHoldingPCVDeposit,
         contractAddresses.feiDAOTimelock,
         ethers.constants.WeiPerEther,
         true,
         false
       );
 
-      const feiBalanceAfter = await contracts.fei.balanceOf(contractAddresses.feiDAOTimelock);
+      const daiBalanceAfter = await contracts.dai.balanceOf(contractAddresses.feiDAOTimelock);
 
-      expect(await contracts.rariPool8FeiPCVDeposit.paused()).to.be.true;
-      expect(feiBalanceAfter.sub(feiBalanceBefore)).to.be.bignumber.equal(ethers.constants.WeiPerEther);
-      await contracts.rariPool8FeiPCVDeposit.unpause();
+      expect(await contracts.daiHoldingPCVDeposit.paused()).to.be.true;
+      expect(daiBalanceAfter.sub(daiBalanceBefore)).to.be.bignumber.equal(ethers.constants.WeiPerEther);
+      await contracts.daiHoldingPCVDeposit.unpause();
     });
   });
 

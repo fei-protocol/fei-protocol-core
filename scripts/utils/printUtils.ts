@@ -1,4 +1,4 @@
-export function formatNumber(x) {
+export function formatNumber(x: any) {
   x = Number(x);
   let ret = x >= 0 ? '+' : '-'; // red or green
   let absX = Math.abs(x);
