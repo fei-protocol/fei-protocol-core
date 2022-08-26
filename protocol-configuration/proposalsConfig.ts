@@ -14,3 +14,5 @@ export const ProposalsConfig: TemplatedProposalsConfigMap = {
     category: ProposalCategory.DAO
   }
 };
+
+export default ProposalsConfig;
