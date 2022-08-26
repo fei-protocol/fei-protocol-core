@@ -2292,6 +2292,11 @@ export const MainnetContractsConfig = {
     address: '0x1126f1fA7Da556F8F82846223E3C2176B5631707',
     category: AddressCategory.Deprecated
   },
+  fox: {
+    artifactName: 'IERC20',
+    address: '0xc770EEfAd204B5180dF6a14Ee197D99d808ee52d',
+    category: AddressCategory.External
+  },
   d3StakingTokenWrapper: {
     artifactName: 'StakingTokenWrapper',
     address: '0xAa267d0A5A0A56Ef0F17bB4A28f85a5C4e0394F6',
@@ -2591,6 +2596,11 @@ export const MainnetContractsConfig = {
     artifactName: 'IdlePCVRedeemer',
     address: '0xBca1d1eC00581ad3033eB88D9F0206BB4B9D1b90',
     category: AddressCategory.Deprecated
+  },
+  idle: {
+    artifactName: 'IERC20',
+    address: '0x875773784Af8135eA0ef43b5a374AaD105c5D39e',
+    category: AddressCategory.External
   },
   bbRedeemer: {
     artifactName: 'SmartYieldRedeemer',
