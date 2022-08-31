@@ -34,11 +34,11 @@ export const PermissionsConfig = {
     'tribeDev3Deployer',
     'tribeDev4Deployer'
   ],
-  FEI_MINT_ADMIN: ['feiDAOTimelock', 'tribalCouncilTimelock'],
+  FEI_MINT_ADMIN: ['feiDAOTimelock'],
   POD_VETO_ADMIN: ['nopeDAO'],
-  POD_ADMIN: ['tribalCouncilTimelock', 'podFactory'],
-  PCV_MINOR_PARAM_ROLE: ['feiDAOTimelock', 'tribalCouncilTimelock'],
-  TOKEMAK_DEPOSIT_ADMIN_ROLE: ['feiDAOTimelock', 'tribalCouncilTimelock']
+  POD_ADMIN: [],
+  PCV_MINOR_PARAM_ROLE: ['feiDAOTimelock'],
+  TOKEMAK_DEPOSIT_ADMIN_ROLE: ['feiDAOTimelock']
 };
 
 export type PermissionsConfigType = typeof PermissionsConfig;
