@@ -7,12 +7,16 @@ import {
   TeardownUpgradeFunc,
   ValidateUpgradeFunc
 } from '@custom-types/types';
+import { BigNumber } from 'ethers';
 
 /*
 
 Deprecate Optimistic Governance and Tribal Council
 
 */
+
+let initialTreasuryBalance: BigNumber;
+let initialFeiSupply: BigNumber;
 
 const fipNumber = 'deprecate_tc'; // Change me!
 
@@ -29,7 +33,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 // This could include setting up Hardhat to impersonate accounts,
 // ensuring contracts have a specific state, etc.
 const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  console.log(`No actions to complete in setup for fip${fipNumber}`);
+  initialFeiSupply = await contracts.fei.totalSupply();
+  initialTreasuryBalance = await contracts.tribe.balanceOf(addresses.core);
 };
 
 // Tears down any changes made in setup() that need to be
@@ -41,7 +46,11 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // Run any validations required on the fip using mocha or console logging
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  console.log(`No actions to complete in validate for fip${fipNumber}`);
+  // 1. Verify all FEI on the TC burned
+  expect(await contracts.fei.balanceOf(addresses.tribalCouncilTimelock)).to.equal(0);
+
+  // 2. Verify Core Treasury received TRIBE and non left on TC timelock
+  expect(await contracts.tribe.balanceOf(addresses.tribalCouncilTimelock)).to.equal(0);
 };
 
 export { deploy, setup, teardown, validate };
