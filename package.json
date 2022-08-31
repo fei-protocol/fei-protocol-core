@@ -64,7 +64,7 @@
     "@uniswap/v2-core": "^1.0.1",
     "@uniswap/v2-periphery": "^1.1.0-beta.0",
     "chai": "^4.3.6",
-    "dotenv": "^16.0.1",
+    "dotenv": "^16.0.2",
     "hardhat": "^2.10.2",
     "hardhat-contract-sizer": "^2.6.1",
     "hardhat-gas-reporter": "^1.0.8",
