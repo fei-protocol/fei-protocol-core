@@ -22,11 +22,6 @@ const SWAP_ADMIN_ROLE = ethers.utils.id('SWAP_ADMIN_ROLE');
 const ORACLE_ADMIN_ROLE = ethers.utils.id('ORACLE_ADMIN_ROLE');
 const FEI_MINT_ADMIN = ethers.utils.id('FEI_MINT_ADMIN');
 
-// TODO: Roles that need revoking in a DAO vote (Governor is admin)
-const GOVERN_ROLE = ethers.utils.id('GOVERN_ROLE');
-const TOKEMAK_DEPOSIT_ADMIN_ROLE = ethers.utils.id('TOKEMAK_DEPOSIT_ADMIN_ROLE');
-const ROLE_ADMIN = ethers.utils.id('ROLE_ADMIN');
-
 // Timelock roles
 const TC_PROPOSER_ROLE = ethers.utils.id('PROPOSER_ROLE');
 const TC_CANCELLER_ROLE = ethers.utils.id('CANCELLER_ROLE');
@@ -70,14 +65,6 @@ const deprecate_tc: TemplatedProposalDescription = {
       arguments: (addresses) => [POD_ADMIN_ROLE, addresses.podFactory],
       description: 'Revoke POD_ADMIN_ROLE from the Pod Factory'
     },
-    // TODO: TOKEMAK_DEPOST_ADMIN_ROLE has GOVERN_ROLE as admin
-    // {
-    //   target: 'core',
-    //   values: '0',
-    //   method: 'revokeRole(bytes32,address)',
-    //   arguments: (addresses) => [TOKEMAK_DEPOSIT_ADMIN_ROLE, addresses.tribalCouncilTimelock],
-    //   description: 'Revoke TOKEMAK_DEPOSIT_ADMIN_ROLE from the TC timelock'
-    // },
     // PCV_MINOR_PARAM_ROLE
     {
       target: 'core',
@@ -123,14 +110,6 @@ const deprecate_tc: TemplatedProposalDescription = {
       arguments: (addresses) => [POD_METADATA_REGISTER_ROLE, addresses.tribalCouncilSafe],
       description: 'Revoke POD_METADATA_REGISTER_ROLE from the Tribal Council Safe'
     },
-    // TODO: Revoke in DAO vote, ROLE_ADMIN
-    // {
-    //   target: 'core',
-    //   values: '0',
-    //   method: 'revokeRole(bytes32,address)',
-    //   arguments: (addresses) => [ROLE_ADMIN, addresses.tribalCouncilTimelock],
-    //   description: 'Revoke ROLE_ADMIN from the Tribal Council timelock'
-    // },
     // METAGOVERNANCE_GAUGE_ADMIN
     {
       target: 'core',
