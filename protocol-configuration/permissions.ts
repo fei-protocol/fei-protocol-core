@@ -9,7 +9,8 @@ export const PermissionsConfig = {
     'ratioPCVControllerV2',
     'pcvGuardian',
     'daiPCVDripController',
-    'daiFixedPricePSMFeiSkimmer'
+    'daiFixedPricePSMFeiSkimmer',
+    'vebalOtcHelper'
   ],
   GUARDIAN_ROLE: ['guardianMultisig', 'pcvGuardian', 'pcvSentinel'],
   ORACLE_ADMIN_ROLE: ['tribalCouncilTimelock'],
@@ -23,9 +24,9 @@ export const PermissionsConfig = {
   VOTIUM_ADMIN_ROLE: [],
   PCV_GUARDIAN_ADMIN_ROLE: ['tribalCouncilTimelock'],
   PCV_SAFE_MOVER_ROLE: ['tribalCouncilTimelock'],
-  METAGOVERNANCE_VOTE_ADMIN: ['feiDAOTimelock', 'tribalCouncilTimelock'],
-  METAGOVERNANCE_TOKEN_STAKING: ['feiDAOTimelock'],
-  METAGOVERNANCE_GAUGE_ADMIN: ['feiDAOTimelock', 'tribalCouncilTimelock'],
+  METAGOVERNANCE_VOTE_ADMIN: ['feiDAOTimelock', 'tribalCouncilTimelock', 'vebalOtcHelper'],
+  METAGOVERNANCE_TOKEN_STAKING: ['feiDAOTimelock', 'vebalOtcHelper'],
+  METAGOVERNANCE_GAUGE_ADMIN: ['feiDAOTimelock', 'tribalCouncilTimelock', 'vebalOtcHelper'],
   ROLE_ADMIN: ['feiDAOTimelock', 'tribalCouncilTimelock'],
   POD_METADATA_REGISTER_ROLE: [
     'tribalCouncilSafe',

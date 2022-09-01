@@ -136,6 +136,11 @@ export const MainnetContractsConfig = {
     category: AddressCategory.Governance
   },
 
+  balancerGaugeStakerProxy: {
+    artifactName: 'TransparentUpgradeableProxy',
+    address: '0x66977Ce30049CD0e443216Bf26377966c3A109E2',
+    category: AddressCategory.Governance
+  },
   balancerGaugeStaker: {
     artifactName: 'BalancerGaugeStaker', // actually a TransparentUpgradeableProxy
     address: '0x66977Ce30049CD0e443216Bf26377966c3A109E2',
@@ -947,6 +952,12 @@ export const MainnetContractsConfig = {
   bal: {
     artifactName: 'IERC20',
     address: '0xba100000625a3754423978a60c9317c58a424e3D',
+    category: AddressCategory.External
+  },
+
+  bbausd: {
+    artifactName: 'IERC20',
+    address: '0x7B50775383d3D6f0215A8F290f2C9e2eEBBEceb2',
     category: AddressCategory.External
   },
 
