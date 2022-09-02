@@ -1207,6 +1207,12 @@ export const MainnetContractsConfig = {
     category: AddressCategory.External
   },
 
+  aaveCompaniesMultisig: {
+    artifactName: 'unknown',
+    address: '0xe8d4D93D9728bD673b0197673a230F62255C7846',
+    category: AddressCategory.External
+  },
+
   fuseMultisig: {
     artifactName: 'unknown',
     address: '0x5eA4A9a7592683bF0Bc187d6Da706c6c4770976F',

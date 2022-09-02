@@ -11,41 +11,11 @@ import {TransparentUpgradeableProxy, ProxyAdmin} from "@openzeppelin/contracts/p
 contract VeBalHelper is Ownable {
     using SafeERC20 for IERC20;
 
-    TransparentUpgradeableProxy public constant BOOST_RECIPIENT_PROXY =
-        TransparentUpgradeableProxy(payable(address(0x66977Ce30049CD0e443216Bf26377966c3A109E2)));
-
     VeBalDelegatorPCVDeposit public immutable pcvDeposit;
-    IERC20 public immutable otcToken;
-    uint256 public immutable otcAmount;
-    address public immutable otcDestination;
-    address public immutable otcBuyer;
 
-    constructor(
-        address _owner,
-        address _pcvDeposit,
-        address _otcToken,
-        uint256 _otcAmount,
-        address _otcDestination,
-        address _otcBuyer
-    ) Ownable() {
+    constructor(address _owner, address _pcvDeposit) Ownable() {
         _transferOwnership(_owner);
         pcvDeposit = VeBalDelegatorPCVDeposit(_pcvDeposit);
-        otcToken = IERC20(_otcToken);
-        otcAmount = _otcAmount;
-        otcDestination = _otcDestination;
-        otcBuyer = _otcBuyer;
-    }
-
-    // ----------------------------------------------------------------------------------
-    // OTC Management
-    // ----------------------------------------------------------------------------------
-
-    /// @notice perform OTC
-    function otcBuy() external {
-        require(msg.sender == otcBuyer, "UNAUTHORIZED");
-        otcToken.safeTransferFrom(msg.sender, otcDestination, otcAmount);
-        _transferOwnership(msg.sender);
-        BOOST_RECIPIENT_PROXY.changeAdmin(msg.sender);
     }
 
     // ----------------------------------------------------------------------------------

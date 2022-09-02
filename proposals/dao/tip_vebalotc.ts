@@ -8,32 +8,30 @@ import {
   TeardownUpgradeFunc,
   ValidateUpgradeFunc
 } from '@custom-types/types';
-import { BigNumber } from 'ethers';
+import { BigNumber, BigNumberish } from 'ethers';
 import { getImpersonatedSigner, overwriteChainlinkAggregator, time } from '@test/helpers';
 import { TransactionResponse } from '@ethersproject/providers';
 import { forceEth } from '@test/integration/setup/utils';
+
+const e18 = (x: BigNumberish) => ethers.constants.WeiPerEther.mul(x);
 
 const PROXY_ADMIN_STORAGE_SLOT = '0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103';
 
 const fipNumber = 'vebalotc';
 
-const vebalOtcBuyer = '0x6ef71cA9cD708883E129559F5edBFb9d9D5C6148';
-const vebalOtcAmount = ethers.utils.parseEther('1000000'); // 1M
-
+let vebalOtcBuyer: string;
 let pcvStatsBefore: PcvStats;
 
 // Do any deployments
 // This should exclusively include new contract deployments
 const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: NamedAddresses, logging: boolean) => {
+  vebalOtcBuyer = addresses.aaveCompaniesMultisig;
+
   // Deploy veBAL Helper contract
   const VeBalHelperFactory = await ethers.getContractFactory('VeBalHelper');
   const vebalOtcHelper = await VeBalHelperFactory.deploy(
-    addresses.feiDAOTimelock, // _owner
-    addresses.veBalDelegatorPCVDeposit, // _pcvDeposit
-    addresses.dai, // _otcToken
-    vebalOtcAmount, // _otcAmount
-    addresses.daiHoldingPCVDeposit, // _otcDestination
-    vebalOtcBuyer // _otcBuyer
+    vebalOtcBuyer, // _owner
+    addresses.veBalDelegatorPCVDeposit // _pcvDeposit
   );
   await vebalOtcHelper.deployTransaction.wait();
   logging && console.log(`vebalOtcHelper: ${vebalOtcHelper.address}`);
@@ -47,11 +45,10 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 // This could include setting up Hardhat to impersonate accounts,
 // ensuring contracts have a specific state, etc.
 const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  pcvStatsBefore = await contracts.collateralizationOracle.pcvStats();
+  vebalOtcBuyer = addresses.aaveCompaniesMultisig;
+  await forceEth(vebalOtcBuyer);
 
-  const daiWhale = '0x5d3a536E4D6DbD6114cc1Ead35777bAB948E3643';
-  await forceEth(daiWhale);
-  await contracts.dai.connect(await getImpersonatedSigner(daiWhale)).transfer(vebalOtcBuyer, vebalOtcAmount);
+  pcvStatsBefore = await contracts.collateralizationOracle.pcvStats();
 };
 
 // Tears down any changes made in setup() that need to be
@@ -82,16 +79,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   console.log(' Equity diff                            [M]e18 ', Number(eqDiff) / 1e24);
   console.log('----------------------------------------------------');
 
-  const balanceBefore = await contracts.daiHoldingPCVDeposit.balance();
-  expect(await contracts.vebalOtcHelper.owner()).to.be.equal(addresses.feiDAOTimelock);
-
-  // OTC buyer performs the OTC
   const otcBuyerSigner = await getImpersonatedSigner(vebalOtcBuyer);
-  await contracts.dai.connect(otcBuyerSigner).approve(contracts.vebalOtcHelper.address, vebalOtcAmount);
-  await contracts.vebalOtcHelper.connect(otcBuyerSigner).otcBuy();
-
-  const balanceAfter = await contracts.daiHoldingPCVDeposit.balance();
-  expect(balanceAfter.sub(balanceBefore)).to.be.equal(vebalOtcAmount);
 
   // Check veBAL OTC helper owner and proxy owner
   expect(await contracts.vebalOtcHelper.owner()).to.be.equal(vebalOtcBuyer);
@@ -170,14 +158,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
     .connect(otcBuyerSigner)
     .withdrawERC20(addresses.bpt80Bal20Weth, vebalOtcBuyer, bpt80Bal20WethAmount);
   expect(await contracts.bpt80Bal20Weth.balanceOf(vebalOtcBuyer)).to.be.equal(bpt80Bal20WethAmount);
-  expect(bpt80Bal20WethAmount).to.be.at.least(ethers.utils.parseEther('112041'));
+  expect(bpt80Bal20WethAmount).to.be.at.least(e18(112_041));
 };
 
 export { deploy, setup, teardown, validate };
-
-function getAddressLabel(addresses: NamedAddresses, address: string) {
-  for (const key in addresses) {
-    if (address.toLowerCase() == addresses[key].toLowerCase()) return key;
-  }
-  return '???';
-}
