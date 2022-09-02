@@ -1,5 +1,11 @@
 import { TemplatedProposalDescription } from '@custom-types/types';
 
+// FEI balance on the TC timelock
+const TC_FEI_BALANCE = '2733169815107120096987175';
+
+// TRIBE balance on the TC timelock
+const TC_TRIBE_BALANCE = '2733170474316903966022879';
+
 const tip_121b: TemplatedProposalDescription = {
   title: 'TIP_121b: Protocol ops and technical cleanup',
   commands: [
@@ -50,26 +56,22 @@ const tip_121b: TemplatedProposalDescription = {
       target: 'tribe',
       values: '0',
       method: 'transferFrom(address,address,uint256)',
-      arguments: (addresses) => [addresses.tribalCouncilTimelock, addresses.core, '2733170474316903966022879'],
-      description: 'Move all TRIBE from TC Timelock to DAO Treasury'
+      arguments: (addresses) => [addresses.tribalCouncilTimelock, addresses.core, TC_TRIBE_BALANCE],
+      description: 'Move all 2.7M TRIBE from TC Timelock to DAO Treasury'
     },
     {
       target: 'fei',
       values: '0',
       method: 'transferFrom(address,address,uint256)',
-      arguments: (addresses) => [
-        addresses.tribalCouncilTimelock,
-        addresses.feiDAOTimelock,
-        '2733169815107120096987175'
-      ],
-      description: 'Move all FEI from TC Timelock to DAO Timelock'
+      arguments: (addresses) => [addresses.tribalCouncilTimelock, addresses.feiDAOTimelock, TC_FEI_BALANCE],
+      description: 'Move all 2.7M FEI from TC Timelock to DAO Timelock'
     },
     {
       target: 'fei',
       values: '0',
       method: 'burn(uint256)',
-      arguments: (addresses) => ['2733169815107120096987175'],
-      description: 'Burn FEI from the DAO Timelock'
+      arguments: (addresses) => [TC_FEI_BALANCE],
+      description: 'Burn 2.7M FEI from the DAO Timelock'
     },
 
     // Finally, CR Oracle updates
