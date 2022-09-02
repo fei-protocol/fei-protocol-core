@@ -91,6 +91,14 @@ const tip_121b: TemplatedProposalDescription = {
         ]
       ],
       description: 'Remove deprecated/empty smart contracts from CR Oracle'
+    },
+    // 4. Update CR oracle to use stETH oracle for stETH rather than ETH oracle
+    {
+      target: 'collateralizationOracle',
+      values: '0',
+      method: 'setOracle(address,address)',
+      arguments: (addresses) => [addresses.stETH, addresses.chainlinkStEthUsdOracleWrapper],
+      description: 'Update the oracle in the CR oracle used for stETH, to be stETH rather than ETH'
     }
   ],
   description: `
