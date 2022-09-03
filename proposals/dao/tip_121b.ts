@@ -31,6 +31,14 @@ const MIN_LUSD_SWAP_DAI = ethers.constants.WeiPerEther.mul(17_000_000);
 const MIN_WETH_SWAP_WETH = ethers.constants.WeiPerEther.mul(900);
 const MIN_WETH_SWAP_DAI = ethers.constants.WeiPerEther.mul(32_000_000);
 
+// STETH Price bounds
+const STETH_UPPER_PRICE = ethers.constants.WeiPerEther.mul(1_900);
+const STETH_LOWER_PRICE = ethers.constants.WeiPerEther.mul(1_100);
+
+// PCV equity diff bounds
+const PCV_DIFF_UPPER = ethers.constants.WeiPerEther.mul(1_000_000);
+const PCV_DIFF_LOWER = ethers.constants.WeiPerEther.mul(-1_000_000);
+
 let pcvStatsBefore: PcvStats;
 let initialFeiSupply: BigNumber;
 let initialTCTribeBalance: BigNumber;
@@ -62,7 +70,7 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // Run any validations required on the fip using mocha or console logging
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  // display pcvStats
+  // 0. Verify PCV has minimal change
   console.log('----------------------------------------------------');
   console.log(' pcvStatsBefore.protocolControlledValue [M]e18 ', Number(pcvStatsBefore.protocolControlledValue) / 1e24);
   console.log(' pcvStatsBefore.userCirculatingFei      [M]e18 ', Number(pcvStatsBefore.userCirculatingFei) / 1e24);
@@ -80,6 +88,9 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   console.log(' Circ FEI diff                          [M]e18 ', Number(cFeiDiff) / 1e24);
   console.log(' Equity diff                            [M]e18 ', Number(eqDiff) / 1e24);
   console.log('----------------------------------------------------');
+
+  expect(eqDiff).to.be.bignumber.greaterThan(PCV_DIFF_LOWER);
+  expect(eqDiff).to.be.bignumber.lessThan(PCV_DIFF_UPPER);
 
   // 1. Verify FEI burned as expected
   const feiSupplyDiff = initialFeiSupply.sub(await contracts.fei.totalSupply());
@@ -112,11 +123,13 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await contracts.weth.balanceOf(addresses.tribalCouncilSafe)).to.be.bignumber.greaterThan(MIN_WETH_SWAP_WETH);
 
   // 6. Verify stETH oracle set on CR
-  expect(await contracts.collateralizationOracle.tokenToOracle(addresses.stETH)).to.equal(
+  expect(await contracts.collateralizationOracle.tokenToOracle(addresses.steth)).to.equal(
     addresses.chainlinkStEthUsdOracleWrapper
   );
   // 7. Verify stETH oracle reports a reasonable price
-  const stETHUSDPrice = await contracts.chainlinkStEthUsdOracleWrapper.read()[0];
+  const stETHUSDPrice = (await contracts.chainlinkStEthUsdOracleWrapper.read())[0];
+  expect(stETHUSDPrice).to.be.bignumber.greaterThan(STETH_LOWER_PRICE);
+  expect(stETHUSDPrice).to.be.bignumber.lessThan(STETH_UPPER_PRICE);
   console.log('stETH USD price: ', stETHUSDPrice.toString());
 };
 

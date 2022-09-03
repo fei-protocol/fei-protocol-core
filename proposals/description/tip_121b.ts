@@ -73,8 +73,15 @@ const tip_121b: TemplatedProposalDescription = {
       arguments: (addresses) => [TC_FEI_BALANCE],
       description: 'Burn 2.7M FEI from the DAO Timelock'
     },
-
-    // Finally, CR Oracle updates
+    // 4. Update CR oracle to use stETH oracle for stETH rather than ETH oracle
+    {
+      target: 'collateralizationOracle',
+      values: '0',
+      method: 'setOracle(address,address)',
+      arguments: (addresses) => [addresses.steth, addresses.chainlinkStEthUsdOracleWrapper],
+      description: 'Update the oracle in the CR oracle used for stETH, to be stETH rather than ETH'
+    },
+    // 5. Update CR oracle
     {
       target: 'collateralizationOracle',
       values: '0',
@@ -82,6 +89,7 @@ const tip_121b: TemplatedProposalDescription = {
       arguments: (addresses) => [
         [
           addresses.aaveFeiPCVDepositWrapper,
+          addresses.compoundFeiPCVDepositWrapper,
           addresses.wethHoldingPCVDeposit,
           addresses.lusdToDaiLensLusd,
           addresses.lusdToDaiLensDai,
@@ -91,14 +99,6 @@ const tip_121b: TemplatedProposalDescription = {
         ]
       ],
       description: 'Remove deprecated/empty smart contracts from CR Oracle'
-    },
-    // 4. Update CR oracle to use stETH oracle for stETH rather than ETH oracle
-    {
-      target: 'collateralizationOracle',
-      values: '0',
-      method: 'setOracle(address,address)',
-      arguments: (addresses) => [addresses.stETH, addresses.chainlinkStEthUsdOracleWrapper],
-      description: 'Update the oracle in the CR oracle used for stETH, to be stETH rather than ETH'
     }
   ],
   description: `
