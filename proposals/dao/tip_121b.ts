@@ -36,8 +36,8 @@ const STETH_UPPER_PRICE = ethers.constants.WeiPerEther.mul(1_900);
 const STETH_LOWER_PRICE = ethers.constants.WeiPerEther.mul(1_100);
 
 // PCV equity diff bounds
-const PCV_DIFF_UPPER = ethers.constants.WeiPerEther.mul(1_000_000);
-const PCV_DIFF_LOWER = ethers.constants.WeiPerEther.mul(-1_000_000);
+const PCV_DIFF_UPPER = ethers.constants.WeiPerEther.mul(3_000_000);
+const PCV_DIFF_LOWER = ethers.constants.WeiPerEther.mul(-3_000_000);
 
 let pcvStatsBefore: PcvStats;
 let initialFeiSupply: BigNumber;
@@ -115,6 +115,9 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await contracts.weth.balanceOf(addresses.ethToDaiLBPSwapper)).to.equal(0);
   expect(await contracts.dai.balanceOf(addresses.ethToDaiLBPSwapper)).to.equal(0);
 
+  // Verify LUSD Holding deposit empty
+  expect(await contracts.lusd.balanceOf(addresses.lusdHoldingPCVDeposit)).to.equal(0);
+
   // Verify swapped tokens ended up at destinations correctly
   expect(await contracts.dai.balanceOf(addresses.daiHoldingPCVDeposit)).to.be.bignumber.greaterThan(
     MIN_LUSD_SWAP_DAI.add(MIN_WETH_SWAP_DAI) // DAI from WETH and LUSD swaps
@@ -127,10 +130,10 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
     addresses.chainlinkStEthUsdOracleWrapper
   );
   // 7. Verify stETH oracle reports a reasonable price
-  const stETHUSDPrice = (await contracts.chainlinkStEthUsdOracleWrapper.read())[0];
-  expect(stETHUSDPrice).to.be.bignumber.greaterThan(STETH_LOWER_PRICE);
-  expect(stETHUSDPrice).to.be.bignumber.lessThan(STETH_UPPER_PRICE);
-  console.log('stETH USD price: ', stETHUSDPrice.toString());
+  const stETHUSDPrice = (await contracts.chainlinkStEthUsdOracleWrapper.read())[0].toString();
+  console.log({ stETHUSDPrice });
+  expect(stETHUSDPrice).to.be.greaterThan(STETH_LOWER_PRICE);
+  expect(stETHUSDPrice).to.be.lessThan(STETH_UPPER_PRICE);
 };
 
 export { deploy, setup, teardown, validate };

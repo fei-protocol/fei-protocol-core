@@ -7,9 +7,5 @@ export const SafeAddressesConfig = [
   'balancerDepositBalWeth',
   'daiFixedPricePSM',
   'feiDAOTimelock',
-  'wethHoldingPCVDeposit',
-  'lusdHoldingPCVDeposit',
-  'voltHoldingPCVDeposit',
-  'daiHoldingPCVDeposit',
-  'gOHMHoldingPCVDeposit'
+  'daiHoldingPCVDeposit'
 ];

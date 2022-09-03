@@ -317,7 +317,7 @@ export const MainnetContractsConfig = {
   lusdHoldingPCVDeposit: {
     artifactName: 'ERC20HoldingPCVDeposit',
     address: '0x4378De2F2991Fbed6616b34AC7727E7653713712',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
   compoundFeiPCVDepositWrapper: {
     artifactName: 'PCVDepositWrapper',
@@ -1136,6 +1136,12 @@ export const MainnetContractsConfig = {
     category: AddressCategory.External
   },
 
+  curveLusdPool: {
+    artifactName: '',
+    address: '0xEd279fDD11cA84bEef15AF5D39BB4d4bEE23F0cA',
+    category: AddressCategory.External
+  },
+
   curveStethPool: {
     artifactName: 'IStableSwapSTETH',
     address: '0xDC24316b9AE028F1497c275EB9192a3Ea0f67022',
@@ -1485,7 +1491,7 @@ export const MainnetContractsConfig = {
   wethHoldingPCVDeposit: {
     artifactName: 'ERC20HoldingPCVDeposit',
     address: '0xC6D675ca5217d39C3A5E366141060fC2D1ea2b82',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
 
   orcaPodController: {

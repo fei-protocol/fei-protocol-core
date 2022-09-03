@@ -9,7 +9,7 @@ const TC_TRIBE_BALANCE = '2733170474316903966022879';
 const tip_121b: TemplatedProposalDescription = {
   title: 'TIP_121b: Protocol ops and technical cleanup',
   commands: [
-    // 1. Cleanup LUSD->DAI Auction contracts (send dust to TC multisig for selling)
+    // 1. Withdraw LUSD and DAI from LUSD->DAI LBP swapper, send to the TC multisig to be sold
     {
       target: 'lusdToDaiSwapper',
       values: '0',
@@ -24,13 +24,30 @@ const tip_121b: TemplatedProposalDescription = {
       arguments: (addresses) => [
         addresses.daiHoldingPCVDeposit, // pcvDeposit
         addresses.lusd, // token
-        addresses.tribalCouncilSafe, // to
+        addresses.feiDAOTimelock, // to
         '10000' // basisPoints, 100%
       ],
-      description: 'Move all LUSD from daiHoldingPCVDeposit to the TC Multisig'
+      description: `
+      Move all LUSD from daiHoldingPCVDeposit to the DAO timelock,
+      in preparation for selling.
+      `
     },
-
-    // 2. Cleanup WETH->DAI Auction contracts (send dust to TC multisig for selling)
+    {
+      target: 'ratioPCVControllerV2',
+      values: '0',
+      method: 'withdrawRatioERC20(address,address,address,uint256)',
+      arguments: (addresses) => [
+        addresses.lusdHoldingPCVDeposit, // pcvDeposit
+        addresses.lusd, // token
+        addresses.feiDAOTimelock, // to
+        '10000' // basisPoints, 100%
+      ],
+      description: `
+      Move all LUSD from lusdHoldingPCVDeposit to the DAO timelock,
+      in preparation for selling.
+      `
+    },
+    // 2. Withdraw WETH and DAI from WETH->DAI LBP swapper, move to TC multisig to be sold
     {
       target: 'ethToDaiLBPSwapper',
       values: '0',
@@ -99,6 +116,21 @@ const tip_121b: TemplatedProposalDescription = {
         ]
       ],
       description: 'Remove deprecated/empty smart contracts from CR Oracle'
+    },
+    // 6. Remove non-needed safe addresses
+    {
+      target: 'pcvGuardian',
+      values: '0',
+      method: 'unsetSafeAddress(address[])',
+      arguments: (addresses) => [
+        [
+          addresses.voltHoldingPCVDeposit,
+          addresses.gOHMHoldingPCVDeposit,
+          addresses.lusdHoldingPCVDeposit,
+          addresses.wethHoldingPCVDeposit
+        ]
+      ],
+      description: 'Remove now deprecated contracts that were safe addresses'
     }
   ],
   description: `
