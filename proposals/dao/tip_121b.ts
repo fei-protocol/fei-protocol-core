@@ -110,6 +110,14 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   );
   expect(await contracts.lusd.balanceOf(addresses.tribalCouncilSafe)).to.be.bignumber.greaterThan(MIN_LUSD_SWAP_LUSD);
   expect(await contracts.weth.balanceOf(addresses.tribalCouncilSafe)).to.be.bignumber.greaterThan(MIN_WETH_SWAP_WETH);
+
+  // 6. Verify stETH oracle set on CR
+  expect(await contracts.collateralizationOracle.tokenToOracle(addresses.stETH)).to.equal(
+    addresses.chainlinkStEthUsdOracleWrapper
+  );
+  // 7. Verify stETH oracle reports a reasonable price
+  const stETHUSDPrice = await contracts.chainlinkStEthUsdOracleWrapper.read()[0];
+  console.log('stETH USD price: ', stETHUSDPrice.toString());
 };
 
 export { deploy, setup, teardown, validate };
