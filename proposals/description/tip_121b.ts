@@ -24,11 +24,11 @@ const tip_121b: TemplatedProposalDescription = {
       arguments: (addresses) => [
         addresses.daiHoldingPCVDeposit, // pcvDeposit
         addresses.lusd, // token
-        addresses.feiDAOTimelock, // to
+        addresses.tribalCouncilSafe, // to
         '10000' // basisPoints, 100%
       ],
       description: `
-      Move all LUSD from daiHoldingPCVDeposit to the DAO timelock,
+      Move all LUSD from daiHoldingPCVDeposit to the Tribal Council safe,
       in preparation for selling.
       `
     },
@@ -39,11 +39,11 @@ const tip_121b: TemplatedProposalDescription = {
       arguments: (addresses) => [
         addresses.lusdHoldingPCVDeposit, // pcvDeposit
         addresses.lusd, // token
-        addresses.feiDAOTimelock, // to
+        addresses.tribalCouncilSafe, // to
         '10000' // basisPoints, 100%
       ],
       description: `
-      Move all LUSD from lusdHoldingPCVDeposit to the DAO timelock,
+      Move all LUSD from lusdHoldingPCVDeposit to the Tribal Council safe,
       in preparation for selling.
       `
     },
@@ -65,7 +65,10 @@ const tip_121b: TemplatedProposalDescription = {
         addresses.tribalCouncilSafe, // to
         '10000' // basisPoints, 100%
       ],
-      description: 'Move all WETH from daiHoldingPCVDeposit to the TC Multisig'
+      description: `
+      Move all WETH from daiHoldingPCVDeposit to the Tribal Council safe Multisig,
+      in preparation for selling
+      `
     },
 
     // 3. Cleanup FEI/TRIBE on TC Timelock from the Rari Infra team clawback
@@ -95,8 +98,8 @@ const tip_121b: TemplatedProposalDescription = {
       target: 'collateralizationOracle',
       values: '0',
       method: 'setOracle(address,address)',
-      arguments: (addresses) => [addresses.steth, addresses.chainlinkStEthUsdOracleWrapper],
-      description: 'Update the oracle in the CR oracle used for stETH, to be stETH rather than ETH'
+      arguments: (addresses) => [addresses.weth, addresses.chainlinkStEthUsdOracleWrapper],
+      description: 'Update the ETH oracle in the CR oracle, to the stETH oracle as remaining ETH will be stETH'
     },
     // 5. Update CR oracle
     {
@@ -121,7 +124,7 @@ const tip_121b: TemplatedProposalDescription = {
     {
       target: 'pcvGuardian',
       values: '0',
-      method: 'unsetSafeAddress(address[])',
+      method: 'unsetSafeAddresses(address[])',
       arguments: (addresses) => [
         [
           addresses.voltHoldingPCVDeposit,
@@ -130,11 +133,31 @@ const tip_121b: TemplatedProposalDescription = {
           addresses.wethHoldingPCVDeposit
         ]
       ],
-      description: 'Remove now deprecated contracts that were safe addresses'
+      description: 'Remove deprecated contract safe addresses from PCV Guardian'
     }
   ],
   description: `
   TIP_121b: Protocol ops and technical cleanup
+
+  This technical proposal performs various protocol cleanup actions, including:
+
+  Cleanup auction contracts
+  ------------------------------
+  Cleans up the LUSD->DAI and WETH->DAI auction contracts that were used to sell those assets.
+  Sends the DAI to the daiHoldingPCVDeposit and sends the dust LUSD and WETH to the Tribal Council 
+  multisig to be sold. 
+
+  Remove remaining assets from the Tribal Council Timelock
+  ---------------------------------------------------------
+  Burns the 2.7M FEI previously clawed back from the Rari Infrastructure team timelock and sends the 
+  2.7M TRIBE also recovered to the DAO Treasury.
+
+  Oracle and PCV guardian maintenance
+  ----------------------------------
+  Performs several collaterisation oracle and PCV guardian updates:
+  1. Updates the ETH oracle to be stETH, as remaining asset will be stETH
+  2. Removes deprecated and empty contracts from the oracle
+  3. Removes now deprecated contracts from being safe addresses in the PCV guardian
   `
 };
 

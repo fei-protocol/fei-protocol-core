@@ -1136,12 +1136,6 @@ export const MainnetContractsConfig = {
     category: AddressCategory.External
   },
 
-  curveLusdPool: {
-    artifactName: '',
-    address: '0xEd279fDD11cA84bEef15AF5D39BB4d4bEE23F0cA',
-    category: AddressCategory.External
-  },
-
   curveStethPool: {
     artifactName: 'IStableSwapSTETH',
     address: '0xDC24316b9AE028F1497c275EB9192a3Ea0f67022',

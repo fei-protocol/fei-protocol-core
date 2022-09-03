@@ -16,6 +16,8 @@ TIP_121b: Protocol ops and technical cleanup
 
 */
 
+const toBN = ethers.BigNumber.from;
+
 const fipNumber = 'tip_121b';
 
 // FEI balance on the TC timelock
@@ -32,12 +34,12 @@ const MIN_WETH_SWAP_WETH = ethers.constants.WeiPerEther.mul(900);
 const MIN_WETH_SWAP_DAI = ethers.constants.WeiPerEther.mul(32_000_000);
 
 // STETH Price bounds
-const STETH_UPPER_PRICE = ethers.constants.WeiPerEther.mul(1_900);
-const STETH_LOWER_PRICE = ethers.constants.WeiPerEther.mul(1_100);
+const STETH_UPPER_PRICE = ethers.constants.WeiPerEther.mul(1_900); // $1900
+const STETH_LOWER_PRICE = ethers.constants.WeiPerEther.mul(1_100); // $1100
 
 // PCV equity diff bounds
-const PCV_DIFF_UPPER = ethers.constants.WeiPerEther.mul(3_000_000);
-const PCV_DIFF_LOWER = ethers.constants.WeiPerEther.mul(-3_000_000);
+const PCV_DIFF_UPPER = ethers.constants.WeiPerEther.mul(1_000_000);
+const PCV_DIFF_LOWER = ethers.constants.WeiPerEther.mul(-6_000_000);
 
 let pcvStatsBefore: PcvStats;
 let initialFeiSupply: BigNumber;
@@ -126,14 +128,13 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await contracts.weth.balanceOf(addresses.tribalCouncilSafe)).to.be.bignumber.greaterThan(MIN_WETH_SWAP_WETH);
 
   // 6. Verify stETH oracle set on CR
-  expect(await contracts.collateralizationOracle.tokenToOracle(addresses.steth)).to.equal(
+  expect(await contracts.collateralizationOracle.tokenToOracle(addresses.weth)).to.equal(
     addresses.chainlinkStEthUsdOracleWrapper
   );
   // 7. Verify stETH oracle reports a reasonable price
   const stETHUSDPrice = (await contracts.chainlinkStEthUsdOracleWrapper.read())[0].toString();
-  console.log({ stETHUSDPrice });
-  expect(stETHUSDPrice).to.be.greaterThan(STETH_LOWER_PRICE);
-  expect(stETHUSDPrice).to.be.lessThan(STETH_UPPER_PRICE);
+  expect(toBN(stETHUSDPrice)).to.be.bignumber.greaterThan(STETH_LOWER_PRICE);
+  expect(toBN(stETHUSDPrice)).to.be.bignumber.lessThan(STETH_UPPER_PRICE);
 };
 
 export { deploy, setup, teardown, validate };
