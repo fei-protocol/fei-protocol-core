@@ -235,6 +235,38 @@ const deprecate_tc: TemplatedProposalDescription = {
       method: 'revokeRole(bytes32,address)',
       arguments: (addresses) => [TC_TIMELOCK_ADMIN_ROLE, addresses.tribalCouncilTimelock],
       description: 'Revoke TC_TIMELOCK_ADMIN_ROLE from the TC timelock'
+    },
+    // 5. Change beneficiary of old Rari Infra FEI and TRIBE vesting timelocks to burners
+    // Claim vested funds
+    {
+      target: 'rariInfraFeiTimelock',
+      values: '0',
+      method: 'releaseMax(address)',
+      arguments: (addresses) => [addresses.feiDAOTimelock],
+      description: 'Release all currently vested FEI to the DAO timelock'
+    },
+    {
+      target: 'rariInfraTribeTimelock',
+      values: '0',
+      method: 'releaseMax(address)',
+      arguments: (addresses) => [addresses.core],
+      description: 'Release all currently vested TRIBE back to the DAO treasury'
+    },
+
+    // Set pendingAdmins to burner timelocks
+    {
+      target: 'rariInfraFeiTimelock',
+      values: '0',
+      method: 'setPendingBeneficiary(address)',
+      arguments: (addresses) => [addresses.feiBurnerTimelock],
+      description: 'Set pending beneficiary of the old Rari FEI timelock to the burner FEI timelock'
+    },
+    {
+      target: 'rariInfraTribeTimelock',
+      values: '0',
+      method: 'setPendingBeneficiary(address)',
+      arguments: (addresses) => [addresses.tribeBurnerTimelock],
+      description: 'Set pending beneficiary of the old Rari TRIBE timelock to the burner TRIBE timelock'
     }
   ],
   description: `
@@ -243,6 +275,8 @@ const deprecate_tc: TemplatedProposalDescription = {
   2. Send all TRIBE on the TC timelock to Core Treasury
   3. Revoke all Tribe roles from the optimistic governance smart contracts
   4. Revoke all Tribal Council timelock internal EXECUTOR, PROPOSER, CANCELLER, ADMIN roles
+  5. Change beneficiary of the old Rari Infra vesting FEI and TRIBE timelocks from the TC timelock
+     to the burner timelocks
   `
 };
 

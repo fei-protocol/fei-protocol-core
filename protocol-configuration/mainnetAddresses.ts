@@ -405,6 +405,16 @@ export const MainnetContractsConfig = {
     address: '0xfaFC562265a49975E8B20707EAC966473795CF90',
     category: AddressCategory.Distribution
   },
+  // feiBurnerTimelock: {
+  //   artifactName: '',
+  //   address: '',
+  //   category: AddressCategory.Distribution
+  // },
+  // tribeBurnerTimelock: {
+  //   artifactName: '',
+  //   address: '',
+  //   category: AddressCategory.Distribution
+  // },
   rariInfraTribeTimelock: {
     artifactName: 'LinearTimelockedDelegator',
     address: '0x625cf6AA7DafB154F3Eb6BE87592110e30290dEe',
