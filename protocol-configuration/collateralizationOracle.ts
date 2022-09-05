@@ -3,7 +3,7 @@
 // Values are arrays of contracts that hold that token
 
 export const CollateralizationOracleConfig = {
-  fei: ['rariPool79FeiPCVDepositWrapper', 'compoundFeiPCVDepositWrapper', 'rariTimelockFeiOldLens'],
+  fei: ['rariPool79FeiPCVDepositWrapper', 'rariTimelockFeiOldLens'],
   dai: ['daiFixedPricePSM', 'daiHoldingPCVDeposit'],
   weth: ['ethLidoPCVDeposit']
 };
