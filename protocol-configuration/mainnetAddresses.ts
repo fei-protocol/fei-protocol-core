@@ -317,7 +317,7 @@ export const MainnetContractsConfig = {
   lusdHoldingPCVDeposit: {
     artifactName: 'ERC20HoldingPCVDeposit',
     address: '0x4378De2F2991Fbed6616b34AC7727E7653713712',
-    category: AddressCategory.Deprecated
+    category: AddressCategory.PCV
   },
   compoundFeiPCVDepositWrapper: {
     artifactName: 'PCVDepositWrapper',

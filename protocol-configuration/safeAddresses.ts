@@ -8,5 +8,6 @@ export const SafeAddressesConfig = [
   'daiFixedPricePSM',
   'feiDAOTimelock',
   'wethHoldingPCVDeposit',
-  'daiHoldingPCVDeposit'
+  'daiHoldingPCVDeposit',
+  'lusdHoldingPCVDeposit'
 ];

@@ -147,9 +147,7 @@ const tip_121b: TemplatedProposalDescription = {
       target: 'pcvGuardian',
       values: '0',
       method: 'unsetSafeAddresses(address[])',
-      arguments: (addresses) => [
-        [addresses.voltHoldingPCVDeposit, addresses.gOHMHoldingPCVDeposit, addresses.lusdHoldingPCVDeposit]
-      ],
+      arguments: (addresses) => [[addresses.voltHoldingPCVDeposit, addresses.gOHMHoldingPCVDeposit]],
       description: 'Remove deprecated contract safe addresses from PCV Guardian'
     }
   ],
