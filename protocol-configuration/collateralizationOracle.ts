@@ -6,6 +6,7 @@ export const CollateralizationOracleConfig = {
   bal: ['balancerDepositBalWeth', 'balancerLensVeBalBal', 'balancerGaugeStaker'],
   fei: ['rariPool79FeiPCVDepositWrapper', 'rariTimelockFeiOldLens'],
   dai: ['daiFixedPricePSM', 'daiHoldingPCVDeposit'],
+  lusd: ['lusdHoldingPCVDeposit'],
   weth: ['ethLidoPCVDeposit', 'balancerLensVeBalWeth']
 };
 

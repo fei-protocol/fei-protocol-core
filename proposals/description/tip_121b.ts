@@ -24,28 +24,10 @@ const tip_121b: TemplatedProposalDescription = {
       arguments: (addresses) => [
         addresses.daiHoldingPCVDeposit, // pcvDeposit
         addresses.lusd, // token
-        addresses.tribalCouncilSafe, // to
+        addresses.lusdHoldingPCVDeposit, // to
         '10000' // basisPoints, 100%
       ],
-      description: `
-      Move all LUSD from daiHoldingPCVDeposit to the Tribal Council safe,
-      in preparation for selling.
-      `
-    },
-    {
-      target: 'ratioPCVControllerV2',
-      values: '0',
-      method: 'withdrawRatioERC20(address,address,address,uint256)',
-      arguments: (addresses) => [
-        addresses.lusdHoldingPCVDeposit, // pcvDeposit
-        addresses.lusd, // token
-        addresses.tribalCouncilSafe, // to
-        '10000' // basisPoints, 100%
-      ],
-      description: `
-      Move all LUSD from lusdHoldingPCVDeposit to the Tribal Council safe,
-      in preparation for selling.
-      `
+      description: `Move all LUSD from daiHoldingPCVDeposit to lusdHoldingPCVDeposit.`
     },
     // 2. Withdraw WETH and DAI from WETH->DAI LBP swapper, move to TC multisig to be sold
     {
@@ -62,7 +44,7 @@ const tip_121b: TemplatedProposalDescription = {
       arguments: (addresses) => [
         addresses.daiHoldingPCVDeposit, // pcvDeposit
         addresses.weth, // token
-        addresses.tribalCouncilSafe, // to
+        addresses.wethHoldingPCVDeposit, // to
         '10000' // basisPoints, 100%
       ],
       description: `
@@ -105,16 +87,20 @@ const tip_121b: TemplatedProposalDescription = {
     {
       target: 'collateralizationOracle',
       values: '0',
+      method: 'addDeposits(address[])',
+      arguments: (addresses) => [[addresses.lusdHoldingPCVDeposit]],
+      description: 'Add smart contracts to CR Oracle'
+    },
+    {
+      target: 'collateralizationOracle',
+      values: '0',
       method: 'removeDeposits(address[])',
       arguments: (addresses) => [
         [
           addresses.aaveFeiPCVDepositWrapper,
           addresses.compoundFeiPCVDepositWrapper,
-          addresses.wethHoldingPCVDeposit,
           addresses.lusdToDaiLensLusd,
           addresses.lusdToDaiLensDai,
-          addresses.ethToDaiLensDai,
-          addresses.ethToDaiLensEth,
           addresses.tribalCouncilTimelockFeiLens
         ]
       ],
@@ -126,12 +112,7 @@ const tip_121b: TemplatedProposalDescription = {
       values: '0',
       method: 'unsetSafeAddresses(address[])',
       arguments: (addresses) => [
-        [
-          addresses.voltHoldingPCVDeposit,
-          addresses.gOHMHoldingPCVDeposit,
-          addresses.lusdHoldingPCVDeposit,
-          addresses.wethHoldingPCVDeposit
-        ]
+        [addresses.voltHoldingPCVDeposit, addresses.gOHMHoldingPCVDeposit, addresses.lusdHoldingPCVDeposit]
       ],
       description: 'Remove deprecated contract safe addresses from PCV Guardian'
     }
