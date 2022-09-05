@@ -45,6 +45,7 @@ let pcvStatsBefore: PcvStats;
 let initialFeiSupply: BigNumber;
 let initialTCTribeBalance: BigNumber;
 let initialDaiBalance: BigNumber;
+let initialStethBalance: BigNumber;
 
 // Do any deployments
 // This should exclusively include new contract deployments
@@ -63,6 +64,7 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
   initialFeiSupply = await contracts.fei.totalSupply();
   initialTCTribeBalance = await contracts.tribe.balanceOf(addresses.core);
   initialDaiBalance = await contracts.daiHoldingPCVDeposit.balance();
+  initialStethBalance = await contracts.ethLidoPCVDeposit.balance();
 };
 
 // Tears down any changes made in setup() that need to be
@@ -122,8 +124,9 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   // Verify LUSD Holding
   expect(await contracts.lusd.balanceOf(addresses.lusdHoldingPCVDeposit)).to.bignumber.greaterThan(MIN_LUSD_SWAP_LUSD);
 
-  // Verify WETH Holding
-  expect(await contracts.weth.balanceOf(addresses.wethHoldingPCVDeposit)).to.bignumber.greaterThan(MIN_WETH_SWAP_WETH);
+  // Verify WETH Holding (converted to Lido stETH)
+  const stethBalanceAfter = await contracts.ethLidoPCVDeposit.balance();
+  expect(stethBalanceAfter.sub(initialStethBalance)).to.be.bignumber.greaterThan(MIN_WETH_SWAP_WETH);
 
   // Verify swapped tokens ended up at destinations correctly
   expect(await contracts.dai.balanceOf(addresses.daiHoldingPCVDeposit)).to.be.bignumber.greaterThan(

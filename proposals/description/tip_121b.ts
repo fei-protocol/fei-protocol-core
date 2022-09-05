@@ -9,7 +9,7 @@ const TC_TRIBE_BALANCE = '2733170474316903966022879';
 const tip_121b: TemplatedProposalDescription = {
   title: 'TIP_121b: Protocol ops and technical cleanup',
   commands: [
-    // 1. Withdraw LUSD and DAI from LUSD->DAI LBP swapper, send to the TC multisig to be sold
+    // 1. Withdraw LUSD and DAI from LUSD->DAI LBP swapper, send to LUSD holding deposit
     {
       target: 'lusdToDaiSwapper',
       values: '0',
@@ -29,7 +29,7 @@ const tip_121b: TemplatedProposalDescription = {
       ],
       description: `Move all LUSD from daiHoldingPCVDeposit to lusdHoldingPCVDeposit.`
     },
-    // 2. Withdraw WETH and DAI from WETH->DAI LBP swapper, move to TC multisig to be sold
+    // 2. Withdraw WETH and DAI from WETH->DAI LBP swapper, move to Lido
     {
       target: 'ethToDaiLBPSwapper',
       values: '0',
@@ -44,13 +44,49 @@ const tip_121b: TemplatedProposalDescription = {
       arguments: (addresses) => [
         addresses.daiHoldingPCVDeposit, // pcvDeposit
         addresses.weth, // token
-        addresses.wethHoldingPCVDeposit, // to
+        addresses.aaveEthPCVDeposit, // to
         '10000' // basisPoints, 100%
       ],
-      description: `
-      Move all WETH from daiHoldingPCVDeposit to the Tribal Council safe Multisig,
-      in preparation for selling
-      `
+      description: `Move all WETH from daiHoldingPCVDeposit to aaveEthPCVDeposit to deposit()`
+    },
+    {
+      target: 'aaveEthPCVDeposit',
+      values: '0',
+      method: 'unpause()',
+      arguments: (addresses) => [],
+      description: `Unpause aaveEthPCVDeposit`
+    },
+    {
+      target: 'aaveEthPCVDeposit',
+      values: '0',
+      method: 'deposit()',
+      arguments: (addresses) => [],
+      description: `Deposit WETH in Aave`
+    },
+    {
+      target: 'ratioPCVControllerV2',
+      values: '0',
+      method: 'withdrawRatioUnwrapWETH(address,address,uint256)',
+      arguments: (addresses) => [
+        addresses.aaveEthPCVDeposit, // pcvDeposit
+        addresses.ethLidoPCVDeposit, // to
+        '10000' // basisPoints, 100%
+      ],
+      description: `Move all ETH from aaveEthPCVDeposit to ethLidoPCVDeposit to deposit()`
+    },
+    {
+      target: 'ethLidoPCVDeposit',
+      values: '0',
+      method: 'deposit()',
+      arguments: (addresses) => [],
+      description: `Deposit ETH in Lido`
+    },
+    {
+      target: 'aaveEthPCVDeposit',
+      values: '0',
+      method: 'pause()',
+      arguments: (addresses) => [],
+      description: `Pause aaveEthPCVDeposit`
     },
 
     // 3. Cleanup FEI/TRIBE on TC Timelock from the Rari Infra team clawback
@@ -125,8 +161,7 @@ const tip_121b: TemplatedProposalDescription = {
   Cleanup auction contracts
   ------------------------------
   Cleans up the LUSD->DAI and WETH->DAI auction contracts that were used to sell those assets.
-  Sends the DAI to the daiHoldingPCVDeposit and sends the dust LUSD and WETH to the Tribal Council 
-  multisig to be sold. 
+  Sends the DAI to the daiHoldingPCVDeposit, keep the LUSD dust, and deposit the dust WETH in Lido. 
 
   Remove remaining assets from the Tribal Council Timelock
   ---------------------------------------------------------
