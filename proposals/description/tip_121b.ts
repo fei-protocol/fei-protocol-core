@@ -7,7 +7,7 @@ const TC_FEI_BALANCE = '2733169815107120096987175';
 const TC_TRIBE_BALANCE = '2733170474316903966022879';
 
 const tip_121b: TemplatedProposalDescription = {
-  title: 'TIP_121b: Protocol ops and technical cleanup',
+  title: 'TIP_121a (cont.): Consolidation ops and technical cleanup',
   commands: [
     // 1. Withdraw LUSD and DAI from LUSD->DAI LBP swapper, send to LUSD holding deposit
     {
@@ -131,26 +131,26 @@ const tip_121b: TemplatedProposalDescription = {
     }
   ],
   description: `
-  TIP_121b: Protocol ops and technical cleanup
+  TIP-121a (cont.): Consolidation ops and technical cleanup
 
-  This technical proposal performs various protocol cleanup actions, including:
+  This proposal performs various protocol cleanup actions related to the Consolidation step of TIP-121, including:
 
   Cleanup auction contracts
   ------------------------------
-  Cleans up the LUSD->DAI and WETH->DAI auction contracts that were used to sell those assets.
-  Sends the DAI to the daiHoldingPCVDeposit, keep the LUSD dust, and deposit the dust WETH in Lido. 
+  Cleans up the LUSD->DAI and WETH->DAI auction contracts that were used to sell those assets by withdrawing remaining liquidity.
+  Sends the DAI to the DAI Holding deposit, last LUSD to the LUSD holding deposit, and deposit the last 50-100 WETH in Lido for simplicity. 
 
   Remove remaining assets from the Tribal Council Timelock
   ---------------------------------------------------------
   Burns the 2.7M FEI previously clawed back from the Rari Infrastructure team timelock and sends the 
   2.7M TRIBE also recovered to the DAO Treasury.
 
-  Oracle and PCV guardian maintenance
+  Oracle and PCV maintenance
   ----------------------------------
-  Performs several collaterisation oracle and PCV guardian updates:
-  1. Updates the ETH oracle to be stETH, as remaining asset will be stETH
+  Performs several collaterization oracle and PCV updates:
+  1. Updates the ETH oracle use a stETH/USD price feed, as remaining ETH-denominated PCV will be stETH
   2. Removes deprecated and empty contracts from the oracle
-  3. Removes now deprecated contracts from being safe addresses in the PCV guardian
+  3. Removes now deprecated contracts from being marked as safe deposit addresses
   `
 };
 
