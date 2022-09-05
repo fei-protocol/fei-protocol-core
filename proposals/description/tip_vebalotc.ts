@@ -2,7 +2,7 @@ import { ethers } from 'ethers';
 import { TemplatedProposalDescription } from '@custom-types/types';
 
 const tip_vebalotc: TemplatedProposalDescription = {
-  title: 'TIP-121b: veBAL OTC',
+  title: 'TIP-121c: veBAL OTC',
   commands: [
     // 1. Handle veBAL OTC
     {
@@ -81,7 +81,7 @@ const tip_vebalotc: TemplatedProposalDescription = {
     }
   ],
   description: `
-  TIP-121b: veBAL OTC
+  TIP-121c: veBAL OTC
 
   This proposal sets up the protocol to be able to transfer its 112k veBAL to Aave Companies for OTC trade.
 
@@ -90,9 +90,6 @@ const tip_vebalotc: TemplatedProposalDescription = {
   The full list of actions of this proposal is :
   - 1. Handle veBAL OTC
   - 2. Move dust Balancer-related funds to TC Multisig for selling
-  - 3. Cleanup LUSD->DAI Auction contracts (send dust to TC multisig for selling)
-  - 4. Cleanup WETH->DAI Auction contracts (send dust to TC multisig for selling)
-  - 5. Cleanup FEI/TRIBE on TC Timelock from the Rari Infra team clawback (send TRIBE to DAO treasury, burn FEI)
   `
 };
 
