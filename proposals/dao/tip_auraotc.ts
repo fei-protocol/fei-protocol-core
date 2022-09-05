@@ -25,7 +25,7 @@ let pcvStatsBefore: PcvStats;
 // Do any deployments
 // This should exclusively include new contract deployments
 const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: NamedAddresses, logging: boolean) => {
-  auraOtcBuyer = addresses.eswak;
+  auraOtcBuyer = addresses.fishy;
 
   // Deploy veBAL Helper contract
   const ProxyOTCEscrowFactory = await ethers.getContractFactory('ProxyOTCEscrow');
@@ -50,7 +50,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 // This could include setting up Hardhat to impersonate accounts,
 // ensuring contracts have a specific state, etc.
 const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  auraOtcBuyer = addresses.eswak;
+  auraOtcBuyer = addresses.fishy;
 
   pcvStatsBefore = await contracts.collateralizationOracle.pcvStats();
 };
@@ -92,6 +92,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 
   // OTC buyer performs the OTC
   const otcBuyerSigner = await getImpersonatedSigner(auraOtcBuyer);
+  await forceEth(otcBuyerSigner.address);
   // seed with DAI
   const otcAmount = await contracts.vlauraOtcHelper.otcAmount();
   expect(otcAmount).to.be.equal(ethers.constants.WeiPerEther.mul(94_000));

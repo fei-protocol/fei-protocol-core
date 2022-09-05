@@ -1571,6 +1571,11 @@ export const MainnetContractsConfig = {
     address: '0x6ef71cA9cD708883E129559F5edBFb9d9D5C6148',
     category: AddressCategory.External
   },
+  fishy: {
+    artifactName: 'unknown',
+    address: '0x7D82675470B06453980b37880d81f6F254371FD3 ',
+    category: AddressCategory.External
+  },
   olympusMultisig: {
     artifactName: 'unknown',
     address: '0x245cc372C84B3645Bf0Ffe6538620B04a217988B',
