@@ -44,35 +44,21 @@ const tip_121b: TemplatedProposalDescription = {
       arguments: (addresses) => [
         addresses.daiHoldingPCVDeposit, // pcvDeposit
         addresses.weth, // token
-        addresses.aaveEthPCVDeposit, // to
+        addresses.wethHoldingPCVDeposit, // to
         '10000' // basisPoints, 100%
       ],
-      description: `Move all WETH from daiHoldingPCVDeposit to aaveEthPCVDeposit to deposit()`
-    },
-    {
-      target: 'aaveEthPCVDeposit',
-      values: '0',
-      method: 'unpause()',
-      arguments: (addresses) => [],
-      description: `Unpause aaveEthPCVDeposit`
-    },
-    {
-      target: 'aaveEthPCVDeposit',
-      values: '0',
-      method: 'deposit()',
-      arguments: (addresses) => [],
-      description: `Deposit WETH in Aave`
+      description: `Move all WETH from daiHoldingPCVDeposit to wethHoldingPCVDeposit`
     },
     {
       target: 'ratioPCVControllerV2',
       values: '0',
       method: 'withdrawRatioUnwrapWETH(address,address,uint256)',
       arguments: (addresses) => [
-        addresses.aaveEthPCVDeposit, // pcvDeposit
+        addresses.wethHoldingPCVDeposit, // pcvDeposit
         addresses.ethLidoPCVDeposit, // to
         '10000' // basisPoints, 100%
       ],
-      description: `Move all ETH from aaveEthPCVDeposit to ethLidoPCVDeposit to deposit()`
+      description: `Move all ETH from wethHoldingPCVDeposit to ethLidoPCVDeposit to deposit()`
     },
     {
       target: 'ethLidoPCVDeposit',
@@ -80,13 +66,6 @@ const tip_121b: TemplatedProposalDescription = {
       method: 'deposit()',
       arguments: (addresses) => [],
       description: `Deposit ETH in Lido`
-    },
-    {
-      target: 'aaveEthPCVDeposit',
-      values: '0',
-      method: 'pause()',
-      arguments: (addresses) => [],
-      description: `Pause aaveEthPCVDeposit`
     },
 
     // 3. Cleanup FEI/TRIBE on TC Timelock from the Rari Infra team clawback
