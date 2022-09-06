@@ -1,4 +1,4 @@
-import hre, { ethers, artifacts } from 'hardhat';
+import { ethers } from 'hardhat';
 import { expect } from 'chai';
 import {
   DeployUpgradeFunc,
@@ -9,19 +9,13 @@ import {
 } from '@custom-types/types';
 import { BigNumber } from 'ethers';
 
+const toBN = ethers.BigNumber.from;
+
 /*
 
 Deprecate Optimistic Governance and Tribal Council
 
 */
-
-const toBN = ethers.BigNumber.from;
-
-// Amount of FEI held on the TC
-const TC_FEI_BALANCE = '2733169815107120096987175';
-
-// Amount of TRIBE held on the TC
-const TC_TRIBE_BALANCE = '2733170474316903966022879';
 
 // Lower bounds on the old Rari vested TRIBE and FEI
 const OLD_RARI_VESTED_TRIBE_LOWER = '471669647387113140537798';
@@ -34,7 +28,6 @@ const TC_EXECUTOR_ROLE = ethers.utils.id('EXECUTOR_ROLE');
 const TC_TIMELOCK_ADMIN_ROLE = ethers.utils.id('TIMELOCK_ADMIN_ROLE');
 
 let initialCoreTribeBalance: BigNumber;
-let initialFeiSupply: BigNumber;
 let initialDAOFeiBalance: BigNumber;
 
 const fipNumber = 'deprecate_tc'; // Change me!
@@ -52,7 +45,6 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 // This could include setting up Hardhat to impersonate accounts,
 // ensuring contracts have a specific state, etc.
 const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  initialFeiSupply = await contracts.fei.totalSupply();
   initialCoreTribeBalance = await contracts.tribe.balanceOf(addresses.core);
   initialDAOFeiBalance = await contracts.fei.balanceOf(addresses.feiDAOTimelock);
 };
@@ -66,25 +58,18 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // Run any validations required on the fip using mocha or console logging
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  // 1. Verify all FEI on the TC burned
-  expect(await contracts.fei.balanceOf(addresses.tribalCouncilTimelock)).to.equal(0);
-  const feiSupplyDiff = initialFeiSupply.sub(await contracts.fei.totalSupply());
-  expect(feiSupplyDiff).to.be.equal(TC_FEI_BALANCE);
-
-  // 2. Verify Core Treasury received TC + old Rari vested TRIBE, and non is left on TC timelock
-  expect(await contracts.tribe.balanceOf(addresses.tribalCouncilTimelock)).to.equal(0);
-
+  // 1. Verify Core Treasury received old Rari vested TRIBE
   const coreTribeBalanceDiff = (await contracts.tribe.balanceOf(addresses.core)).sub(initialCoreTribeBalance);
-  expect(coreTribeBalanceDiff).to.be.greaterThan(toBN(TC_TRIBE_BALANCE).add(toBN(OLD_RARI_VESTED_TRIBE_LOWER)));
+  expect(coreTribeBalanceDiff).to.be.bignumber.greaterThan(toBN(OLD_RARI_VESTED_TRIBE_LOWER));
 
-  // 3. Verify DAO timelock received Rari vested FEI
-  expect(await contracts.fei.balanceOf(addresses.feiDAOTimelock).sub(initialDAOFeiBalance)).to.be.greaterThan(
-    OLD_RARI_VESTED_FEI_LOWER
-  );
+  // 2. Verify DAO timelock received Rari vested FEI
+  expect(
+    (await contracts.fei.balanceOf(addresses.feiDAOTimelock)).sub(initialDAOFeiBalance)
+  ).to.be.bignumber.greaterThan(toBN(OLD_RARI_VESTED_FEI_LOWER));
 
-  // 4. No verification of Tribe Roles revocations - there is a seperate e2e permissions test that does that
+  // 3. No verification of Tribe Roles revocations - there is a seperate e2e permissions test that does that
 
-  // 5. Verify that timelock roles have been revoked
+  // 4. Verify that timelock roles have been revoked
   expect(await contracts.tribalCouncilTimelock.hasRole(TC_PROPOSER_ROLE, addresses.tribalCouncilSafe)).to.be.false;
 
   expect(await contracts.tribalCouncilTimelock.hasRole(TC_EXECUTOR_ROLE, addresses.tribalCouncilSafe)).to.be.false;
@@ -96,9 +81,10 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await contracts.tribalCouncilTimelock.hasRole(TC_TIMELOCK_ADMIN_ROLE, addresses.tribalCouncilTimelock)).to.be
     .false;
 
-  // 6. Verify that old Rari FEI/TRIBE vesting timelock pending admins set to burner FEI and TRIBE timelocks
-  expect(await contracts.rariInfraFeiTimelock.pendingBeneficiary()).to.equal(addresses.feiBurnerTimelock);
-  expect(await contracts.rariInfraTribeTimelock.pendingBeneficiary()).to.equal(addresses.tribeBurnerTimelock);
+  // 5. Verify that old Rari FEI/TRIBE vesting timelock pending admins set to burner FEI and TRIBE timelocks
+  // TODO: Once audit complete
+  // expect(await contracts.rariInfraFeiTimelock.pendingBeneficiary()).to.equal(addresses.feiBurnerTimelock);
+  // expect(await contracts.rariInfraTribeTimelock.pendingBeneficiary()).to.equal(addresses.tribeBurnerTimelock);
 };
 
 export { deploy, setup, teardown, validate };
