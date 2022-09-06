@@ -85,8 +85,6 @@ const tip_vebalotc: TemplatedProposalDescription = {
 
   This proposal sets up the protocol to be able to transfer its 112k veBAL to Aave Companies for OTC trade.
 
-  This proposal also includes several cleanup items to wrap up previous proposals.
-
   The full list of actions of this proposal is :
   - 1. Handle veBAL OTC
   - 2. Move dust Balancer-related funds to TC Multisig for selling
