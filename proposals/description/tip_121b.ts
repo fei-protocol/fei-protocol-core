@@ -7,9 +7,9 @@ const TC_FEI_BALANCE = '2733169815107120096987175';
 const TC_TRIBE_BALANCE = '2733170474316903966022879';
 
 const tip_121b: TemplatedProposalDescription = {
-  title: 'TIP_121b: Protocol ops and technical cleanup',
+  title: 'TIP_121a (cont.): Consolidation ops and technical cleanup',
   commands: [
-    // 1. Withdraw LUSD and DAI from LUSD->DAI LBP swapper, send to the TC multisig to be sold
+    // 1. Withdraw LUSD and DAI from LUSD->DAI LBP swapper, send to LUSD holding deposit
     {
       target: 'lusdToDaiSwapper',
       values: '0',
@@ -24,30 +24,12 @@ const tip_121b: TemplatedProposalDescription = {
       arguments: (addresses) => [
         addresses.daiHoldingPCVDeposit, // pcvDeposit
         addresses.lusd, // token
-        addresses.tribalCouncilSafe, // to
+        addresses.lusdHoldingPCVDeposit, // to
         '10000' // basisPoints, 100%
       ],
-      description: `
-      Move all LUSD from daiHoldingPCVDeposit to the Tribal Council safe,
-      in preparation for selling.
-      `
+      description: `Move all LUSD from daiHoldingPCVDeposit to lusdHoldingPCVDeposit.`
     },
-    {
-      target: 'ratioPCVControllerV2',
-      values: '0',
-      method: 'withdrawRatioERC20(address,address,address,uint256)',
-      arguments: (addresses) => [
-        addresses.lusdHoldingPCVDeposit, // pcvDeposit
-        addresses.lusd, // token
-        addresses.tribalCouncilSafe, // to
-        '10000' // basisPoints, 100%
-      ],
-      description: `
-      Move all LUSD from lusdHoldingPCVDeposit to the Tribal Council safe,
-      in preparation for selling.
-      `
-    },
-    // 2. Withdraw WETH and DAI from WETH->DAI LBP swapper, move to TC multisig to be sold
+    // 2. Withdraw WETH and DAI from WETH->DAI LBP swapper, move to Lido
     {
       target: 'ethToDaiLBPSwapper',
       values: '0',
@@ -62,13 +44,28 @@ const tip_121b: TemplatedProposalDescription = {
       arguments: (addresses) => [
         addresses.daiHoldingPCVDeposit, // pcvDeposit
         addresses.weth, // token
-        addresses.tribalCouncilSafe, // to
+        addresses.wethHoldingPCVDeposit, // to
         '10000' // basisPoints, 100%
       ],
-      description: `
-      Move all WETH from daiHoldingPCVDeposit to the Tribal Council safe Multisig,
-      in preparation for selling
-      `
+      description: `Move all WETH from daiHoldingPCVDeposit to wethHoldingPCVDeposit`
+    },
+    {
+      target: 'ratioPCVControllerV2',
+      values: '0',
+      method: 'withdrawRatioUnwrapWETH(address,address,uint256)',
+      arguments: (addresses) => [
+        addresses.wethHoldingPCVDeposit, // pcvDeposit
+        addresses.ethLidoPCVDeposit, // to
+        '10000' // basisPoints, 100%
+      ],
+      description: `Move all ETH from wethHoldingPCVDeposit to ethLidoPCVDeposit to deposit()`
+    },
+    {
+      target: 'ethLidoPCVDeposit',
+      values: '0',
+      method: 'deposit()',
+      arguments: (addresses) => [],
+      description: `Deposit ETH in Lido`
     },
 
     // 3. Cleanup FEI/TRIBE on TC Timelock from the Rari Infra team clawback
@@ -105,16 +102,20 @@ const tip_121b: TemplatedProposalDescription = {
     {
       target: 'collateralizationOracle',
       values: '0',
+      method: 'addDeposits(address[])',
+      arguments: (addresses) => [[addresses.lusdHoldingPCVDeposit]],
+      description: 'Add smart contracts to CR Oracle'
+    },
+    {
+      target: 'collateralizationOracle',
+      values: '0',
       method: 'removeDeposits(address[])',
       arguments: (addresses) => [
         [
           addresses.aaveFeiPCVDepositWrapper,
           addresses.compoundFeiPCVDepositWrapper,
-          addresses.wethHoldingPCVDeposit,
           addresses.lusdToDaiLensLusd,
           addresses.lusdToDaiLensDai,
-          addresses.ethToDaiLensDai,
-          addresses.ethToDaiLensEth,
           addresses.tribalCouncilTimelockFeiLens
         ]
       ],
@@ -125,39 +126,31 @@ const tip_121b: TemplatedProposalDescription = {
       target: 'pcvGuardian',
       values: '0',
       method: 'unsetSafeAddresses(address[])',
-      arguments: (addresses) => [
-        [
-          addresses.voltHoldingPCVDeposit,
-          addresses.gOHMHoldingPCVDeposit,
-          addresses.lusdHoldingPCVDeposit,
-          addresses.wethHoldingPCVDeposit
-        ]
-      ],
+      arguments: (addresses) => [[addresses.voltHoldingPCVDeposit, addresses.gOHMHoldingPCVDeposit]],
       description: 'Remove deprecated contract safe addresses from PCV Guardian'
     }
   ],
   description: `
-  TIP_121b: Protocol ops and technical cleanup
+  TIP-121a (cont.): Consolidation ops and technical cleanup
 
-  This technical proposal performs various protocol cleanup actions, including:
+  This proposal performs various protocol cleanup actions related to the Consolidation step of TIP-121, including:
 
   Cleanup auction contracts
   ------------------------------
-  Cleans up the LUSD->DAI and WETH->DAI auction contracts that were used to sell those assets.
-  Sends the DAI to the daiHoldingPCVDeposit and sends the dust LUSD and WETH to the Tribal Council 
-  multisig to be sold. 
+  Cleans up the LUSD->DAI and WETH->DAI auction contracts that were used to sell those assets by withdrawing remaining liquidity.
+  Sends the DAI to the DAI Holding deposit, last LUSD to the LUSD holding deposit, and deposit the last 50-100 WETH in Lido for simplicity. 
 
   Remove remaining assets from the Tribal Council Timelock
   ---------------------------------------------------------
   Burns the 2.7M FEI previously clawed back from the Rari Infrastructure team timelock and sends the 
   2.7M TRIBE also recovered to the DAO Treasury.
 
-  Oracle and PCV guardian maintenance
+  Oracle and PCV maintenance
   ----------------------------------
-  Performs several collaterisation oracle and PCV guardian updates:
-  1. Updates the ETH oracle to be stETH, as remaining asset will be stETH
+  Performs several collaterization oracle and PCV updates:
+  1. Updates the ETH oracle use a stETH/USD price feed, as remaining ETH-denominated PCV will be stETH
   2. Removes deprecated and empty contracts from the oracle
-  3. Removes now deprecated contracts from being safe addresses in the PCV guardian
+  3. Removes now deprecated contracts from being marked as safe deposit addresses
   `
 };
 

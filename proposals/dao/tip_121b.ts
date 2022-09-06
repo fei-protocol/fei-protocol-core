@@ -44,6 +44,8 @@ const PCV_DIFF_LOWER = ethers.constants.WeiPerEther.mul(-6_000_000);
 let pcvStatsBefore: PcvStats;
 let initialFeiSupply: BigNumber;
 let initialTCTribeBalance: BigNumber;
+let initialDaiBalance: BigNumber;
+let initialStethBalance: BigNumber;
 
 // Do any deployments
 // This should exclusively include new contract deployments
@@ -61,6 +63,8 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
   pcvStatsBefore = await contracts.collateralizationOracle.pcvStats();
   initialFeiSupply = await contracts.fei.totalSupply();
   initialTCTribeBalance = await contracts.tribe.balanceOf(addresses.core);
+  initialDaiBalance = await contracts.daiHoldingPCVDeposit.balance();
+  initialStethBalance = await contracts.ethLidoPCVDeposit.balance();
 };
 
 // Tears down any changes made in setup() that need to be
@@ -117,15 +121,17 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await contracts.weth.balanceOf(addresses.ethToDaiLBPSwapper)).to.equal(0);
   expect(await contracts.dai.balanceOf(addresses.ethToDaiLBPSwapper)).to.equal(0);
 
-  // Verify LUSD Holding deposit empty
-  expect(await contracts.lusd.balanceOf(addresses.lusdHoldingPCVDeposit)).to.equal(0);
+  // Verify LUSD Holding
+  expect(await contracts.lusd.balanceOf(addresses.lusdHoldingPCVDeposit)).to.bignumber.greaterThan(MIN_LUSD_SWAP_LUSD);
+
+  // Verify WETH Holding (converted to Lido stETH)
+  const stethBalanceAfter = await contracts.ethLidoPCVDeposit.balance();
+  expect(stethBalanceAfter.sub(initialStethBalance)).to.be.bignumber.greaterThan(MIN_WETH_SWAP_WETH);
 
   // Verify swapped tokens ended up at destinations correctly
   expect(await contracts.dai.balanceOf(addresses.daiHoldingPCVDeposit)).to.be.bignumber.greaterThan(
-    MIN_LUSD_SWAP_DAI.add(MIN_WETH_SWAP_DAI) // DAI from WETH and LUSD swaps
+    initialDaiBalance.add(MIN_LUSD_SWAP_DAI.add(MIN_WETH_SWAP_DAI)) // DAI from WETH and LUSD swaps
   );
-  expect(await contracts.lusd.balanceOf(addresses.tribalCouncilSafe)).to.be.bignumber.greaterThan(MIN_LUSD_SWAP_LUSD);
-  expect(await contracts.weth.balanceOf(addresses.tribalCouncilSafe)).to.be.bignumber.greaterThan(MIN_WETH_SWAP_WETH);
 
   // 6. Verify stETH oracle set on CR
   expect(await contracts.collateralizationOracle.tokenToOracle(addresses.weth)).to.equal(
