@@ -103,13 +103,13 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   await contracts.dai.connect(otcBuyerSigner).approve(contracts.vlauraOtcHelper.address, otcAmount);
   // otc buy
   const daiBalanceBefore = await contracts.daiHoldingPCVDeposit.balance();
-  await contracts.vlauraOtcHelper.connect(otcBuyerSigner).otcBuy();
+  await contracts.vlauraOtcHelper.connect(otcBuyerSigner).otcBuy(otcBuyerSigner.address);
   const daiBalanceAfter = await contracts.daiHoldingPCVDeposit.balance();
   // check received funds
   expect(daiBalanceAfter.sub(daiBalanceBefore)).to.be.equal(otcAmount);
 
   // Check vlAURA OTC helper owner and proxy owner
-  expect(await contracts.vlauraOtcHelper.owner()).to.be.equal(auraOtcBuyer);
+  expect(await contracts.vlauraOtcHelper.owner()).to.be.equal(ethers.constants.AddressZero);
   expect(
     '0x' +
       (await ethers.provider.getStorageAt(addresses.vlAuraDelegatorPCVDepositProxy, PROXY_ADMIN_STORAGE_SLOT)).slice(26)

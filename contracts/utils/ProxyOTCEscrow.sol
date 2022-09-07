@@ -33,13 +33,15 @@ contract ProxyOTCEscrow is Ownable {
     }
 
     /// @notice buy the proxy in an OTC transaction
-    function otcBuy() external {
+    function otcBuy(address newProxyAdmin) external {
         require(msg.sender == otcPurchaser, "UNAUTHORIZED");
         otcToken.safeTransferFrom(msg.sender, otcDestination, otcAmount);
-        _transferOwnership(msg.sender);
-        proxy.changeAdmin(msg.sender);
+        _transferOwnership(address(0)); // revoke ownership
+        proxy.changeAdmin(newProxyAdmin);
     }
 
+    /// @notice usable while OTC has not executed, for the Owner to recover
+    /// proxy ownership (that is otherwise escrowed on this contract).
     function recoverProxyOwnership(address to) external onlyOwner {
         proxy.changeAdmin(to);
     }
