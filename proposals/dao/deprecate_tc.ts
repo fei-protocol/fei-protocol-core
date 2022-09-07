@@ -81,10 +81,9 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await contracts.tribalCouncilTimelock.hasRole(TC_TIMELOCK_ADMIN_ROLE, addresses.tribalCouncilTimelock)).to.be
     .false;
 
-  // 5. Verify that old Rari FEI/TRIBE vesting timelock pending admins set to burner FEI and TRIBE timelocks
-  // TODO: Once audit complete
-  // expect(await contracts.rariInfraFeiTimelock.pendingBeneficiary()).to.equal(addresses.feiBurnerTimelock);
-  // expect(await contracts.rariInfraTribeTimelock.pendingBeneficiary()).to.equal(addresses.tribeBurnerTimelock);
+  // 5. Verify that old Rari FEI/TRIBE vesting timelock pending admins set to DAO timelock
+  expect(await contracts.rariInfraFeiTimelock.pendingBeneficiary()).to.equal(addresses.feiDAOTimelock);
+  expect(await contracts.rariInfraTribeTimelock.pendingBeneficiary()).to.equal(addresses.feiDAOTimelock);
 };
 
 export { deploy, setup, teardown, validate };
