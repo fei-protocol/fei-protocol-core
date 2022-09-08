@@ -12,13 +12,13 @@ import { BigNumber } from 'ethers';
 
 /*
 
-TIP_121b: Protocol ops and technical cleanup
+TIP_121a (continued): Protocol ops and technical cleanup
 
 */
 
 const toBN = ethers.BigNumber.from;
 
-const fipNumber = 'tip_121b';
+const fipNumber = 'tip_121a';
 
 // FEI balance on the TC timelock
 const TC_FEI_BALANCE = '2733169815107120096987175';
