@@ -7,8 +7,8 @@ const TC_CANCELLER_ROLE = ethers.utils.id('CANCELLER_ROLE');
 const TC_EXECUTOR_ROLE = ethers.utils.id('EXECUTOR_ROLE');
 const TC_TIMELOCK_ADMIN_ROLE = ethers.utils.id('TIMELOCK_ADMIN_ROLE');
 
-const deprecate_tc: TemplatedProposalDescription = {
-  title: 'Deprecate Optimistic Governance and Tribal Council',
+const tip_121c_pt1: TemplatedProposalDescription = {
+  title: 'TIP_121c(pt. 1): Deprecate Optimistic Governance and the Tribal Council',
   commands: [
     // 1. Revoke all Tribe governance roles from the optimistic governance system
     // POD_ADMIN
@@ -231,7 +231,7 @@ const deprecate_tc: TemplatedProposalDescription = {
     }
   ],
   description: `
-  TIP_121: Deprecate Optimistic Governance and the Tribal Council
+  TIP_121c(pt. 1): Deprecate Optimistic Governance and the Tribal Council
 
   This proposal deprecates the Optimistic Governance and Tribal Council governance smart contracts. 
 
@@ -240,12 +240,13 @@ const deprecate_tc: TemplatedProposalDescription = {
   it is being deprecated. Future governance proposals will be proposed and executed by the DAO.
 
   To deprecate, this proposal performs the following:
-  1. Revoke all Tribe roles from the optimistic governance smart contracts. This prevents the optimistic governance
-     and Tribal Council contracts from interacting with the Fei system.
+  1. Revoke Tribe roles from the optimistic governance smart contracts. This prevents the optimistic governance
+     and Tribal Council contracts from interacting with the Fei system. A small number of high level access
+     roles will later be removed by the DAO.
   2. Revoke all internal Tribal Council timelock EXECUTOR, PROPOSER, CANCELLER and TIMELOCK_ADMIN roles.
      This will render the Tribal Council timelock deprecated.
   3. Change the admin of deprecated timelocks from the TC timelock to the DAO timelock
   `
 };
 
-export default deprecate_tc;
+export default tip_121c_pt1;
