@@ -26,12 +26,12 @@ const TC_FEI_BALANCE = '2733169815107120096987175';
 // TRIBE balance on the TC timelock
 const TC_TRIBE_BALANCE = '2733170474316903966022879';
 
-// LBP swapper fund limits
-const MIN_LUSD_SWAP_LUSD = ethers.constants.WeiPerEther.mul(230_000);
-const MIN_LUSD_SWAP_DAI = ethers.constants.WeiPerEther.mul(17_000_000);
+// Minimum quantities of assets left over after LBP swapper
+const MIN_LUSD_SWAP_LUSD = ethers.constants.WeiPerEther.mul(5_000);
+const MIN_LUSD_SWAP_DAI = ethers.constants.WeiPerEther.mul(300_000);
 
-const MIN_WETH_SWAP_WETH = ethers.constants.WeiPerEther.mul(900);
-const MIN_WETH_SWAP_DAI = ethers.constants.WeiPerEther.mul(32_000_000);
+const MIN_WETH_SWAP_WETH = ethers.constants.WeiPerEther.mul(40);
+const MIN_WETH_SWAP_DAI = ethers.constants.WeiPerEther.mul(1_500_000);
 
 // STETH Price bounds
 const STETH_UPPER_PRICE = ethers.constants.WeiPerEther.mul(1_900); // $1900
