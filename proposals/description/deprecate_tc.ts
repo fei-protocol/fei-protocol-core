@@ -197,7 +197,7 @@ const deprecate_tc: TemplatedProposalDescription = {
       arguments: (addresses) => [TC_TIMELOCK_ADMIN_ROLE, addresses.tribalCouncilTimelock],
       description: 'Revoke TC_TIMELOCK_ADMIN_ROLE from the TC timelock'
     },
-    // 3. Change beneficiary of old Rari Infra FEI and TRIBE vesting timelocks to DAO timelock
+    // 3. Change beneficiary of deprecated Rari timelocks to DAO timelock
     // Claim vested funds
     {
       target: 'rariInfraFeiTimelock',
@@ -220,23 +220,31 @@ const deprecate_tc: TemplatedProposalDescription = {
       values: '0',
       method: 'setPendingBeneficiary(address)',
       arguments: (addresses) => [addresses.feiDAOTimelock],
-      description: 'Set pending beneficiary of the old Rari FEI timelock to the DAO timelock'
+      description: 'Set pending admin of deprecated Rari FEI timelock to the DAO timelock'
     },
     {
       target: 'rariInfraTribeTimelock',
       values: '0',
       method: 'setPendingBeneficiary(address)',
       arguments: (addresses) => [addresses.feiDAOTimelock],
-      description: 'Set pending beneficiary of the old Rari TRIBE timelock to the DAO timelock'
+      description: 'Set pending admin of deprecated Rari TRIBE timelock to the DAO timelock'
     }
   ],
   description: `
-  Deprecate Optimistic Governance and Tribal Council
-  1. Revoke all Tribe roles from the optimistic governance smart contracts
-  2. Revoke all Tribal Council timelock internal EXECUTOR, PROPOSER, CANCELLER, ADMIN roles
-  3. Change beneficiary of the old Rari Infra vesting FEI and TRIBE timelocks from the TC timelock
-     to the DAO timelock. A subsequent proposal will then change this beneficiary again 
-     to burner addresses
+  TIP_121: Deprecate Optimistic Governance and the Tribal Council
+
+  This proposal deprecates the Optimistic Governance and Tribal Council governance smart contracts. 
+
+  The optimistic governance upgrade was introduced in FIP_82 (https://tribe.fei.money/t/fip-82-governance-enhancements/3945) 
+  and in line with TIP_121 (https://tribe.fei.money/t/tip-121-proposal-for-the-future-of-the-tribe-dao/4475) 
+  it is being deprecated. Future governance proposals will be proposed and executed by the DAO.
+
+  To deprecate, this proposal performs the following:
+  1. Revoke all Tribe roles from the optimistic governance smart contracts. This prevents the optimistic governance
+     and Tribal Council contracts from interacting with the Fei system.
+  2. Revoke all internal Tribal Council timelock EXECUTOR, PROPOSER, CANCELLER and TIMELOCK_ADMIN roles.
+     This will render the Tribal Council timelock deprecated.
+  3. Change the admin of deprecated timelocks from the TC timelock to the DAO timelock
   `
 };
 
