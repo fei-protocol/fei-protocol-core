@@ -6,7 +6,7 @@ const TC_FEI_BALANCE = '2733169815107120096987175';
 // TRIBE balance on the TC timelock
 const TC_TRIBE_BALANCE = '2733170474316903966022879';
 
-const tip_121b: TemplatedProposalDescription = {
+const tip_121a_cont: TemplatedProposalDescription = {
   title: 'TIP_121a (cont.): Consolidation ops and technical cleanup',
   commands: [
     // 1. Withdraw LUSD and DAI from LUSD->DAI LBP swapper, send to LUSD holding deposit
@@ -154,4 +154,4 @@ const tip_121b: TemplatedProposalDescription = {
   `
 };
 
-export default tip_121b;
+export default tip_121a_cont;
