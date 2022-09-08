@@ -2652,6 +2652,11 @@ export const MainnetContractsConfig = {
     category: AddressCategory.Deprecated
   },
 
+  vlauraOtcHelper: {
+    artifactName: 'ProxyOTCEscrow',
+    address: '0x61A991153E3ff68844abcE91551e046e1BE6f764',
+    category: AddressCategory.TBD
+  },
   vlAuraDelegatorPCVDepositProxy: {
     artifactName: 'TransparentUpgradeableProxy', // actually a TransparentUpgradeableProxy
     address: '0xc44902C03093D52213d20E5b06a0Bda4D9Ce6524',
