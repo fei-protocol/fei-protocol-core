@@ -7,8 +7,8 @@ const TC_CANCELLER_ROLE = ethers.utils.id('CANCELLER_ROLE');
 const TC_EXECUTOR_ROLE = ethers.utils.id('EXECUTOR_ROLE');
 const TC_TIMELOCK_ADMIN_ROLE = ethers.utils.id('TIMELOCK_ADMIN_ROLE');
 
-const tip_121c_pt1: TemplatedProposalDescription = {
-  title: 'TIP_121c(pt. 1): Deprecate Optimistic Governance and the Tribal Council',
+const tip_121a_pt2: TemplatedProposalDescription = {
+  title: 'TIP_121a(pt. 2): Deprecate Optimistic Governance and the Tribal Council',
   commands: [
     // 1. Revoke all Tribe governance roles from the optimistic governance system
     // POD_ADMIN
@@ -231,9 +231,9 @@ const tip_121c_pt1: TemplatedProposalDescription = {
     }
   ],
   description: `
-  TIP_121c(pt. 1): Deprecate Optimistic Governance and the Tribal Council
+  TIP_121a(pt. 2): Deprecate Optimistic Governance and the Tribal Council
 
-  This proposal deprecates the Optimistic Governance and Tribal Council governance smart contracts. 
+  This is a Tribal Council proposal that deprecates the Optimistic Governance and Tribal Council governance smart contracts. 
 
   The optimistic governance upgrade was introduced in FIP_82 (https://tribe.fei.money/t/fip-82-governance-enhancements/3945) 
   and in line with TIP_121 (https://tribe.fei.money/t/tip-121-proposal-for-the-future-of-the-tribe-dao/4475) 
@@ -246,7 +246,9 @@ const tip_121c_pt1: TemplatedProposalDescription = {
   2. Revoke all internal Tribal Council timelock EXECUTOR, PROPOSER, CANCELLER and TIMELOCK_ADMIN roles.
      This will render the Tribal Council timelock deprecated.
   3. Change the admin of deprecated timelocks from the TC timelock to the DAO timelock
+
+  The Tribe DAO optimistic governance process is outlined here: https://docs.tribedao.xyz/docs/Governance/Overview 
   `
 };
 
-export default tip_121c_pt1;
+export default tip_121a_pt2;
