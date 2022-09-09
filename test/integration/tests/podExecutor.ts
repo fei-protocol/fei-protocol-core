@@ -74,6 +74,7 @@ describe('Pod executor', function () {
     doLogging && console.log(`Environment loaded.`);
 
     tcMultisigSigner = await getImpersonatedSigner(contractAddresses.tribalCouncilSafe);
+    await forceEth(contractAddresses.tribalCouncilSafe);
     tribalCouncilTimelock = contracts.tribalCouncilTimelock as TimelockController;
     podExecutor = contracts.podExecutorV2 as PodExecutor;
 
