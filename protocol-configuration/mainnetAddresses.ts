@@ -1485,7 +1485,7 @@ export const MainnetContractsConfig = {
   wethHoldingPCVDeposit: {
     artifactName: 'ERC20HoldingPCVDeposit',
     address: '0xC6D675ca5217d39C3A5E366141060fC2D1ea2b82',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
 
   orcaPodController: {
