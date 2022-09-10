@@ -5,6 +5,7 @@ import {DSTest} from "../../utils/DSTest.sol";
 import {StdLib} from "../../utils/StdLib.sol";
 import {Vm} from "../../utils/Vm.sol";
 import {MainnetAddresses} from "../fixtures/MainnetAddresses.sol";
+import {Fei} from "../../../fei/Fei.sol";
 
 import "../../../sentinel/PCVSentinel.sol";
 import "../../../sentinel/guards/MaxFeiWithdrawalGuard.sol";
@@ -46,6 +47,25 @@ contract MaxFeiWithdrawalGuardIntegrationTest is DSTest, StdLib {
 
         vm.prank(MainnetAddresses.FEI_DAO_TIMELOCK);
         sentinel.knight(address(guard));
+
+        // Test assumes withdraw amount greater than liquidity
+        // Mint and remove liquidity to set that up
+        vm.startPrank(MainnetAddresses.FEI_DAO_TIMELOCK);
+
+        Fei(MainnetAddresses.FEI).mint(deposit1, 500_000e18);
+        IPCVDeposit(deposit1).deposit();
+
+        Fei(MainnetAddresses.FEI).mint(deposit2, 500_000e18);
+        IPCVDeposit(deposit2).deposit();
+        vm.stopPrank();
+
+        uint256 source1Burn = fei.balanceOf(liquiditySource1) - 1000e18;
+        vm.prank(liquiditySource1);
+        Fei(MainnetAddresses.FEI).burn(source1Burn);
+
+        uint256 source2Burn = fei.balanceOf(liquiditySource2) - 1000e18;
+        vm.prank(liquiditySource2);
+        Fei(MainnetAddresses.FEI).burn(source2Burn);
     }
 
     function testGuardCanProtec() public {
