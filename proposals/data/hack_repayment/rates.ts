@@ -1,0 +1,31 @@
+import { parseEther } from 'ethers/lib/utils';
+
+export const rates = [
+  parseEther('1'),
+  parseEther('1'),
+  parseEther('1'),
+  parseEther('1'),
+  parseEther('1'),
+  parseEther('1'),
+  parseEther('1'),
+  parseEther('1'),
+  parseEther('1'),
+  parseEther('1'),
+  parseEther('1'),
+  parseEther('1'),
+  parseEther('1'),
+  parseEther('1'),
+  parseEther('1'),
+  parseEther('1'),
+  parseEther('1'),
+  parseEther('1'),
+  parseEther('1'),
+  parseEther('1'),
+  parseEther('1'),
+  parseEther('1'),
+  parseEther('1'),
+  parseEther('1'),
+  parseEther('1'),
+  parseEther('1'),
+  parseEther('1')
+];
