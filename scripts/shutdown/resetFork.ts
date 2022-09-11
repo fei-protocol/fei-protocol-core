@@ -1,5 +1,8 @@
+import * as dotenv from 'dotenv';
 import { ethers } from 'ethers';
 import { Vm, Vm__factory } from '../../types/contracts';
+
+dotenv.config();
 
 async function main() {
   if (process.argv[2] === 'help') {
@@ -30,9 +33,10 @@ async function main() {
     debug = process.argv[3] === 'true';
   }
 
-  if (debug) console.log('Connecting to nodeinator...');
+  if (debug) console.log('Connecting to node...');
 
-  const provider = new ethers.providers.JsonRpcProvider('http://nodeinator.kryptoklob.io:8999');
+  if (!process.env.ANVIL_NODE_URL) throw new Error('ANVIL_NODE_URL not set in .env or env var');
+  const provider = new ethers.providers.JsonRpcProvider(process.env.ANVIL_NODE_URL);
   await provider.ready;
 
   if (debug) console.log('Nodeinator connected.');
