@@ -175,9 +175,7 @@ const tip_121c: TemplatedProposalDescription = {
           addresses.ethToDaiLBPSwapper,
           addresses.wethHoldingPCVDeposit,
           addresses.lusdHoldingPCVDeposit,
-          addresses.daiHoldingPCVDeposit,
-          addresses.voltHoldingPCVDeposit,
-          addresses.gOHMHoldingPCVDeposit
+          addresses.daiHoldingPCVDeposit
         ]
       ],
       description: 'Unset all safe addresses (only DAO timelock and SimpleFeiDaiPSM that acts as a sink)'
