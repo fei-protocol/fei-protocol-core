@@ -1,7 +1,10 @@
+import * as dotenv from 'dotenv';
 import { BigNumber, ethers } from 'ethers';
 import { parseEther } from 'ethers/lib/utils';
 import { IERC20, IERC20__factory } from '../../types/contracts';
 import { cTokens } from './data/prod/cTokens';
+
+dotenv.config();
 
 const feiHolder = '0x19C549357034d10DB8D75ed812b45bE1Dd8A7218'.toLowerCase();
 const feiAddress = '0x956F47F50A910163D8BF957Cf5846D573E7f87CA'.toLowerCase();
@@ -134,10 +137,11 @@ async function main() {
 
   if (debug) console.log('Connecting to nodeinator...');
 
-  const provider = new ethers.providers.JsonRpcProvider('http://nodeinator.kryptoklob.io:8999');
+  if (!process.env.ANVIL_NODE_URL) throw new Error('Must provide ANVIL_NODE_URL in env or export as env var');
+  const provider = new ethers.providers.JsonRpcProvider(process.env.ANVIL_NODE_URL);
   await provider.ready;
 
-  if (debug) console.log('Nodeinator connected.');
+  if (debug) console.log('Node connected.');
 
   const wallet = new ethers.Wallet('0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80', provider);
   await provider.send('anvil_setBalance', [wallet.address, parseEther('10').toHexString()]);

@@ -102,9 +102,11 @@ async function main() {
   let provider: ethers.providers.JsonRpcProvider;
 
   if (!enableForking) {
-    provider = new ethers.providers.JsonRpcProvider('http://nodeinator.kryptoklob.io:8545');
+    if (!process.env.MAINNET_NODE_URL) throw new Error('MAINNET_NODE_URL not set in .env or exported as env var');
+    provider = new ethers.providers.JsonRpcProvider(process.env.MAINNET_NODE_URL);
   } else {
-    provider = new ethers.providers.JsonRpcProvider('http://nodeinator.kryptoklob.io:8999');
+    if (!process.env.ANVIL_NODE_URL) throw new Error('ANVIL_NODE_URL not set in .env or exported as env var');
+    provider = new ethers.providers.JsonRpcProvider(process.env.ANVIL_NODE_URL);
   }
 
   await provider.ready;
