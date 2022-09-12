@@ -61,7 +61,7 @@
     "@nomiclabs/hardhat-waffle": "^2.0.3",
     "@openzeppelin/contracts": "4.7.3",
     "@openzeppelin/test-environment": "^0.1.7",
-    "@openzeppelin/test-helpers": "^0.5.15",
+    "@openzeppelin/test-helpers": "^0.5.16",
     "@orcaprotocol/contracts": "^5.4.3",
     "@rari-capital/solmate": "^6.4.0",
     "@uniswap/lib": "^1.1.2",
