@@ -114,6 +114,33 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
     '0x' +
       (await ethers.provider.getStorageAt(addresses.vlAuraDelegatorPCVDepositProxy, PROXY_ADMIN_STORAGE_SLOT)).slice(26)
   ).to.be.equal(auraOtcBuyer.toLowerCase());
+
+  // auraOtcBuyer is the proxy admin (addresses.fishy)
+  // a 2nd EOA is needed to interact with the proxy, for instance here we use addresses.eswak
+  const fishy2Signer = await getImpersonatedSigner(addresses.eswak);
+  // fishy deloys a new proxy implementation
+  const VlAuraFishyImplementationFactory = await ethers.getContractFactory('VlAuraFishyImplementation');
+  const vlAuraFishyImplementation = await VlAuraFishyImplementationFactory.deploy();
+  await vlAuraFishyImplementation.deployTransaction.wait();
+  // fishy upgrades the implementation
+  await contracts.vlAuraDelegatorPCVDepositProxy.connect(otcBuyerSigner).upgradeTo(vlAuraFishyImplementation.address);
+  const proxyTypedAsImplementation = new ethers.Contract(
+    addresses.vlAuraDelegatorPCVDepositProxy,
+    vlAuraFishyImplementation.interface
+  );
+  // delegate voting power to an address
+  await proxyTypedAsImplementation.connect(fishy2Signer).delegate(auraOtcBuyer);
+  // forward bribes earned by the proxy
+  await proxyTypedAsImplementation
+    .connect(fishy2Signer)
+    .setRewardForwarding('0x642c59937A62cf7dc92F70Fd78A13cEe0aa2Bd9c', fishy2Signer.address);
+  // fast forward 3 months and unlock vlAURA
+  await time.increase(3600 * 24 * 90);
+  await proxyTypedAsImplementation.connect(fishy2Signer).unlock();
+  // send unlocked AURA to fishy
+  const auraBalance = await contracts.aura.balanceOf(proxyTypedAsImplementation.address);
+  await proxyTypedAsImplementation.connect(fishy2Signer).sweep(addresses.aura, fishy2Signer.address, auraBalance);
+  expect((await contracts.aura.balanceOf(fishy2Signer.address)) / 1e18).to.be.at.least(34038);
 };
 
 export { deploy, setup, teardown, validate };
