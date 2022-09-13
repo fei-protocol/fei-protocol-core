@@ -12,9 +12,6 @@ contract VeBalHelper is Ownable {
     using SafeERC20 for IERC20;
 
     VeBalDelegatorPCVDeposit public immutable pcvDeposit;
-    address public constant ERC20_B_80BAL_20WETH = 0x5c6Ee304399DBdB9C8Ef030aB642B10820DB8F56;
-    address public constant ERC20_BAL = 0x5c6Ee304399DBdB9C8Ef030aB642B10820DB8F56;
-    address public constant ERC20_BB_A_USD = 0x5c6Ee304399DBdB9C8Ef030aB642B10820DB8F56;
 
     constructor(address _owner, address _pcvDeposit) Ownable() {
         _transferOwnership(_owner);
@@ -80,7 +77,6 @@ contract VeBalHelper is Ownable {
         address to,
         uint256 amount
     ) external onlyOwner {
-        require(token == ERC20_B_80BAL_20WETH || token == ERC20_BAL || token == ERC20_BB_A_USD, "INVALID_TOKEN");
         pcvDeposit.withdrawERC20(token, to, amount);
     }
 }
