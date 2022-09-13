@@ -66,7 +66,6 @@ describe('Pod operation and veto', function () {
 
     podFactory = contracts.podFactory as PodFactory;
     const podAdminGateway = contracts.podAdminGateway as PodAdminGateway;
-    tribalCouncilTimelockSigner = await getImpersonatedSigner(contractAddresses.tribalCouncilTimelock);
 
     await forceEth(contractAddresses.tribalCouncilTimelock);
     await forceEth(contractAddresses.feiDAOTimelock);
@@ -101,7 +100,32 @@ describe('Pod operation and veto', function () {
     // The role and protocol action is that the POD_METADATA_REGISTER_ROLE role is being granted
     // and the pod is calling to register a proposal on the `GovernanceMetadataRegistry.sol`
 
+    // *******************************
+    // Roles setup
+    // *******************************
+    // Tribe Roles
+    const daoTimelockSigner = await getImpersonatedSigner(contractAddresses.feiDAOTimelock);
+    await contracts.core
+      .connect(daoTimelockSigner)
+      .grantRole(ethers.utils.id('POD_ADMIN'), contractAddresses.tribalCouncilTimelock);
+    await contracts.core
+      .connect(daoTimelockSigner)
+      .grantRole(ethers.utils.id('POD_ADMIN'), contractAddresses.podFactory);
+    await contracts.core
+      .connect(daoTimelockSigner)
+      .grantRole(ethers.utils.id('ROLE_ADMIN'), contractAddresses.tribalCouncilTimelock);
+
+    // Timelock internal roles
+    await contracts.tribalCouncilTimelock
+      .connect(daoTimelockSigner)
+      .grantRole(ethers.utils.id('PROPOSER_ROLE'), contractAddresses.tribalCouncilSafe);
+
+    await contracts.tribalCouncilTimelock
+      .connect(daoTimelockSigner)
+      .grantRole(ethers.utils.id('EXECUTOR_ROLE'), contractAddresses.podExecutorV2);
+
     // 1. Deploy a pod through which a proposal will be executed
+    tribalCouncilTimelockSigner = await getImpersonatedSigner(contractAddresses.tribalCouncilTimelock);
     const deployTx = await podFactory.connect(tribalCouncilTimelockSigner).createOptimisticPod(podConfig);
     const result = (await deployTx.wait()).events!.find((elem) => elem.event === 'CreatePod');
     const args = result!.args!;
