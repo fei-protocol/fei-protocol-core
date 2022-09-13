@@ -19,7 +19,7 @@ contract ERC20Dripper is PCVDeposit, Timed {
     /// @notice ERC20 PCV Dripper constructor
     /// @param _core Fei Core for reference
     /// @param _target address to drip to
-    /// @param _frequency frequency of dripping
+    /// @param _frequency frequency of dripping (note: not actually frequency, but 1/frequency, aka period)
     /// @param _amountToDrip amount to drip on each drip
     /// @param _token amount to drip on each drip
     constructor(
@@ -42,7 +42,7 @@ contract ERC20Dripper is PCVDeposit, Timed {
     }
 
     /// @notice drip ERC20 tokens to target
-    function drip() external afterTime whenNotPaused {
+    function drip() public virtual afterTime whenNotPaused {
         // reset timer
         _initTimed();
 

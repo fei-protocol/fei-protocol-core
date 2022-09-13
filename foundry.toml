@@ -2,6 +2,7 @@
 optimizer = true
 optimizer_runs = 200
 lib-paths = "node_modules"
+libs = ["contracts/test/libs/"]
 contracts = "contracts"
 
 [profile.ci]
