@@ -120,8 +120,11 @@ async function main() {
   if (debug) console.log('All trees & roots generated & roots verified.');
 
   fs.writeFileSync(`${outputFilename}`, JSON.stringify(hexRoots, null, 2));
-
   console.log(`Merkle roots written to ${outputFilename}`);
+
+  const mergedDataFilename = `${extraDataJSONFilename?.slice(0, -5)}.merged.json`;
+  fs.writeFileSync(mergedDataFilename, JSON.stringify(balances, null, 2));
+  console.log(`Merged data written to ${mergedDataFilename}`);
 }
 
 main();

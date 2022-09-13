@@ -1,10 +1,13 @@
 import * as dotenv from 'dotenv';
 import { ethers } from 'ethers';
-import { AbiCoder, defaultAbiCoder } from 'ethers/lib/utils';
+import { defaultAbiCoder } from 'ethers/lib/utils';
 import fs from 'fs';
 import { MainnetContractsConfig } from '../../protocol-configuration/mainnetAddresses';
 import { MerkleRedeemerDripper__factory, RariMerkleRedeemer__factory } from '../../types/contracts';
 import { cTokens } from './data/prod/cTokens';
+
+const dripPeriod = 3600; // 1 hour
+const dripAmount = ethers.utils.parseEther('2500000'); // 2.5m Fei
 
 dotenv.config();
 
@@ -137,7 +140,18 @@ async function main() {
     rootsArray
   );
 
-  console.log(`Rari Merkle Redeemer deployed to ${rariMerkleRedeemer.address}`);
+  const merkleRedeemerDripperFactory = new MerkleRedeemerDripper__factory(wallet);
+
+  const merkleRedeemerDripper = await merkleRedeemerDripperFactory.deploy(
+    MainnetContractsConfig.core.address,
+    rariMerkleRedeemer.address,
+    dripPeriod,
+    dripAmount,
+    MainnetContractsConfig.fei.address
+  );
+
+  console.log(`MerkleRedeemerDripper deployed to ${merkleRedeemerDripper.address}\n`);
+  console.log(`RariMerkleRedeemer deployed to ${rariMerkleRedeemer.address}\n`);
 
   const merkleRedeemerDripperFactory = new MerkleRedeemerDripper__factory(wallet);
 

@@ -7,7 +7,7 @@ import { cTokens } from './data/prod/cTokens';
 dotenv.config();
 
 const feiHolder = '0x19C549357034d10DB8D75ed812b45bE1Dd8A7218'.toLowerCase();
-const feiAddress = '0x956F47F50A910163D8BF957Cf5846D573E7f87CA'.toLowerCase();
+const feiAddress = '0x956F47F50A910163D8BF957Cf5846D573E7f87CA';
 
 // ctoken address : { topHolder : tokenAmount }
 const cTokenHolders = {
