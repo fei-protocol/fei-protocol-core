@@ -1,17 +1,10 @@
 // This config lists all of the contracts that (should) be hold each listed role.
 
 export const PermissionsConfig = {
-  MINTER_ROLE: ['feiDAOTimelock', 'pcvEquityMinter', 'daiFixedPricePSM'],
+  MINTER_ROLE: ['simpleFeiDaiPSM'],
   BURNER_ROLE: [],
   GOVERN_ROLE: ['core', 'feiDAOTimelock', 'roleBastion'],
-  PCV_CONTROLLER_ROLE: [
-    'feiDAOTimelock',
-    'ratioPCVControllerV2',
-    'pcvGuardian',
-    'daiPCVDripController',
-    'daiFixedPricePSMFeiSkimmer',
-    'vebalOtcHelper'
-  ],
+  PCV_CONTROLLER_ROLE: ['feiDAOTimelock', 'ratioPCVControllerV2', 'pcvGuardian', 'vebalOtcHelper'],
   GUARDIAN_ROLE: ['guardianMultisig', 'pcvGuardian', 'pcvSentinel'],
   ORACLE_ADMIN_ROLE: ['tribalCouncilTimelock'],
   SWAP_ADMIN_ROLE: ['pcvEquityMinter', 'tribalCouncilTimelock', 'tribalCouncilSafe'],

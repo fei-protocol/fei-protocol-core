@@ -1,58 +1,69 @@
-import hre, { ethers, artifacts } from 'hardhat';
-import { expect } from 'chai';
+import {
+  Fei,
+  MerkleRedeemerDripper,
+  MerkleRedeemerDripper__factory,
+  RariMerkleRedeemer
+} from '@custom-types/contracts';
+import { RariMerkleRedeemer__factory } from '@custom-types/contracts/factories/RariMerkleRedeemer__factory';
 import {
   DeployUpgradeFunc,
   NamedAddresses,
-  PcvStats,
   SetupUpgradeFunc,
   TeardownUpgradeFunc,
   ValidateUpgradeFunc
 } from '@custom-types/types';
-import { BigNumber } from 'ethers';
+import { cTokens } from '@proposals/data/hack_repayment/cTokens';
+import { rates } from '@proposals/data/hack_repayment/rates';
+import { roots } from '@proposals/data/hack_repayment/roots';
+import { MainnetContractsConfig } from '@protocol/mainnetAddresses';
+import { getImpersonatedSigner } from '@test/helpers';
+import { forceEth } from '@test/integration/setup/utils';
+import { expect } from 'chai';
+import { parseEther } from 'ethers/lib/utils';
+import { ethers } from 'hardhat';
 
 /*
 
-TIP_121b: Protocol ops and technical cleanup
+DAO Proposal Part 2
 
+Description: Enable and mint FEI into the MerkleRedeeemrDripper contract, allowing those that are specified 
+in the snapshot [insert link] and previous announcement to redeem an amount of cTokens for FEI.
+
+Steps:
+  1 - Mint FEI to the RariMerkleRedeemer contract
 */
-
-const toBN = ethers.BigNumber.from;
 
 const fipNumber = 'tip_121b';
 
-// FEI balance on the TC timelock
-const TC_FEI_BALANCE = '2733169815107120096987175';
+const dripPeriod = 3600; // 1 hour
+const dripAmount = ethers.utils.parseEther('2500000'); // 2.5m Fei
 
-// TRIBE balance on the TC timelock
-const TC_TRIBE_BALANCE = '2733170474316903966022879';
-
-// LBP swapper fund limits
-const MIN_LUSD_SWAP_LUSD = ethers.constants.WeiPerEther.mul(230_000);
-const MIN_LUSD_SWAP_DAI = ethers.constants.WeiPerEther.mul(17_000_000);
-
-const MIN_WETH_SWAP_WETH = ethers.constants.WeiPerEther.mul(900);
-const MIN_WETH_SWAP_DAI = ethers.constants.WeiPerEther.mul(32_000_000);
-
-// STETH Price bounds
-const STETH_UPPER_PRICE = ethers.constants.WeiPerEther.mul(1_900); // $1900
-const STETH_LOWER_PRICE = ethers.constants.WeiPerEther.mul(1_100); // $1100
-
-// PCV equity diff bounds
-const PCV_DIFF_UPPER = ethers.constants.WeiPerEther.mul(1_000_000);
-const PCV_DIFF_LOWER = ethers.constants.WeiPerEther.mul(-6_000_000);
-
-let pcvStatsBefore: PcvStats;
-let initialFeiSupply: BigNumber;
-let initialTCTribeBalance: BigNumber;
-let initialDaiBalance: BigNumber;
-let initialStethBalance: BigNumber;
+const rariMerkleRedeemerInitialBalance = ethers.utils.parseEther('5000000'); // 5m Fei
+const merkleRedeemerDripperInitialBalance = ethers.utils.parseEther('45000000'); // 45m Fei
 
 // Do any deployments
 // This should exclusively include new contract deployments
 const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: NamedAddresses, logging: boolean) => {
-  console.log(`No deploy actions for fip${fipNumber}`);
+  const rariMerkleRedeemerFactory = new RariMerkleRedeemer__factory((await ethers.getSigners())[0]);
+  const rariMerkleRedeemer = await rariMerkleRedeemerFactory.deploy(
+    MainnetContractsConfig.fei.address, // token: fei
+    cTokens, // ctokens (address[])
+    rates, // rates (uint256[])
+    roots // roots (bytes32[])
+  );
+
+  const merkleRedeeemrDripperFactory = new MerkleRedeemerDripper__factory((await ethers.getSigners())[0]);
+  const merkleRedeemerDripper = await merkleRedeeemrDripperFactory.deploy(
+    addresses.core,
+    rariMerkleRedeemer.address,
+    dripPeriod,
+    dripAmount,
+    addresses.fei
+  );
+
   return {
-    // put returned contract objects here
+    rariMerkleRedeemer,
+    merkleRedeemerDripper
   };
 };
 
@@ -60,11 +71,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 // This could include setting up Hardhat to impersonate accounts,
 // ensuring contracts have a specific state, etc.
 const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  pcvStatsBefore = await contracts.collateralizationOracle.pcvStats();
-  initialFeiSupply = await contracts.fei.totalSupply();
-  initialTCTribeBalance = await contracts.tribe.balanceOf(addresses.core);
-  initialDaiBalance = await contracts.daiHoldingPCVDeposit.balance();
-  initialStethBalance = await contracts.ethLidoPCVDeposit.balance();
+  console.log(`No actions to complete in setup for fip${fipNumber}`);
 };
 
 // Tears down any changes made in setup() that need to be
@@ -76,71 +83,51 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // Run any validations required on the fip using mocha or console logging
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  // 0. Verify PCV has minimal change
-  console.log('----------------------------------------------------');
-  console.log(' pcvStatsBefore.protocolControlledValue [M]e18 ', Number(pcvStatsBefore.protocolControlledValue) / 1e24);
-  console.log(' pcvStatsBefore.userCirculatingFei      [M]e18 ', Number(pcvStatsBefore.userCirculatingFei) / 1e24);
-  console.log(' pcvStatsBefore.protocolEquity          [M]e18 ', Number(pcvStatsBefore.protocolEquity) / 1e24);
-  const pcvStatsAfter: PcvStats = await contracts.collateralizationOracle.pcvStats();
-  console.log('----------------------------------------------------');
-  console.log(' pcvStatsAfter.protocolControlledValue  [M]e18 ', Number(pcvStatsAfter.protocolControlledValue) / 1e24);
-  console.log(' pcvStatsAfter.userCirculatingFei       [M]e18 ', Number(pcvStatsAfter.userCirculatingFei) / 1e24);
-  console.log(' pcvStatsAfter.protocolEquity           [M]e18 ', Number(pcvStatsAfter.protocolEquity) / 1e24);
-  console.log('----------------------------------------------------');
-  const pcvDiff = pcvStatsAfter.protocolControlledValue.sub(pcvStatsBefore.protocolControlledValue);
-  const cFeiDiff = pcvStatsAfter.userCirculatingFei.sub(pcvStatsBefore.userCirculatingFei);
-  const eqDiff = pcvStatsAfter.protocolEquity.sub(pcvStatsBefore.protocolEquity);
-  console.log(' PCV diff                               [M]e18 ', Number(pcvDiff) / 1e24);
-  console.log(' Circ FEI diff                          [M]e18 ', Number(cFeiDiff) / 1e24);
-  console.log(' Equity diff                            [M]e18 ', Number(eqDiff) / 1e24);
-  console.log('----------------------------------------------------');
+  const rariMerkleRedeemer = contracts.rariMerkleRedeemer as RariMerkleRedeemer;
+  const merkleRedeemerDripper = contracts.merkleRedeemerDripper as MerkleRedeemerDripper;
 
-  expect(eqDiff).to.be.bignumber.greaterThan(PCV_DIFF_LOWER);
-  expect(eqDiff).to.be.bignumber.lessThan(PCV_DIFF_UPPER);
+  // validate that all 27 ctokens exist & are set
+  for (let i = 0; i < cTokens.length; i++) {
+    expect(await rariMerkleRedeemer.merkleRoots(cTokens[i])).to.be.equal(roots[i]);
+    expect(await rariMerkleRedeemer.cTokenExchangeRates(cTokens[i])).to.be.equal(rates[i]);
+  }
 
-  // 1. Verify FEI burned as expected
-  const feiSupplyDiff = initialFeiSupply.sub(await contracts.fei.totalSupply());
-  expect(feiSupplyDiff).to.equal(TC_FEI_BALANCE);
+  //console.log(`Sending ETH to both contracts...`);
 
-  // 2. Verify TRIBE sent to DAO treasury
-  const tcTribeBalanceDiff = (await contracts.tribe.balanceOf(addresses.core)).sub(initialTCTribeBalance);
-  expect(tcTribeBalanceDiff).to.equal(TC_TRIBE_BALANCE);
+  // send eth to both contracts so that we can impersonate them later
+  await forceEth(rariMerkleRedeemer.address, parseEther('1').toString());
+  await forceEth(merkleRedeemerDripper.address, parseEther('1').toString());
 
-  // 3. Verify TC has no funds
-  expect(await contracts.fei.balanceOf(addresses.tribalCouncilTimelock)).to.equal(0);
-  expect(await contracts.tribe.balanceOf(addresses.tribalCouncilTimelock)).to.equal(0);
+  // check initial balances of dripper & redeemer
+  // ensure that initial balance of the dripper is a multiple of drip amount
+  const fei = contracts.fei as Fei;
+  expect(await fei.balanceOf(rariMerkleRedeemer.address)).to.be.equal(rariMerkleRedeemerInitialBalance);
+  expect(await fei.balanceOf(merkleRedeemerDripper.address)).to.be.equal(merkleRedeemerDripperInitialBalance);
+  expect((await fei.balanceOf(merkleRedeemerDripper.address)).mod(dripAmount)).to.be.equal(0);
 
-  // 4. Verify no FEI on DAO timelock
-  expect(await contracts.fei.balanceOf(addresses.feiDAOTimelock)).to.equal(0);
+  //console.log('Advancing time 1 hour...');
 
-  // 5. Verify all LUSD, WETH and DAI moved out of LBP swappers
-  // Verify nothing left on swappers
-  expect(await contracts.dai.balanceOf(addresses.lusdToDaiSwapper)).to.equal(0);
-  expect(await contracts.lusd.balanceOf(addresses.lusdToDaiSwapper)).to.equal(0);
+  // advance time > 1 hour to drip again
+  await ethers.provider.send('evm_increaseTime', [dripPeriod + 1]);
 
-  expect(await contracts.weth.balanceOf(addresses.ethToDaiLBPSwapper)).to.equal(0);
-  expect(await contracts.dai.balanceOf(addresses.ethToDaiLBPSwapper)).to.equal(0);
-
-  // Verify LUSD Holding
-  expect(await contracts.lusd.balanceOf(addresses.lusdHoldingPCVDeposit)).to.bignumber.greaterThan(MIN_LUSD_SWAP_LUSD);
-
-  // Verify WETH Holding (converted to Lido stETH)
-  const stethBalanceAfter = await contracts.ethLidoPCVDeposit.balance();
-  expect(stethBalanceAfter.sub(initialStethBalance)).to.be.bignumber.greaterThan(MIN_WETH_SWAP_WETH);
-
-  // Verify swapped tokens ended up at destinations correctly
-  expect(await contracts.dai.balanceOf(addresses.daiHoldingPCVDeposit)).to.be.bignumber.greaterThan(
-    initialDaiBalance.add(MIN_LUSD_SWAP_DAI.add(MIN_WETH_SWAP_DAI)) // DAI from WETH and LUSD swaps
+  // expect a drip to fail because the redeemer has enough tokens already
+  await expect(merkleRedeemerDripper.drip()).to.be.revertedWith(
+    'MerkleRedeemerDripper: dripper target already has enough tokens.'
   );
 
-  // 6. Verify stETH oracle set on CR
-  expect(await contracts.collateralizationOracle.tokenToOracle(addresses.weth)).to.equal(
-    addresses.chainlinkStEthUsdOracleWrapper
-  );
-  // 7. Verify stETH oracle reports a reasonable price
-  const stETHUSDPrice = (await contracts.chainlinkStEthUsdOracleWrapper.read())[0].toString();
-  expect(toBN(stETHUSDPrice)).to.be.bignumber.greaterThan(STETH_LOWER_PRICE);
-  expect(toBN(stETHUSDPrice)).to.be.bignumber.lessThan(STETH_UPPER_PRICE);
+  // impersonate the redeemer and send away its tokens so that we can drip again
+  const redeemerSigner = await getImpersonatedSigner(rariMerkleRedeemer.address);
+  const redeemerFeiBalance = await (contracts.fei as Fei).balanceOf(rariMerkleRedeemer.address);
+  await (contracts.fei as Fei).connect(redeemerSigner).transfer(addresses.timelock, redeemerFeiBalance);
+  expect(await (contracts.fei as Fei).balanceOf(rariMerkleRedeemer.address)).to.be.equal(0);
+
+  //console.log('Doing final drip test...');
+
+  // finally, call drip again to make sure it works
+  const redeemerBalBeforeDrip = await fei.balanceOf(rariMerkleRedeemer.address);
+  await merkleRedeemerDripper.drip();
+  const redeemerBalAfterDrip = await fei.balanceOf(rariMerkleRedeemer.address);
+  expect(redeemerBalAfterDrip.sub(redeemerBalBeforeDrip)).to.be.equal(dripAmount);
 };
 
 export { deploy, setup, teardown, validate };

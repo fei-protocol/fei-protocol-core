@@ -6,6 +6,7 @@ import { getImpersonatedSigner, time } from '@test/helpers';
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
+import { parseEther } from 'ethers/lib/utils';
 import { ethers } from 'hardhat';
 import { TestEndtoEndCoordinator } from '../setup';
 import { forceEth } from '../setup/utils';
@@ -74,11 +75,13 @@ describe('Pod executor', function () {
     doLogging && console.log(`Environment loaded.`);
 
     tcMultisigSigner = await getImpersonatedSigner(contractAddresses.tribalCouncilSafe);
+    await forceEth(contractAddresses.tribalCouncilSafe);
     tribalCouncilTimelock = contracts.tribalCouncilTimelock as TimelockController;
     podExecutor = contracts.podExecutorV2 as PodExecutor;
 
     // Setup Tribal Council timelock with DAI
     const daiWhale = '0x6B175474E89094C44Da98b954EedeAC495271d0F';
+    await forceEth(daiWhale, parseEther('10').toString());
     const daiWhaleSigner = await getImpersonatedSigner(daiWhale); // Compound cDAI
     await forceEth(daiWhale);
 

@@ -222,12 +222,12 @@ export const MainnetContractsConfig = {
   daiFixedPricePSM: {
     artifactName: 'FixedPricePSM',
     address: '0x2A188F9EB761F70ECEa083bA6c2A40145078dfc2',
-    category: AddressCategory.Peg
+    category: AddressCategory.Deprecated
   },
   daiFixedPricePSMFeiSkimmer: {
     artifactName: 'FeiSkimmer',
     address: '0xe49B608663EeB89f1E3AbBe75744e5318F85029C',
-    category: AddressCategory.Peg
+    category: AddressCategory.Deprecated
   },
 
   tribalCouncilTimelockFeiLens: {
