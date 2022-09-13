@@ -21,6 +21,7 @@ import { forceEth } from '@test/integration/setup/utils';
 import { expect } from 'chai';
 import { parseEther } from 'ethers/lib/utils';
 import { ethers } from 'hardhat';
+import * as snapshot from 'scripts/shutdown/data/prod/snapshot.json';
 
 /*
 
@@ -128,6 +129,19 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   await merkleRedeemerDripper.drip();
   const redeemerBalAfterDrip = await fei.balanceOf(rariMerkleRedeemer.address);
   expect(redeemerBalAfterDrip.sub(redeemerBalBeforeDrip)).to.be.equal(dripAmount);
+
+  // test every single user in every single token in the snapshot
+  const snapshotKeys = Object.keys(snapshot);
+
+  for (const cTokenAddress of snapshotKeys) {
+    const cTokenData = snapshot[cTokenAddress as keyof typeof snapshot];
+    const entries = Object.keys(cTokenData);
+
+    for (const entry of entries) {
+      const user = entry[0];
+      const amount = entry[1];
+    }
+  }
 };
 
 export { deploy, setup, teardown, validate };
