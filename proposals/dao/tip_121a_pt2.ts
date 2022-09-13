@@ -8,6 +8,8 @@ import {
   ValidateUpgradeFunc
 } from '@custom-types/types';
 import { BigNumber } from 'ethers';
+import { getImpersonatedSigner } from '@test/helpers';
+import { forceEth } from '@test/integration/setup/utils';
 
 const toBN = ethers.BigNumber.from;
 
@@ -76,7 +78,6 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await contracts.tribalCouncilTimelock.hasRole(TC_EXECUTOR_ROLE, addresses.podExecutorV2)).to.be.false;
 
   expect(await contracts.tribalCouncilTimelock.hasRole(TC_CANCELLER_ROLE, addresses.tribalCouncilSafe)).to.be.false;
-  expect(await contracts.tribalCouncilTimelock.hasRole(TC_CANCELLER_ROLE, addresses.podAdminGateway)).to.be.false;
 
   expect(await contracts.tribalCouncilTimelock.hasRole(TC_TIMELOCK_ADMIN_ROLE, addresses.tribalCouncilTimelock)).to.be
     .false;
@@ -84,6 +85,44 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   // 5. Verify that deprecated Rari FEI/TRIBE vesting timelock pending admins set to DAO timelock
   expect(await contracts.rariInfraFeiTimelock.pendingBeneficiary()).to.equal(addresses.feiDAOTimelock);
   expect(await contracts.rariInfraTribeTimelock.pendingBeneficiary()).to.equal(addresses.feiDAOTimelock);
+
+  // 6. Verify podAdminGateway still has cancellor role, so NopeDAO can veto
+  expect(await contracts.tribalCouncilTimelock.hasRole(ethers.utils.id('CANCELLER_ROLE'), addresses.podAdminGateway)).to
+    .be.true;
+  expect(
+    await contracts.tribalCouncilTimelock.hasRole(ethers.utils.id('TIMELOCK_ADMIN_ROLE'), addresses.feiDAOTimelock)
+  ).to.be.true;
+
+  // 7. Verify that DAO timelock can grant Tribal Council timelock internal roles to addresses
+  const daoTimelockSigner = await getImpersonatedSigner(addresses.feiDAOTimelock);
+  await contracts.tribalCouncilTimelock
+    .connect(daoTimelockSigner)
+    .grantRole(ethers.utils.id('PROPOSER_ROLE'), addresses.tribalCouncilSafe);
+  expect(await contracts.tribalCouncilTimelock.hasRole(ethers.utils.id('PROPOSER_ROLE'), addresses.tribalCouncilSafe));
+
+  // Propose using the TC safe on the TC timelock
+  const tcSafeSigner = await getImpersonatedSigner(addresses.tribalCouncilSafe);
+  await forceEth(addresses.tribalCouncilSafe);
+  const dummyRole = ethers.utils.id('DUMMY_2_ROLE');
+  const registryTCData = contracts.roleBastion.interface.encodeFunctionData('createRole', [dummyRole]);
+  await contracts.tribalCouncilTimelock.connect(tcSafeSigner).schedule(
+    addresses.roleBastion,
+    0,
+    registryTCData,
+    '0x0000000000000000000000000000000000000000000000000000000000000000',
+    '0x0000000000000000000000000000000000000000000000000000000000000005',
+    86400 * 4 // minDelay
+  );
+
+  // Verify scheduled
+  const timelockProposalId = await contracts.tribalCouncilTimelock.hashOperation(
+    addresses.roleBastion,
+    0,
+    registryTCData,
+    '0x0000000000000000000000000000000000000000000000000000000000000000',
+    '0x0000000000000000000000000000000000000000000000000000000000000005'
+  );
+  expect(await contracts.tribalCouncilTimelock.isOperation(timelockProposalId)).to.be.true;
 };
 
 export { deploy, setup, teardown, validate };

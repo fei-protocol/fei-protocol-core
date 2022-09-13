@@ -8,23 +8,31 @@ const TC_EXECUTOR_ROLE = ethers.utils.id('EXECUTOR_ROLE');
 const TC_TIMELOCK_ADMIN_ROLE = ethers.utils.id('TIMELOCK_ADMIN_ROLE');
 
 const tip_121a_pt2: TemplatedProposalDescription = {
-  title: 'TIP_121a(pt. 2): Deprecate Optimistic Governance and the Tribal Council',
+  title: 'TIP_123: Deprecate Optimistic Governance and the Tribal Council',
   commands: [
-    // 1. Revoke all Tribe governance roles from the optimistic governance system
+    // 1. Grant TIMELOCK_ADMIN_ROLE to the DAO
+    {
+      target: 'tribalCouncilTimelock',
+      values: '0',
+      method: 'grantRole(bytes32,address)',
+      arguments: (addresses) => [TC_TIMELOCK_ADMIN_ROLE, addresses.feiDAOTimelock],
+      description: 'Grant TIMELOCK_ADMIN_ROLE to the DAO timelock'
+    },
+    // 2. Revoke all Tribe governance roles from the optimistic governance system
     // POD_ADMIN
     {
       target: 'core',
       values: '0',
       method: 'revokeRole(bytes32,address)',
       arguments: (addresses) => [ethers.utils.id('POD_ADMIN'), addresses.tribalCouncilTimelock],
-      description: 'Revoke POD_ADMIN_ROLE from the TC timelock'
+      description: 'Revoke POD_ADMIN from the TC timelock'
     },
     {
       target: 'core',
       values: '0',
       method: 'revokeRole(bytes32,address)',
       arguments: (addresses) => [ethers.utils.id('POD_ADMIN'), addresses.podFactory],
-      description: 'Revoke POD_ADMIN_ROLE from the Pod Factory'
+      description: 'Revoke POD_ADMIN from the Pod Factory'
     },
     // PCV_MINOR_PARAM_ROLE
     {
@@ -43,6 +51,13 @@ const tip_121a_pt2: TemplatedProposalDescription = {
       description: 'Revoke FEI_MINT_ADMIN from the TC timelock'
     },
     // POD_METADATA_REGISTER_ROLE
+    {
+      target: 'core',
+      values: '0',
+      method: 'revokeRole(bytes32,address)',
+      arguments: (addresses) => [ethers.utils.id('POD_METADATA_REGISTER_ROLE'), addresses.tribeDev1Deployer],
+      description: 'Revoke POD_METADATA_REGISTER_ROLE from the Tribe Dev 1'
+    },
     {
       target: 'core',
       values: '0',
@@ -142,16 +157,8 @@ const tip_121a_pt2: TemplatedProposalDescription = {
       arguments: (addresses) => [ethers.utils.id('ORACLE_ADMIN_ROLE'), addresses.tribalCouncilTimelock],
       description: 'Revoke ORACLE_ADMIN_ROLE from the Tribal Council timelock'
     },
-    // POD_VETO_ADMIN
-    {
-      target: 'core',
-      values: '0',
-      method: 'revokeRole(bytes32,address)',
-      arguments: (addresses) => [ethers.utils.id('POD_VETO_ADMIN'), addresses.nopeDAO],
-      description: 'Revoke POD_VETO_ADMIN from the NopeDAO'
-    },
-
-    // 2. Revoke all CANCELLERS, PROPOSERS and EXECUTORS
+    // 3. Revoke CANCELLERS, PROPOSERS, EXECUTORS and TIMELOCK_ADMINS
+    // Not revoking CANCELLER from the podAdminGateway, so the NopeDAO can still Nope
     {
       target: 'tribalCouncilTimelock',
       values: '0',
@@ -184,20 +191,10 @@ const tip_121a_pt2: TemplatedProposalDescription = {
       target: 'tribalCouncilTimelock',
       values: '0',
       method: 'revokeRole(bytes32,address)',
-      arguments: (addresses) => [TC_CANCELLER_ROLE, addresses.podAdminGateway],
-      description: `
-      Revoke CANCELLER_ROLE from Pod Admin Gateway, the contract through which the NopeDAO 
-      vetoes.
-      `
-    },
-    {
-      target: 'tribalCouncilTimelock',
-      values: '0',
-      method: 'revokeRole(bytes32,address)',
       arguments: (addresses) => [TC_TIMELOCK_ADMIN_ROLE, addresses.tribalCouncilTimelock],
-      description: 'Revoke TC_TIMELOCK_ADMIN_ROLE from the TC timelock'
+      description: 'Revoke TIMELOCK_ADMIN_ROLE from the TC timelock'
     },
-    // 3. Change beneficiary of deprecated Rari timelocks to DAO timelock
+    // 4. Change beneficiary of deprecated Rari timelocks to DAO timelock
     // Claim vested funds
     {
       target: 'rariInfraFeiTimelock',
@@ -231,21 +228,23 @@ const tip_121a_pt2: TemplatedProposalDescription = {
     }
   ],
   description: `
-  TIP_121a(pt. 2): Deprecate Optimistic Governance and the Tribal Council
+  TIP_123: Deprecate Optimistic Governance and the Tribal Council
 
   This is a Tribal Council proposal that deprecates the Optimistic Governance and Tribal Council governance smart contracts. 
 
-  The optimistic governance upgrade was introduced in FIP_82 (https://tribe.fei.money/t/fip-82-governance-enhancements/3945) 
-  and in line with TIP_121 (https://tribe.fei.money/t/tip-121-proposal-for-the-future-of-the-tribe-dao/4475) 
-  it is being deprecated. Future governance proposals will be proposed and executed by the DAO.
+  The optimistic governance upgrade was introduced in FIP-82 (https://tribe.fei.money/t/fip-82-governance-enhancements/3945) 
+  and in line with TIP-121 (https://tribe.fei.money/t/tip-121-proposal-for-the-future-of-the-tribe-dao/4475) 
+  the tribal council would likely not be needed. Future governance proposals can be proposed and executed by the DAO.
 
   To deprecate, this proposal performs the following:
   1. Revoke Tribe roles from the optimistic governance smart contracts. This prevents the optimistic governance
      and Tribal Council contracts from interacting with the Fei system. A small number of high level access
-     roles will later be removed by the DAO.
+     roles can later be removed by the DAO.
   2. Revoke all internal Tribal Council timelock EXECUTOR, PROPOSER, CANCELLER and TIMELOCK_ADMIN roles.
-     This will render the Tribal Council timelock deprecated.
+     This will render the Tribal Council timelock unusable by the Tribal Council Multisig.
   3. Change the admin of deprecated timelocks from the TC timelock to the DAO timelock
+
+  Critically, this proposal if passed can be undone at any time by the DAO to reintroduce the Tribal Council while the DAO retains any governance power.
 
   The Tribe DAO optimistic governance process is outlined here: https://docs.tribedao.xyz/docs/Governance/Overview 
   `
