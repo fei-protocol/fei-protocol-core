@@ -45,13 +45,6 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
   initialPSMFeiBalance = await contracts.fei.balanceOf(addresses.daiFixedPricePSM);
   initialTreasuryTribeBalance = await contracts.tribe.balanceOf(addresses.core);
   initialDaiHoldingDepositBalance = await contracts.dai.balanceOf(addresses.daiHoldingPCVDeposit);
-
-  // Set pending beneficiary of Rari Infra timelocks to be Fei DAO timelock
-  const tcTimelockSigner = await getImpersonatedSigner(addresses.tribalCouncilTimelock);
-  await forceEth(addresses.tribalCouncilTimelock);
-
-  await contracts.rariInfraFeiTimelock.connect(tcTimelockSigner).setPendingBeneficiary(addresses.feiDAOTimelock);
-  await contracts.rariInfraTribeTimelock.connect(tcTimelockSigner).setPendingBeneficiary(addresses.feiDAOTimelock);
 };
 
 // Tears down any changes made in setup() that need to be
