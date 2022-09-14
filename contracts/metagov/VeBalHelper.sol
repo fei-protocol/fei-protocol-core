@@ -12,9 +12,8 @@ import {TransparentUpgradeableProxy, ProxyAdmin} from "@openzeppelin/contracts/p
 contract VeBalHelper is Ownable {
     using SafeERC20 for IERC20;
 
-    address public constant FEI_DAO_TIMELOCK = 0xd51dbA7a94e1adEa403553A8235C302cEbF41a3c;
-    VeBalDelegatorPCVDeposit public pcvDeposit;
-    VeBoostManager public boostManager;
+    VeBalDelegatorPCVDeposit public immutable pcvDeposit;
+    VeBoostManager public immutable boostManager;
 
     constructor(
         address _owner,
