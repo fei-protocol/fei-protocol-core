@@ -39,7 +39,7 @@ export const ProposalsConfig: TemplatedProposalsConfigMap = {
     deploy: false, // deploy flag for whether to run deploy action during e2e tests or use mainnet state
     totalValue: 0, // amount of ETH to send to DAO execution
     proposal: tip_indexotc, // full proposal file, imported from '@proposals/description/fip_xx.ts'
-    proposalId: '',
+    proposalId: '107879695414828124720443536891662855284044715931124238148239402639321657156721',
     affectedContractSignoff: [],
     deprecatedContractSignoff: [],
     category: ProposalCategory.DAO
