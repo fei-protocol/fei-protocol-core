@@ -153,18 +153,6 @@ async function main() {
   console.log(`MerkleRedeemerDripper deployed to ${merkleRedeemerDripper.address}\n`);
   console.log(`RariMerkleRedeemer deployed to ${rariMerkleRedeemer.address}\n`);
 
-  const merkleRedeemerDripperFactory = new MerkleRedeemerDripper__factory(wallet);
-
-  const merkleRedeemerDripper = await merkleRedeemerDripperFactory.deploy(
-    MainnetContractsConfig.core.address,
-    rariMerkleRedeemer.address,
-    dripPeriod,
-    dripAmount,
-    MainnetContractsConfig.fei.address
-  );
-
-  console.log(`MerkleRedeemerDripped deployed to ${merkleRedeemerDripper.address}`);
-
   if (!enableForking) {
     console.log(
       `Here are the abi-encoded constructor args so that you can verify the contract on etherscan. Also writing to ./scripts/shutdown/data/prod/constructorArgs.txt.\n`
