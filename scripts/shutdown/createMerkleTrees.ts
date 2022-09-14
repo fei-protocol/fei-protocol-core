@@ -79,14 +79,14 @@ async function main() {
   */
 
   // should have 27 keys, one for each ctoken, and all of the 27 ctoken addresses exactly
-  if (Object.keys(balances).length !== 27)
-    throw new Error(`Snapshot data should have 27 keys, one for each ctoken. Actual: ${Object.keys(balances).length}`);
-  if (Object.keys(balances).some((key) => !cTokens.includes(key)))
+  if (Object.keys(balances).length !== 25)
+    throw new Error(`Snapshot data should have 25 keys, one for each ctoken. Actual: ${Object.keys(balances).length}`);
+  if (Object.keys(balances).some((key) => !cTokens.includes(key.toLowerCase())))
     throw new Error(`Snapshot data has invalid ctoken address`);
 
   // @todo perhaps further validation if we need it
 
-  // create 27 merkle trees & output them to folder
+  // create 25 merkle trees & output them to folder
 
   const trees: MerkleTree[] = [];
   const roots: Buffer[] = [];
@@ -122,9 +122,11 @@ async function main() {
   fs.writeFileSync(`${outputFilename}`, JSON.stringify(hexRoots, null, 2));
   console.log(`Merkle roots written to ${outputFilename}`);
 
-  const mergedDataFilename = `${extraDataJSONFilename?.slice(0, -5)}.merged.json`;
-  fs.writeFileSync(mergedDataFilename, JSON.stringify(balances, null, 2));
-  console.log(`Merged data written to ${mergedDataFilename}`);
+  if (extraDataJSONFilename) {
+    const mergedDataFilename = `${extraDataJSONFilename?.slice(0, -5)}.merged.json`;
+    fs.writeFileSync(mergedDataFilename, JSON.stringify(balances, null, 2));
+    console.log(`Merged data written to ${mergedDataFilename}`);
+  }
 }
 
 main();

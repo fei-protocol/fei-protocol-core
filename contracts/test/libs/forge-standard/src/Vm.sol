@@ -17,6 +17,9 @@ interface Vm {
     // Sets block.basefee (newBasefee)
     function fee(uint256) external;
 
+    // Sets block.difficulty (newDifficulty)
+    function difficulty(uint256) external;
+
     // Sets block.chainid
     function chainId(uint256) external;
 
@@ -187,17 +190,26 @@ interface Vm {
     // Has the next call (at this call depth only) create a transaction with the address provided as the sender that can later be signed and sent onchain
     function broadcast(address) external;
 
+    // Has the next call (at this call depth only) create a transaction with the private key provided as the sender that can later be signed and sent onchain
+    function broadcast(uint256) external;
+
     // Using the address that calls the test contract, has all subsequent calls (at this call depth only) create transactions that can later be signed and sent onchain
     function startBroadcast() external;
 
-    // Has all subsequent calls (at this call depth only) create transactions that can later be signed and sent onchain
+    // Has all subsequent calls (at this call depth only) create transactions with the address provided that can later be signed and sent onchain
     function startBroadcast(address) external;
+
+    // Has all subsequent calls (at this call depth only) create transactions with the private key provided that can later be signed and sent onchain
+    function startBroadcast(uint256) external;
 
     // Stops collecting onchain transactions
     function stopBroadcast() external;
 
     // Reads the entire content of file to string, (path) => (data)
     function readFile(string calldata) external returns (string memory);
+
+    // Get the path of the current project root
+    function projectRoot() external returns (string memory);
 
     // Reads next line of file to string, (path) => (line)
     function readLine(string calldata) external returns (string memory);
@@ -233,6 +245,19 @@ interface Vm {
     function toString(uint256) external returns (string memory);
 
     function toString(int256) external returns (string memory);
+
+    // Convert values from a string, (string) => (parsed value)
+    function parseBytes(string calldata) external returns (bytes memory);
+
+    function parseAddress(string calldata) external returns (address);
+
+    function parseUint(string calldata) external returns (uint256);
+
+    function parseInt(string calldata) external returns (int256);
+
+    function parseBytes32(string calldata) external returns (bytes32);
+
+    function parseBool(string calldata) external returns (bool);
 
     // Record all the transaction logs
     function recordLogs() external;
@@ -276,8 +301,6 @@ interface Vm {
     // Updates the given fork to given block number
     function rollFork(uint256 forkId, uint256 blockNumber) external;
 
-    /// Returns the RPC url for the given alias
-
     // Marks that the account(s) should use persistent storage across fork swaps in a multifork setup
     // Meaning, changes made to the state of this account will be kept when switching forks
     function makePersistent(address) external;
@@ -300,9 +323,10 @@ interface Vm {
     // Returns true if the account is marked as persistent
     function isPersistent(address) external returns (bool);
 
+    // Returns the RPC url for the given alias
     function rpcUrl(string calldata) external returns (string memory);
 
-    /// Returns all rpc urls and their aliases `[alias, url][]`
+    // Returns all rpc urls and their aliases `[alias, url][]`
     function rpcUrls() external returns (string[2][] memory);
 
     // Derive a private key from a provided mnenomic string (or mnenomic file path) at the derivation path m/44'/60'/0'/0/{index}
@@ -314,4 +338,33 @@ interface Vm {
         string calldata,
         uint32
     ) external returns (uint256);
+
+    // Adds a private key to the local forge wallet and returns the address
+    function rememberKey(uint256) external returns (address);
+
+    // parseJson
+
+    // Given a string of JSON, return the ABI-encoded value of provided key
+    // (stringified json, key) => (ABI-encoded data)
+    // Read the note below!
+    function parseJson(string calldata, string calldata) external returns (bytes memory);
+
+    // Given a string of JSON, return it as ABI-encoded, (stringified json, key) => (ABI-encoded data)
+    // Read the note below!
+    function parseJson(string calldata) external returns (bytes memory);
+
+    // Note:
+    // ----
+    // In case the returned value is a JSON object, it's encoded as a ABI-encoded tuple. As JSON objects
+    // don't have the notion of ordered, but tuples do, they JSON object is encoded with it's fields ordered in
+    // ALPHABETICAL ordser. That means that in order to succesfully decode the tuple, we need to define a tuple that
+    // encodes the fields in the same order, which is alphabetical. In the case of Solidity structs, they are encoded
+    // as tuples, with the attributes in the order in which they are defined.
+    // For example: json = { 'a': 1, 'b': 0xa4tb......3xs}
+    // a: uint256
+    // b: address
+    // To decode that json, we need to define a struct or a tuple as follows:
+    // struct json = { uint256 a; address b; }
+    // If we defined a json struct with the opposite order, meaning placing the address b first, it would try to
+    // decode the tuple in that order, and thus fail.
 }
