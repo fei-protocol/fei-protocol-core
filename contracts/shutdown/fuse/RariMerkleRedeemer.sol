@@ -90,7 +90,7 @@ contract RariMerkleRedeemer is MultiMerkleRedeemer, ReentrancyGuard {
         address[] calldata cTokens,
         uint256[] calldata amounts,
         bytes32[][] calldata merkleProofs
-    ) external override nonReentrant {
+    ) external override hasNotSigned nonReentrant {
         // both sign and claim/multiclaim will revert on invalid signatures/proofs
         _sign(signature);
         _multiClaim(cTokens, amounts, merkleProofs);
