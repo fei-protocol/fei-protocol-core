@@ -205,7 +205,7 @@ export const MainnetContractsConfig = {
   roleBastion: {
     artifactName: 'RoleBastion',
     address: '0x8096314D9014EbB69Fc777ED3791DDE6FFbaFAed',
-    category: AddressCategory.Governance
+    category: AddressCategory.Deprecated
   },
 
   tribeReserveStabilizer: {
@@ -224,7 +224,11 @@ export const MainnetContractsConfig = {
     address: '0xe49B608663EeB89f1E3AbBe75744e5318F85029C',
     category: AddressCategory.Deprecated
   },
-
+  lusdCurveMetapool: {
+    artifactName: 'ICurvePool',
+    address: '0xEd279fDD11cA84bEef15AF5D39BB4d4bEE23F0cA',
+    category: AddressCategory.External
+  },
   tribalCouncilTimelockFeiLens: {
     artifactName: 'ERC20PCVDepositWrapper',
     address: '0x4037a70152F4c88Ad40522f35BD4dDD17E6B2052',
@@ -393,12 +397,12 @@ export const MainnetContractsConfig = {
   laTribuFeiTimelock: {
     artifactName: 'LinearTokenTimelock',
     address: '0xdb02630ed4f4994414122894B5082dc6D88a4ED4',
-    category: AddressCategory.Distribution
+    category: AddressCategory.Deprecated
   },
   laTribuTribeTimelock: {
     artifactName: 'QuadraticTokenTimelock',
     address: '0x552b8A441E945D021D29ae58B6Ae3dE96da75A05',
-    category: AddressCategory.Distribution
+    category: AddressCategory.Deprecated
   },
   rariInfraFeiTimelock: {
     artifactName: 'LinearTokenTimelock',
