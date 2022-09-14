@@ -14,7 +14,7 @@ export const MainnetContractsConfig = {
   proxyAdmin: {
     artifactName: 'ProxyAdmin',
     address: '0xf8c2b645988b7658E7748BA637fE25bdD46A704A',
-    category: AddressCategory.Core
+    category: AddressCategory.Deprecated
   },
   tribe: {
     artifactName: 'Tribe',
@@ -24,7 +24,7 @@ export const MainnetContractsConfig = {
   tribeMinter: {
     artifactName: 'TribeMinter',
     address: '0xFC3532b443383d9022b1B2c6FD5Fd0895943360A',
-    category: AddressCategory.Core
+    category: AddressCategory.Deprecated
   },
   restrictedPermissions: {
     artifactName: 'RestrictedPermissions',
@@ -34,7 +34,7 @@ export const MainnetContractsConfig = {
   pcvSentinel: {
     artifactName: 'PCVSentinel',
     address: '0xC297705Acf50134d256187c754B92FA37826C019',
-    category: AddressCategory.Security
+    category: AddressCategory.Deprecated
   },
   pcvGuardian: {
     artifactName: 'PCVGuardian',
@@ -49,12 +49,12 @@ export const MainnetContractsConfig = {
   fuseWithdrawalGuard: {
     artifactName: 'FuseWithdrawalGuard',
     address: '0xd079ec4b442600a381eAc7E95662eB1b313cd113',
-    category: AddressCategory.Security
+    category: AddressCategory.Deprecated
   },
   maxFeiWithdrawalGuard: {
     artifactName: 'MaxFeiWithdrawalGuard',
     address: '0x2Ee70721909b9673C6f5029243804b98C12a1bF2',
-    category: AddressCategory.Security
+    category: AddressCategory.Deprecated
   },
   ratioPCVControllerV2: {
     artifactName: 'RatioPCVControllerV2',
@@ -76,7 +76,7 @@ export const MainnetContractsConfig = {
   pcvEquityMinter: {
     artifactName: 'PCVEquityMinter',
     address: '0x904Deb2Dac1EdfCBBb69b9c279aE5F75E57Cf5E9',
-    category: AddressCategory.Utility
+    category: AddressCategory.Deprecated
   },
 
   daiPCVDripController: {
@@ -205,13 +205,13 @@ export const MainnetContractsConfig = {
   roleBastion: {
     artifactName: 'RoleBastion',
     address: '0x8096314D9014EbB69Fc777ED3791DDE6FFbaFAed',
-    category: AddressCategory.Governance
+    category: AddressCategory.Deprecated
   },
 
   tribeReserveStabilizer: {
     artifactName: 'TribeReserveStabilizer',
     address: '0xE1A468418f4D8D3F070A06d49b3575A9562b6CfD',
-    category: AddressCategory.Peg
+    category: AddressCategory.Deprecated
   },
 
   daiFixedPricePSM: {
@@ -393,12 +393,12 @@ export const MainnetContractsConfig = {
   laTribuFeiTimelock: {
     artifactName: 'LinearTokenTimelock',
     address: '0xdb02630ed4f4994414122894B5082dc6D88a4ED4',
-    category: AddressCategory.Distribution
+    category: AddressCategory.Deprecated
   },
   laTribuTribeTimelock: {
     artifactName: 'QuadraticTokenTimelock',
     address: '0x552b8A441E945D021D29ae58B6Ae3dE96da75A05',
-    category: AddressCategory.Distribution
+    category: AddressCategory.Deprecated
   },
   rariInfraFeiTimelock: {
     artifactName: 'LinearTokenTimelock',
@@ -1485,7 +1485,7 @@ export const MainnetContractsConfig = {
   wethHoldingPCVDeposit: {
     artifactName: 'ERC20HoldingPCVDeposit',
     address: '0xC6D675ca5217d39C3A5E366141060fC2D1ea2b82',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
 
   orcaPodController: {

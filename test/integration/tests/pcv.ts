@@ -257,6 +257,10 @@ describe('e2e-pcv', function () {
       await aaveTribeIncentivesController.claimRewards([variableDebtTokenAddress], rewardAmount, deployAddress);
 
       expectApprox(rewardAmount, await tribe.balanceOf(deployAddress));
+
+      // 5. Ensure DAO timelock has PCV_CONTROLLER
+      const daoSigner = await getImpersonatedSigner(contractAddresses.feiDAOTimelock);
+      await contracts.core.connect(daoSigner).grantPCVController(contractAddresses.feiDAOTimelock);
     });
   });
 

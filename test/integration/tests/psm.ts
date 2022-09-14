@@ -79,6 +79,8 @@ describe('e2e-peg-stability-module', function () {
     if (aaveEthPCVDepositPaused) {
       await contracts.aaveEthPCVDeposit.unpause();
     }
+    const daoTimelockSigner = await getImpersonatedSigner(contracts.feiDAOTimelock.address);
+    await contracts.core.connect(daoTimelockSigner).grantPCVController(contracts.feiDAOTimelock.address);
   });
 
   describe('dai-psm pcv drip controller', async () => {
@@ -109,9 +111,9 @@ describe('e2e-peg-stability-module', function () {
     });
 
     it('does drip when the dai PSM is under the threshold', async () => {
-      const timelock = await getImpersonatedSigner(feiDAOTimelock.address);
+      const daoTimelockSigner = await getImpersonatedSigner(feiDAOTimelock.address);
       await daiFixedPricePSM
-        .connect(timelock)
+        .connect(daoTimelockSigner)
         .withdrawERC20(
           dai.address,
           contracts.compoundDaiPCVDeposit.address,

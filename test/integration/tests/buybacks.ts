@@ -1,24 +1,15 @@
 import { CollateralizationOracle } from '@custom-types/contracts';
-import { NamedAddresses, NamedContracts } from '@custom-types/types';
+import { NamedContracts } from '@custom-types/types';
 import { ProposalsConfig } from '@protocol/proposalsConfig';
-import {
-  expectApprox,
-  getImpersonatedSigner,
-  increaseTime,
-  latestTime,
-  overwriteChainlinkAggregator
-} from '@test/helpers';
+import { expectApprox, getImpersonatedSigner } from '@test/helpers';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
-import chai, { expect } from 'chai';
+import chai from 'chai';
 import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
 import { ethers } from 'hardhat';
 
-const toBN = ethers.BigNumber.from;
-
-describe('e2e-buybacks', function () {
+describe('e2e-CR', function () {
   let contracts: NamedContracts;
-  let contractAddresses: NamedAddresses;
   let deployAddress: string;
   let e2eCoord: TestEndtoEndCoordinator;
   let doLogging: boolean;
@@ -45,7 +36,7 @@ describe('e2e-buybacks', function () {
     e2eCoord = new TestEndtoEndCoordinator(config, ProposalsConfig);
 
     doLogging && console.log(`Loading environment...`);
-    ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment());
+    ({ contracts } = await e2eCoord.loadEnvironment());
     doLogging && console.log(`Environment loaded.`);
 
     // unpause the pcv equity minter if it is paused
@@ -53,57 +44,6 @@ describe('e2e-buybacks', function () {
       const govSigner = await getImpersonatedSigner(contracts.feiDAOTimelock.address);
       await contracts.pcvEquityMinter.connect(govSigner).unpause();
     }
-  });
-
-  describe('PCV Equity Minter + LBP', async function () {
-    it('mints appropriate amount and swaps', async function () {
-      const {
-        pcvEquityMinter,
-        collateralizationOracle,
-        namedStaticPCVDepositWrapper,
-        noFeeFeiTribeLBPSwapper,
-        fei,
-        tribe,
-        core
-      } = contracts;
-
-      await increaseTime(await noFeeFeiTribeLBPSwapper.remainingTime());
-
-      const pcvStats = await collateralizationOracle.pcvStats();
-
-      if (pcvStats[2] < 0) {
-        await namedStaticPCVDepositWrapper.addDeposit({
-          depositName: 'deposit',
-          usdAmount: pcvStats[0],
-          feiAmount: '0',
-          underlyingTokenAmount: 1,
-          underlyingToken: tribe.address
-        });
-      }
-
-      // set Chainlink ETHUSD to a fixed 4,000$ value
-      await overwriteChainlinkAggregator(contractAddresses.chainlinkEthUsdOracle, '400000000000', '8');
-
-      // set Chainlink OHM_V2:USD to a fixed ~$14.5 value
-      // Need to override the chainlink storage to make it a fresh value because otherwise
-      // fork block is well out of date, oracle will report invalid and the CR will be invalid
-      await overwriteChainlinkAggregator(contractAddresses.chainlinkOHMV2EthOracle, '8748580000000000', '18');
-
-      await collateralizationOracle.update();
-
-      await core.allocateTribe(noFeeFeiTribeLBPSwapper.address, ethers.constants.WeiPerEther.mul(1_000_000));
-      const tx = await pcvEquityMinter.mint();
-      expect(tx).to.emit(pcvEquityMinter, 'FeiMinting');
-      expect(tx).to.emit(fei, 'Transfer');
-      expect(tx).to.emit(tribe, 'Transfer');
-
-      expect(await noFeeFeiTribeLBPSwapper.swapEndTime()).to.be.gt(toBN((await latestTime()).toString()));
-
-      await increaseTime(await pcvEquityMinter.duration());
-      await core.allocateTribe(noFeeFeiTribeLBPSwapper.address, ethers.constants.WeiPerEther.mul(1_000_000));
-
-      await pcvEquityMinter.mint();
-    });
   });
 
   describe('Collateralization Oracle', async function () {

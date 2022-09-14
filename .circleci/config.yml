@@ -98,7 +98,7 @@ jobs:
   e2e-test:
     working_directory: ~/repo
     executor: nodeimage
-    parallelism: 13
+    parallelism: 12
     steps:
       - attach_workspace:
           at: ./

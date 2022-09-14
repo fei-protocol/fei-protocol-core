@@ -277,6 +277,9 @@ describe('balancer-weightedpool', function () {
 
       // Grant minter role to the deposit, to be able to mint FEI
       await contracts.core.connect(daoSigner).grantMinter(balancerDepositFeiUsdc.address);
+
+      // Grant PCV_CONTROLLER_ROLE to DAO timelock
+      await contracts.core.connect(daoSigner).grantPCVController(contracts.feiDAOTimelock.address);
     });
 
     it('should mint associated FEI on deposit', async function () {
