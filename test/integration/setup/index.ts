@@ -225,7 +225,6 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
    * Revoke permissions granted to deploy address
    */
   async revokeDeployAddressPermission(): Promise<void> {
-    await this.afterUpgradeContracts.core.revokeMinter(this.config.deployAddress);
     await this.afterUpgradeContracts.core.revokeBurner(this.config.deployAddress);
     await this.afterUpgradeContracts.core.revokePCVController(this.config.deployAddress);
     await this.afterUpgradeContracts.core.revokeGovernor(this.config.deployAddress);
