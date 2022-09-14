@@ -1,4 +1,4 @@
-# Rari Hack Repayment Tooling
+# Rari Merkle Redeemer Tooling
 
 ## Goals:
 

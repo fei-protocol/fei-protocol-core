@@ -1,7 +1,7 @@
 import { keccak256, solidityKeccak256 } from 'ethers/lib/utils';
 import fs from 'fs';
 import { MerkleTree } from 'merkletreejs';
-import { cTokens } from '../../proposals/data/hack_repayment/cTokens';
+import { cTokens } from '../../proposals/data/merkle_redemption/cTokens';
 
 async function main() {
   if (process.argv[2] === 'help') {
@@ -10,22 +10,22 @@ async function main() {
         npx ts-node scripts/shutdown/createMerkleTree [dataJSONFilename] [outputPath] [debug] [additionalDataJSONFilename] 
       
       Args:
-        dataJSONFilename = string (default: "./proposals/data/hack_repayment/scripts/shutdown/data/sample/snapshot.json")
-        outputFilename = string (default: "./proposals/data/hack_repayment/scripts/shutdown/data/sample/merkleRoots.json")
+        dataJSONFilename = string (default: "./proposals/data/merkle_redemption/scripts/shutdown/data/sample/snapshot.json")
+        outputFilename = string (default: "./proposals/data/merkle_redemption/scripts/shutdown/data/sample/merkleRoots.json")
         debug = true | false (default: false)
         additionalDataJSONFilename = string (default: undefined)
       
       Examples: 
         npx ts-node scripts/shutdown/createMerkleTree
-        npx ts-node scripts/shutdown/createMerkleTree ./proposals/data/hack_repayment/scripts/shutdown/data/sample/snapshot.json
-        npx ts-node scripts/shutdown/createMerkleTree ./proposals/data/hack_repayment/scripts/shutdown/data/sample/snapshot.json ./proposals/data/hack_repayment/scripts/shutdown/data/prod/roots.json true ./proposals/data/hack_repayment/scripts/shutdown/data/prod/testingSnapshot.json
+        npx ts-node scripts/shutdown/createMerkleTree ./proposals/data/merkle_redemption/scripts/shutdown/data/sample/snapshot.json
+        npx ts-node scripts/shutdown/createMerkleTree ./proposals/data/merkle_redemption/scripts/shutdown/data/sample/snapshot.json ./proposals/data/merkle_redemption/scripts/shutdown/data/prod/roots.json true ./proposals/data/merkle_redemption/scripts/shutdown/data/prod/testingSnapshot.json
     `);
     return;
   }
 
-  let dataJSONFilename = './proposals/data/hack_repayment/scripts/shutdown/data/sample/snapshot.json';
+  let dataJSONFilename = './proposals/data/merkle_redemption/scripts/shutdown/data/sample/snapshot.json';
   let extraDataJSONFilename = undefined;
-  let outputFilename = './proposals/data/hack_repayment/scripts/shutdown/data/sample/merkleRoots.json';
+  let outputFilename = './proposals/data/merkle_redemption/scripts/shutdown/data/sample/merkleRoots.json';
   let debug = false;
 
   if (process.argv[2] !== undefined) {

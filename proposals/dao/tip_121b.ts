@@ -12,9 +12,9 @@ import {
   TeardownUpgradeFunc,
   ValidateUpgradeFunc
 } from '@custom-types/types';
-import { cTokens } from '@proposals/data/hack_repayment/cTokens';
-import { rates } from '@proposals/data/hack_repayment/rates';
-import { roots } from '@proposals/data/hack_repayment/roots';
+import { cTokens } from '@proposals/data/merkle_redemption/cTokens';
+import { rates } from '@proposals/data/merkle_redemption/rates';
+import { roots } from '@proposals/data/merkle_redemption/roots';
 import { MainnetContractsConfig } from '@protocol/mainnetAddresses';
 import { getImpersonatedSigner } from '@test/helpers';
 import { forceEth } from '@test/integration/setup/utils';

@@ -97,7 +97,7 @@ library RariMerkleRedeemerTestingLib {
 
     /**
      * Returns a list of 27 roots corresponding to the 27 ctokens from above.
-     * These are the actual roots for the sample data in proposals/data/hack_repayment_data_real_sample.ts
+     * These are the actual roots for the sample data in proposals/data/merkle_redemption_data_real_sample.ts
      */
     function getExampleRoots() public pure returns (bytes32[] memory roots) {
         roots = new bytes32[](27);
@@ -135,7 +135,7 @@ library RariMerkleRedeemerTestingLib {
 
     /**
      * Returns a list of 27 roots corresponding to the 27 ctokens from above.
-     * These are the actual roots for the sample data in proposals/data/hack_repayment_data_generated_accounts.ts
+     * These are the actual roots for the sample data in proposals/data/merkle_redemption_data_generated_accounts.ts
      */
     function getExampleRootsWithGeneratedAccounts() public pure returns (bytes32[] memory roots) {
         roots = new bytes32[](27);
@@ -173,7 +173,7 @@ library RariMerkleRedeemerTestingLib {
 
     /**
      * Returns two proofs; these are valid for jsut these two users, for the data contained in
-     * proposals/data/hack_repayment_data_real_sample.ts
+     * proposals/data/merkle_redemption_data_real_sample.ts
      */
     function getExampleProofs() public pure returns (bytes32[][] memory proofs) {
         proofs = new bytes32[][](2);
@@ -210,7 +210,7 @@ library RariMerkleRedeemerTestingLib {
 
     /**
      * Returns two proofs; these are valid for jsut these two users, for the data contained in
-     * proposals/data/hack_repayment_data_generated_accounts.ts
+     * proposals/data/merkle_redemption_data_generated_accounts.ts
      */
     function getExampleProofsWithGeneratedAccounts() public pure returns (bytes32[][] memory proofs) {
         proofs = new bytes32[][](2);

@@ -4,7 +4,7 @@ import { defaultAbiCoder } from 'ethers/lib/utils';
 import fs from 'fs';
 import { MainnetContractsConfig } from '../../protocol-configuration/mainnetAddresses';
 import { MerkleRedeemerDripper__factory, RariMerkleRedeemer__factory } from '../../types/contracts';
-import { cTokens } from '../../proposals/data/hack_repayment/cTokens';
+import { cTokens } from '../../proposals/data/merkle_redemption/cTokens';
 
 const dripPeriod = 3600; // 1 hour
 const dripAmount = ethers.utils.parseEther('2500000'); // 2.5m Fei
@@ -18,23 +18,23 @@ async function main() {
         npx ts-node scripts/shutdown/deployMerkleRedeemer [ratesJSONFileName] [rootsJSONFileName] [forkMode] [debug]
       
       Args:
-        ratesJSONFileName = relative or absolute file locator string (default: "./proposals/data/hack_repayment/sample/rates.json")
-        rootsJSONFileName = relative or absolute file locator string (default: "./proposals/data/hack_repayment/sample/roots.json")
+        ratesJSONFileName = relative or absolute file locator string (default: "./proposals/data/merkle_redemption/sample/rates.json")
+        rootsJSONFileName = relative or absolute file locator string (default: "./proposals/data/merkle_redemption/sample/roots.json")
         forkMode = true | false (default: true)
         debug = true | false (default: false)
 
       Examples: 
         npx ts-node scripts/shutdown/deployMerkleRedeemer
-        npx ts-node scripts/shutdown/deployMerkleRedeemer ./proposals/data/hack_repayment/sample/rates.json
-        npx ts-node scripts/shutdown/deployMerkleRedeemer ./proposals/data/hack_repayment/sample/rates.json ./proposals/data/hack_repayment/sample/roots.json
-        npx ts-node scripts/shutdown/deployMerkleRedeemer ./proposals/data/hack_repayment/sample/rates.json ./proposals/data/hack_repayment/sample/roots.json true true
+        npx ts-node scripts/shutdown/deployMerkleRedeemer ./proposals/data/merkle_redemption/sample/rates.json
+        npx ts-node scripts/shutdown/deployMerkleRedeemer ./proposals/data/merkle_redemption/sample/rates.json ./proposals/data/merkle_redemption/sample/roots.json
+        npx ts-node scripts/shutdown/deployMerkleRedeemer ./proposals/data/merkle_redemption/sample/rates.json ./proposals/data/merkle_redemption/sample/roots.json true true
     `);
     return;
   }
 
   // defaults
-  const ratesFilename = process.argv[2] ? process.argv[2] : './proposals/data/hack_repayment/sample/rates.json';
-  const rootsFilename = process.argv[3] ? process.argv[3] : './proposals/data/hack_repayment/sample/roots.json';
+  const ratesFilename = process.argv[2] ? process.argv[2] : './proposals/data/merkle_redemption/sample/rates.json';
+  const rootsFilename = process.argv[3] ? process.argv[3] : './proposals/data/merkle_redemption/sample/roots.json';
   let enableForking = true;
   let debug = false;
 
