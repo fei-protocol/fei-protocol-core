@@ -336,6 +336,11 @@ export const MainnetContractsConfig = {
     address: '0x0ee81df08B20e4f9E0F534e50da437D24491c4ee',
     category: AddressCategory.Deprecated
   },
+  indexOtcEscrow: {
+    artifactName: 'OtcEscrow',
+    address: '0x574a9a9EeD5A3bE02bD35255e7E8625fE6824a02',
+    category: AddressCategory.TBD
+  },
 
   rariPool22FeiPCVDeposit: {
     artifactName: 'ERC20CompoundPCVDeposit',
