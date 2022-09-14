@@ -37,6 +37,8 @@ const proposal: TemplatedProposalDescription = {
   TIP-121c: INDEX OTC
 
   This proposal sets up the protocol to be able to OTC its 100,000 INDEX to Wintermute for OTC trade, in exchange of 200,000 DAI.
+
+  By passing this proposal, the Tribe DAO authorizes La Tribu SARL to operate this OTC trade between the Tribe DAO and Wintermute Trading and KYC on behalf of the DAO, but this delegation of power is scope-limited to this operation only. The Tribe DAO does not authorize La Tribu SARL to represent it in other contexts or take any other engagements on its behalf. The Tribe DAO shall bear all responsibilities regarding this trade, including accounting and reporting requirements, or tax obligations. The Tribe DAO shall keep custody of the exchanged funds at all times, and La Tribu SARL only acts as a technical operator for this transaction.
   `
 };
 
