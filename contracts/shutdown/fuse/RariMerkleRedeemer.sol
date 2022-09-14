@@ -29,9 +29,9 @@ contract RariMerkleRedeemer is MultiMerkleRedeemer, ReentrancyGuard {
     }
 
     /// @param token The token that will be received when exchanging cTokens
-    /// @param cTokens The supported cTokens; must be exactly 27 tokens
-    /// @param rates The exchange rate for each cToken; must be exactly 27 rates
-    /// @param roots The merkle root for each cToken; must be exactly 27 roots
+    /// @param cTokens The supported cTokens; must be exactly 20 tokens
+    /// @param rates The exchange rate for each cToken; must be exactly 20 rates
+    /// @param roots The merkle root for each cToken; must be exactly 20 roots
     constructor(
         address token,
         address[] memory cTokens,
@@ -122,7 +122,7 @@ contract RariMerkleRedeemer is MultiMerkleRedeemer, ReentrancyGuard {
     // The exchange rates provided should represent how much of the base token will be given
     // in exchange for 1e18 cTokens. This increases precision.
     function _configureExchangeRates(address[] memory _cTokens, uint256[] memory _exchangeRates) internal {
-        require(_cTokens.length == 27, "Must provide exactly 27 exchange rates.");
+        require(_cTokens.length == 20, "Must provide exactly 20 exchange rates.");
         require(_cTokens.length == _exchangeRates.length, "Exchange rates must be provided for each cToken");
 
         for (uint256 i = 0; i < _cTokens.length; i++) {
@@ -135,7 +135,7 @@ contract RariMerkleRedeemer is MultiMerkleRedeemer, ReentrancyGuard {
     }
 
     function _configureMerkleRoots(address[] memory _cTokens, bytes32[] memory _roots) internal {
-        require(_cTokens.length == 27, "Must provide exactly 27 merkle roots");
+        require(_cTokens.length == 20, "Must provide exactly 20 merkle roots");
         require(_cTokens.length == _roots.length, "Merkle roots must be provided for each cToken");
 
         for (uint256 i = 0; i < _cTokens.length; i++) {
