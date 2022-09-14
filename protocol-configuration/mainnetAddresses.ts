@@ -136,22 +136,32 @@ export const MainnetContractsConfig = {
     category: AddressCategory.Governance
   },
 
-  balancerGaugeStakerProxy: {
-    artifactName: 'TransparentUpgradeableProxy',
-    address: '0x66977Ce30049CD0e443216Bf26377966c3A109E2',
-    category: AddressCategory.Governance
-  },
-  balancerGaugeStaker: {
-    artifactName: 'BalancerGaugeStaker', // actually a TransparentUpgradeableProxy
-    address: '0x66977Ce30049CD0e443216Bf26377966c3A109E2',
-    category: AddressCategory.Governance
+  balancerVotingEscrowDelegation: {
+    artifactName: 'IVotingEscrowDelegation',
+    address: '0xB496FF44746A8693A060FafD984Da41B253f6790',
+    category: AddressCategory.External
   },
 
-  balancerGaugeStakerImpl: {
-    artifactName: 'BalancerGaugeStaker',
-    address: '0xF53E251352683155898295569d77B8506bA00d80',
-    category: AddressCategory.Governance
+  balancerGaugeStaker: {
+    artifactName: 'BalancerGaugeStaker', // actually TransparentUpgradeableProxy
+    address: '0x66977Ce30049CD0e443216Bf26377966c3A109E2',
+    category: AddressCategory.Deprecated
   },
+  veBoostManager: {
+    artifactName: 'VeBoostManager',
+    address: '0x66977Ce30049CD0e443216Bf26377966c3A109E2',
+    category: AddressCategory.TBD
+  },
+  veBoostManagerProxy: {
+    artifactName: 'TransparentUpgradeableProxy',
+    address: '0x66977Ce30049CD0e443216Bf26377966c3A109E2',
+    category: AddressCategory.TBD
+  },
+  //veBoostManagerImplementation: {
+  //  artifactName: 'VeBoostManager',
+  //  address: 'TODO',
+  //  category: AddressCategory.TBD
+  //},
 
   angleDelegatorPCVDeposit: {
     artifactName: 'AngleDelegatorPCVDeposit',

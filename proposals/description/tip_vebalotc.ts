@@ -6,13 +6,6 @@ const tip_vebalotc: TemplatedProposalDescription = {
   commands: [
     // 1. Handle veBAL OTC
     {
-      target: 'proxyAdmin',
-      values: '0',
-      method: 'changeProxyAdmin(address,address)',
-      arguments: (addresses) => [addresses.balancerGaugeStaker, addresses.aaveCompaniesMultisig],
-      description: 'Transfer proxy ownership of balancerGaugeStaker to aaveCompaniesMultisig'
-    },
-    {
       target: 'core',
       values: '0',
       method: 'grantRole(bytes32,address)',
@@ -64,6 +57,30 @@ const tip_vebalotc: TemplatedProposalDescription = {
       description: 'Send 13,381.94 BAL to TC Multisig'
     },
 
+    // 3. Handle balancerGaugeStaker proxy transfer
+    {
+      target: 'proxyAdmin',
+      values: '0',
+      method: 'upgrade(address,address)',
+      arguments: (addresses) => [addresses.balancerGaugeStaker, addresses.veBoostManagerImplementation],
+      description: `Upgrade implementation of the balancerGaugeStaker`
+    },
+    {
+      target: 'veBoostManager',
+      values: '0',
+      method: '_initialize(address,address)',
+      arguments: (addresses) => [addresses.vebalOtcHelper, addresses.balancerVotingEscrowDelegation],
+      description: 'Initialize veBoostManagerProxy state variables'
+    },
+    {
+      target: 'proxyAdmin',
+      values: '0',
+      method: 'changeProxyAdmin(address,address)',
+      arguments: (addresses) => [addresses.veBoostManagerProxy, addresses.aaveCompaniesMultisig],
+      description:
+        'Transfer proxy ownership of veBoostManagerProxy (formerly balancerGaugeStaker) to aaveCompaniesMultisig'
+    },
+
     // Finally, CR Oracle updates
     {
       target: 'collateralizationOracle',
@@ -84,6 +101,11 @@ const tip_vebalotc: TemplatedProposalDescription = {
   TIP-121c: veBAL OTC
 
   This proposal sets up the protocol to be able to transfer its 112k veBAL to Aave Companies for OTC trade.
+
+  The 1,000,000 DAI will be escrowed on a 3/3 multisig with Aave Companies, Balancer DAO, and Tribe DAO.
+  The Tribe DAO designates eswak.eth to be signer on this 3/3 multisig.
+
+  After the Aave Companies team confirms they can properly use the veBAL-holding smart contracts, the 3/3 multisig will transfer the DAI to the Tribe DAO.
 
   The full list of actions of this proposal is :
   - 1. Handle veBAL OTC
