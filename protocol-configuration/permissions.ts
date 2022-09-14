@@ -4,13 +4,7 @@ export const PermissionsConfig = {
   MINTER_ROLE: ['simpleFeiDaiPSM'],
   BURNER_ROLE: [],
   GOVERN_ROLE: ['core', 'feiDAOTimelock'],
-  PCV_CONTROLLER_ROLE: [
-    'feiDAOTimelock',
-    'ratioPCVControllerV2',
-    'pcvGuardian',
-    'daiPCVDripController',
-    'daiFixedPricePSMFeiSkimmer'
-  ],
+  PCV_CONTROLLER_ROLE: ['feiDAOTimelock', 'ratioPCVControllerV2', 'pcvGuardian'],
   GUARDIAN_ROLE: ['guardianMultisig', 'pcvGuardian', 'pcvSentinel'],
   ORACLE_ADMIN_ROLE: [],
   SWAP_ADMIN_ROLE: [],

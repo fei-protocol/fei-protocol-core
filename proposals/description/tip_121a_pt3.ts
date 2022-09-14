@@ -2,7 +2,9 @@ import { TemplatedProposalDescription } from '@custom-types/types';
 import { ethers } from 'ethers';
 
 // Total amount of Fei on La Tribu timelock
-const LA_TRIBU_FEI_UPPER_BOUND = '1050000000000000000000000';
+// ~900k from the La Tribu clawback, ~500k from the previous TC action
+// that calls releaseMax() on the deprecated Rari infra FEI timelock
+const LA_TRIBU_FEI_UPPER_BOUND = ethers.constants.WeiPerEther.mul(2_000_000);
 
 // Remaining LUSD balance
 const LUSD_BALANCE = '102813103625677039438144';
@@ -83,7 +85,7 @@ const tip_121a_pt3: TemplatedProposalDescription = {
       method: 'transferFromRatio(address,address,address,uint256)',
       arguments: (addresses) => [addresses.feiDAOTimelock, addresses.fei, addresses.daiFixedPricePSM, '10000'],
       description: `
-      Transfer all FEI from the la Tribu FEI timelock to the DAI PSM. It will later be 
+      Transfer all FEI from the DAO timelock to the DAI PSM. It will later be 
       burned.
       `
     },
@@ -94,7 +96,7 @@ const tip_121a_pt3: TemplatedProposalDescription = {
       values: '0',
       method: 'clawback()',
       arguments: (addresses) => [],
-      description: 'Clawback La Tribue TRIBE timelock'
+      description: 'Clawback La Tribu TRIBE timelock'
     },
     {
       target: 'tribe',
@@ -156,6 +158,14 @@ const tip_121a_pt3: TemplatedProposalDescription = {
         addresses.daiHoldingPCVDeposit // receiving address
       ],
       description: 'Sell last 100k of LUSD on Curve. Accept up to 2% slippage'
+    },
+    // 6. Zero out FEI approval given to ratioPCVController
+    {
+      target: 'fei',
+      values: '0',
+      method: 'approve(address,uint256)',
+      arguments: (addresses) => [addresses.ratioPCVControllerV2, '0'],
+      description: 'Remove remaining FEI approval on ratioPCVControllerV2'
     }
   ],
   description: `

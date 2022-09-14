@@ -114,6 +114,9 @@ describe('Pod operation and veto', function () {
     await contracts.core
       .connect(daoTimelockSigner)
       .grantRole(ethers.utils.id('ROLE_ADMIN'), contractAddresses.tribalCouncilTimelock);
+    await contracts.core
+      .connect(daoTimelockSigner)
+      .grantRole(ethers.utils.id('GOVERN_ROLE'), contractAddresses.roleBastion);
 
     // Timelock internal roles
     await contracts.tribalCouncilTimelock

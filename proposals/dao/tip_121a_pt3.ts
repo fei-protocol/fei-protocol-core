@@ -8,8 +8,6 @@ import {
   ValidateUpgradeFunc
 } from '@custom-types/types';
 import { BigNumber } from 'ethers';
-import { getImpersonatedSigner } from '@test/helpers';
-import { forceEth } from '@test/integration/setup/utils';
 
 /*
 
@@ -22,6 +20,9 @@ const MIN_LA_TRIBU_FEI_RECOVERED = ethers.constants.WeiPerEther.mul(700_000);
 
 // Minimum expected DAI to be gained from swapping LUSD on Curve
 const MIN_DAI_GAIN_LUSD_SWAP = ethers.constants.WeiPerEther.mul(90_000);
+
+// Deprecated Rari Infra FEI timelock, FEI available for release to DAO timelock
+const MIN_RARI_FEI_TIMELOCK_RELEASE = '525023021308980213089802'; // ~500k
 
 let initialPSMFeiBalance: BigNumber;
 let initialTreasuryTribeBalance: BigNumber;
@@ -69,7 +70,8 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 
   // Verify FEI moved to DAI PSM
   const psmFeiBalanceDiff = (await contracts.fei.balanceOf(addresses.daiFixedPricePSM)).sub(initialPSMFeiBalance);
-  expect(psmFeiBalanceDiff).to.be.bignumber.greaterThan(MIN_LA_TRIBU_FEI_RECOVERED);
+  console.log('FEI clawed back [M]: ', Number(psmFeiBalanceDiff) / 1e24);
+  expect(psmFeiBalanceDiff).to.be.bignumber.greaterThan(MIN_LA_TRIBU_FEI_RECOVERED.add(MIN_RARI_FEI_TIMELOCK_RELEASE));
 
   // 3. Verify admin accepted on deprecated Rari timelocks
   expect(await contracts.rariInfraFeiTimelock.beneficiary()).to.equal(addresses.feiDAOTimelock);
@@ -83,6 +85,9 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 
   const daiGain = (await contracts.dai.balanceOf(addresses.daiHoldingPCVDeposit)).sub(initialDaiHoldingDepositBalance);
   expect(daiGain).to.be.bignumber.greaterThan(MIN_DAI_GAIN_LUSD_SWAP);
+
+  // 6. Verify ratioPCVControllerV2 has no FEI approval
+  expect(await contracts.fei.allowance(addresses.feiDAOTimelock, addresses.ratioPCVControllerV2)).to.equal(0);
 };
 
 export { deploy, setup, teardown, validate };
