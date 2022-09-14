@@ -4,7 +4,9 @@ import { ethers } from 'ethers';
 // Total amount of Fei on La Tribu timelock
 // ~900k from the La Tribu clawback, ~500k from the previous TC action
 // that calls releaseMax() on the deprecated Rari infra FEI timelock
-const LA_TRIBU_FEI_UPPER_BOUND = ethers.constants.WeiPerEther.mul(2_000_000);
+// Approval set to a high of 5M, to prevent DAO vote from bricking if additional
+// FEI is transferred to DAO during vote. Approval revoked at end of vote
+const LA_TRIBU_FEI_UPPER_BOUND = ethers.constants.WeiPerEther.mul(5_000_000);
 
 // Remaining LUSD balance
 const LUSD_BALANCE = '102813103625677039438144';
@@ -38,6 +40,14 @@ const tip_121a_pt3: TemplatedProposalDescription = {
       method: 'revokeRole(bytes32,address)',
       arguments: (addresses) => [ethers.utils.id('TOKEMAK_DEPOSIT_ADMIN_ROLE'), addresses.tribalCouncilTimelock],
       description: 'Revoke TOKEMAK_DEPOSIT_ADMIN_ROLE from Tribal Council Timelock'
+    },
+    // FEI_MINT_ADMIN
+    {
+      target: 'core',
+      values: '0',
+      method: 'revokeRole(bytes32,address)',
+      arguments: (addresses) => [ethers.utils.id('FEI_MINT_ADMIN'), addresses.feiDAOTimelock],
+      description: 'Revoke FEI_MINT_ADMIN from DAO timelock'
     },
     // ROLE_ADMIN
     {
