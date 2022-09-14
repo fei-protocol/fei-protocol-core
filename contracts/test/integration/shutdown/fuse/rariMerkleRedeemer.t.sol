@@ -42,10 +42,8 @@ library RariMerkleRedeemerTestingLib {
      * Returns the actual list of cTokens in address[] memory format
      */
     function getCTokens() public pure returns (address[] memory cTokens) {
-        cTokens = new address[](27);
+        cTokens = new address[](20);
 
-        // @todo: add comments for each one showing which pool and token each address represents
-        // @todo: check these addresses
         cTokens[0] = address(0xd8553552f8868C1Ef160eEdf031cF0BCf9686945);
         cTokens[1] = address(0xbB025D470162CC5eA24daF7d4566064EE7f5F111);
         cTokens[2] = address(0x7e9cE3CAa9910cc048590801e64174957Ed41d43);
