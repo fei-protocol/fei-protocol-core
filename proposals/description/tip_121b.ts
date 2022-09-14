@@ -11,7 +11,7 @@ const dripperFeiAmount = total.sub(initialFeiAmount); // Remaining Fei for dripp
 /* DAO Vote Commands */
 
 const tip_121b: TemplatedProposalDescription = {
-  title: 'Part 2: RariFuse Hack Repayment',
+  title: 'Part 2: RariFuse Merkle Redemption',
   commands: [
     {
       target: 'fei',
@@ -29,7 +29,7 @@ const tip_121b: TemplatedProposalDescription = {
     }
   ],
   description: `
-  [Part 2: RariFuse Hack Repayment] /n/n
+  [Part 2: RariFuse Merkle Redemption] /n/n
   [<does stuff>] \n\n
   ` // @todo - add description
 };

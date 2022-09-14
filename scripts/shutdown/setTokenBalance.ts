@@ -2,7 +2,7 @@ import * as dotenv from 'dotenv';
 import { BigNumber, ethers } from 'ethers';
 import { parseEther } from 'ethers/lib/utils';
 import { IERC20, IERC20__factory } from '../../types/contracts';
-import { cTokens } from '../../proposals/data/hack_repayment/cTokens';
+import { cTokens } from '../../proposals/data/merkle_redemption/cTokens';
 
 dotenv.config();
 
