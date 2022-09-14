@@ -55,57 +55,6 @@ describe('e2e-buybacks', function () {
     }
   });
 
-  describe('PCV Equity Minter + LBP', async function () {
-    it('mints appropriate amount and swaps', async function () {
-      const {
-        pcvEquityMinter,
-        collateralizationOracle,
-        namedStaticPCVDepositWrapper,
-        noFeeFeiTribeLBPSwapper,
-        fei,
-        tribe,
-        core
-      } = contracts;
-
-      await increaseTime(await noFeeFeiTribeLBPSwapper.remainingTime());
-
-      const pcvStats = await collateralizationOracle.pcvStats();
-
-      if (pcvStats[2] < 0) {
-        await namedStaticPCVDepositWrapper.addDeposit({
-          depositName: 'deposit',
-          usdAmount: pcvStats[0],
-          feiAmount: '0',
-          underlyingTokenAmount: 1,
-          underlyingToken: tribe.address
-        });
-      }
-
-      // set Chainlink ETHUSD to a fixed 4,000$ value
-      await overwriteChainlinkAggregator(contractAddresses.chainlinkEthUsdOracle, '400000000000', '8');
-
-      // set Chainlink OHM_V2:USD to a fixed ~$14.5 value
-      // Need to override the chainlink storage to make it a fresh value because otherwise
-      // fork block is well out of date, oracle will report invalid and the CR will be invalid
-      await overwriteChainlinkAggregator(contractAddresses.chainlinkOHMV2EthOracle, '8748580000000000', '18');
-
-      await collateralizationOracle.update();
-
-      await core.allocateTribe(noFeeFeiTribeLBPSwapper.address, ethers.constants.WeiPerEther.mul(1_000_000));
-      const tx = await pcvEquityMinter.mint();
-      expect(tx).to.emit(pcvEquityMinter, 'FeiMinting');
-      expect(tx).to.emit(fei, 'Transfer');
-      expect(tx).to.emit(tribe, 'Transfer');
-
-      expect(await noFeeFeiTribeLBPSwapper.swapEndTime()).to.be.gt(toBN((await latestTime()).toString()));
-
-      await increaseTime(await pcvEquityMinter.duration());
-      await core.allocateTribe(noFeeFeiTribeLBPSwapper.address, ethers.constants.WeiPerEther.mul(1_000_000));
-
-      await pcvEquityMinter.mint();
-    });
-  });
-
   describe('Collateralization Oracle', async function () {
     before(async function () {
       const numDeposits = await contracts.namedStaticPCVDepositWrapper.numDeposits();

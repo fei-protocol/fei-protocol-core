@@ -1,9 +1,9 @@
 // This config lists all of the contracts that (should) be hold each listed role.
 
 export const PermissionsConfig = {
-  MINTER_ROLE: ['feiDAOTimelock', 'pcvEquityMinter', 'daiFixedPricePSM'],
+  MINTER_ROLE: ['feiDAOTimelock', 'daiFixedPricePSM'],
   BURNER_ROLE: [],
-  GOVERN_ROLE: ['core', 'feiDAOTimelock', 'roleBastion'],
+  GOVERN_ROLE: ['core', 'feiDAOTimelock'],
   PCV_CONTROLLER_ROLE: [
     'feiDAOTimelock',
     'ratioPCVControllerV2',
@@ -13,7 +13,7 @@ export const PermissionsConfig = {
   ],
   GUARDIAN_ROLE: ['guardianMultisig', 'pcvGuardian', 'pcvSentinel'],
   ORACLE_ADMIN_ROLE: ['tribalCouncilTimelock'],
-  SWAP_ADMIN_ROLE: ['pcvEquityMinter', 'tribalCouncilTimelock', 'tribalCouncilSafe'],
+  SWAP_ADMIN_ROLE: ['tribalCouncilTimelock', 'tribalCouncilSafe'],
   BALANCER_MANAGER_ADMIN_ROLE: [],
   RATE_LIMITED_MINTER_ADMIN: [],
   PARAMETER_ADMIN: [],
@@ -26,10 +26,10 @@ export const PermissionsConfig = {
   METAGOVERNANCE_VOTE_ADMIN: ['feiDAOTimelock', 'tribalCouncilTimelock'],
   METAGOVERNANCE_TOKEN_STAKING: ['feiDAOTimelock'],
   METAGOVERNANCE_GAUGE_ADMIN: ['feiDAOTimelock', 'tribalCouncilTimelock'],
-  ROLE_ADMIN: ['feiDAOTimelock', 'tribalCouncilTimelock'],
+  ROLE_ADMIN: ['feiDAOTimelock'],
   POD_METADATA_REGISTER_ROLE: [
     'tribalCouncilSafe',
-    'tribeDev1Deployer',
+    'tribeDev2Deployer',
     'tribeDev2Deployer',
     'tribeDev3Deployer',
     'tribeDev4Deployer'
@@ -38,7 +38,7 @@ export const PermissionsConfig = {
   POD_VETO_ADMIN: ['nopeDAO'],
   POD_ADMIN: ['tribalCouncilTimelock', 'podFactory'],
   PCV_MINOR_PARAM_ROLE: ['feiDAOTimelock', 'tribalCouncilTimelock'],
-  TOKEMAK_DEPOSIT_ADMIN_ROLE: ['feiDAOTimelock', 'tribalCouncilTimelock']
+  TOKEMAK_DEPOSIT_ADMIN_ROLE: []
 };
 
 export type PermissionsConfigType = typeof PermissionsConfig;
