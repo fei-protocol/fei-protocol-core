@@ -9,7 +9,7 @@ import { ethers } from 'hardhat';
 
 const toBN = ethers.BigNumber.from;
 
-describe('e2e-backstop', function () {
+describe.only('e2e-backstop', function () {
   let contracts: NamedContracts;
   let contractAddresses: NamedAddresses;
   let deployAddress: string;

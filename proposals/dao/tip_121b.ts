@@ -152,7 +152,7 @@ const OLYMPUS_ADDRESS = '0x245cc372C84B3645Bf0Ffe6538620B04a217988B';
 const VESPER_ADDRESS = '0x9520b477Aa81180E6DdC006Fc09Fb6d3eb4e807A';
 const RARI_DAI_AGGREGATOR_ADDRESS = '0xafd2aade64e6ea690173f6de59fc09f5c9190d74';
 const GNOSIS_SAFE_ADDRESS = '0x7189b2ea41d406c5044865685fedb615626f9afd';
-const FUJI_CONRACT_ADDRESS = '0xf3caa27dd9926b391f50849bdfdb8a06fb489b67';
+const FUJI_CONTRACT_ADDRESS = '0x1868cBADc11D3f4A12eAaf4Ab668e8aA9a76d790';
 const CONTRACT_1_ADDRESS = '0x07197a25bf7297c2c41dd09a79160d05b6232bcf';
 const ALOE_ADDRESS_1 = '0x0b76abb170519c292da41404fdc30bb5bef308fc';
 const ALOE_ADDRESS_2 = '0x8bc7c34009965ccb8c0c2eb3d4db5a231ecc856c';
@@ -170,7 +170,7 @@ async function logDaiBalances(dai: Contract) {
   console.log('Vesper DAI balance: ', Number(await dai.balanceOf(VESPER_ADDRESS)) / 1e18);
   console.log('Rari DAI balance: ', Number(await dai.balanceOf(RARI_DAI_AGGREGATOR_ADDRESS)) / 1e18);
   console.log('Gnosis DAI balance: ', Number(await dai.balanceOf(GNOSIS_SAFE_ADDRESS)) / 1e18);
-  console.log('Fuji DAI balance: ', Number(await dai.balanceOf(FUJI_CONRACT_ADDRESS)) / 1e18);
+  console.log('Fuji DAI balance: ', Number(await dai.balanceOf(FUJI_CONTRACT_ADDRESS)) / 1e18);
   console.log('Contract 1 DAI balance: ', Number(await dai.balanceOf(CONTRACT_1_ADDRESS)) / 1e18);
   console.log('Contract 2 DAI balance: ', Number(await dai.balanceOf(CONTRACT_2_ADDRESS)) / 1e18);
   console.log('Contract 3 DAI balance: ', Number(await dai.balanceOf(CONTRACT_3_ADDRESS)) / 1e18);

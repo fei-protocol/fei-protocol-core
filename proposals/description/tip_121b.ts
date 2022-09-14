@@ -16,7 +16,7 @@ const OLYMPUS_ADDRESS = '0x245cc372C84B3645Bf0Ffe6538620B04a217988B';
 const VESPER_ADDRESS = '0x9520b477Aa81180E6DdC006Fc09Fb6d3eb4e807A';
 const RARI_DAI_AGGREGATOR_ADDRESS = '0xafd2aade64e6ea690173f6de59fc09f5c9190d74';
 const GNOSIS_SAFE_ADDRESS = '0x7189b2ea41d406c5044865685fedb615626f9afd';
-const FUJI_CONRACT_ADDRESS = '0xf3caa27dd9926b391f50849bdfdb8a06fb489b67';
+const FUJI_CONTRACT_ADDRESS = '0x1868cBADc11D3f4A12eAaf4Ab668e8aA9a76d790';
 const CONTRACT_1_ADDRESS = '0x07197a25bf7297c2c41dd09a79160d05b6232bcf';
 const ALOE_ADDRESS_1 = '0x0b76abb170519c292da41404fdc30bb5bef308fc';
 const ALOE_ADDRESS_2 = '0x8bc7c34009965ccb8c0c2eb3d4db5a231ecc856c';
@@ -35,7 +35,7 @@ const OLYMPUS_ADDRESS_AMOUNT = parseEther('100000');
 const VESPER_ADDRESS_AMOUNT = parseEther('100000');
 const RARI_DAI_AGGREGATOR_ADDRESS_AMOUNT = parseEther('100000');
 const GNOSIS_SAFE_ADDRESS_AMOUNT = parseEther('100000');
-const FUJI_CONRACT_ADDRESS_AMOUNT = parseEther('100000');
+const FUJI_CONTRACT_ADDRESS_AMOUNT = parseEther('100000');
 const CONTRACT_1_ADDRESS_AMOUNT = parseEther('100000');
 const ALOE_ADDRESS_1_AMOUNT = parseEther('100000');
 const ALOE_ADDRESS_2_AMOUNT = parseEther('100000');
@@ -118,7 +118,7 @@ const tip_121b: TemplatedProposalDescription = {
       target: 'daiHoldingPCVDeposit',
       values: '0',
       method: 'withdraw(address,uint256)',
-      arguments: (addresses) => [FUJI_CONRACT_ADDRESS, FUJI_CONRACT_ADDRESS_AMOUNT],
+      arguments: (addresses) => [FUJI_CONTRACT_ADDRESS, FUJI_CONTRACT_ADDRESS_AMOUNT],
       description: 'Withdraw DAI to FUJI'
     },
     {
