@@ -12,6 +12,7 @@ import {
   TeardownUpgradeFunc,
   ValidateUpgradeFunc
 } from '@custom-types/types';
+import { Contract } from '@ethersproject/contracts';
 import { cTokens } from '@proposals/data/hack_repayment/cTokens';
 import { rates } from '@proposals/data/hack_repayment/rates';
 import { roots } from '@proposals/data/hack_repayment/roots';
@@ -71,7 +72,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 // This could include setting up Hardhat to impersonate accounts,
 // ensuring contracts have a specific state, etc.
 const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  console.log(`No actions to complete in setup for fip${fipNumber}`);
+  console.log(`Setup actions for fip${fipNumber}`);
+  await logDaiBalances(contracts.dai);
 };
 
 // Tears down any changes made in setup() that need to be
@@ -128,6 +130,62 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   await merkleRedeemerDripper.drip();
   const redeemerBalAfterDrip = await fei.balanceOf(rariMerkleRedeemer.address);
   expect(redeemerBalAfterDrip.sub(redeemerBalBeforeDrip)).to.be.equal(dripAmount);
+
+  await logDaiBalances(contracts.dai);
+
+  // Execute fuseWithdrawalGuard actions
+  let i = 0;
+  while (await contracts.fuseWithdrawalGuard.check()) {
+    const protecActions = await contracts.fuseWithdrawalGuard.getProtecActions();
+    const depositAddress = '0x' + protecActions.datas[0].slice(34, 74);
+    const depositLabel = getAddressLabel(addresses, depositAddress);
+    const withdrawAmountHex = '0x' + protecActions.datas[0].slice(138, 202);
+    const withdrawAmountNum = Number(withdrawAmountHex) / 1e18;
+    console.log('fuseWithdrawalGuard   protec action #', ++i, depositLabel, 'withdraw', withdrawAmountNum);
+    await contracts.pcvSentinel.protec(contracts.fuseWithdrawalGuard.address);
+  }
 };
+
+const BABYLON_ADDRESS = '0x97FcC2Ae862D03143b393e9fA73A32b563d57A6e';
+const FRAX_ADDRESS = '0xB1748C79709f4Ba2Dd82834B8c82D4a505003f27';
+const OLYMPUS_ADDRESS = '0x245cc372C84B3645Bf0Ffe6538620B04a217988B';
+const VESPER_ADDRESS = '0x9520b477Aa81180E6DdC006Fc09Fb6d3eb4e807A';
+const RARI_DAI_AGGREGATOR_ADDRESS = '0xafd2aade64e6ea690173f6de59fc09f5c9190d74';
+const GNOSIS_SAFE_ADDRESS = '0x7189b2ea41d406c5044865685fedb615626f9afd';
+const FUJI_CONRACT_ADDRESS = '0xf3caa27dd9926b391f50849bdfdb8a06fb489b67';
+const CONTRACT_1_ADDRESS = '0x07197a25bf7297c2c41dd09a79160d05b6232bcf';
+const ALOE_ADDRESS_1 = '0x0b76abb170519c292da41404fdc30bb5bef308fc';
+const ALOE_ADDRESS_2 = '0x8bc7c34009965ccb8c0c2eb3d4db5a231ecc856c';
+const CONTRACT_2_ADDRESS = '0x5495f41144ecef9233f15ac3e4283f5f653fc96c';
+const BALANCER_ADDRESS = '0x10A19e7eE7d7F8a52822f6817de8ea18204F2e4f';
+const CONTRACT_3_ADDRESS = '0xeef86c2e49e11345f1a693675df9a38f7d880c8f';
+const CONTRACT_4_ADDRESS = '0xa10fca31a2cb432c9ac976779dc947cfdb003ef0';
+// TODO
+const RARI_FOR_ARBITRUM_ADDRESS = '0xa731585ab05fC9f83555cf9Bff8F58ee94e18F85';
+
+async function logDaiBalances(dai: Contract) {
+  console.log('Babylon DAI balance: ', Number(await dai.balanceOf(BABYLON_ADDRESS)) / 1e18);
+  console.log('Frax DAI balance: ', Number(await dai.balanceOf(FRAX_ADDRESS)) / 1e18);
+  console.log('Olympus DAI balance: ', Number(await dai.balanceOf(OLYMPUS_ADDRESS)) / 1e18);
+  console.log('Vesper DAI balance: ', Number(await dai.balanceOf(VESPER_ADDRESS)) / 1e18);
+  console.log('Rari DAI balance: ', Number(await dai.balanceOf(RARI_DAI_AGGREGATOR_ADDRESS)) / 1e18);
+  console.log('Gnosis DAI balance: ', Number(await dai.balanceOf(GNOSIS_SAFE_ADDRESS)) / 1e18);
+  console.log('Fuji DAI balance: ', Number(await dai.balanceOf(FUJI_CONRACT_ADDRESS)) / 1e18);
+  console.log('Contract 1 DAI balance: ', Number(await dai.balanceOf(CONTRACT_1_ADDRESS)) / 1e18);
+  console.log('Contract 2 DAI balance: ', Number(await dai.balanceOf(CONTRACT_2_ADDRESS)) / 1e18);
+  console.log('Contract 3 DAI balance: ', Number(await dai.balanceOf(CONTRACT_3_ADDRESS)) / 1e18);
+  console.log('Contract 4 DAI balance: ', Number(await dai.balanceOf(CONTRACT_4_ADDRESS)) / 1e18);
+  console.log('Aloe 1 DAI balance: ', Number(await dai.balanceOf(ALOE_ADDRESS_1)) / 1e18);
+  console.log('Aloe 2 DAI balance: ', Number(await dai.balanceOf(ALOE_ADDRESS_2)) / 1e18);
+  console.log('Balancer DAI balance: ', Number(await dai.balanceOf(BALANCER_ADDRESS)) / 1e18);
+  console.log('Rari for Arbitrum DAI balance: ', Number(await dai.balanceOf(RARI_FOR_ARBITRUM_ADDRESS)) / 1e18);
+}
+
+function getAddressLabel(addresses: NamedAddresses, address: string) {
+  for (const key in addresses) {
+    if (address.toLowerCase() == addresses[key].toLowerCase()) return key;
+  }
+  return '???';
+}
 
 export { deploy, setup, teardown, validate };
