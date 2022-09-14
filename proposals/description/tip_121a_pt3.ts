@@ -12,7 +12,7 @@ const LA_TRIBU_FEI_UPPER_BOUND = ethers.constants.WeiPerEther.mul(5_000_000);
 const LUSD_BALANCE = '102813103625677039438144';
 
 // Expected amount of Curve swap DAI out, minus a 2% slippage
-const EXPECTED_DAI_OUT = '100756841553163498649381';
+const MIN_EXPECTED_DAI_OUT = ethers.constants.WeiPerEther.mul(103_000);
 
 const tip_121a_pt3: TemplatedProposalDescription = {
   title: 'TIP-121a (cont.): Sell last LUSD, Timelock and Role Cleanup + La Tribu Clawback',
@@ -164,7 +164,7 @@ const tip_121a_pt3: TemplatedProposalDescription = {
         '0', // LUSD
         '1', // DAI
         LUSD_BALANCE, // dx - amount of LUSD being swapped
-        EXPECTED_DAI_OUT, // dy  - minimum amount of DAI to receive
+        MIN_EXPECTED_DAI_OUT, // dy  - minimum amount of DAI to receive
         addresses.daiHoldingPCVDeposit // receiving address
       ],
       description: 'Sell last 100k of LUSD on Curve. Accept up to 2% slippage'
