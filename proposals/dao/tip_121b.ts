@@ -37,10 +37,11 @@ Steps:
 const fipNumber = 'tip_121b';
 
 const dripPeriod = 3600; // 1 hour
-const dripAmount = ethers.utils.parseEther('2500000'); // 2.5m Fei
+const dripAmount = ethers.utils.parseEther('1000000'); // 1m Fei
 
-const rariMerkleRedeemerInitialBalance = ethers.utils.parseEther('5000000'); // 5m Fei
-const merkleRedeemerDripperInitialBalance = ethers.utils.parseEther('45000000'); // 45m Fei
+const total = parseEther('12545744'); // 12.545M Fei total
+const merkleRedeemerDripperInitialBalance = parseEther('9000000'); // 9m Fei initially in dripper
+const rariMerkleRedeemerInitialBalance = total.sub(merkleRedeemerDripperInitialBalance); // Remaining Fei for merkle redeemer (3.545m Fei)
 
 // Do any deployments
 // This should exclusively include new contract deployments
@@ -160,7 +161,6 @@ const CONTRACT_2_ADDRESS = '0x5495f41144ecef9233f15ac3e4283f5f653fc96c';
 const BALANCER_ADDRESS = '0x10A19e7eE7d7F8a52822f6817de8ea18204F2e4f';
 const CONTRACT_3_ADDRESS = '0xeef86c2e49e11345f1a693675df9a38f7d880c8f';
 const CONTRACT_4_ADDRESS = '0xa10fca31a2cb432c9ac976779dc947cfdb003ef0';
-// TODO
 const RARI_FOR_ARBITRUM_ADDRESS = '0xa731585ab05fC9f83555cf9Bff8F58ee94e18F85';
 
 async function logDaiBalances(dai: Contract) {

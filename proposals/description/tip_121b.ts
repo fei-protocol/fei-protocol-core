@@ -1,13 +1,17 @@
 import { TemplatedProposalDescription } from '@custom-types/types';
 import { parseEther } from 'ethers/lib/utils';
 
+/*  Day Before runbook */
+// 1. Freeze balances and merkle roots
+// 2. Update total FEI minted
+// 3. Update contract FEI balances
+// 4. Run contract integration test and manually review FEI balances
+
 /* Configuration Constants */
 
-// TODO: make these numbers more precise. 50m is too high.
-const total = parseEther('50000000'); // 50m Fei total
-const dripSize = parseEther('2500000'); // 2.5m Fei per drip
-const initialFeiAmount = dripSize.mul(2); // 2 x initial drip size for seed amount (5m Fei)
-const dripperFeiAmount = total.sub(initialFeiAmount); // Remaining Fei for dripper (45m Fei)
+const total = parseEther('12545744'); // 12.545M Fei total
+const dripperFeiAmount = parseEther('9000000'); // 9m Fei initially in dripper
+const initialFeiAmount = total.sub(dripperFeiAmount); // Remaining Fei for merkle redeemer (3.545m Fei)
 
 //// Smart contract addresses
 const BABYLON_ADDRESS = '0x97FcC2Ae862D03143b393e9fA73A32b563d57A6e';
@@ -24,26 +28,25 @@ const CONTRACT_2_ADDRESS = '0x5495f41144ecef9233f15ac3e4283f5f653fc96c';
 const BALANCER_ADDRESS = '0x10A19e7eE7d7F8a52822f6817de8ea18204F2e4f';
 const CONTRACT_3_ADDRESS = '0xeef86c2e49e11345f1a693675df9a38f7d880c8f';
 const CONTRACT_4_ADDRESS = '0xa10fca31a2cb432c9ac976779dc947cfdb003ef0';
-// TODO
 const RARI_FOR_ARBITRUM_ADDRESS = '0xa731585ab05fC9f83555cf9Bff8F58ee94e18F85';
 
 // TODO update amounts to be final
 //// Smart contract address amounts
-const BABYLON_ADDRESS_AMOUNT = parseEther('100000');
-const FRAX_ADDRESS_AMOUNT = parseEther('100000');
-const OLYMPUS_ADDRESS_AMOUNT = parseEther('100000');
-const VESPER_ADDRESS_AMOUNT = parseEther('100000');
-const RARI_DAI_AGGREGATOR_ADDRESS_AMOUNT = parseEther('100000');
-const GNOSIS_SAFE_ADDRESS_AMOUNT = parseEther('100000');
-const FUJI_CONTRACT_ADDRESS_AMOUNT = parseEther('100000');
-const CONTRACT_1_ADDRESS_AMOUNT = parseEther('100000');
-const ALOE_ADDRESS_1_AMOUNT = parseEther('100000');
-const ALOE_ADDRESS_2_AMOUNT = parseEther('100000');
-const CONTRACT_2_ADDRESS_AMOUNT = parseEther('100000');
-const BALANCER_ADDRESS_AMOUNT = parseEther('100000');
-const CONTRACT_3_ADDRESS_AMOUNT = parseEther('100000');
-const CONTRACT_4_ADDRESS_AMOUNT = parseEther('100000');
-const RARI_FOR_ARBITRUM_ADDRESS_AMOUNT = parseEther('100000');
+const BABYLON_ADDRESS_AMOUNT = '257976130600662761472';
+const FRAX_ADDRESS_AMOUNT = '12578161595888433572610048';
+const OLYMPUS_ADDRESS_AMOUNT = '9683443928469978549846016';
+const VESPER_ADDRESS_AMOUNT = '601072718698082467840000';
+const RARI_DAI_AGGREGATOR_ADDRESS_AMOUNT = '420030516070480340844544';
+const GNOSIS_SAFE_ADDRESS_AMOUNT = '362039106118678189441024';
+const FUJI_CONTRACT_ADDRESS_AMOUNT = '2010865343614417895424';
+const CONTRACT_1_ADDRESS_AMOUNT = '417690248180299792384';
+const ALOE_ADDRESS_1_AMOUNT = '131398154543181185024';
+const ALOE_ADDRESS_2_AMOUNT = '59837970162146975744';
+const CONTRACT_2_ADDRESS_AMOUNT = '34458225066045444096';
+const BALANCER_ADDRESS_AMOUNT = '15130880917462759424';
+const CONTRACT_3_ADDRESS_AMOUNT = '14657785972526270464';
+const CONTRACT_4_ADDRESS_AMOUNT = '11465258169975218176';
+const RARI_FOR_ARBITRUM_ADDRESS_AMOUNT = parseEther('280000');
 /* DAO Vote Commands */
 
 const tip_121b: TemplatedProposalDescription = {
