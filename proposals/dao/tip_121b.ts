@@ -7,7 +7,6 @@ import {
 import { RariMerkleRedeemer__factory } from '@custom-types/contracts/factories/RariMerkleRedeemer__factory';
 import {
   DeployUpgradeFunc,
-  MainnetContracts,
   NamedAddresses,
   NamedContracts,
   PcvStats,
@@ -17,15 +16,14 @@ import {
 } from '@custom-types/types';
 import { Contract } from '@ethersproject/contracts';
 import { cTokens } from '@proposals/data/merkle_redemption/cTokens';
-import rates from '@proposals/data/merkle_redemption/sample/rates_block_15523462.json';
-import roots from '@proposals/data/merkle_redemption/sample/roots_block_15523462.json';
+import rates from '@proposals/data/merkle_redemption/sample/rates.json';
+import roots from '@proposals/data/merkle_redemption/sample/roots.json';
 import { MainnetContractsConfig } from '@protocol/mainnetAddresses';
 import { getImpersonatedSigner } from '@test/helpers';
 import { forceEth } from '@test/integration/setup/utils';
 import { expect } from 'chai';
 import { parseEther } from 'ethers/lib/utils';
 import { ethers } from 'hardhat';
-import { BigNumber } from 'ethers';
 
 /*
 
