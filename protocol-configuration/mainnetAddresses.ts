@@ -338,7 +338,12 @@ export const MainnetContractsConfig = {
   indexDelegator: {
     artifactName: 'SnapshotDelegatorPCVDeposit',
     address: '0x0ee81df08B20e4f9E0F534e50da437D24491c4ee',
-    category: AddressCategory.PCV_V1
+    category: AddressCategory.Deprecated
+  },
+  indexOtcEscrow: {
+    artifactName: 'OtcEscrow',
+    address: '0x574a9a9EeD5A3bE02bD35255e7E8625fE6824a02',
+    category: AddressCategory.TBD
   },
 
   rariPool22FeiPCVDeposit: {
@@ -1573,6 +1578,11 @@ export const MainnetContractsConfig = {
   eswak: {
     artifactName: 'unknown',
     address: '0x6ef71cA9cD708883E129559F5edBFb9d9D5C6148',
+    category: AddressCategory.External
+  },
+  wintermute: {
+    artifactName: 'unknown',
+    address: '0x4B3F1048C55Faa0C0873e249E541139360501f2a',
     category: AddressCategory.External
   },
   olympusMultisig: {
