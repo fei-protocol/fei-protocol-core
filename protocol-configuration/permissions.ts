@@ -1,7 +1,7 @@
 // This config lists all of the contracts that (should) be hold each listed role.
 
 export const PermissionsConfig = {
-  MINTER_ROLE: ['simpleFeiDaiPSM'],
+  MINTER_ROLE: ['simpleFeiDaiPSM', 'feiDAOTimelock'],
   BURNER_ROLE: [],
   GOVERN_ROLE: ['core', 'feiDAOTimelock'],
   PCV_CONTROLLER_ROLE: ['feiDAOTimelock', 'ratioPCVControllerV2', 'pcvGuardian'],
@@ -20,12 +20,12 @@ export const PermissionsConfig = {
   METAGOVERNANCE_VOTE_ADMIN: [],
   METAGOVERNANCE_TOKEN_STAKING: [],
   METAGOVERNANCE_GAUGE_ADMIN: [],
-  ROLE_ADMIN: ['feiDAOTimelock'],
+  ROLE_ADMIN: [],
   POD_METADATA_REGISTER_ROLE: [],
   FEI_MINT_ADMIN: [],
   POD_VETO_ADMIN: ['nopeDAO'],
   POD_ADMIN: [],
-  PCV_MINOR_PARAM_ROLE: ['feiDAOTimelock'],
+  PCV_MINOR_PARAM_ROLE: [],
   TOKEMAK_DEPOSIT_ADMIN_ROLE: []
 };
 

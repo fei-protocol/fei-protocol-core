@@ -48,10 +48,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await contracts.tribe.minter()).to.equal(ethers.constants.AddressZero);
   expect(await contracts.tribeMinter.annualMaxInflationBasisPoints()).to.equal(1);
 
-  // 3. Verify PCV Sentinel has all guards removed
-  expect((await contracts.pcvSentinel.allGuards()).length).to.equal(0);
-
-  // 4. Verify Tribe Reserve Stabiliser is paused
+  // 3. Verify Tribe Reserve Stabiliser is paused
   expect(await contracts.tribeReserveStabilizer.paused()).to.be.true;
 };
 
