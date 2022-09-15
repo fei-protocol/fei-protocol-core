@@ -27,6 +27,29 @@ const tip_121c: TemplatedProposalDescription = {
       arguments: (addresses) => [addresses.daiPCVDripController],
       description: `Revoke PCV_CONTROLLER role from the old DAI PSM drip controller`
     },
+
+    // Pause old DAI PSM
+    {
+      target: 'daiFixedPricePSM',
+      values: '0',
+      method: 'pause()',
+      arguments: (addresses) => [],
+      description: `Pause old DAI PSM`
+    },
+    {
+      target: 'daiFixedPricePSM',
+      values: '0',
+      method: 'pauseMint()',
+      arguments: (addresses) => [],
+      description: `Pause minting on old DAI PSM`
+    },
+    {
+      target: 'daiFixedPricePSM',
+      values: '0',
+      method: 'pauseRedeem()',
+      arguments: (addresses) => [],
+      description: `Pause redeeming on old DAI PSM`
+    },
     // 1.b Setup the new DAI PSM
     {
       target: 'core',

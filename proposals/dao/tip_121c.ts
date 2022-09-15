@@ -8,6 +8,7 @@ import {
   ValidateUpgradeFunc
 } from '@custom-types/types';
 import { BigNumber } from 'ethers';
+import { expect } from 'chai';
 
 const toBN = BigNumber.from;
 
@@ -78,6 +79,15 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
     '(millions)'
   );
   console.log('simpleFeiDaiPSM FEI balance', (await contracts.fei.balanceOf(addresses.simpleFeiDaiPSM)) / 1e18);
+  // 1. Verify old DAI PSM is deprecated
+  // Has no funds
+  expect(await contracts.fei.balanceOf(addresses.daiFixedPricePSM)).to.equal(0);
+  expect(await contracts.dai.balanceOf(addresses.daiFixedPricePSM)).to.equal(0);
+
+  // Fully paused
+  expect(await contracts.daiFixedPricePSM.paused()).to.be.true;
+  expect(await contracts.daiFixedPricePSM.redeemPaused()).to.be.true;
+  expect(await contracts.daiFixedPricePSM.mintPaused()).to.be.true;
 };
 
 export { deploy, setup, teardown, validate };
