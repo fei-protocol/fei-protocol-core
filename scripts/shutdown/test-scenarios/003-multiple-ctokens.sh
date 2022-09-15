@@ -21,5 +21,5 @@ npx ts-node scripts/shutdown/deployMerkleRedeemer scripts/shutdown/data/sample/r
 # give the redeemer some FEI
 # npx ts-node scripts/shutdown/setTokenBalance 0x956F47F50A910163D8BF957Cf5846D573E7f87CA $redeemerAddress 100000000000000000000 true
 
-# copy the merged snapshot to the rari-hack-repayment repo
-# cp scripts/shutdown/test-scenarios/003-multiple-ctokens.merged.json ../rari-hack-repayment/src/data/hackRepaymentSnapshot.json
+# copy the merged snapshot to the merkle-redemption repo
+# cp scripts/shutdown/test-scenarios/003-multiple-ctokens.merged.json ../rari-merkle-redemption/src/data/merkleRedemptionSnapshot.json

@@ -50,7 +50,7 @@ const RARI_FOR_ARBITRUM_ADDRESS_AMOUNT = parseEther('280000');
 /* DAO Vote Commands */
 
 const tip_121b: TemplatedProposalDescription = {
-  title: 'Part 2: RariFuse Hack Repayment',
+  title: 'Part 2: RariFuse Merkle Redemption',
   commands: [
     // 1. Mint FEI directly to redeemer
     {
@@ -201,7 +201,7 @@ const tip_121b: TemplatedProposalDescription = {
     }
   ],
   description: `
-  [Part 2: RariFuse Hack Repayment] /n/n
+  [Part 2: RariFuse Merkle Redemption] /n/n
   [<does stuff>] \n\n
   ` // @todo - add description
 };

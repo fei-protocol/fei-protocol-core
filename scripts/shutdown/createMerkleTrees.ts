@@ -1,7 +1,7 @@
 import { keccak256, solidityKeccak256 } from 'ethers/lib/utils';
 import fs from 'fs';
 import { MerkleTree } from 'merkletreejs';
-import { cTokens } from './data/prod/cTokens';
+import { cTokens } from '../../proposals/data/merkle_redemption/cTokens';
 
 async function main() {
   if (process.argv[2] === 'help') {
@@ -10,22 +10,22 @@ async function main() {
         npx ts-node scripts/shutdown/createMerkleTree [dataJSONFilename] [outputPath] [debug] [additionalDataJSONFilename] 
       
       Args:
-        dataJSONFilename = string (default: "./scripts/shutdown/data/sample/snapshot.json")
-        outputFilename = string (default: "./scripts/shutdown/data/sample/merkleRoots.json")
+        dataJSONFilename = string (default: "./proposals/data/merkle_redemption/scripts/shutdown/data/sample/snapshot.json")
+        outputFilename = string (default: "./proposals/data/merkle_redemption/scripts/shutdown/data/sample/merkleRoots.json")
         debug = true | false (default: false)
         additionalDataJSONFilename = string (default: undefined)
       
       Examples: 
         npx ts-node scripts/shutdown/createMerkleTree
-        npx ts-node scripts/shutdown/createMerkleTree scripts/shutdown/prod/snapshot.json
-        npx ts-node scripts/shutdown/createMerkleTree scripts/shutdown/sample/snapshot.json scripts/shutdown/prod/roots.json true scripts/shutdown/sample/testingSnapshot.json
+        npx ts-node scripts/shutdown/createMerkleTree ./proposals/data/merkle_redemption/scripts/shutdown/data/sample/snapshot.json
+        npx ts-node scripts/shutdown/createMerkleTree ./proposals/data/merkle_redemption/scripts/shutdown/data/sample/snapshot.json ./proposals/data/merkle_redemption/scripts/shutdown/data/prod/roots.json true ./proposals/data/merkle_redemption/scripts/shutdown/data/prod/testingSnapshot.json
     `);
     return;
   }
 
-  let dataJSONFilename = './scripts/shutdown/data/sample/snapshot.json';
+  let dataJSONFilename = './proposals/data/merkle_redemption/scripts/shutdown/data/sample/snapshot.json';
   let extraDataJSONFilename = undefined;
-  let outputFilename = './scripts/shutdown/data/sample/merkleRoots.json';
+  let outputFilename = './proposals/data/merkle_redemption/scripts/shutdown/data/sample/merkleRoots.json';
   let debug = false;
 
   if (process.argv[2] !== undefined) {
@@ -78,15 +78,15 @@ async function main() {
 
   */
 
-  // should have 27 keys, one for each ctoken, and all of the 27 ctoken addresses exactly
-  if (Object.keys(balances).length !== 27)
-    throw new Error(`Snapshot data should have 27 keys, one for each ctoken. Actual: ${Object.keys(balances).length}`);
+  // should have 20 keys, one for each ctoken, and all of the 20 ctoken addresses exactly
+  if (Object.keys(balances).length !== 20)
+    throw new Error(`Snapshot data should have 20 keys, one for each ctoken. Actual: ${Object.keys(balances).length}`);
   if (Object.keys(balances).some((key) => !cTokens.includes(key)))
     throw new Error(`Snapshot data has invalid ctoken address`);
 
   // @todo perhaps further validation if we need it
 
-  // create 27 merkle trees & output them to folder
+  // create 20 merkle trees & output them to folder
 
   const trees: MerkleTree[] = [];
   const roots: Buffer[] = [];
@@ -122,9 +122,11 @@ async function main() {
   fs.writeFileSync(`${outputFilename}`, JSON.stringify(hexRoots, null, 2));
   console.log(`Merkle roots written to ${outputFilename}`);
 
-  const mergedDataFilename = `${extraDataJSONFilename?.slice(0, -5)}.merged.json`;
-  fs.writeFileSync(mergedDataFilename, JSON.stringify(balances, null, 2));
-  console.log(`Merged data written to ${mergedDataFilename}`);
+  if (extraDataJSONFilename) {
+    const mergedDataFilename = `${extraDataJSONFilename?.slice(0, -5)}.merged.json`;
+    fs.writeFileSync(mergedDataFilename, JSON.stringify(balances, null, 2));
+    console.log(`Merged data written to ${mergedDataFilename}`);
+  }
 }
 
 main();

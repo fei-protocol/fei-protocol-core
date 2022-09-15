@@ -16,9 +16,9 @@ import {
   ValidateUpgradeFunc
 } from '@custom-types/types';
 import { Contract } from '@ethersproject/contracts';
-import { cTokens } from '@proposals/data/hack_repayment/cTokens';
-import { rates } from '@proposals/data/hack_repayment/rates';
-import { roots } from '@proposals/data/hack_repayment/roots';
+import { cTokens } from '@proposals/data/merkle_redemption/cTokens';
+import rates from '@proposals/data/merkle_redemption/sample/rates_block_15523462.json';
+import roots from '@proposals/data/merkle_redemption/sample/roots_block_15523462.json';
 import { MainnetContractsConfig } from '@protocol/mainnetAddresses';
 import { getImpersonatedSigner } from '@test/helpers';
 import { forceEth } from '@test/integration/setup/utils';
@@ -49,15 +49,36 @@ const rariMerkleRedeemerInitialBalance = total.sub(merkleRedeemerDripperInitialB
 
 let pcvStatsBefore: PcvStats;
 
+const ratesArray: string[] = [];
+const rootsArray: string[] = [];
+
 // Do any deployments
 // This should exclusively include new contract deployments
 const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: NamedAddresses, logging: boolean) => {
+  // Construct rates and roots arrays
+  for (const token of cTokens) {
+    ratesArray.push(rates[token as keyof typeof rates]);
+    rootsArray.push(roots[token as keyof typeof roots]);
+  }
+
+  // Quick check: ensure that the rates, roots, and ctokens are all in the same order
+  for (let i = 0; i < cTokens.length; i++) {
+    const token = cTokens[i];
+    expect(rates[token as keyof typeof rates]).to.equal(ratesArray[i]);
+    expect(roots[token as keyof typeof roots]).to.equal(rootsArray[i]);
+  }
+
+  // Log our output for visual inspection
+  console.log('Rates:', JSON.stringify(ratesArray, null, 2));
+  console.log('Roots:', JSON.stringify(rootsArray, null, 2));
+  console.log('cTokens:', JSON.stringify(cTokens, null, 2));
+
   const rariMerkleRedeemerFactory = new RariMerkleRedeemer__factory((await ethers.getSigners())[0]);
   const rariMerkleRedeemer = await rariMerkleRedeemerFactory.deploy(
     MainnetContractsConfig.fei.address, // token: fei
     cTokens, // ctokens (address[])
-    rates, // rates (uint256[])
-    roots // roots (bytes32[])
+    ratesArray, // rates (uint256[])
+    rootsArray // roots (bytes32[])
   );
 
   const merkleRedeeemrDripperFactory = new MerkleRedeemerDripper__factory((await ethers.getSigners())[0]);
@@ -99,10 +120,10 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 
   await validatePCV(contracts);
 
-  // validate that all 27 ctokens exist & are set
+  // validate that all 20 ctokens exist & are set
   for (let i = 0; i < cTokens.length; i++) {
-    expect(await rariMerkleRedeemer.merkleRoots(cTokens[i])).to.be.equal(roots[i]);
-    expect(await rariMerkleRedeemer.cTokenExchangeRates(cTokens[i])).to.be.equal(rates[i]);
+    expect(await rariMerkleRedeemer.merkleRoots(cTokens[i])).to.be.equal(rootsArray[i]);
+    expect(await rariMerkleRedeemer.cTokenExchangeRates(cTokens[i])).to.be.equal(ratesArray[i]);
   }
 
   //console.log(`Sending ETH to both contracts...`);
