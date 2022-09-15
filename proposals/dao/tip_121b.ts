@@ -49,8 +49,8 @@ const rootsArray: string[] = [];
 const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: NamedAddresses, logging: boolean) => {
   // Construct rates and roots arrays
   for (const token of cTokens) {
-    ratesArray.push(rates[token as keyof typeof rates]);
-    rootsArray.push(roots[token as keyof typeof roots]);
+    ratesArray.push(rates[token.toLowerCase() as keyof typeof rates]);
+    rootsArray.push(roots[token.toLowerCase() as keyof typeof roots]);
   }
 
   // Quick check: ensure that the rates, roots, and ctokens are all in the same order
