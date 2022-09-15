@@ -176,8 +176,9 @@ contract RariMerkleRedeemerIntegrationTest is Test {
         address[] memory cTokensToTransfer = new address[](1);
         cTokensToTransfer[0] = cTokens[0];
 
-        uint256[] memory amounts0 = new uint256[](1);
-        amounts0[0] = 123456789;
+        uint256[] memory amounts = new uint256[](1);
+
+        amounts[0] = 123456789123456789;
 
         bytes32[][] memory proofs = RariMerkleRedeemerTestingLib.getSampleProofs();
         bytes32[][] memory proofZero = new bytes32[][](1);
