@@ -3,7 +3,7 @@ import { parseEther } from 'ethers/lib/utils';
 
 /*  Day Before runbook */
 // 1. Freeze balances and merkle roots
-// 2. Update total FEI minted
+// 2. Update total FEI minted (here and /dao)
 // 3. Update contract FEI balances
 // 4. Run contract integration test and manually review FEI balances
 

@@ -7,7 +7,10 @@ import {
 import { RariMerkleRedeemer__factory } from '@custom-types/contracts/factories/RariMerkleRedeemer__factory';
 import {
   DeployUpgradeFunc,
+  MainnetContracts,
   NamedAddresses,
+  NamedContracts,
+  PcvStats,
   SetupUpgradeFunc,
   TeardownUpgradeFunc,
   ValidateUpgradeFunc
@@ -22,6 +25,7 @@ import { forceEth } from '@test/integration/setup/utils';
 import { expect } from 'chai';
 import { parseEther } from 'ethers/lib/utils';
 import { ethers } from 'hardhat';
+import { BigNumber } from 'ethers';
 
 /*
 
@@ -42,6 +46,8 @@ const dripAmount = ethers.utils.parseEther('1000000'); // 1m Fei
 const total = parseEther('12545744'); // 12.545M Fei total
 const merkleRedeemerDripperInitialBalance = parseEther('9000000'); // 9m Fei initially in dripper
 const rariMerkleRedeemerInitialBalance = total.sub(merkleRedeemerDripperInitialBalance); // Remaining Fei for merkle redeemer (3.545m Fei)
+
+let pcvStatsBefore: PcvStats;
 
 // Do any deployments
 // This should exclusively include new contract deployments
@@ -75,6 +81,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
   console.log(`Setup actions for fip${fipNumber}`);
   await logDaiBalances(contracts.dai);
+
+  pcvStatsBefore = await contracts.collateralizationOracle.pcvStats();
 };
 
 // Tears down any changes made in setup() that need to be
@@ -88,6 +96,8 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
   const rariMerkleRedeemer = contracts.rariMerkleRedeemer as RariMerkleRedeemer;
   const merkleRedeemerDripper = contracts.merkleRedeemerDripper as MerkleRedeemerDripper;
+
+  await validatePCV(contracts);
 
   // validate that all 27 ctokens exist & are set
   for (let i = 0; i < cTokens.length; i++) {
@@ -188,4 +198,30 @@ function getAddressLabel(addresses: NamedAddresses, address: string) {
   return '???';
 }
 
+const PCV_DIFF_LOWER = ethers.constants.WeiPerEther.mul(-42_000_000); // -42M
+const PCV_DIFF_UPPER = ethers.constants.WeiPerEther.mul(-30_000_000); // -30M
+
+async function validatePCV(contracts: NamedContracts) {
+  // 0. Verify PCV has minimal change
+  console.log('----------------------------------------------------');
+  console.log(' pcvStatsBefore.protocolControlledValue [M]e18 ', Number(pcvStatsBefore.protocolControlledValue) / 1e24);
+  console.log(' pcvStatsBefore.userCirculatingFei      [M]e18 ', Number(pcvStatsBefore.userCirculatingFei) / 1e24);
+  console.log(' pcvStatsBefore.protocolEquity          [M]e18 ', Number(pcvStatsBefore.protocolEquity) / 1e24);
+  const pcvStatsAfter: PcvStats = await contracts.collateralizationOracle.pcvStats();
+  console.log('----------------------------------------------------');
+  console.log(' pcvStatsAfter.protocolControlledValue  [M]e18 ', Number(pcvStatsAfter.protocolControlledValue) / 1e24);
+  console.log(' pcvStatsAfter.userCirculatingFei       [M]e18 ', Number(pcvStatsAfter.userCirculatingFei) / 1e24);
+  console.log(' pcvStatsAfter.protocolEquity           [M]e18 ', Number(pcvStatsAfter.protocolEquity) / 1e24);
+  console.log('----------------------------------------------------');
+  const pcvDiff = pcvStatsAfter.protocolControlledValue.sub(pcvStatsBefore.protocolControlledValue);
+  const cFeiDiff = pcvStatsAfter.userCirculatingFei.sub(pcvStatsBefore.userCirculatingFei);
+  const eqDiff = pcvStatsAfter.protocolEquity.sub(pcvStatsBefore.protocolEquity);
+  console.log(' PCV diff                               [M]e18 ', Number(pcvDiff) / 1e24);
+  console.log(' Circ FEI diff                          [M]e18 ', Number(cFeiDiff) / 1e24);
+  console.log(' Equity diff                            [M]e18 ', Number(eqDiff) / 1e24);
+  console.log('----------------------------------------------------');
+
+  expect(eqDiff).to.be.bignumber.greaterThan(PCV_DIFF_LOWER);
+  expect(eqDiff).to.be.bignumber.lessThan(PCV_DIFF_UPPER);
+}
 export { deploy, setup, teardown, validate };
