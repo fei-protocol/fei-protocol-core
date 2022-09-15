@@ -343,7 +343,7 @@ contract RariMerkleRedeemerIntegrationTest is Test {
 
         uint256 amount = 123456789123456789;
 
-        deal(testAddresses[0], cTokens[0], 0);
+        deal(cTokens[0], testAddresses[0], 0);
 
         redeemer.sign(signature);
         redeemer.claim(cTokens[0], amount, RariMerkleRedeemerTestingLib.getSampleProof(testAddresses[0], cTokens[0]));
@@ -364,7 +364,7 @@ contract RariMerkleRedeemerIntegrationTest is Test {
 
         uint256 amount = 123456789123456789;
 
-        deal(cTokens[0], testAddresses[1], 100_000_000e18);
+        deal(cTokens[0], testAddresses[0], 100_000_000e18);
 
         redeemer.sign(signature);
         redeemer.claim(cTokens[0], amount, RariMerkleRedeemerTestingLib.getSampleProof(testAddresses[0], cTokens[0]));
@@ -387,7 +387,7 @@ contract RariMerkleRedeemerIntegrationTest is Test {
 
         uint256 amount = 123456789123456789;
 
-        deal(testAddresses[0], cTokens[0], 100_000_000e18);
+        deal(cTokens[0], testAddresses[0], 100_000_000e18);
 
         redeemer.sign(signature);
         redeemer.claim(cTokens[0], amount, RariMerkleRedeemerTestingLib.getSampleProof(testAddresses[0], cTokens[0]));
@@ -420,7 +420,7 @@ contract RariMerkleRedeemerIntegrationTest is Test {
 
         bytes memory signature = bytes.concat(r0, s0, bytes1(v0));
 
-        deal(cTokens[0], testAddresses[1], 100_000_000e18);
+        deal(cTokens[0], testAddresses[0], 100_000_000e18);
 
         redeemer.signAndClaimAndRedeem(signature, cTokensToTransfer, amountsToClaim, amountsToRedeem, proofs);
         redeemer.redeem(cTokens[0], 1);
@@ -451,7 +451,7 @@ contract RariMerkleRedeemerIntegrationTest is Test {
 
         bytes memory signature = bytes.concat(r0, s0, bytes1(v0));
 
-        deal(testAddresses[0], cTokens[0], 100_000_000e18);
+        deal(cTokens[0], testAddresses[0], 100_000_000e18);
 
         redeemer.signAndClaimAndRedeem(signature, cTokensToTransfer, amountsToClaim, amountsToRedeem, proofs);
 
