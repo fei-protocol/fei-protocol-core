@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.8.4;
+pragma solidity =0.8.15;
 
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
@@ -50,7 +50,8 @@ abstract contract MultiMerkleRedeemer {
     mapping(address => mapping(address => uint256)) public claims;
 
     /// @notice The message to be signed by any users claiming on cTokens
-    string public constant MESSAGE = "Sample message, please update.";
+    string public constant MESSAGE =
+        "By signing and submitting this message to the Ethereum network, I represent that I have read and agree to the Fuse Hack Settlement Agreement and Release, as set forth here: https://fusehacksettlement.com/waiver.pdf";
 
     /// @notice The hash of the message to be signed by any users claiming on cTokens
     bytes32 public MESSAGE_HASH = ECDSA.toEthSignedMessageHash(bytes(MESSAGE));
