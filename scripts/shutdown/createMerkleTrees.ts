@@ -1,3 +1,4 @@
+import { ethers } from 'ethers';
 import { keccak256, solidityKeccak256 } from 'ethers/lib/utils';
 import fs from 'fs';
 import { MerkleTree } from 'merkletreejs';
@@ -81,7 +82,7 @@ async function main() {
   // should have 20 keys, one for each ctoken, and all of the 20 ctoken addresses exactly
   if (Object.keys(balances).length !== 20)
     throw new Error(`Snapshot data should have 20 keys, one for each ctoken. Actual: ${Object.keys(balances).length}`);
-  if (Object.keys(balances).some((key) => !cTokens.includes(key)))
+  if (Object.keys(balances).some((key) => !cTokens.includes(ethers.utils.getAddress(key))))
     throw new Error(`Snapshot data has invalid ctoken address`);
 
   // @todo perhaps further validation if we need it
@@ -90,6 +91,7 @@ async function main() {
 
   const trees: MerkleTree[] = [];
   const roots: Buffer[] = [];
+  const proofs: string[][] = [];
   const hexRoots: { [key: string]: string } = {};
 
   const hashFn = (data: string) => keccak256(data).slice(2);
@@ -112,6 +114,8 @@ async function main() {
 
     for (const leaf of leaves) {
       const proof = tree.getHexProof(leaf);
+      const hexProof = tree.getHexProof(leaf);
+      proofs.push(hexProof);
       const verified = tree.verify(proof, leaf, root);
       if (!verified) throw new Error(`Proof for ${leaf} failed`);
     }
@@ -121,6 +125,9 @@ async function main() {
 
   fs.writeFileSync(`${outputFilename}`, JSON.stringify(hexRoots, null, 2));
   console.log(`Merkle roots written to ${outputFilename}`);
+
+  fs.writeFileSync(`${outputFilename.slice(0, -5)}_proofs.json`, JSON.stringify(proofs, null, 2));
+  console.log(`Merkle proofs written to ${outputFilename.slice(0, -5)}_proofs.json`);
 
   if (extraDataJSONFilename) {
     const mergedDataFilename = `${extraDataJSONFilename?.slice(0, -5)}.merged.json`;
