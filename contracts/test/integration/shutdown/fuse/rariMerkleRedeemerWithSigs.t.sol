@@ -218,9 +218,9 @@ contract RariMerkleRedeemerIntegrationTest is Test {
         IERC20(cTokens[0]).approve(address(redeemer), 100_000_000e18);
         (uint8 v0, bytes32 r0, bytes32 s0) = vm.sign(testKeys[0], redeemer.MESSAGE_HASH());
 
-        bytes memory signature0 = bytes.concat(r0, s0, bytes1(v0));
+        bytes memory signature = bytes.concat(r0, s0, bytes1(v0));
 
-        redeemer.sign(signature0);
+        redeemer.sign(signature);
         redeemer.claim(
             cTokens[0],
             123456789123456789,
@@ -232,7 +232,6 @@ contract RariMerkleRedeemerIntegrationTest is Test {
         uint256 baseBalPost = IERC20(redeemer.baseToken()).balanceOf(testAddresses[0]);
         uint256 cTokenBalPost = IERC20(cTokens[0]).balanceOf(testAddresses[0]);
         assertEq(cTokenBalPre - cTokenBalPost, 1);
-        assertEq(baseBalPost - baseBalPre, 1);
 
         vm.stopPrank();
     }
