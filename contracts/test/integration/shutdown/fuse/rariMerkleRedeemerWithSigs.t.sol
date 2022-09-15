@@ -110,8 +110,21 @@ library RariMerkleRedeemerTestingLib {
      * These are the proofs in proposals/data/merkle_redemption/sample/proofs_block_15523462.json
      * Outer array will have 20 elements, inner array will have up to around 7-8 depending on the cToken
      */
-    function getSampleProofs() public pure returns (bytes32[][] memory proofs) {
-        revert("Not implemented");
+    function getSampleProof(address forWhom, address whichToken) public pure returns (bytes32[] memory proof) {
+        if (forWhom != address(0x82a978b3f5962a5b0957d9ee9eef472ee55b42f1)) {
+            revert("Only 0x82a978b3f5962a5b0957d9ee9eef472ee55b42f1 is currently supported for user address");
+        }
+
+        if (whichToken != address(0x001e407f497e024b9fb1cb93ef841f43d645ca4f)) {
+            revert("Only 0x001e407f497e024b9fb1cb93ef841f43d645ca4f is currently supported for token address");
+        }
+
+        proof = new bytes32[](2);
+
+        proof[0] = 0xe8818b60f4d00f43ed2da2560cdfcbe3c7696245d74f10d474968ee4cd385560;
+        proof[1] = 0xb1d897ef31fc3d92a0f68d89a21a2245d11cb3c5f3de8627d2f3120c3b447916;
+
+        return proof;
     }
 }
 
@@ -180,25 +193,25 @@ contract RariMerkleRedeemerIntegrationTest is Test {
 
         amounts[0] = 123456789123456789;
 
-        bytes32[][] memory proofs = RariMerkleRedeemerTestingLib.getSampleProofs();
-        bytes32[][] memory proofZero = new bytes32[][](1);
+        bytes32[] memory proof = RariMerkleRedeemerTestingLib.getSampleProof();
+        bytes32[][] memory proofs = new bytes32[][](1);
 
-        proofZero[0] = proofs[0];
+        proofs[0] = proof;
 
         vm.startPrank(addresses[0]);
 
         IERC20(cTokensToTransfer[0]).approve(address(redeemer), 100_000_000e18);
         (uint8 v0, bytes32 r0, bytes32 s0) = vm.sign(keys[0], redeemer.MESSAGE_HASH());
 
-        bytes memory signature0 = bytes.concat(r0, s0, bytes1(v0));
+        bytes memory signature = bytes.concat(r0, s0, bytes1(v0));
 
         uint256 cTokenStartBalance = IERC20(cTokensToTransfer[0]).balanceOf(addresses[0]);
-        uint256 baseTokenStartBalance = IERC20(redeemerNoSigs.baseToken()).balanceOf(addresses[0]);
-        redeemer.signAndClaimAndRedeem(signature0, cTokensToTransfer, amounts0, amounts0, proofZero);
+        uint256 baseTokenStartBalance = IERC20(redeemer.baseToken()).balanceOf(addresses[0]);
+        redeemer.signAndClaimAndRedeem(signature, cTokensToTransfer, amounts, amounts, proof);
         uint256 cTokenEndBalance = IERC20(cTokensToTransfer[0]).balanceOf(addresses[0]);
-        uint256 baseTokenEndBalance = IERC20(redeemerNoSigs.baseToken()).balanceOf(addresses[0]);
-        assertEq(cTokenStartBalance - cTokenEndBalance, amounts0[0] * 1);
-        assertEq(baseTokenEndBalance - baseTokenStartBalance, amounts0[0] * 1);
+        uint256 baseTokenEndBalance = IERC20(redeemer.baseToken()).balanceOf(addresses[0]);
+        assertEq(cTokenStartBalance - cTokenEndBalance, amounts[0] * 1);
+        assertEq(baseTokenEndBalance - baseTokenStartBalance, amounts[0] * 1);
         vm.stopPrank();
     }
 

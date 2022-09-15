@@ -91,7 +91,7 @@ async function main() {
 
   const trees: MerkleTree[] = [];
   const roots: Buffer[] = [];
-  const proofs: string[][] = [];
+  const proofs: { [key: string]: { [key: string]: string[] } } = {};
   const hexRoots: { [key: string]: string } = {};
 
   const hashFn = (data: string) => keccak256(data).slice(2);
@@ -112,12 +112,15 @@ async function main() {
     roots.push(root);
     hexRoots[cTokenAddress] = hexRoot;
 
-    for (const leaf of leaves) {
-      const proof = tree.getHexProof(leaf);
-      const hexProof = tree.getHexProof(leaf);
-      proofs.push(hexProof);
-      const verified = tree.verify(proof, leaf, root);
-      if (!verified) throw new Error(`Proof for ${leaf} failed`);
+    proofs[cTokenAddress] = {};
+
+    //for (const leaf of leaves) {
+    for (let i = 0; i < leaves.length; i++) {
+      const proof = tree.getHexProof(leaves[i]);
+      const hexProof = tree.getHexProof(leaves[i]);
+      proofs[cTokenAddress as keyof typeof proofs][cTokenBalancesArray[i][0]] = hexProof;
+      const verified = tree.verify(proof, leaves[i], root);
+      if (!verified) throw new Error(`Proof for ${leaves[i]} failed`);
     }
   }
 
