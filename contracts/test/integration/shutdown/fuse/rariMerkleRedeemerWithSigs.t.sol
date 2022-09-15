@@ -3,7 +3,6 @@ pragma solidity ^0.8.4;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {getCore, getAddresses, FeiTestAddresses} from "../../../utils/Fixtures.sol";
-import {MockRariMerkleRedeemerNoSigs} from "../../../../mock/MockRariMerkleRedeemerNoSigs.sol";
 import {RariMerkleRedeemer} from "../../../../shutdown/fuse/RariMerkleRedeemer.sol";
 import {MainnetAddresses} from "../../fixtures/MainnetAddresses.sol";
 import {Constants} from "../../../../Constants.sol";
@@ -223,11 +222,11 @@ contract RariMerkleRedeemerIntegrationTest is Test {
         bytes memory signature0 = bytes.concat(r0, s0, bytes1(v0));
 
         redeemer.sign(signature0);
-        redeemer.claim(cTokens[0], 1, RariMerkleRedeemerTestingLib.getExampleProofsWithGeneratedAccounts()[0]);
-        uint256 baseBalPre = IERC20(redeemerNoSigs.baseToken()).balanceOf(testAddresses[0]);
+        redeemer.claim(cTokens[0], 1, RariMerkleRedeemerTestingLib.getExampleProofsWithGenerateadAccounts()[0]);
+        uint256 baseBalPre = IERC20(redeemer.baseToken()).balanceOf(testAddresses[0]);
         uint256 cTokenBalPre = IERC20(cTokens[0]).balanceOf(testAddresses[0]);
         redeemer.redeem(cTokens[0], 1);
-        uint256 baseBalPost = IERC20(redeemerNoSigs.baseToken()).balanceOf(testAddresses[0]);
+        uint256 baseBalPost = IERC20(redeemer.baseToken()).balanceOf(testAddresses[0]);
         uint256 cTokenBalPost = IERC20(cTokens[0]).balanceOf(testAddresses[0]);
         assertEq(cTokenBalPre - cTokenBalPost, 1);
         assertEq(baseBalPost - baseBalPre, 1);
