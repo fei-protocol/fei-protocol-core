@@ -191,7 +191,7 @@ contract RariMerkleRedeemerIntegrationTest is Test {
 
         amounts[0] = 6057278420236737;
 
-        bytes32[] memory proof = RariMerkleRedeemerTestingLib.getSampleProof(cTokens[0], testAddresses[0]);
+        bytes32[] memory proof = RariMerkleRedeemerTestingLib.getSampleProof(testAddresses[0], cTokens[0]);
         bytes32[][] memory proofs = new bytes32[][](1);
 
         proofs[0] = proof;
@@ -222,7 +222,7 @@ contract RariMerkleRedeemerIntegrationTest is Test {
         bytes memory signature0 = bytes.concat(r0, s0, bytes1(v0));
 
         redeemer.sign(signature0);
-        redeemer.claim(cTokens[0], 1, RariMerkleRedeemerTestingLib.getSampleProof(cTokens[0], testAddresses[0]));
+        redeemer.claim(cTokens[0], 1, RariMerkleRedeemerTestingLib.getSampleProof(testAddresses[0], cTokens[0]));
         uint256 baseBalPre = IERC20(redeemer.baseToken()).balanceOf(testAddresses[0]);
         uint256 cTokenBalPre = IERC20(cTokens[0]).balanceOf(testAddresses[0]);
         redeemer.redeem(cTokens[0], 1);
@@ -259,9 +259,9 @@ contract RariMerkleRedeemerIntegrationTest is Test {
         bytes memory signature = bytes.concat(r0, s0, bytes1(v0));
 
         redeemer.sign(signature);
-        redeemer.claim(cTokens[0], 1, RariMerkleRedeemerTestingLib.getSampleProof(cTokens[0], testAddresses[0]));
+        redeemer.claim(cTokens[0], 1, RariMerkleRedeemerTestingLib.getSampleProof(testAddresses[0], cTokens[0]));
 
-        bytes32[] memory proof = RariMerkleRedeemerTestingLib.getSampleProof(cTokens[0], testAddresses[0]);
+        bytes32[] memory proof = RariMerkleRedeemerTestingLib.getSampleProof(testAddresses[0], cTokens[0]);
         vm.expectRevert("User has already claimed for this cToken.");
         redeemer.claim(cTokens[0], 1, proof);
 
@@ -318,7 +318,7 @@ contract RariMerkleRedeemerIntegrationTest is Test {
 
         IERC20(cTokens[0]).approve(address(redeemer), 100_000_000e18);
 
-        bytes32[] memory proof = RariMerkleRedeemerTestingLib.getSampleProof(cTokens[0], testAddresses[0]);
+        bytes32[] memory proof = RariMerkleRedeemerTestingLib.getSampleProof(testAddresses[0], cTokens[0]);
 
         vm.expectRevert("User has not signed.");
         redeemer.claim(cTokens[0], 1, proof);
@@ -336,10 +336,10 @@ contract RariMerkleRedeemerIntegrationTest is Test {
 
         uint256 amount = 6057278420236737;
 
-        //deal(cTokens[0], testAddresses[0], 100_000_000e18);
+        //deal(testAddresses[0], cTokens[0], 100_000_000e18);
 
         redeemer.sign(signature);
-        redeemer.claim(cTokens[0], amount, RariMerkleRedeemerTestingLib.getSampleProof(cTokens[0], testAddresses[0]));
+        redeemer.claim(cTokens[0], amount, RariMerkleRedeemerTestingLib.getSampleProof(testAddresses[0], cTokens[0]));
 
         vm.expectRevert("SafeERC20: ERC20 operation did not succeed");
         redeemer.redeem(cTokens[0], amount);
@@ -360,7 +360,7 @@ contract RariMerkleRedeemerIntegrationTest is Test {
         deal(cTokens[0], testAddresses[1], 100_000_000e18);
 
         redeemer.sign(signature);
-        redeemer.claim(cTokens[0], amount, RariMerkleRedeemerTestingLib.getSampleProof(cTokens[0], testAddresses[0]));
+        redeemer.claim(cTokens[0], amount, RariMerkleRedeemerTestingLib.getSampleProof(testAddresses[0], cTokens[0]));
         redeemer.redeem(cTokens[0], amount - 1);
         redeemer.redeem(cTokens[0], 1);
 
@@ -380,10 +380,10 @@ contract RariMerkleRedeemerIntegrationTest is Test {
 
         uint256 amount = 6057278420236737;
 
-        deal(cTokens[0], testAddresses[0], 100_000_000e18);
+        deal(testAddresses[0], cTokens[0], 100_000_000e18);
 
         redeemer.sign(signature);
-        redeemer.claim(cTokens[0], amount, RariMerkleRedeemerTestingLib.getSampleProof(cTokens[0], testAddresses[0]));
+        redeemer.claim(cTokens[0], amount, RariMerkleRedeemerTestingLib.getSampleProof(testAddresses[0], cTokens[0]));
         redeemer.redeem(cTokens[0], amount - 1);
         redeemer.redeem(cTokens[0], 1);
 
@@ -407,7 +407,7 @@ contract RariMerkleRedeemerIntegrationTest is Test {
         uint256[] memory amountsToRedeem = new uint256[](1);
         amountsToRedeem[0] = amount - 1;
 
-        bytes32[] memory proof = RariMerkleRedeemerTestingLib.getSampleProof(cTokens[0], testAddresses[0]);
+        bytes32[] memory proof = RariMerkleRedeemerTestingLib.getSampleProof(testAddresses[0], cTokens[0]);
         bytes32[][] memory proofs = new bytes32[][](1);
         proofs[0] = proof;
 
@@ -438,13 +438,13 @@ contract RariMerkleRedeemerIntegrationTest is Test {
         uint256[] memory amountsToRedeem = new uint256[](1);
         amountsToRedeem[0] = amount - 1;
 
-        bytes32[] memory proof = RariMerkleRedeemerTestingLib.getSampleProof(cTokens[0], testAddresses[0]);
+        bytes32[] memory proof = RariMerkleRedeemerTestingLib.getSampleProof(testAddresses[0], cTokens[0]);
         bytes32[][] memory proofs = new bytes32[][](1);
         proofs[0] = proof;
 
         bytes memory signature = bytes.concat(r0, s0, bytes1(v0));
 
-        deal(cTokens[0], testAddresses[0], 100_000_000e18);
+        deal(testAddresses[0], cTokens[0], 100_000_000e18);
 
         redeemer.signAndClaimAndRedeem(signature, cTokensToTransfer, amountsToClaim, amountsToRedeem, proofs);
 
