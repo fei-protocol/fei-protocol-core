@@ -180,14 +180,14 @@ const tip_121b: TemplatedProposalDescription = {
       values: '0',
       method: 'setWithdrawInfo(address,(address,address,uint96))',
       arguments: (addresses) => [addresses.rariPool8FeiPCVDeposit, [addresses.daiFixedPricePSM, addresses.fei, '0']],
-      description: 'Update Fuse Withdrawal Guard'
+      description: 'Update Fuse Withdrawal Guard for FEI to have 0 min liquidity'
     },
     {
       target: 'fuseWithdrawalGuard',
       values: '0',
       method: 'setWithdrawInfo(address,(address,address,uint96))',
       arguments: (addresses) => [addresses.rariPool8DaiPCVDeposit, [addresses.daiFixedPricePSM, addresses.dai, '0']],
-      description: 'Update Fuse Withdrawal Guard'
+      description: 'Update Fuse Withdrawal Guard for DAI to have 0 min liquidity'
     },
     {
       target: 'fuseWithdrawalGuard',
@@ -197,7 +197,7 @@ const tip_121b: TemplatedProposalDescription = {
         addresses.rariPool8LusdPCVDeposit,
         [addresses.lusdHoldingPCVDeposit, addresses.lusd, '0']
       ],
-      description: 'Update Fuse Withdrawal Guard'
+      description: 'Update Fuse Withdrawal Guard for LUSD to have 0 min liquidity'
     }
   ],
   description: `
