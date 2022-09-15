@@ -10,8 +10,8 @@ import { parseEther } from 'ethers/lib/utils';
 /* Configuration Constants */
 
 const total = parseEther('12545744'); // 12.545M Fei total
-const dripperFeiAmount = parseEther('9000000'); // 9m Fei initially in dripper
-const initialFeiAmount = total.sub(dripperFeiAmount); // Remaining Fei for merkle redeemer (3.545m Fei)
+const initialDripperFeiBalance = parseEther('9000000'); // 9m Fei initially in dripper
+const initialRedeemerFeiBalance = total.sub(initialDripperFeiBalance); // Remaining Fei for merkle redeemer (3.545m Fei)
 
 //// Smart contract addresses
 const BABYLON_ADDRESS = '0x97FcC2Ae862D03143b393e9fA73A32b563d57A6e';
@@ -57,14 +57,14 @@ const tip_121b: TemplatedProposalDescription = {
       target: 'fei',
       values: '0',
       method: 'mint(address,uint256)',
-      arguments: (addresses) => [addresses.rariMerkleRedeemer, initialFeiAmount],
+      arguments: (addresses) => [addresses.rariMerkleRedeemer, initialRedeemerFeiBalance],
       description: 'Mint initial Fei amount to the RariMerkleRedeemer'
     },
     {
       target: 'fei',
       values: '0',
       method: 'mint(address,uint256)',
-      arguments: (addresses) => [addresses.merkleRedeemerDripper, dripperFeiAmount],
+      arguments: (addresses) => [addresses.merkleRedeemerDripper, initialDripperFeiBalance],
       description: 'Mint remainder of Fei to the MerkleRedeemerDripper'
     },
     // 2. Transfer DAI to the respective affected smart contracts and DAOs
