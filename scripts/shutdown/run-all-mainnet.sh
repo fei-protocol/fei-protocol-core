@@ -1,4 +1,8 @@
-npx ts-node scripts/shutdown/createMerkleTrees scripts/shutdown/data/prod/snapshot.json scripts/shutdown/data/prod/roots.json true;
-npx ts-node scripts/shutdown/deployMerkleRedeemer scripts/shutdown/data/prod/rates.json scripts/shutdown/data/prod/roots.json false true;
-forge flatten contracts/shutdown/fuse/RariMerkleRedeemer.sol > scripts/shutdown/data/prod/RariMerkleRedeemer_flattened.sol;
-echo "Wrote flattened contract to scripts/shutdown/data/prod/RariMerkleRedeemer_flattened.sol";
+# npx ts-node scripts/shutdown/createMerkleTree [dataJSONFilename] [outputPath] [debug] [additionalDataJSONFilename]
+npx ts-node scripts/shutdown/createMerkleTrees.ts ./proposals/data/merkle_redemption/prod/snapshot.json ./proposals/data/merkle_redemption/prod/roots.json true ./proposals/data/merkle_redemption/prod/testAccounts.json
+
+# npx ts-node scripts/shutdown/deployMerkleRedeemer [ratesJSONFileName] [rootsJSONFileName] [forkMode] [debug]
+npx ts-node scripts/shutdown/deployMerkleRedeemer.ts proposals/data/merkle_redemption/prod/rates.json proposals/data/merkle_redemption/prod/roots.json false true
+
+# nice
+echo "Congrats, you did it!";
