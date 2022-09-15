@@ -67,73 +67,13 @@ const tip_121c: TemplatedProposalDescription = {
       description: 'Burn FEI held on the new DAI PSM'
     },
 
-    // 2a. Revoke deprecated MINTER_ROLE roles
+    // 2. Revoke deprecated MINTER_ROLE role from timelock
     {
       target: 'core',
       values: '0',
       method: 'revokeMinter(address)',
       arguments: (addresses) => [addresses.feiDAOTimelock],
       description: 'Revoke MINTER_ROLE from the DAO Timelock.'
-    },
-    {
-      target: 'core',
-      values: '0',
-      method: 'revokeMinter(address)',
-      arguments: (addresses) => [addresses.pcvEquityMinter],
-      description: `Revoke MINTER role from the buybacks contract`
-    },
-
-    // 2b. Burn MINTER_ROLE role
-    {
-      target: 'core',
-      values: '0',
-      method: 'createRole(bytes32,bytes32)',
-      arguments: (addresses) => [
-        ethers.utils.id('BURN_MINTER_ROLE_TEMPORARY_ROLE'), // role
-        ethers.utils.id('GOVERN_ROLE') // adminRole
-      ],
-      description: 'Create temporary role to burn the MINTER_ROLE'
-    },
-    {
-      target: 'core',
-      values: '0',
-      method: 'grantRole(bytes32,address)',
-      arguments: (addresses) => [
-        ethers.utils.id('BURN_MINTER_ROLE_TEMPORARY_ROLE'), // role
-        addresses.feiDAOTimelock
-      ],
-      description: 'Give temporary role to feiDAOTimelock'
-    },
-    {
-      target: 'core',
-      values: '0',
-      method: 'createRole(bytes32,bytes32)', // can also be used to update admin of existing role
-      arguments: (addresses) => [
-        ethers.utils.id('BURN_MINTER_ROLE_TEMPORARY_ROLE'), // role
-        ethers.utils.id('BURN_MINTER_ROLE_TEMPORARY_ROLE') // adminRole
-      ],
-      description: 'Set BURN_MINTER_ROLE_TEMPORARY_ROLE as the admin of itself.'
-    },
-    {
-      target: 'core',
-      values: '0',
-      method: 'createRole(bytes32,bytes32)', // can also be used to update admin of existing role
-      arguments: (addresses) => [
-        ethers.utils.id('MINTER_ROLE'), // role
-        ethers.utils.id('BURN_MINTER_ROLE_TEMPORARY_ROLE') // adminRole
-      ],
-      description: 'Set BURN_MINTER_ROLE_TEMPORARY_ROLE as the admin of MINTER_ROLE.'
-    },
-    {
-      target: 'core',
-      values: '0',
-      method: 'renounceRole(bytes32,address)',
-      arguments: (addresses) => [
-        ethers.utils.id('BURN_MINTER_ROLE_TEMPORARY_ROLE'), // role
-        addresses.feiDAOTimelock // adminRole
-      ],
-      description:
-        "The BURN_MINTER_ROLE_TEMPORARY_ROLE can't be granted anymore, so nobody will ever be able to grant the MINTER_ROLE either."
     },
 
     // 3. Final handling of veBAL : tokenize it (for redemptions) and deprecate all related contracts
