@@ -106,16 +106,15 @@ library RariMerkleRedeemerTestingLib {
     }
 
     /**
-     * Returns the the proofs in bytes32[][] form
+     * Returns a proof in bytes32[] form
      * These are the proofs in proposals/data/merkle_redemption/sample/proofs_block_15523462.json
-     * Outer array will have 20 elements, inner array will have up to around 7-8 depending on the cToken
      */
     function getSampleProof(address forWhom, address whichToken) public pure returns (bytes32[] memory proof) {
-        if (forWhom != address(0x82a978b3f5962a5b0957d9ee9eef472ee55b42f1)) {
+        if (forWhom != address(0x82A978B3f5962A5b0957d9ee9eEf472EE55B42F1)) {
             revert("Only 0x82a978b3f5962a5b0957d9ee9eef472ee55b42f1 is currently supported for user address");
         }
 
-        if (whichToken != address(0x001e407f497e024b9fb1cb93ef841f43d645ca4f)) {
+        if (whichToken != address(0x001E407f497e024B9fb1CB93ef841F43D645CA4F)) {
             revert("Only 0x001e407f497e024b9fb1cb93ef841f43d645ca4f is currently supported for token address");
         }
 
@@ -129,7 +128,7 @@ library RariMerkleRedeemerTestingLib {
 }
 
 /// @notice This tests the RariMerkleRedeemer contract - not modified at all to remove restrictions eg a correct signature
-/// In order to test the flow (since we obviously don't have the private keys for the snapshot accounts), we add in some test
+/// In order to test the flow (since we obviously don't have the private testKeys for the snapshot accounts), we add in some test
 /// accounts that we control in order make sure that every part of the claiming process works
 /// We'll use some test users in the real snapshot, too, but they will be different addresses
 contract RariMerkleRedeemerIntegrationTest is Test {
@@ -193,23 +192,23 @@ contract RariMerkleRedeemerIntegrationTest is Test {
 
         amounts[0] = 123456789123456789;
 
-        bytes32[] memory proof = RariMerkleRedeemerTestingLib.getSampleProof();
+        bytes32[] memory proof = RariMerkleRedeemerTestingLib.getSampleProof(cTokens[0], testAddresses[0]);
         bytes32[][] memory proofs = new bytes32[][](1);
 
         proofs[0] = proof;
 
-        vm.startPrank(addresses[0]);
+        vm.startPrank(testAddresses[0]);
 
         IERC20(cTokensToTransfer[0]).approve(address(redeemer), 100_000_000e18);
-        (uint8 v0, bytes32 r0, bytes32 s0) = vm.sign(keys[0], redeemer.MESSAGE_HASH());
+        (uint8 v0, bytes32 r0, bytes32 s0) = vm.sign(testKeys[0], redeemer.MESSAGE_HASH());
 
         bytes memory signature = bytes.concat(r0, s0, bytes1(v0));
 
-        uint256 cTokenStartBalance = IERC20(cTokensToTransfer[0]).balanceOf(addresses[0]);
-        uint256 baseTokenStartBalance = IERC20(redeemer.baseToken()).balanceOf(addresses[0]);
-        redeemer.signAndClaimAndRedeem(signature, cTokensToTransfer, amounts, amounts, proof);
-        uint256 cTokenEndBalance = IERC20(cTokensToTransfer[0]).balanceOf(addresses[0]);
-        uint256 baseTokenEndBalance = IERC20(redeemer.baseToken()).balanceOf(addresses[0]);
+        uint256 cTokenStartBalance = IERC20(cTokensToTransfer[0]).balanceOf(testAddresses[0]);
+        uint256 baseTokenStartBalance = IERC20(redeemer.baseToken()).balanceOf(testAddresses[0]);
+        redeemer.signAndClaimAndRedeem(signature, cTokensToTransfer, amounts, amounts, proofs);
+        uint256 cTokenEndBalance = IERC20(cTokensToTransfer[0]).balanceOf(testAddresses[0]);
+        uint256 baseTokenEndBalance = IERC20(redeemer.baseToken()).balanceOf(testAddresses[0]);
         assertEq(cTokenStartBalance - cTokenEndBalance, amounts[0] * 1);
         assertEq(baseTokenEndBalance - baseTokenStartBalance, amounts[0] * 1);
         vm.stopPrank();
@@ -220,7 +219,7 @@ contract RariMerkleRedeemerIntegrationTest is Test {
         vm.startPrank(addresses[0]);
 
         IERC20(cToken0).approve(address(redeemer), 100_000_000e18);
-        (uint8 v0, bytes32 r0, bytes32 s0) = vm.sign(keys[0], redeemer.MESSAGE_HASH());
+        (uint8 v0, bytes32 r0, bytes32 s0) = vm.sign(testKeys[0], redeemer.MESSAGE_HASH());
 
         bytes memory signature0 = bytes.concat(r0, s0, bytes1(v0));
 
@@ -241,7 +240,7 @@ contract RariMerkleRedeemerIntegrationTest is Test {
         vm.startPrank(addresses[0]);
 
         IERC20(cToken0).approve(address(redeemer), 100_000_000e18);
-        (uint8 v0, bytes32 r0, bytes32 s0) = vm.sign(keys[0], redeemer.MESSAGE_HASH());
+        (uint8 v0, bytes32 r0, bytes32 s0) = vm.sign(testKeys[0], redeemer.MESSAGE_HASH());
 
         bytes memory signature0 = bytes.concat(r0, s0, bytes1(v0));
 
@@ -257,7 +256,7 @@ contract RariMerkleRedeemerIntegrationTest is Test {
         vm.startPrank(addresses[0]);
 
         IERC20(cToken0).approve(address(redeemer), 100_000_000e18);
-        (uint8 v0, bytes32 r0, bytes32 s0) = vm.sign(keys[0], redeemer.MESSAGE_HASH());
+        (uint8 v0, bytes32 r0, bytes32 s0) = vm.sign(testKeys[0], redeemer.MESSAGE_HASH());
 
         bytes memory signature0 = bytes.concat(r0, s0, bytes1(v0));
 
@@ -275,7 +274,7 @@ contract RariMerkleRedeemerIntegrationTest is Test {
         vm.startPrank(addresses[0]);
 
         IERC20(cToken0).approve(address(redeemer), 100_000_000e18);
-        (uint8 v0, bytes32 r0, bytes32 s0) = vm.sign(keys[0], redeemer.MESSAGE_HASH());
+        (uint8 v0, bytes32 r0, bytes32 s0) = vm.sign(testKeys[0], redeemer.MESSAGE_HASH());
 
         bytes memory signature0 = bytes.concat(r0, s0, bytes1(v0));
 
@@ -290,7 +289,7 @@ contract RariMerkleRedeemerIntegrationTest is Test {
         vm.startPrank(addresses[0]);
 
         IERC20(cToken0).approve(address(redeemer), 100_000_000e18);
-        (uint8 v0, bytes32 r0, bytes32 s0) = vm.sign(keys[0], redeemer.MESSAGE_HASH());
+        (uint8 v0, bytes32 r0, bytes32 s0) = vm.sign(testKeys[0], redeemer.MESSAGE_HASH());
 
         bytes memory signature0 = bytes.concat(r0, s0, bytes1(v0));
 
@@ -305,7 +304,7 @@ contract RariMerkleRedeemerIntegrationTest is Test {
         vm.startPrank(addresses[99]);
 
         IERC20(cToken0).approve(address(redeemer), 100_000_000e18);
-        (uint8 v0, bytes32 r0, bytes32 s0) = vm.sign(keys[99], redeemer.MESSAGE_HASH());
+        (uint8 v0, bytes32 r0, bytes32 s0) = vm.sign(testKeys[99], redeemer.MESSAGE_HASH());
 
         bytes memory signature = bytes.concat(r0, s0, bytes1(v0));
 
@@ -333,7 +332,7 @@ contract RariMerkleRedeemerIntegrationTest is Test {
         vm.startPrank(addresses[1]);
 
         //IERC20(cToken0).approve(address(redeemer), 100_000_000e18);
-        (uint8 v0, bytes32 r0, bytes32 s0) = vm.sign(keys[1], redeemer.MESSAGE_HASH());
+        (uint8 v0, bytes32 r0, bytes32 s0) = vm.sign(testKeys[1], redeemer.MESSAGE_HASH());
 
         bytes memory signature = bytes.concat(r0, s0, bytes1(v0));
 
@@ -354,7 +353,7 @@ contract RariMerkleRedeemerIntegrationTest is Test {
         vm.startPrank(addresses[1]);
 
         IERC20(cToken0).approve(address(redeemer), 100_000_000e18);
-        (uint8 v0, bytes32 r0, bytes32 s0) = vm.sign(keys[1], redeemer.MESSAGE_HASH());
+        (uint8 v0, bytes32 r0, bytes32 s0) = vm.sign(testKeys[1], redeemer.MESSAGE_HASH());
 
         bytes memory signature = bytes.concat(r0, s0, bytes1(v0));
 
@@ -375,7 +374,7 @@ contract RariMerkleRedeemerIntegrationTest is Test {
         vm.startPrank(addresses[1]);
 
         IERC20(cToken0).approve(address(redeemer), 100_000_000e18);
-        (uint8 v0, bytes32 r0, bytes32 s0) = vm.sign(keys[1], redeemer.MESSAGE_HASH());
+        (uint8 v0, bytes32 r0, bytes32 s0) = vm.sign(testKeys[1], redeemer.MESSAGE_HASH());
 
         bytes memory signature = bytes.concat(r0, s0, bytes1(v0));
 
@@ -398,7 +397,7 @@ contract RariMerkleRedeemerIntegrationTest is Test {
         vm.startPrank(addresses[1]);
 
         IERC20(cToken0).approve(address(redeemer), 100_000_000e18);
-        (uint8 v0, bytes32 r0, bytes32 s0) = vm.sign(keys[1], redeemer.MESSAGE_HASH());
+        (uint8 v0, bytes32 r0, bytes32 s0) = vm.sign(testKeys[1], redeemer.MESSAGE_HASH());
 
         bytes memory signature = bytes.concat(r0, s0, bytes1(v0));
 
@@ -418,7 +417,7 @@ contract RariMerkleRedeemerIntegrationTest is Test {
         vm.startPrank(addresses[1]);
 
         IERC20(cToken0).approve(address(redeemer), 100_000_000e18);
-        (uint8 v0, bytes32 r0, bytes32 s0) = vm.sign(keys[1], redeemer.MESSAGE_HASH());
+        (uint8 v0, bytes32 r0, bytes32 s0) = vm.sign(testKeys[1], redeemer.MESSAGE_HASH());
 
         address[] memory cTokensToTransfer = new address[](1);
         cTokensToTransfer[0] = cToken0;
@@ -449,7 +448,7 @@ contract RariMerkleRedeemerIntegrationTest is Test {
         vm.startPrank(addresses[1]);
 
         IERC20(cToken0).approve(address(redeemer), 100_000_000e18);
-        (uint8 v0, bytes32 r0, bytes32 s0) = vm.sign(keys[1], redeemer.MESSAGE_HASH());
+        (uint8 v0, bytes32 r0, bytes32 s0) = vm.sign(testKeys[1], redeemer.MESSAGE_HASH());
 
         address[] memory cTokensToTransfer = new address[](1);
         cTokensToTransfer[0] = cToken0;
