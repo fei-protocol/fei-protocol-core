@@ -1,7 +1,7 @@
 import { FixedPricePSM } from '@custom-types/contracts';
 import { NamedContracts } from '@custom-types/types';
 import { ProposalsConfig } from '@protocol/proposalsConfig';
-import { expectApprox, expectRevert, getAddresses, getImpersonatedSigner, time } from '@test/helpers';
+import { getAddresses, getImpersonatedSigner } from '@test/helpers';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
 import { forceEth } from '@test/integration/setup/utils';
 import chai, { expect } from 'chai';
@@ -20,16 +20,11 @@ describe('e2e-peg-stability-module', function () {
   let contracts: NamedContracts;
   let deployAddress: string;
   let e2eCoord: TestEndtoEndCoordinator;
-  let daiPCVDripController: Contract;
   let doLogging: boolean;
   let userAddress: string;
-  let minterAddress: string;
-  let governorAddress;
   let dai: Contract;
   let daiPSM: Contract;
   let fei: Contract;
-  let core: Contract;
-  let feiDAOTimelock: Contract;
 
   before(async function () {
     // Setup test environment and get contracts
@@ -38,14 +33,9 @@ describe('e2e-peg-stability-module', function () {
     if (!deployAddress) throw new Error(`No deploy address!`);
     const addresses = await getAddresses();
     // add any addresses you want to impersonate here
-    const impersonatedAddresses = [
-      addresses.userAddress,
-      addresses.pcvControllerAddress,
-      addresses.governorAddress,
-      addresses.minterAddress
-    ];
+    const impersonatedAddresses = [addresses.userAddress, addresses.pcvControllerAddress, addresses.governorAddress];
 
-    ({ userAddress, minterAddress } = addresses);
+    ({ userAddress } = addresses);
 
     doLogging = Boolean(process.env.LOGGING);
 
@@ -59,11 +49,10 @@ describe('e2e-peg-stability-module', function () {
 
     doLogging && console.log(`Loading environment...`);
     ({ contracts } = await e2eCoord.loadEnvironment());
-    let daiFixedPricePSM;
-    ({ dai, daiFixedPricePSM, fei, core, daiPCVDripController, feiDAOTimelock } = contracts);
+    let simpleFeiDaiPSM;
+    ({ dai, simpleFeiDaiPSM, fei } = contracts);
     doLogging && console.log(`Environment loaded.`);
-    daiPSM = daiFixedPricePSM as FixedPricePSM;
-    await core.grantMinter(minterAddress);
+    daiPSM = simpleFeiDaiPSM as FixedPricePSM;
 
     for (const address of impersonatedAddresses) {
       impersonatedSigners[address] = await getImpersonatedSigner(address);
@@ -73,57 +62,14 @@ describe('e2e-peg-stability-module', function () {
     await contracts.core.connect(daoTimelockSigner).grantPCVController(contracts.feiDAOTimelock.address);
   });
 
-  describe('dai-psm pcv drip controller', async () => {
-    before(async function () {
-      // make sure there is enough DAI available to the dripper and on the PSM
-      const DAI_HOLDER = '0xbebc44782c7db0a1a60cb6fe97d0b483032ff1c7'; // curve 3pool
-      const signer = await getImpersonatedSigner(DAI_HOLDER);
-      await forceEth(DAI_HOLDER);
-      await contracts.dai.connect(signer).transfer(
-        contracts.compoundDaiPCVDeposit.address,
-        '100000000000000000000000000' // 100M
-      );
-      await contracts.compoundDaiPCVDeposit.deposit();
-      await contracts.dai.connect(signer).transfer(
-        contracts.daiPSM.address,
-        '5500000000000000000000000' // 5.5M
-      );
-    });
-
-    beforeEach(async () => {
-      await time.increase('2000');
-    });
-
-    it('does not drip when the dai PSM is above the threshold', async () => {
-      expect(await daiPCVDripController.isTimeEnded()).to.be.true;
-      const dripThreshold = await daiPCVDripController.dripAmount();
-      const psmBalance = await daiPSM.balance();
-
-      if (psmBalance.lt(dripThreshold)) {
-        expect(await daiPCVDripController.dripEligible()).to.be.true;
-        await daiPCVDripController.drip();
-      } else {
-        expect(await daiPCVDripController.dripEligible()).to.be.false;
-        await expectRevert(daiPCVDripController.drip(), 'PCVDripController: not eligible');
-      }
-    });
-
-    it('does drip when the dai PSM is under the threshold', async () => {
-      const timelock = await getImpersonatedSigner(feiDAOTimelock.address);
-      await daiPSM.connect(timelock).withdrawERC20(dai.address, userAddress, await dai.balanceOf(daiPSM.address));
-      expect(await dai.balanceOf(daiPSM.address)).to.be.equal(0);
-
-      await daiPCVDripController.drip();
-
-      expect(await dai.balanceOf(daiPSM.address)).to.be.equal(await daiPCVDripController.dripAmount());
-    });
-  });
-
-  describe('dai_psm', async () => {
+  describe('simpleFeiDaiPSM', async () => {
     describe('redeem', function () {
       const redeemAmount = 10_000_000;
       beforeEach(async () => {
-        await fei.connect(impersonatedSigners[minterAddress]).mint(userAddress, redeemAmount);
+        const largeFeiHolder = '0x9928e4046d7c6513326ccea028cd3e7a91c7590a';
+        await forceEth(largeFeiHolder);
+        const largeFeiHolderSigner = await getImpersonatedSigner(largeFeiHolder);
+        await fei.connect(largeFeiHolderSigner).transfer(userAddress, redeemAmount);
         await fei.connect(impersonatedSigners[userAddress]).approve(daiPSM.address, redeemAmount);
 
         const isPaused = await daiPSM.paused();
@@ -169,7 +115,7 @@ describe('e2e-peg-stability-module', function () {
 
       it('DAI price sanity check', async () => {
         const actualDAIAmountOut = await daiPSM.getRedeemAmountOut(redeemAmount);
-        await expectApprox(actualDAIAmountOut, redeemAmount);
+        expect(actualDAIAmountOut).to.be.equal(redeemAmount);
       });
     });
 
@@ -214,7 +160,7 @@ describe('e2e-peg-stability-module', function () {
 
       it('DAI price sanity check', async () => {
         const actualDAIAmountOut = await daiPSM.getMintAmountOut(mintAmount);
-        await expectApprox(actualDAIAmountOut, mintAmount);
+        expect(actualDAIAmountOut).to.be.equal(mintAmount);
       });
     });
   });
