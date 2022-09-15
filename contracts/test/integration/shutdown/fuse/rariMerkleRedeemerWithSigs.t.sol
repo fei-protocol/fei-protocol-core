@@ -226,10 +226,8 @@ contract RariMerkleRedeemerIntegrationTest is Test {
             123456789123456789,
             RariMerkleRedeemerTestingLib.getSampleProof(testAddresses[0], cTokens[0])
         );
-        uint256 baseBalPre = IERC20(redeemer.baseToken()).balanceOf(testAddresses[0]);
         uint256 cTokenBalPre = IERC20(cTokens[0]).balanceOf(testAddresses[0]);
         redeemer.redeem(cTokens[0], 1);
-        uint256 baseBalPost = IERC20(redeemer.baseToken()).balanceOf(testAddresses[0]);
         uint256 cTokenBalPost = IERC20(cTokens[0]).balanceOf(testAddresses[0]);
         assertEq(cTokenBalPre - cTokenBalPost, 1);
 
