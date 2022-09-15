@@ -97,7 +97,7 @@ async function main() {
   const rootsArray: string[] = Object.values(roots);
 
   if (enableForking) {
-    if (debug) console.log('Connecting to nodeinator (anvil fork)...');
+    if (debug) console.log('Connecting to anvil fork...');
   } else {
     console.warn(`Connecting to ETH MAINNET through Nodineator.`);
     console.warn(`Using url ${process.env.MAINNET_NODE_URL}`);
