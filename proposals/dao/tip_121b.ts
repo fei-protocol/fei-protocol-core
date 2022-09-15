@@ -41,9 +41,9 @@ const fipNumber = 'tip_121b';
 const dripPeriod = 3600; // 1 hour
 const dripAmount = ethers.utils.parseEther('1000000'); // 1m Fei
 
-const total = parseEther('12545744'); // 12.545M Fei total
+const total = parseEther('12680884'); // 12.68M Fei total
 const merkleRedeemerDripperInitialBalance = parseEther('9000000'); // 9m Fei initially in dripper
-const rariMerkleRedeemerInitialBalance = total.sub(merkleRedeemerDripperInitialBalance); // Remaining Fei for merkle redeemer (3.545m Fei)
+const rariMerkleRedeemerInitialBalance = total.sub(merkleRedeemerDripperInitialBalance); // Remaining Fei for merkle redeemer (3.68m Fei)
 
 let pcvStatsBefore: PcvStats;
 
