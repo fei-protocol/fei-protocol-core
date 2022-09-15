@@ -7,7 +7,7 @@ import { MerkleRedeemerDripper__factory, RariMerkleRedeemer__factory } from '../
 import { cTokens } from '../../proposals/data/merkle_redemption/cTokens';
 
 const dripPeriod = 3600; // 1 hour
-const dripAmount = ethers.utils.parseEther('2500000'); // 2.5m Fei
+const dripAmount = ethers.utils.parseEther('1000000'); // 1m Fei
 
 dotenv.config();
 
@@ -46,10 +46,10 @@ async function main() {
   const rates: { [key: string]: string } = JSON.parse(fs.readFileSync(ratesFilename).toString());
   const roots: { [key: string]: string } = JSON.parse(fs.readFileSync(rootsFilename).toString());
 
-  // rates should be an object with 27 keys (one for each token address), with values being strings
+  // rates should be an object with 20 keys (one for each token address), with values being strings
   // each value is a string representing how much fei you'd get for 1e18 of the ctoken
-  if (Object.entries(rates).length != 27)
-    throw new Error(`Rates should be an object with 27 entries. Actual: ${rates.length}`);
+  if (Object.entries(rates).length != 20)
+    throw new Error(`Rates should be an object with 20 entries. Actual: ${rates.length}`);
 
   if (
     Object.entries(rates).some((entry) => {
@@ -69,10 +69,10 @@ async function main() {
     );
   }
 
-  // roots should be an object with 27 keys (one for each token address), with values being strings
+  // roots should be an object with 20 keys (one for each token address), with values being strings
   // each value is a string (a merkle root)
-  if (Object.entries(roots).length != 27)
-    throw new Error(`Roots should be an object with 27 entries. Actual: ${roots.length}`);
+  if (Object.entries(roots).length != 20)
+    throw new Error(`Roots should be an object with 20 entries. Actual: ${roots.length}`);
 
   if (
     Object.entries(rates).some((entry) => {
@@ -100,6 +100,7 @@ async function main() {
     if (debug) console.log('Connecting to nodeinator (anvil fork)...');
   } else {
     console.warn(`Connecting to ETH MAINNET through Nodineator.`);
+    console.warn(`Using url ${process.env.MAINNET_NODE_URL}`);
   }
 
   let provider: ethers.providers.JsonRpcProvider;
@@ -127,9 +128,6 @@ async function main() {
     if (debug) console.log('Using default wallet to deploy on fork.');
     wallet = new ethers.Wallet('0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80', provider);
   }
-
-  const dripPeriod = 3600; // 1 hour
-  const dripAmount = ethers.utils.parseEther('2500000'); // 2.5m Fei
 
   const rariMerkleRedeemerFactory = new RariMerkleRedeemer__factory(wallet);
 
@@ -161,7 +159,7 @@ async function main() {
     const args = defaultAbiCoder.encode(['address[]', 'uint256[]', 'bytes32[]'], [cTokens, ratesArray, rootsArray]);
     console.log(args);
     console.log('\n');
-    fs.writeFileSync('./constructorArgs.txt', args);
+    fs.writeFileSync('./constructorArgs.txt', args.slice(2));
   }
 }
 
