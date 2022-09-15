@@ -56,8 +56,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   // Quick check: ensure that the rates, roots, and ctokens are all in the same order
   for (let i = 0; i < cTokens.length; i++) {
     const token = cTokens[i];
-    expect(rates[token as keyof typeof rates]).to.equal(ratesArray[i]);
-    expect(roots[token as keyof typeof roots]).to.equal(rootsArray[i]);
+    expect(rates[token.toLowerCase() as keyof typeof rates]).to.equal(ratesArray[i]);
+    expect(roots[token.toLowerCase() as keyof typeof roots]).to.equal(rootsArray[i]);
   }
 
   // Log our output for visual inspection
