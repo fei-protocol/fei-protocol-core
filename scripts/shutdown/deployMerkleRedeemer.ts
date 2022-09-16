@@ -92,24 +92,9 @@ async function main() {
     );
   }
 
-  // https://stackoverflow.com/questions/5467129/sort-javascript-object-by-key
-  const orderedRates = Object.keys(rates)
-    .sort()
-    .reduce((obj, key) => {
-      (obj as any)[key] = rates[key];
-      return obj;
-    }, {});
-
-  const orderedRoots = Object.keys(roots)
-    .sort()
-    .reduce((obj, key) => {
-      (obj as any)[key] = roots[key];
-      return obj;
-    }, {});
-
   // parse rates & roots into arrays to pass into the contract constructor
-  const ratesArray: string[] = Object.values(orderedRates);
-  const rootsArray: string[] = Object.values(orderedRoots);
+  const ratesArray: string[] = Object.values(rates);
+  const rootsArray: string[] = Object.values(roots);
 
   console.log(`Rates Array: ${JSON.stringify(ratesArray, null, 2)}`);
   console.log(`Roots Array: ${JSON.stringify(rootsArray, null, 2)}`);

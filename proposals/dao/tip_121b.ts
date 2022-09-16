@@ -78,6 +78,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     ratesArray, // rates (uint256[])
     rootsArray // roots (bytes32[])
   );
+  await rariMerkleRedeemer.deployTransaction.wait();
 
   const merkleRedeeemrDripperFactory = new MerkleRedeemerDripper__factory((await ethers.getSigners())[0]);
   const merkleRedeemerDripper = await merkleRedeeemrDripperFactory.deploy(
@@ -87,6 +88,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
     dripAmount,
     addresses.fei
   );
+  await merkleRedeemerDripper.deployTransaction.wait();
 
   return {
     rariMerkleRedeemer,
