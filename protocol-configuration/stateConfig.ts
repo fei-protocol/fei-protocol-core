@@ -10,6 +10,11 @@ export const StateConfig = {
     redeemPaused: true
   },
   daiFixedPricePSM: {
+    paused: true,
+    redeemPaused: true,
+    mintPaused: true
+  },
+  simpleFeiDaiPSM: {
     paused: false,
     redeemPaused: false,
     mintPaused: false
