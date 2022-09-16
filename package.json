@@ -71,7 +71,7 @@
     "dotenv": "^16.0.2",
     "hardhat": "^2.10.2",
     "hardhat-contract-sizer": "^2.6.1",
-    "hardhat-gas-reporter": "^1.0.8",
+    "hardhat-gas-reporter": "^1.0.9",
     "merkletreejs": "^0.2.32",
     "string-template": "^1.0.0"
   },
