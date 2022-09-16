@@ -3,12 +3,12 @@ import { AddressCategory } from '../types/types'; // imported without custom pat
 export const MainnetContractsConfig = {
   rariMerkleRedeemer: {
     artifactName: 'RariMerkleRedeemer',
-    address: '0x8106A153D14098f7134D1E7070D737E935A5682e',
+    address: '0xCAe4210e6676727EA4e0fD9BA5dFb95831356a16',
     category: AddressCategory.TBD
   },
   merkleRedeemerDripper: {
     artifactName: 'MerkleRedeemerDripper',
-    address: '0x27b4D5EA28043EBDCf13f624F2baA41895CE930f',
+    address: '0xF681F42f53D98A9136D090A04b47318C6961a832',
     category: AddressCategory.TBD
   },
   core: {
