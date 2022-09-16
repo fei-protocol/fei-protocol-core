@@ -92,9 +92,27 @@ async function main() {
     );
   }
 
+  // https://stackoverflow.com/questions/5467129/sort-javascript-object-by-key
+  const orderedRates = Object.keys(rates)
+    .sort()
+    .reduce((obj, key) => {
+      (obj as any)[key] = rates[key];
+      return obj;
+    }, {});
+
+  const orderedRoots = Object.keys(roots)
+    .sort()
+    .reduce((obj, key) => {
+      (obj as any)[key] = roots[key];
+      return obj;
+    }, {});
+
   // parse rates & roots into arrays to pass into the contract constructor
-  const ratesArray: string[] = Object.values(rates);
-  const rootsArray: string[] = Object.values(roots);
+  const ratesArray: string[] = Object.values(orderedRates);
+  const rootsArray: string[] = Object.values(orderedRoots);
+
+  console.log(`Rates Array: ${JSON.stringify(ratesArray, null, 2)}`);
+  console.log(`Roots Array: ${JSON.stringify(rootsArray, null, 2)}`);
 
   if (enableForking) {
     if (debug) console.log('Connecting to anvil fork...');
@@ -129,6 +147,10 @@ async function main() {
     wallet = new ethers.Wallet('0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80', provider);
   }
 
+  console.log(JSON.stringify(cTokens, null, 2));
+  console.log(JSON.stringify(ratesArray, null, 2));
+  console.log(JSON.stringify(rootsArray, null, 2));
+
   const rariMerkleRedeemerFactory = new RariMerkleRedeemer__factory(wallet);
 
   const rariMerkleRedeemer = await rariMerkleRedeemerFactory.deploy(
@@ -137,6 +159,8 @@ async function main() {
     ratesArray,
     rootsArray
   );
+
+  await rariMerkleRedeemer.deployed();
 
   const merkleRedeemerDripperFactory = new MerkleRedeemerDripper__factory(wallet);
 
@@ -147,6 +171,8 @@ async function main() {
     dripAmount,
     MainnetContractsConfig.fei.address
   );
+
+  await merkleRedeemerDripper.deployed();
 
   console.log(`MerkleRedeemerDripper deployed to ${merkleRedeemerDripper.address}\n`);
   console.log(`RariMerkleRedeemer deployed to ${rariMerkleRedeemer.address}\n`);
