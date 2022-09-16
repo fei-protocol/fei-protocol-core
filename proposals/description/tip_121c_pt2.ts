@@ -48,7 +48,6 @@ const tip_121c_pt2: TemplatedProposalDescription = {
       arguments: (addresses) => [addresses.tribeRedeemer, DAO_TIMELOCK_LQTY_BALANCE],
       description: 'Send all 1.1M LQTY to the Tribe Redeemer'
     }
-    // TODO: Need any lenses? Anything to deprecate?
   ],
   description: `
   TIP_121c (cont.): Tribe Redemption

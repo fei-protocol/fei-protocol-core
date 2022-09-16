@@ -26,7 +26,7 @@ const STETH_DEPOSIT_BALANCE = '50296523674661485703301';
 const DAO_TIMELOCK_FOX_BALANCE = '15316691965631380244403204';
 const DAO_TIMELOCK_LQTY_BALANCE = '1101298805118942906652299';
 
-// Minimum amount of DAI redeemable for Tribe (total DAI held - amount on FeiPSM)
+// Minimum DAI_HOLDING_DEPOSIT_BALANCEamount of DAI redeemable for Tribe (total DAI held - amount on FeiPSM)
 // TODO: Update with final numbers
 const DAI_HOLDING_DEPOSIT_BALANCE = ethers.constants.WeiPerEther.mul(60_000_000);
 
@@ -94,6 +94,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 
   // expect(eqDiff).to.be.bignumber.greaterThan();
   // expect(eqDiff).to.be.bignumber.lessThan();
+  expect(await contracts.collateralizationOracle.isOvercollateralized()).to.be.true;
 
   // 1. Verify Tribe Redeemer contract deploy params
   expect(await contracts.tribeRedeemer.redeemBase()).to.equal(REDEEM_BASE);
