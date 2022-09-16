@@ -99,6 +99,7 @@ async function main() {
   for (const cTokenAddress of Object.keys(balances)) {
     const cTokenBalancesData = balances[cTokenAddress];
     const cTokenBalancesArray = Object.entries(cTokenBalancesData);
+    const users = cTokenBalancesArray.map((entry) => entry[0]);
 
     const leaves = cTokenBalancesArray.map((x) => solidityKeccak256(['address', 'uint256'], x));
     const tree = new MerkleTree(leaves, hashFn, { sort: true });
@@ -114,11 +115,9 @@ async function main() {
 
     proofs[cTokenAddress] = {};
 
-    //for (const leaf of leaves) {
-    for (let i = 0; i < leaves.length; i++) {
+    for (let i=0; i<leaves.length; i++) {
       const proof = tree.getHexProof(leaves[i]);
-      const hexProof = tree.getHexProof(leaves[i]);
-      proofs[cTokenAddress as keyof typeof proofs][cTokenBalancesArray[i][0]] = hexProof;
+      proofs[cTokenAddress as keyof typeof proofs][users[i]] = proof;
       const verified = tree.verify(proof, leaves[i], root);
       if (!verified) throw new Error(`Proof for ${leaves[i]} failed`);
     }
