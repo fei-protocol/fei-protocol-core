@@ -125,8 +125,10 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 
   // validate that all 20 ctokens exist & are set
   for (let i = 0; i < cTokens.length; i++) {
-    expect(await rariMerkleRedeemer.merkleRoots(cTokens[i].toLowerCase())).to.be.equal(rootsArray[i]);
-    expect(await rariMerkleRedeemer.cTokenExchangeRates(cTokens[i])).to.be.equal(ratesArray[i]);
+    expect(await rariMerkleRedeemer.merkleRoots(cTokens[i].toLowerCase())).to.be.equal(rootsArray[i].toLowerCase());
+    expect(await rariMerkleRedeemer.cTokenExchangeRates(cTokens[i].toLowerCase())).to.be.equal(
+      ratesArray[i].toLowerCase()
+    );
   }
 
   //console.log(`Sending ETH to both contracts...`);
