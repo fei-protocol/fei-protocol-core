@@ -52,8 +52,8 @@ const rootsArray: string[] = [];
 
 // Construct rates and roots arrays
 for (const token of cTokens) {
-  ratesArray.push(rates[token as keyof typeof rates]);
-  rootsArray.push(roots[token as keyof typeof roots]);
+  ratesArray.push(rates[token.toLowerCase() as keyof typeof rates]);
+  rootsArray.push(roots[token.toLowerCase() as keyof typeof roots]);
 }
 
 // Do any deployments
@@ -125,7 +125,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 
   // validate that all 20 ctokens exist & are set
   for (let i = 0; i < cTokens.length; i++) {
-    expect(await rariMerkleRedeemer.merkleRoots(cTokens[i])).to.be.equal(rootsArray[i]);
+    expect(await rariMerkleRedeemer.merkleRoots(cTokens[i].toLowerCase())).to.be.equal(rootsArray[i]);
     expect(await rariMerkleRedeemer.cTokenExchangeRates(cTokens[i])).to.be.equal(ratesArray[i]);
   }
 
