@@ -50,20 +50,20 @@ let pcvStatsBefore: PcvStats;
 const ratesArray: string[] = [];
 const rootsArray: string[] = [];
 
+// Construct rates and roots arrays
+for (const token of cTokens) {
+  ratesArray.push(rates[token as keyof typeof rates]);
+  rootsArray.push(roots[token as keyof typeof roots]);
+}
+
 // Do any deployments
 // This should exclusively include new contract deployments
 const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: NamedAddresses, logging: boolean) => {
-  // Construct rates and roots arrays
-  for (const token of cTokens) {
-    ratesArray.push(rates[token as keyof typeof rates]);
-    rootsArray.push(roots[token as keyof typeof roots]);
-  }
-
   // Quick check: ensure that the rates, roots, and ctokens are all in the same order
   for (let i = 0; i < cTokens.length; i++) {
     const token = cTokens[i];
-    expect(rates[token.toLowerCase() as keyof typeof rates]).to.equal(ratesArray[i]);
-    expect(roots[token.toLowerCase() as keyof typeof roots]).to.equal(rootsArray[i]);
+    expect(rates[token as keyof typeof rates]).to.equal(ratesArray[i]);
+    expect(roots[token as keyof typeof roots]).to.equal(rootsArray[i]);
   }
 
   // Log our output for visual inspection
