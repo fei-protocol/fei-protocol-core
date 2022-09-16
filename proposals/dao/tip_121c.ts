@@ -18,7 +18,7 @@ const fipNumber = 'tip_121c';
 
 // Minimum amount of DAI expected to be on the new DAI PSM
 // TODO: Update when final approx user circulating FEI is known
-const MIN_DAI_ON_NEW_PSM = ethers.constants.WeiPerEther.mul(59_000_000);
+const MIN_DAI_ON_NEW_PSM = ethers.constants.WeiPerEther.mul(69_000_000);
 
 let pcvStatsBefore: PcvStats;
 
@@ -69,6 +69,8 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   console.log(' Circ FEI diff                          [M]e18 ', Number(cFeiDiff) / 1e24);
   console.log(' Equity diff                            [M]e18 ', Number(eqDiff) / 1e24);
   console.log('----------------------------------------------------');
+
+  expect(await contracts.collateralizationOracle.isOvercollateralized()).to.be.true;
 
   // check pcv movements
   console.log(

@@ -4,7 +4,14 @@ import { TemplatedProposalDescription } from '@custom-types/types';
 // DAI transfer amount from holding deposit, 45M
 // TODO: Update when final approx user circulating FEI is known
 // Total = this DAI transfer + DAI on the old PSM
-const DAI_TRANSFER_AMOUNT_FROM_HOLDING = ethers.constants.WeiPerEther.mul(45_000_000);
+const DAI_TRANSFER_AMOUNT_FROM_HOLDING = ethers.constants.WeiPerEther.mul(56_500_000);
+
+// Accounting stats
+// FEI user circulating supply - 59M FEI
+
+// Target DAI on new PSM - 70M DAI
+// DAI on old PSM - 13.5M DAI
+// DAI transferred from holding deposit - 56.5M DAI
 
 const tip_121c: TemplatedProposalDescription = {
   title: 'TIP-121: PCV Consolidation (phase 1.c)',
