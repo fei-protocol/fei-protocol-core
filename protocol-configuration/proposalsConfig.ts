@@ -28,7 +28,7 @@ export const ProposalsConfig: TemplatedProposalsConfigMap = {
     category: ProposalCategory.DAO
   },
   tip_121b: {
-    deploy: true,
+    deploy: false,
     totalValue: 0,
     proposal: tip_121b,
     proposalId: '',
