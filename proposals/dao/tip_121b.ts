@@ -2,7 +2,8 @@ import {
   Fei,
   MerkleRedeemerDripper,
   MerkleRedeemerDripper__factory,
-  RariMerkleRedeemer
+  RariMerkleRedeemer,
+  MerkleTest
 } from '@custom-types/contracts';
 import { RariMerkleRedeemer__factory } from '@custom-types/contracts/factories/RariMerkleRedeemer__factory';
 import {
@@ -24,6 +25,8 @@ import { forceEth } from '@test/integration/setup/utils';
 import { expect } from 'chai';
 import { parseEther } from 'ethers/lib/utils';
 import { ethers } from 'hardhat';
+import balances from '../data/merkle_redemption/prod/balances.json';
+import proofs from '../data/merkle_redemption/prod/proofs.json';
 
 /*
 
@@ -115,6 +118,31 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // Run any validations required on the fip using mocha or console logging
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
+  const claimChecker = (await ethers.getContractAt(
+    'claimChecker',
+    '0x4f3348dd19ec65bdcC3cDD7d8e8A078a0B2C46fD'
+  )) as MerkleTest;
+
+  // for every ctoken/root
+  for (let i = 0; i < cTokens.length; i++) {
+    const ctoken = cTokens[i];
+    const root = rootsArray[i];
+
+    // for every user in that ctoken's data
+    const cTokenBalances = balances[ctoken as keyof typeof balances];
+    const cTokenProofs = proofs[ctoken as keyof typeof proofs];
+
+    for (const userBalanceData of Object.entries(cTokenBalances)) {
+      const userAddress = userBalanceData[0];
+      const userBalance = userBalanceData[1];
+      const proof = cTokenProofs[userAddress as keyof typeof cTokenProofs];
+
+      // check that the user can claim the correct amount
+      const claimable = await claimChecker.checkClaim(root, userAddress, userBalance, proof);
+      expect(claimable).to.be.true;
+    }
+  }
+
   const rariMerkleRedeemer = contracts.rariMerkleRedeemer as RariMerkleRedeemer;
   const merkleRedeemerDripper = contracts.merkleRedeemerDripper as MerkleRedeemerDripper;
 
