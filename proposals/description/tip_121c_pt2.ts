@@ -1,7 +1,9 @@
 import { TemplatedProposalDescription } from '@custom-types/types';
+import { ethers } from 'ethers';
 
+// Asset amounts configuration
 const MAX_BASIS_POINTS = '10000'; // 100% in basis points
-
+const DAI_HOLDING_DEPOSIT_BALANCE = ethers.constants.WeiPerEther.mul(60_000_000);
 const DAO_TIMELOCK_FOX_BALANCE = '15316691965631380244403204';
 const DAO_TIMELOCK_LQTY_BALANCE = '1101298805118942906652299';
 
@@ -24,10 +26,10 @@ const tip_121c_pt2: TemplatedProposalDescription = {
     },
     // DAI
     {
-      target: 'ratioPCVControllerV2',
+      target: 'daiHoldingPCVDeposit',
       values: '0',
-      method: 'withdrawRatio(address,address,uint256)',
-      arguments: (addresses) => [addresses.daiHoldingPCVDeposit, addresses.tribeRedeemer, MAX_BASIS_POINTS],
+      method: 'withdraw(address,uint256)',
+      arguments: (addresses) => [addresses.tribeRedeemer, DAI_HOLDING_DEPOSIT_BALANCE],
       description: 'Withdraw all ~68M DAI from holding deposit to the Tribe Redeemer'
     },
     // FOX
