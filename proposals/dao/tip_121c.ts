@@ -17,10 +17,6 @@ const fipNumber = 'tip_121c';
 // Minimum amount of DAI expected to be on the new DAI PSM
 const MIN_DAI_ON_NEW_PSM = ethers.constants.WeiPerEther.mul(50_000_000);
 
-// Bounds on PCV equity differences
-const MAX_PCV_EQUITY_DIFF = ethers.constants.WeiPerEther.mul(1_000_000);
-const MIN_PCV_EQUITY_DIFF = ethers.constants.WeiPerEther.mul(1_000_000);
-
 let pcvStatsBefore: PcvStats;
 
 // Do any deployments
@@ -88,8 +84,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   console.log('simpleFeiDaiPSM FEI balance', (await contracts.fei.balanceOf(addresses.simpleFeiDaiPSM)) / 1e18);
 
   // 0. Verify PCV equity diff is small
-  expect(eqDiff).to.be.bignumber.lessThan(MAX_PCV_EQUITY_DIFF);
-  expect(eqDiff).to.be.bignumber.greaterThan(MIN_PCV_EQUITY_DIFF);
+  expect(eqDiff).to.equal(0);
 
   // 1. Verify old DAI PSM is deprecated
   // Has no funds
@@ -102,12 +97,10 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await contracts.daiFixedPricePSM.mintPaused()).to.be.true;
 
   // 2. Verify new DAI PSM has DAI and no FEI (should have been burned)
-  expect(await contracts.dai.balanceOf(addresses.daiFixedPricePSM)).to.be.bignumber.greaterThan(MIN_DAI_ON_NEW_PSM);
-  expect(await contracts.fei.balanceOf(addresses.daiFixedPricePSM)).to.equal(0);
+  expect(await contracts.dai.balanceOf(addresses.simpleFeiDaiPSM)).to.be.bignumber.greaterThan(MIN_DAI_ON_NEW_PSM);
+  expect(await contracts.fei.balanceOf(addresses.simpleFeiDaiPSM)).to.equal(0);
 
-  // 3. Perform a swap, verify 1:1, totalSupply changes accordingly
-
-  // 4. Perform a redeem, verify 1:1
+  // Swap and redeem e2e tests are in 'simpleFeiDaiPSM.ts'
 };
 
 export { deploy, setup, teardown, validate };

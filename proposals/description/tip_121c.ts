@@ -1,10 +1,14 @@
 import { ethers } from 'ethers';
 import { TemplatedProposalDescription } from '@custom-types/types';
 
+// DAI transfer amount from holding deposit, 45M
+const DAI_TRANSFER_AMOUNT_FROM_HOLDING = ethers.constants.WeiPerEther.mul(45_000_000);
+
 const tip_121c: TemplatedProposalDescription = {
   title: 'TIP-121: PCV Consolidation (phase 1.c)',
   commands: [
-    // 1. DAI : deprecate old psm, setup new psm, move all DAI to new psm.
+    // 1. DAI : deprecate old psm, setup new psm, move enough DAI to new psm to cover
+    // user circulating FEI
     // 1.a Deprecate the old DAI PSM
     {
       target: 'core',
@@ -58,7 +62,7 @@ const tip_121c: TemplatedProposalDescription = {
       arguments: (addresses) => [addresses.simpleFeiDaiPSM],
       description: `Grant MINTER role to the new DAI PSM`
     },
-    // 1.c Migrate all DAI funds to the new DAI PSM
+    // 1.c Migrate enough DAI funds to the new DAI PSM to cover circulating FEI
     {
       target: 'ratioPCVControllerV2',
       values: '0',
@@ -68,7 +72,14 @@ const tip_121c: TemplatedProposalDescription = {
         addresses.simpleFeiDaiPSM, // to
         '10000' // basisPoints, 100%
       ],
-      description: 'Migrate DAI from old to new DAI PSM'
+      description: 'Migrate all DAI from old to new DAI PSM (~14M)'
+    },
+    {
+      target: 'daiHoldingPCVDeposit',
+      values: '0',
+      method: 'withdraw(address,uint256)',
+      arguments: (addresses) => [addresses.simpleFeiDaiPSM, DAI_TRANSFER_AMOUNT_FROM_HOLDING],
+      description: 'Withdraw 45M DAI from DAI holding deposit to the simple FEI DAI PSM'
     },
     {
       target: 'ratioPCVControllerV2',
@@ -80,7 +91,7 @@ const tip_121c: TemplatedProposalDescription = {
         addresses.simpleFeiDaiPSM, // to
         '10000' // basisPoints, 100%
       ],
-      description: 'Migrate FEI from old to new DAI PSM'
+      description: 'Migrate FEI from old to new DAI PSM, where it will then be burned'
     },
     {
       target: 'simpleFeiDaiPSM',
@@ -99,18 +110,7 @@ const tip_121c: TemplatedProposalDescription = {
       description: 'Revoke MINTER_ROLE from the DAO Timelock.'
     },
 
-    // 3. Final handling of veBAL : tokenize it (for redemptions) and deprecate all related contracts
-    // Grant METAGOVERNANCE_TOKEN_STAKING + PCV_CONTROLLER_ROLE role to an immutable contract (that is an ERC20 of
-    // tokenized veBAL), and have a call in this contract that can be used to unlock veBAL and pull to self
-    // with withdrawERC20, and another to burn the token itself for redeeming B-80BAL-20WETH after they
-    // have been pulled to the contract.
-
-    // 4. Final handling of veANGLE : nothing to do (write it off).
-    // angleDelegatorPCVDeposit has 478,096.47 ANGLE Locked Until Apr 2nd 2026 (3.623 y)
-    // worth $ 22,288 on 18 Aug 2022 + ~5k€ of unclaimed sanUSDC_EUR fees.
-    // angleDelegatorPCVDeposit is not a proxy so we can't change the hardcoded behavior.
-
-    // Finally, Collateralization Oracle and Safe Addresses updates
+    // 3. Update Collateralization Oracle and Safe Addresses
     {
       target: 'collateralizationOracle',
       values: '0',
