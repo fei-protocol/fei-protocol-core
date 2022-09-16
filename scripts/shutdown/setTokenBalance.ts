@@ -2,7 +2,7 @@ import * as dotenv from 'dotenv';
 import { BigNumber, ethers } from 'ethers';
 import { parseEther } from 'ethers/lib/utils';
 import { IERC20, IERC20__factory } from '../../types/contracts';
-import { cTokens } from './data/prod/cTokens';
+import { cTokens } from '../../proposals/data/merkle_redemption/cTokens';
 
 dotenv.config();
 
@@ -117,7 +117,7 @@ async function main() {
 
   if (process.argv[2] !== undefined) {
     cTokenAddress = process.argv[2];
-    if (!cTokens.includes(cTokenAddress) && cTokenAddress != feiAddress)
+    if (!cTokens.some((t) => t.toLowerCase() === cTokenAddress.toLowerCase()) && cTokenAddress != feiAddress)
       throw new Error(`Invalid token address: ${cTokenAddress}`);
   } else throw new Error("Must provide cToken address. Run with single param 'help' for usage.");
 
@@ -177,7 +177,9 @@ async function main() {
   }
 
   const topHolder =
-    cTokenAddress === feiAddress ? feiHolder : cTokenHolders[cTokenAddress as keyof typeof cTokenHolders][0];
+    cTokenAddress.toLowerCase() === feiAddress.toLowerCase()
+      ? feiHolder
+      : cTokenHolders[cTokenAddress.toLowerCase() as keyof typeof cTokenHolders][0];
   await provider.send('anvil_setBalance', [topHolder, parseEther('10').toHexString()]);
 
   if (debug) console.log(`Top holder: ${topHolder}`);

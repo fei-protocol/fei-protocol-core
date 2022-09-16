@@ -8,13 +8,16 @@ import { RariMerkleRedeemer__factory } from '@custom-types/contracts/factories/R
 import {
   DeployUpgradeFunc,
   NamedAddresses,
+  NamedContracts,
+  PcvStats,
   SetupUpgradeFunc,
   TeardownUpgradeFunc,
   ValidateUpgradeFunc
 } from '@custom-types/types';
-import { cTokens } from '@proposals/data/hack_repayment/cTokens';
-import { rates } from '@proposals/data/hack_repayment/rates';
-import { roots } from '@proposals/data/hack_repayment/roots';
+import { Contract } from '@ethersproject/contracts';
+import { cTokens } from '@proposals/data/merkle_redemption/cTokens';
+import rates from '@proposals/data/merkle_redemption/sample/rates.json';
+import roots from '@proposals/data/merkle_redemption/sample/roots.json';
 import { MainnetContractsConfig } from '@protocol/mainnetAddresses';
 import { getImpersonatedSigner } from '@test/helpers';
 import { forceEth } from '@test/integration/setup/utils';
@@ -36,20 +39,44 @@ Steps:
 const fipNumber = 'tip_121b';
 
 const dripPeriod = 3600; // 1 hour
-const dripAmount = ethers.utils.parseEther('2500000'); // 2.5m Fei
+const dripAmount = ethers.utils.parseEther('1000000'); // 1m Fei
 
-const rariMerkleRedeemerInitialBalance = ethers.utils.parseEther('5000000'); // 5m Fei
-const merkleRedeemerDripperInitialBalance = ethers.utils.parseEther('45000000'); // 45m Fei
+const total = parseEther('12680884'); // 12.68M Fei total
+const merkleRedeemerDripperInitialBalance = parseEther('9000000'); // 9m Fei initially in dripper
+const rariMerkleRedeemerInitialBalance = total.sub(merkleRedeemerDripperInitialBalance); // Remaining Fei for merkle redeemer (3.68m Fei)
+
+let pcvStatsBefore: PcvStats;
+
+const ratesArray: string[] = [];
+const rootsArray: string[] = [];
 
 // Do any deployments
 // This should exclusively include new contract deployments
 const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: NamedAddresses, logging: boolean) => {
+  // Construct rates and roots arrays
+  for (const token of cTokens) {
+    ratesArray.push(rates[token.toLowerCase() as keyof typeof rates]);
+    rootsArray.push(roots[token.toLowerCase() as keyof typeof roots]);
+  }
+
+  // Quick check: ensure that the rates, roots, and ctokens are all in the same order
+  for (let i = 0; i < cTokens.length; i++) {
+    const token = cTokens[i];
+    expect(rates[token.toLowerCase() as keyof typeof rates]).to.equal(ratesArray[i]);
+    expect(roots[token.toLowerCase() as keyof typeof roots]).to.equal(rootsArray[i]);
+  }
+
+  // Log our output for visual inspection
+  console.log('Rates:', JSON.stringify(ratesArray, null, 2));
+  console.log('Roots:', JSON.stringify(rootsArray, null, 2));
+  console.log('cTokens:', JSON.stringify(cTokens, null, 2));
+
   const rariMerkleRedeemerFactory = new RariMerkleRedeemer__factory((await ethers.getSigners())[0]);
   const rariMerkleRedeemer = await rariMerkleRedeemerFactory.deploy(
     MainnetContractsConfig.fei.address, // token: fei
     cTokens, // ctokens (address[])
-    rates, // rates (uint256[])
-    roots // roots (bytes32[])
+    ratesArray, // rates (uint256[])
+    rootsArray // roots (bytes32[])
   );
 
   const merkleRedeeemrDripperFactory = new MerkleRedeemerDripper__factory((await ethers.getSigners())[0]);
@@ -71,7 +98,10 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 // This could include setting up Hardhat to impersonate accounts,
 // ensuring contracts have a specific state, etc.
 const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
-  console.log(`No actions to complete in setup for fip${fipNumber}`);
+  console.log(`Setup actions for fip${fipNumber}`);
+  await logDaiBalances(contracts.dai);
+
+  pcvStatsBefore = await contracts.collateralizationOracle.pcvStats();
 };
 
 // Tears down any changes made in setup() that need to be
@@ -86,10 +116,12 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const rariMerkleRedeemer = contracts.rariMerkleRedeemer as RariMerkleRedeemer;
   const merkleRedeemerDripper = contracts.merkleRedeemerDripper as MerkleRedeemerDripper;
 
-  // validate that all 27 ctokens exist & are set
+  await validatePCV(contracts);
+
+  // validate that all 20 ctokens exist & are set
   for (let i = 0; i < cTokens.length; i++) {
-    expect(await rariMerkleRedeemer.merkleRoots(cTokens[i])).to.be.equal(roots[i]);
-    expect(await rariMerkleRedeemer.cTokenExchangeRates(cTokens[i])).to.be.equal(rates[i]);
+    expect(await rariMerkleRedeemer.merkleRoots(cTokens[i])).to.be.equal(rootsArray[i]);
+    expect(await rariMerkleRedeemer.cTokenExchangeRates(cTokens[i])).to.be.equal(ratesArray[i]);
   }
 
   //console.log(`Sending ETH to both contracts...`);
@@ -128,6 +160,87 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   await merkleRedeemerDripper.drip();
   const redeemerBalAfterDrip = await fei.balanceOf(rariMerkleRedeemer.address);
   expect(redeemerBalAfterDrip.sub(redeemerBalBeforeDrip)).to.be.equal(dripAmount);
+
+  await logDaiBalances(contracts.dai);
+
+  // Execute fuseWithdrawalGuard actions
+  let i = 0;
+  while (await contracts.fuseWithdrawalGuard.check()) {
+    const protecActions = await contracts.fuseWithdrawalGuard.getProtecActions();
+    const depositAddress = '0x' + protecActions.datas[0].slice(34, 74);
+    const depositLabel = getAddressLabel(addresses, depositAddress);
+    const withdrawAmountHex = '0x' + protecActions.datas[0].slice(138, 202);
+    const withdrawAmountNum = Number(withdrawAmountHex) / 1e18;
+    console.log('fuseWithdrawalGuard   protec action #', ++i, depositLabel, 'withdraw', withdrawAmountNum);
+    await contracts.pcvSentinel.protec(contracts.fuseWithdrawalGuard.address);
+  }
 };
 
+const BABYLON_ADDRESS = '0x97FcC2Ae862D03143b393e9fA73A32b563d57A6e';
+const FRAX_ADDRESS = '0xB1748C79709f4Ba2Dd82834B8c82D4a505003f27';
+const OLYMPUS_ADDRESS = '0x245cc372C84B3645Bf0Ffe6538620B04a217988B';
+const VESPER_ADDRESS = '0x9520b477Aa81180E6DdC006Fc09Fb6d3eb4e807A';
+const RARI_DAI_AGGREGATOR_ADDRESS = '0xafd2aade64e6ea690173f6de59fc09f5c9190d74';
+const GNOSIS_SAFE_ADDRESS = '0x7189b2ea41d406c5044865685fedb615626f9afd';
+const FUJI_CONTRACT_ADDRESS = '0x1868cBADc11D3f4A12eAaf4Ab668e8aA9a76d790';
+const CONTRACT_1_ADDRESS = '0x07197a25bf7297c2c41dd09a79160d05b6232bcf';
+const ALOE_ADDRESS_1 = '0x0b76abb170519c292da41404fdc30bb5bef308fc';
+const ALOE_ADDRESS_2 = '0x8bc7c34009965ccb8c0c2eb3d4db5a231ecc856c';
+const CONTRACT_2_ADDRESS = '0x5495f41144ecef9233f15ac3e4283f5f653fc96c';
+const BALANCER_ADDRESS = '0x10A19e7eE7d7F8a52822f6817de8ea18204F2e4f';
+const CONTRACT_3_ADDRESS = '0xeef86c2e49e11345f1a693675df9a38f7d880c8f';
+const CONTRACT_4_ADDRESS = '0xa10fca31a2cb432c9ac976779dc947cfdb003ef0';
+const RARI_FOR_ARBITRUM_ADDRESS = '0xa731585ab05fC9f83555cf9Bff8F58ee94e18F85';
+
+async function logDaiBalances(dai: Contract) {
+  console.log('Babylon DAI balance: ', Number(await dai.balanceOf(BABYLON_ADDRESS)) / 1e18);
+  console.log('Frax DAI balance: ', Number(await dai.balanceOf(FRAX_ADDRESS)) / 1e18);
+  console.log('Olympus DAI balance: ', Number(await dai.balanceOf(OLYMPUS_ADDRESS)) / 1e18);
+  console.log('Vesper DAI balance: ', Number(await dai.balanceOf(VESPER_ADDRESS)) / 1e18);
+  console.log('Rari DAI balance: ', Number(await dai.balanceOf(RARI_DAI_AGGREGATOR_ADDRESS)) / 1e18);
+  console.log('Gnosis DAI balance: ', Number(await dai.balanceOf(GNOSIS_SAFE_ADDRESS)) / 1e18);
+  console.log('Fuji DAI balance: ', Number(await dai.balanceOf(FUJI_CONTRACT_ADDRESS)) / 1e18);
+  console.log('Contract 1 DAI balance: ', Number(await dai.balanceOf(CONTRACT_1_ADDRESS)) / 1e18);
+  console.log('Contract 2 DAI balance: ', Number(await dai.balanceOf(CONTRACT_2_ADDRESS)) / 1e18);
+  console.log('Contract 3 DAI balance: ', Number(await dai.balanceOf(CONTRACT_3_ADDRESS)) / 1e18);
+  console.log('Contract 4 DAI balance: ', Number(await dai.balanceOf(CONTRACT_4_ADDRESS)) / 1e18);
+  console.log('Aloe 1 DAI balance: ', Number(await dai.balanceOf(ALOE_ADDRESS_1)) / 1e18);
+  console.log('Aloe 2 DAI balance: ', Number(await dai.balanceOf(ALOE_ADDRESS_2)) / 1e18);
+  console.log('Balancer DAI balance: ', Number(await dai.balanceOf(BALANCER_ADDRESS)) / 1e18);
+  console.log('Rari for Arbitrum DAI balance: ', Number(await dai.balanceOf(RARI_FOR_ARBITRUM_ADDRESS)) / 1e18);
+}
+
+function getAddressLabel(addresses: NamedAddresses, address: string) {
+  for (const key in addresses) {
+    if (address.toLowerCase() == addresses[key].toLowerCase()) return key;
+  }
+  return '???';
+}
+
+const PCV_DIFF_LOWER = ethers.constants.WeiPerEther.mul(-42_000_000); // -42M
+const PCV_DIFF_UPPER = ethers.constants.WeiPerEther.mul(-30_000_000); // -30M
+
+async function validatePCV(contracts: NamedContracts) {
+  // 0. Verify PCV has minimal change
+  console.log('----------------------------------------------------');
+  console.log(' pcvStatsBefore.protocolControlledValue [M]e18 ', Number(pcvStatsBefore.protocolControlledValue) / 1e24);
+  console.log(' pcvStatsBefore.userCirculatingFei      [M]e18 ', Number(pcvStatsBefore.userCirculatingFei) / 1e24);
+  console.log(' pcvStatsBefore.protocolEquity          [M]e18 ', Number(pcvStatsBefore.protocolEquity) / 1e24);
+  const pcvStatsAfter: PcvStats = await contracts.collateralizationOracle.pcvStats();
+  console.log('----------------------------------------------------');
+  console.log(' pcvStatsAfter.protocolControlledValue  [M]e18 ', Number(pcvStatsAfter.protocolControlledValue) / 1e24);
+  console.log(' pcvStatsAfter.userCirculatingFei       [M]e18 ', Number(pcvStatsAfter.userCirculatingFei) / 1e24);
+  console.log(' pcvStatsAfter.protocolEquity           [M]e18 ', Number(pcvStatsAfter.protocolEquity) / 1e24);
+  console.log('----------------------------------------------------');
+  const pcvDiff = pcvStatsAfter.protocolControlledValue.sub(pcvStatsBefore.protocolControlledValue);
+  const cFeiDiff = pcvStatsAfter.userCirculatingFei.sub(pcvStatsBefore.userCirculatingFei);
+  const eqDiff = pcvStatsAfter.protocolEquity.sub(pcvStatsBefore.protocolEquity);
+  console.log(' PCV diff                               [M]e18 ', Number(pcvDiff) / 1e24);
+  console.log(' Circ FEI diff                          [M]e18 ', Number(cFeiDiff) / 1e24);
+  console.log(' Equity diff                            [M]e18 ', Number(eqDiff) / 1e24);
+  console.log('----------------------------------------------------');
+
+  expect(eqDiff).to.be.bignumber.greaterThan(PCV_DIFF_LOWER);
+  expect(eqDiff).to.be.bignumber.lessThan(PCV_DIFF_UPPER);
+}
 export { deploy, setup, teardown, validate };
