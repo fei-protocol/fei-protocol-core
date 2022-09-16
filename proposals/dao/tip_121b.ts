@@ -25,7 +25,7 @@ import { forceEth } from '@test/integration/setup/utils';
 import { expect } from 'chai';
 import { parseEther } from 'ethers/lib/utils';
 import { ethers } from 'hardhat';
-import balances from '../data/merkle_redemption/prod/balances.json';
+import balances from '../data/merkle_redemption/prod/mergedBalances.json';
 import proofs from '../data/merkle_redemption/prod/proofs.json';
 
 /*
@@ -129,8 +129,8 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
     const root = rootsArray[i];
 
     // for every user in that ctoken's data
-    const cTokenBalances = balances[ctoken as keyof typeof balances];
-    const cTokenProofs = proofs[ctoken as keyof typeof proofs];
+    const cTokenBalances = balances[ctoken.toLowerCase() as keyof typeof balances];
+    const cTokenProofs = proofs[ctoken.toLowerCase() as keyof typeof proofs];
 
     for (const userBalanceData of Object.entries(cTokenBalances)) {
       const userAddress = userBalanceData[0];
