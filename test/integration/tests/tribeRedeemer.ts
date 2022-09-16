@@ -1,4 +1,4 @@
-import { ERC20, TribeRedeemer } from '@custom-types/contracts';
+import { TribeRedeemer } from '@custom-types/contracts';
 import { NamedAddresses, NamedContracts } from '@custom-types/types';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { ProposalsConfig } from '@protocol/proposalsConfig';
@@ -68,7 +68,12 @@ describe('e2e-tribe-redeemer', function () {
     tribeWhaleSigner = await getImpersonatedSigner(tribeWhale);
 
     // Configuration
-    expectedTokensRecevied = [addresses.steth, addresses.lqty, addresses.fox];
+    expectedTokensRecevied = [
+      contractAddresses.steth,
+      contractAddresses.lqty,
+      contractAddresses.fox,
+      contractAddresses.dai
+    ];
   });
 
   it('should previewRedeem() for 10,000 TRIBE', async () => {

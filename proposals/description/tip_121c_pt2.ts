@@ -3,14 +3,17 @@ import { ethers } from 'ethers';
 
 // Asset amounts configuration
 const MAX_BASIS_POINTS = '10000'; // 100% in basis points
-const DAI_HOLDING_DEPOSIT_BALANCE = ethers.constants.WeiPerEther.mul(60_000_000);
+const DAI_HOLDING_DEPOSIT_BALANCE = ethers.constants.WeiPerEther.mul(60_000_000); // TODO - update
 const DAO_TIMELOCK_FOX_BALANCE = '15316691965631380244403204';
 const DAO_TIMELOCK_LQTY_BALANCE = '1101298805118942906652299';
 
 const tip_121c_pt2: TemplatedProposalDescription = {
   title: 'TIP_121c (cont.): Tribe Redemption',
   commands: [
-    // Transfer PCV assets to TribeRedeemer for redemption
+    // TODO:
+    // Withdraw any excess from the simpleFeiPSM once we know how much user circulating FEI there is
+
+    // 1. Transfer PCV assets to TribeRedeemer for redemption
     // stETH
     {
       target: 'ratioPCVControllerV2',
@@ -30,7 +33,7 @@ const tip_121c_pt2: TemplatedProposalDescription = {
       values: '0',
       method: 'withdraw(address,uint256)',
       arguments: (addresses) => [addresses.tribeRedeemer, DAI_HOLDING_DEPOSIT_BALANCE],
-      description: 'Withdraw all ~68M DAI from holding deposit to the Tribe Redeemer'
+      description: 'Withdraw all ~60M DAI from holding deposit to the Tribe Redeemer'
     },
     // FOX
     {
