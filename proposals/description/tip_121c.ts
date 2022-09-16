@@ -2,6 +2,8 @@ import { ethers } from 'ethers';
 import { TemplatedProposalDescription } from '@custom-types/types';
 
 // DAI transfer amount from holding deposit, 45M
+// TODO: Update when final approx user circulating FEI is known
+// Total = this DAI transfer + DAI on the old PSM
 const DAI_TRANSFER_AMOUNT_FROM_HOLDING = ethers.constants.WeiPerEther.mul(45_000_000);
 
 const tip_121c: TemplatedProposalDescription = {
