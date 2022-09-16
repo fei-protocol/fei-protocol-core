@@ -120,6 +120,9 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 
   await validatePCV(contracts);
 
+  console.log(rootsArray);
+  console.log(ratesArray);
+
   // validate that all 20 ctokens exist & are set
   for (let i = 0; i < cTokens.length; i++) {
     expect(await rariMerkleRedeemer.merkleRoots(cTokens[i])).to.be.equal(rootsArray[i]);
