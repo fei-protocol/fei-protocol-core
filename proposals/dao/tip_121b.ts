@@ -119,7 +119,7 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
   const claimChecker = (await ethers.getContractAt(
-    'claimChecker',
+    'MerkleTest',
     '0x4f3348dd19ec65bdcC3cDD7d8e8A078a0B2C46fD'
   )) as MerkleTest;
 
