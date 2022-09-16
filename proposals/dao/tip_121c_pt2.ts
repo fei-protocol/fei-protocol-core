@@ -1,4 +1,4 @@
-import hre, { ethers, artifacts } from 'hardhat';
+import { ethers } from 'hardhat';
 import { expect } from 'chai';
 import {
   DeployUpgradeFunc,
@@ -23,6 +23,9 @@ const REDEEM_BASE = ethers.constants.WeiPerEther.mul(500_000_000);
 // Lido deposit balance, being withdrawn and sent to Tribe Redeemer
 // TODO: Check
 const STETH_DEPOSIT_BALANCE = '50296523674661485703301';
+
+const DAO_TIMELOCK_FOX_BALANCE = '15316691965631380244403204';
+const DAO_TIMELOCK_LQTY_BALANCE = '1101298805118942906652299';
 
 // Minimum amount of DAI redeemable for Tribe (total DAI held - amount on FeiPSM)
 // TODO: Update with final numbers
@@ -81,6 +84,8 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   // 1. Verify Tribe Redeemer has all PCV assets deposited on it
   expect(await contracts.steth.balanceOf(addresses.tribeRedeemer)).to.equal(STETH_DEPOSIT_BALANCE);
   expect(await contracts.dai.balanceOf(addresses.tribeRedeemer)).to.be.bignumber.greaterThan(MIN_DAI_REEMABLE);
+  expect(await contracts.lqty.balanceOf(addresses.tribeRedeemer)).to.equal(DAO_TIMELOCK_LQTY_BALANCE);
+  expect(await contracts.fox.balanceOf(addresses.tribeRedeemer)).to.equal(DAO_TIMELOCK_FOX_BALANCE);
 
   // 2. Verify previewRedeem() gives a reasonable value
 
