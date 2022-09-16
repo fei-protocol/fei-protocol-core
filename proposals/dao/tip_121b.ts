@@ -16,8 +16,8 @@ import {
 } from '@custom-types/types';
 import { Contract } from '@ethersproject/contracts';
 import { cTokens } from '@proposals/data/merkle_redemption/cTokens';
-import rates from '@proposals/data/merkle_redemption/sample/rates.json';
-import roots from '@proposals/data/merkle_redemption/sample/roots.json';
+import rates from '@proposals/data/merkle_redemption/prod/rates.json';
+import roots from '@proposals/data/merkle_redemption/prod/roots.json';
 import { MainnetContractsConfig } from '@protocol/mainnetAddresses';
 import { getImpersonatedSigner } from '@test/helpers';
 import { forceEth } from '@test/integration/setup/utils';
