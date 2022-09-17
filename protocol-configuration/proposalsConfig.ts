@@ -31,7 +31,7 @@ export const ProposalsConfig: TemplatedProposalsConfigMap = {
     deploy: false,
     totalValue: 0,
     proposal: tip_121b,
-    proposalId: '',
+    proposalId: '18409504155893955395764219200342193055990239653098975117323864343432865890837',
     affectedContractSignoff: [],
     deprecatedContractSignoff: [],
     category: ProposalCategory.DAO

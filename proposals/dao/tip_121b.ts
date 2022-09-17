@@ -146,7 +146,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const rariMerkleRedeemer = contracts.rariMerkleRedeemer as RariMerkleRedeemer;
   const merkleRedeemerDripper = contracts.merkleRedeemerDripper as MerkleRedeemerDripper;
 
-  await validatePCV(contracts);
+  //await validatePCV(contracts);
 
   console.log(rootsArray);
   console.log(ratesArray);
