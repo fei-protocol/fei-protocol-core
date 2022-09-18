@@ -24,9 +24,9 @@ contract SimpleFeiDaiPSM {
     // ----------------------------------------------------------------------------
 
     /// @notice event emitted upon a redemption
-    event Redeem(address to, uint256 amountFeiIn, uint256 amountAssetOut);
+    event Redeem(address indexed to, uint256 amountFeiIn, uint256 amountAssetOut);
     /// @notice event emitted when fei gets minted
-    event Mint(address to, uint256 amountIn, uint256 amountFeiOut);
+    event Mint(address indexed to, uint256 amountIn, uint256 amountFeiOut);
 
     /// @notice mint `amountFeiOut` FEI to address `to` for `amountIn` underlying tokens
     /// @dev see getMintAmountOut() to pre-calculate amount out
