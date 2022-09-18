@@ -1,6 +1,16 @@
 import { AddressCategory } from '../types/types'; // imported without custom path to allow docs to autogen without ts errors
 
 export const MainnetContractsConfig = {
+  rariMerkleRedeemer: {
+    artifactName: 'RariMerkleRedeemer',
+    address: '0xCAe4210e6676727EA4e0fD9BA5dFb95831356a16',
+    category: AddressCategory.TBD
+  },
+  merkleRedeemerDripper: {
+    artifactName: 'MerkleRedeemerDripper',
+    address: '0xF681F42f53D98A9136D090A04b47318C6961a832',
+    category: AddressCategory.TBD
+  },
   core: {
     artifactName: 'Core',
     address: '0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9',
