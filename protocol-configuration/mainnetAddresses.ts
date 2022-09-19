@@ -1590,6 +1590,10 @@ export const MainnetContractsConfig = {
     address: '0x6ef71cA9cD708883E129559F5edBFb9d9D5C6148',
     category: AddressCategory.External
   },
+  fishy: {
+    artifactName: 'unknown',
+    address: '0x7D82675470B06453980b37880d81f6F254371FD3'
+  },
   wintermute: {
     artifactName: 'unknown',
     address: '0x4B3F1048C55Faa0C0873e249E541139360501f2a',
@@ -2671,23 +2675,32 @@ export const MainnetContractsConfig = {
     category: AddressCategory.Deprecated
   },
 
+  vlauraOtcHelper: {
+    artifactName: 'ProxyOTCEscrow',
+    address: '0x61A991153E3ff68844abcE91551e046e1BE6f764',
+    category: AddressCategory.TBD
+  },
+  vlAuraDelegatorPCVDepositProxy: {
+    artifactName: 'TransparentUpgradeableProxy', // actually a TransparentUpgradeableProxy
+    address: '0xc44902C03093D52213d20E5b06a0Bda4D9Ce6524',
+    category: AddressCategory.Deprecated
+  },
   vlAuraDelegatorPCVDeposit: {
-    // TODO: show in CR Oracle
     artifactName: 'VlAuraDelegatorPCVDeposit', // actually a TransparentUpgradeableProxy
     address: '0xc44902C03093D52213d20E5b06a0Bda4D9Ce6524',
-    category: AddressCategory.TBD
+    category: AddressCategory.Deprecated
   },
   vlAuraDelegatorPCVDepositImplementation: {
     artifactName: 'VlAuraDelegatorPCVDeposit',
     address: '0x6A78a824BC61Abf70C6AC33c41d37206B22B575d',
-    category: AddressCategory.TBD
+    category: AddressCategory.Deprecated
   },
   vlAuraDelegatorPCVDepositImplementationOld: {
     // this was broken and upgraded in tip-118, setDelegate()
     // is performed in a separate call & not in initialize().
     artifactName: 'VlAuraDelegatorPCVDeposit',
     address: '0xEd47a9519F86a695A212B53B5EBff92aF41741b1',
-    category: AddressCategory.TBD
+    category: AddressCategory.Deprecated
   }
 };
 
