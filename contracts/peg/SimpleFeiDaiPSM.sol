@@ -24,9 +24,9 @@ contract SimpleFeiDaiPSM {
     // ----------------------------------------------------------------------------
 
     /// @notice event emitted upon a redemption
-    event Redeem(address to, uint256 amountFeiIn, uint256 amountAssetOut);
+    event Redeem(address indexed to, uint256 amountFeiIn, uint256 amountAssetOut);
     /// @notice event emitted when fei gets minted
-    event Mint(address to, uint256 amountIn, uint256 amountFeiOut);
+    event Mint(address indexed to, uint256 amountIn, uint256 amountFeiOut);
 
     /// @notice mint `amountFeiOut` FEI to address `to` for `amountIn` underlying tokens
     /// @dev see getMintAmountOut() to pre-calculate amount out
@@ -39,7 +39,7 @@ contract SimpleFeiDaiPSM {
         require(amountFeiOut >= minAmountOut, "SimpleFeiDaiPSM: Mint not enough out");
         DAI.safeTransferFrom(msg.sender, address(this), amountIn);
         FEI.mint(to, amountFeiOut);
-        emit Mint(to, amountIn, amountIn);
+        emit Mint(to, amountIn, amountFeiOut);
     }
 
     /// @notice redeem `amountFeiIn` FEI for `amountOut` underlying tokens and send to address `to`
@@ -54,7 +54,7 @@ contract SimpleFeiDaiPSM {
         require(amountOut >= minAmountOut, "SimpleFeiDaiPSM: Redeem not enough out");
         FEI.safeTransferFrom(msg.sender, address(this), amountFeiIn);
         DAI.safeTransfer(to, amountOut);
-        emit Redeem(to, amountFeiIn, amountFeiIn);
+        emit Redeem(to, amountFeiIn, amountOut);
     }
 
     /// @notice calculate the amount of FEI out for a given `amountIn` of underlying
