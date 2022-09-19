@@ -13,3 +13,6 @@ types/contracts
 .eslintcache
 .xml
 out
+scripts/shutdown/data/sample/roots.json
+scripts/shutdown/test-scenarios/*.merged.json
+scripts/shutdown/data/*.json

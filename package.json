@@ -39,7 +39,7 @@
     "deploy:timelock": "DEPLOY_FILE=optimisticTimelockDeploy npx hardhat run --network mainnet scripts/deploy/migrations.ts",
     "deploy:stw": "DEPLOY_FILE=deployStakedTokenWrapper npx hardhat run --network mainnet scripts/deploy/migrations.ts",
     "abis": "node scripts/utils/abis.js",
-    "calldata": "npx hardhat run scripts/utils/getProposalCalldata.ts",
+    "calldata": "FORK_BLOCK=`cat block.txt` ENABLE_MAINNET_FORKING=true npx hardhat run scripts/utils/getProposalCalldata.ts",
     "check-proposal": "ENABLE_MAINNET_FORKING=true npx hardhat run scripts/utils/checkProposal.ts",
     "prettier:sol": "prettier --config ./contracts/.prettierrc --write 'contracts/**/*.sol'",
     "prettier:ts": "prettier --config .prettierrc './**/*.ts' --write",

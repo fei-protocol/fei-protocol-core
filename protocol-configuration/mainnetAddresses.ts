@@ -1,6 +1,16 @@
 import { AddressCategory } from '../types/types'; // imported without custom path to allow docs to autogen without ts errors
 
 export const MainnetContractsConfig = {
+  rariMerkleRedeemer: {
+    artifactName: 'RariMerkleRedeemer',
+    address: '0xCAe4210e6676727EA4e0fD9BA5dFb95831356a16',
+    category: AddressCategory.TBD
+  },
+  merkleRedeemerDripper: {
+    artifactName: 'MerkleRedeemerDripper',
+    address: '0xF681F42f53D98A9136D090A04b47318C6961a832',
+    category: AddressCategory.TBD
+  },
   core: {
     artifactName: 'Core',
     address: '0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9',
@@ -163,25 +173,25 @@ export const MainnetContractsConfig = {
   podExecutorV2: {
     artifactName: 'PodExecutor',
     address: '0xC72e814314e79114354F1682111e07015826080D',
-    category: AddressCategory.Governance
+    category: AddressCategory.Deprecated
   },
 
   podAdminGateway: {
     artifactName: 'PodAdminGateway',
     address: '0xDDe8AA537c5b289De9cede462E6F0ec3a3a99e39',
-    category: AddressCategory.Governance
+    category: AddressCategory.Deprecated
   },
 
   podFactory: {
     artifactName: 'PodFactory',
     address: '0x4B2c8894D29d05dbc0d5A1CE23535be08d844819',
-    category: AddressCategory.Governance
+    category: AddressCategory.Deprecated
   },
 
   governanceMetadataRegistry: {
     artifactName: 'GovernanceMetadataRegistry',
     address: '0xd78Cd3AaE6168BE43B548877aAc68312B9df9AFb',
-    category: AddressCategory.Governance
+    category: AddressCategory.Deprecated
   },
 
   nopeDAO: {
@@ -193,7 +203,7 @@ export const MainnetContractsConfig = {
   tribalCouncilTimelock: {
     artifactName: 'TimelockController',
     address: '0xe0C7DE94395B629860Cbb3c42995F300F56e6d7a',
-    category: AddressCategory.Governance
+    category: AddressCategory.Deprecated
   },
 
   tribalCouncilSafe: {
@@ -205,7 +215,7 @@ export const MainnetContractsConfig = {
   roleBastion: {
     artifactName: 'RoleBastion',
     address: '0x8096314D9014EbB69Fc777ED3791DDE6FFbaFAed',
-    category: AddressCategory.Governance
+    category: AddressCategory.Deprecated
   },
 
   tribeReserveStabilizer: {
@@ -224,7 +234,11 @@ export const MainnetContractsConfig = {
     address: '0xe49B608663EeB89f1E3AbBe75744e5318F85029C',
     category: AddressCategory.Deprecated
   },
-
+  lusdCurveMetapool: {
+    artifactName: 'ICurvePool',
+    address: '0xEd279fDD11cA84bEef15AF5D39BB4d4bEE23F0cA',
+    category: AddressCategory.External
+  },
   tribalCouncilTimelockFeiLens: {
     artifactName: 'ERC20PCVDepositWrapper',
     address: '0x4037a70152F4c88Ad40522f35BD4dDD17E6B2052',
@@ -334,7 +348,12 @@ export const MainnetContractsConfig = {
   indexDelegator: {
     artifactName: 'SnapshotDelegatorPCVDeposit',
     address: '0x0ee81df08B20e4f9E0F534e50da437D24491c4ee',
-    category: AddressCategory.PCV_V1
+    category: AddressCategory.Deprecated
+  },
+  indexOtcEscrow: {
+    artifactName: 'OtcEscrow',
+    address: '0x574a9a9EeD5A3bE02bD35255e7E8625fE6824a02',
+    category: AddressCategory.TBD
   },
 
   rariPool22FeiPCVDeposit: {
@@ -393,12 +412,12 @@ export const MainnetContractsConfig = {
   laTribuFeiTimelock: {
     artifactName: 'LinearTokenTimelock',
     address: '0xdb02630ed4f4994414122894B5082dc6D88a4ED4',
-    category: AddressCategory.Distribution
+    category: AddressCategory.Deprecated
   },
   laTribuTribeTimelock: {
     artifactName: 'QuadraticTokenTimelock',
     address: '0x552b8A441E945D021D29ae58B6Ae3dE96da75A05',
-    category: AddressCategory.Distribution
+    category: AddressCategory.Deprecated
   },
   rariInfraFeiTimelock: {
     artifactName: 'LinearTokenTimelock',
@@ -1573,7 +1592,11 @@ export const MainnetContractsConfig = {
   },
   fishy: {
     artifactName: 'unknown',
-    address: '0x7D82675470B06453980b37880d81f6F254371FD3',
+    address: '0x7D82675470B06453980b37880d81f6F254371FD3'
+  },
+  wintermute: {
+    artifactName: 'unknown',
+    address: '0x4B3F1048C55Faa0C0873e249E541139360501f2a',
     category: AddressCategory.External
   },
   olympusMultisig: {
