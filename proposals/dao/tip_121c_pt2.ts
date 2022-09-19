@@ -88,7 +88,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   console.log(' Equity diff                            [M]e18 ', Number(eqDiff) / 1e24);
   console.log('----------------------------------------------------');
 
-  // expect(await contracts.collateralizationOracle.isOvercollateralized()).to.be.true;
+  expect(await contracts.collateralizationOracle.isOvercollateralized()).to.be.true;
 
   // 1. Verify Tribe Redeemer contract deploy params
   expect(await contracts.tribeRedeemer.redeemBase()).to.equal(REDEEM_BASE);
@@ -103,7 +103,8 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(actualTokensReceived).to.contain(actualTokensReceived[3]);
 
   // 2. Verify Tribe Redeemer has all PCV assets deposited on it
-  expect(await contracts.steth.balanceOf(addresses.tribeRedeemer)).to.equal(STETH_DEPOSIT_BALANCE);
+  // stETH is rebasing, so amount transfered to tribeRedeemer will be greater than current amount on deposit
+  expect(await contracts.steth.balanceOf(addresses.tribeRedeemer)).to.be.bignumber.greaterThan(STETH_DEPOSIT_BALANCE);
   expect(await contracts.dai.balanceOf(addresses.tribeRedeemer)).to.equal(DAI_HOLDING_DEPOSIT_BALANCE);
   expect(await contracts.lqty.balanceOf(addresses.tribeRedeemer)).to.equal(DAO_TIMELOCK_LQTY_BALANCE);
   expect(await contracts.fox.balanceOf(addresses.tribeRedeemer)).to.equal(DAO_TIMELOCK_FOX_BALANCE);

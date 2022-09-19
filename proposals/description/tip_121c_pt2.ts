@@ -10,9 +10,6 @@ const DAO_TIMELOCK_LQTY_BALANCE = '1101298805118942906652299';
 const tip_121c_pt2: TemplatedProposalDescription = {
   title: 'TIP_121c (cont.): Tribe Redemption',
   commands: [
-    // TODO:
-    // Withdraw any excess from the simpleFeiPSM once we know how much user circulating FEI there is
-
     // 1. Transfer PCV assets to TribeRedeemer for redemption
     // stETH
     {
@@ -33,7 +30,7 @@ const tip_121c_pt2: TemplatedProposalDescription = {
       values: '0',
       method: 'withdraw(address,uint256)',
       arguments: (addresses) => [addresses.tribeRedeemer, DAI_HOLDING_DEPOSIT_BALANCE],
-      description: 'Withdraw all ~60M DAI from holding deposit to the Tribe Redeemer'
+      description: 'Withdraw all ~30M DAI from holding deposit to the Tribe Redeemer'
     },
     // FOX
     {
