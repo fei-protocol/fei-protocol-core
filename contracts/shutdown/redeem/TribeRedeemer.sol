@@ -22,7 +22,7 @@ contract TribeRedeemer is ReentrancyGuard {
     /// @notice base used to compute the redemption amounts.
     /// For instance, if the base is 100, and a user provides 100 `redeemedToken`,
     /// they will receive all the balances of each `tokensReceived` held on this contract.
-    uint256 public redeemBase;
+    uint256 public immutable redeemBase;
 
     constructor(
         address _redeemedToken,
