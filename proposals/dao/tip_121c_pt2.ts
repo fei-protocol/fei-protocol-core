@@ -17,7 +17,7 @@ Tribe Redemption
 
 // Circulating amount of TRIBE, which is redeemable for underlying PCV assets
 // TODO: Update with final circulating TRIBE figure
-const REDEEM_BASE = ethers.constants.WeiPerEther.mul(500_000_000);
+const REDEEM_BASE = ethers.constants.WeiPerEther.mul(458_964_340);
 
 // Lido deposit balance, being withdrawn and sent to Tribe Redeemer
 const STETH_DEPOSIT_BALANCE = '50296523674661485703301';
@@ -27,7 +27,7 @@ const DAO_TIMELOCK_LQTY_BALANCE = '1101298805118942906652299';
 
 // Minimum DAI_HOLDING_DEPOSIT_BALANCEamount of DAI redeemable for Tribe (total DAI held - amount on FeiPSM)
 // TODO: Update with final numbers
-const DAI_HOLDING_DEPOSIT_BALANCE = ethers.constants.WeiPerEther.mul(60_000_000);
+const DAI_HOLDING_DEPOSIT_BALANCE = ethers.constants.WeiPerEther.mul(30_600_000);
 
 const fipNumber = 'tip_121c_pt2';
 
