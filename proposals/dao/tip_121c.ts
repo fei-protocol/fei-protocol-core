@@ -7,12 +7,9 @@ import {
   TeardownUpgradeFunc,
   ValidateUpgradeFunc
 } from '@custom-types/types';
-import { BigNumber } from 'ethers';
 import { expect } from 'chai';
 import { getImpersonatedSigner } from '@test/helpers';
 import { forceEth } from '@test/integration/setup/utils';
-
-const toBN = BigNumber.from;
 
 const fipNumber = 'tip_121c';
 
