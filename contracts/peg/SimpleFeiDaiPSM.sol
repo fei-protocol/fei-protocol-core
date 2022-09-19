@@ -33,7 +33,7 @@ contract SimpleFeiDaiPSM {
     function mint(
         address to,
         uint256 amountIn,
-        uint256 minAmountOut
+        uint256 // minAmountOut
     ) external returns (uint256 amountFeiOut) {
         amountFeiOut = amountIn;
         DAI.safeTransferFrom(msg.sender, address(this), amountIn);
@@ -47,7 +47,7 @@ contract SimpleFeiDaiPSM {
     function redeem(
         address to,
         uint256 amountFeiIn,
-        uint256 minAmountOut
+        uint256 // minAmountOut
     ) external returns (uint256 amountOut) {
         amountOut = amountFeiIn;
         FEI.safeTransferFrom(msg.sender, address(this), amountFeiIn);
