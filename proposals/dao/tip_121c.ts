@@ -16,9 +16,10 @@ const toBN = BigNumber.from;
 
 const fipNumber = 'tip_121c';
 
-// Minimum amount of DAI expected to be on the new DAI PSM
+// Minimum DAI expected to be on the new DAI PSM
+//       - transferred from old PSM and DAI holding deposit
 // TODO: Update when final approx user circulating FEI is known
-const MIN_DAI_ON_NEW_PSM = ethers.constants.WeiPerEther.mul(69_000_000);
+const MIN_DAI_ON_NEW_PSM = ethers.constants.WeiPerEther.mul(57_500_000);
 
 let pcvStatsBefore: PcvStats;
 
