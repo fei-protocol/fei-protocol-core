@@ -9,7 +9,6 @@ const PSM_DAI_TRANSFER_FROM_DEPOSIT = ethers.constants.WeiPerEther.mul(57_000_00
 
 // Tribe Redeemer, asset amount configuration
 const MAX_BASIS_POINTS = '10000'; // 100% in basis points
-const DAI_HOLDING_DEPOSIT_BALANCE = ethers.constants.WeiPerEther.mul(30_600_000); // TODO - update
 const DAO_TIMELOCK_FOX_BALANCE = '15316691965631380244403204';
 const DAO_TIMELOCK_LQTY_BALANCE = '1101298805118942906652299';
 
@@ -178,7 +177,7 @@ const tip_121c: TemplatedProposalDescription = {
         addresses.daiHoldingPCVDeposit,
         addresses.dai,
         addresses.tribeRedeemer,
-        DAI_HOLDING_DEPOSIT_BALANCE
+        MAX_BASIS_POINTS
       ],
       description: 'Withdraw all ~30M DAI from holding deposit to the Tribe Redeemer'
     },
