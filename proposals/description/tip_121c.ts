@@ -5,7 +5,7 @@ import { TemplatedProposalDescription } from '@custom-types/types';
 // DAI from old PSM: 13.4M
 // TODO: Update when final approx user circulating FEI is known
 // Total = this DAI transfer + DAI on the old PSM
-const DAI_TRANSFER_AMOUNT_FROM_HOLDING = ethers.constants.WeiPerEther.mul(57_600_000);
+const DAI_TRANSFER_AMOUNT_FROM_HOLDING = ethers.constants.WeiPerEther.mul(44_200_000);
 
 // Accounting stats
 // FEI user circulating supply - 57.5M FEI
