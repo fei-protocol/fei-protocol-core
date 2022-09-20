@@ -16,7 +16,7 @@ const fipNumber = 'tip_121c';
 // Minimum DAI expected to be on the new DAI PSM
 //       - transferred from old PSM and DAI holding deposit
 // TODO: Update when final approx user circulating FEI is known
-const MIN_DAI_ON_NEW_PSM = ethers.constants.WeiPerEther.mul(44_200_000);
+const MIN_DAI_ON_NEW_PSM = ethers.constants.WeiPerEther.mul(57_000_000);
 
 let pcvStatsBefore: PcvStats;
 
@@ -100,7 +100,17 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await contracts.daiFixedPricePSM.mintPaused()).to.be.true;
 
   // 2. Verify new DAI PSM has DAI and no FEI (should have been burned)
-  expect(await contracts.dai.balanceOf(addresses.simpleFeiDaiPSM)).to.be.bignumber.greaterThan(MIN_DAI_ON_NEW_PSM);
+  // DAI on PSM should cover the user circulating supply of FEI
+  const protocolControlledFei = (await contracts.fei.balanceOf(addresses.daiFixedPricePSM))
+    .add(await contracts.fei.balanceOf(addresses.rariInfraFeiTimelock))
+    .add(await contracts.rariPool79FeiPCVDepositWrapper.balance());
+  console.log('protocol controlled fei: ', protocolControlledFei.toString());
+
+  const userCirculatingFeiSupply = (await contracts.fei.totalSupply()).sub(protocolControlledFei);
+  console.log('user circulating fei: ', userCirculatingFeiSupply.toString());
+  expect(await contracts.dai.balanceOf(addresses.simpleFeiDaiPSM)).to.be.bignumber.greaterThan(
+    userCirculatingFeiSupply
+  );
   expect(await contracts.fei.balanceOf(addresses.simpleFeiDaiPSM)).to.equal(0);
 
   // 3. Detailed mint and redeem e2e tests are in 'simpleFeiDaiPSM.ts'
