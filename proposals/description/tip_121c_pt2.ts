@@ -26,10 +26,15 @@ const tip_121c_pt2: TemplatedProposalDescription = {
     },
     // DAI
     {
-      target: 'daiHoldingPCVDeposit',
+      target: 'ratioPCVControllerV2',
       values: '0',
-      method: 'withdraw(address,uint256)',
-      arguments: (addresses) => [addresses.tribeRedeemer, DAI_HOLDING_DEPOSIT_BALANCE],
+      method: 'withdrawRatioERC20(address,address,address,uint256)',
+      arguments: (addresses) => [
+        addresses.daiHoldingPCVDeposit,
+        addresses.dai,
+        addresses.tribeRedeemer,
+        DAI_HOLDING_DEPOSIT_BALANCE
+      ],
       description: 'Withdraw all ~30M DAI from holding deposit to the Tribe Redeemer'
     },
     // FOX
