@@ -4,13 +4,19 @@ import { TemplatedProposalDescription } from '@custom-types/types';
 // User circulating Fei: 63.5M
 // DAI from old PSM: 6.5M
 // DAI transfer amount from holding deposit: 57M
-
 // TODO: Update when final approx user circulating FEI is known
-const DAI_TRANSFER_AMOUNT_FROM_HOLDING = ethers.constants.WeiPerEther.mul(57_000_000);
+const PSM_DAI_TRANSFER_FROM_DEPOSIT = ethers.constants.WeiPerEther.mul(57_000_000);
+
+// Tribe Redeemer, asset amount configuration
+const MAX_BASIS_POINTS = '10000'; // 100% in basis points
+const DAI_HOLDING_DEPOSIT_BALANCE = ethers.constants.WeiPerEther.mul(30_600_000); // TODO - update
+const DAO_TIMELOCK_FOX_BALANCE = '15316691965631380244403204';
+const DAO_TIMELOCK_LQTY_BALANCE = '1101298805118942906652299';
 
 const tip_121c: TemplatedProposalDescription = {
-  title: 'TIP-121: PCV Consolidation (phase 1.c)',
+  title: 'TIP-121c: Final redemptions',
   commands: [
+    ////////////////////   SIMPLE FEI PSM ////////////////////////
     // 1. DAI : deprecate old psm, setup new psm, move enough DAI to new psm to cover
     // user circulating FEI
     // 1.a Deprecate the old DAI PSM
@@ -82,7 +88,7 @@ const tip_121c: TemplatedProposalDescription = {
       target: 'daiHoldingPCVDeposit',
       values: '0',
       method: 'withdraw(address,uint256)',
-      arguments: (addresses) => [addresses.simpleFeiDaiPSM, DAI_TRANSFER_AMOUNT_FROM_HOLDING],
+      arguments: (addresses) => [addresses.simpleFeiDaiPSM, PSM_DAI_TRANSFER_FROM_DEPOSIT],
       description: 'Withdraw 57M DAI from DAI holding deposit to the simple FEI DAI PSM'
     },
     {
@@ -146,10 +152,55 @@ const tip_121c: TemplatedProposalDescription = {
         ]
       ],
       description: 'Unset all safe addresses (only DAO timelock and SimpleFeiDaiPSM that acts as a sink)'
+    },
+
+    ////////////////////   TRIBE REDEEMER   ////////////////////////
+    // 4. Transfer PCV assets to TribeRedeemer for redemption
+    // stETH
+    {
+      target: 'ratioPCVControllerV2',
+      values: '0',
+      method: 'withdrawRatioERC20(address,address,address,uint256)',
+      arguments: (addresses) => [
+        addresses.ethLidoPCVDeposit,
+        addresses.steth,
+        addresses.tribeRedeemer,
+        MAX_BASIS_POINTS
+      ],
+      description: 'Withdraw all 50.3k stETH from Lido deposit to the Tribe Redeemer'
+    },
+    // DAI
+    {
+      target: 'ratioPCVControllerV2',
+      values: '0',
+      method: 'withdrawRatioERC20(address,address,address,uint256)',
+      arguments: (addresses) => [
+        addresses.daiHoldingPCVDeposit,
+        addresses.dai,
+        addresses.tribeRedeemer,
+        DAI_HOLDING_DEPOSIT_BALANCE
+      ],
+      description: 'Withdraw all ~30M DAI from holding deposit to the Tribe Redeemer'
+    },
+    // FOX
+    {
+      target: 'fox',
+      values: '0',
+      method: 'transfer(address,uint256)',
+      arguments: (addresses) => [addresses.tribeRedeemer, DAO_TIMELOCK_FOX_BALANCE],
+      description: 'Send all 15.3M FOX to the Tribe Redeemer'
+    },
+    // LQTY
+    {
+      target: 'lqty',
+      values: '0',
+      method: 'transfer(address,uint256)',
+      arguments: (addresses) => [addresses.tribeRedeemer, DAO_TIMELOCK_LQTY_BALANCE],
+      description: 'Send all 1.1M LQTY to the Tribe Redeemer'
     }
   ],
   description: `
-  TIP-121: PCV Consolidation (phase 1.c)
+  TIP-121c: Final redemptions
 
   TODO
   `
