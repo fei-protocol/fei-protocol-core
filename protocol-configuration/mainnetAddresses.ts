@@ -277,7 +277,7 @@ export const MainnetContractsConfig = {
   ethLidoPCVDeposit: {
     artifactName: 'EthLidoPCVDeposit',
     address: '0x6e5f2745C08249a190239763706473bE0B72816d',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
 
   balancerDepositFeiWeth: {
@@ -320,7 +320,7 @@ export const MainnetContractsConfig = {
   daiHoldingPCVDeposit: {
     artifactName: 'ERC20HoldingPCVDeposit',
     address: '0x8fFAe111Ab06F532a18418190129373D14570014',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
 
   rariPool79FeiPCVDepositWrapper: {
