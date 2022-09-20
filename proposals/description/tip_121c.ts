@@ -1,18 +1,12 @@
 import { ethers } from 'ethers';
 import { TemplatedProposalDescription } from '@custom-types/types';
 
-// DAI transfer amount from holding deposit: 44.2M
-// DAI from old PSM: 13.4M
+// User circulating Fei: 63.5M
+// DAI from old PSM: 6.5M
+// DAI transfer amount from holding deposit: 57M
+
 // TODO: Update when final approx user circulating FEI is known
-// Total = this DAI transfer + DAI on the old PSM
-const DAI_TRANSFER_AMOUNT_FROM_HOLDING = ethers.constants.WeiPerEther.mul(44_200_000);
-
-// Accounting stats
-// FEI user circulating supply - 57.5M FEI
-
-// Target DAI on new PSM - 57.5M DAI
-// DAI on old PSM - 13.4M DAI
-// DAI transferred from holding deposit - 44.2M DAI
+const DAI_TRANSFER_AMOUNT_FROM_HOLDING = ethers.constants.WeiPerEther.mul(57_000_000);
 
 const tip_121c: TemplatedProposalDescription = {
   title: 'TIP-121: PCV Consolidation (phase 1.c)',
@@ -89,7 +83,7 @@ const tip_121c: TemplatedProposalDescription = {
       values: '0',
       method: 'withdraw(address,uint256)',
       arguments: (addresses) => [addresses.simpleFeiDaiPSM, DAI_TRANSFER_AMOUNT_FROM_HOLDING],
-      description: 'Withdraw 44.2M DAI from DAI holding deposit to the simple FEI DAI PSM'
+      description: 'Withdraw 57M DAI from DAI holding deposit to the simple FEI DAI PSM'
     },
     {
       target: 'ratioPCVControllerV2',

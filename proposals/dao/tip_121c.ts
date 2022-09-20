@@ -11,14 +11,14 @@ import { expect } from 'chai';
 import { getImpersonatedSigner } from '@test/helpers';
 import { forceEth } from '@test/integration/setup/utils';
 
+const toBN = ethers.BigNumber.from;
+
 const fipNumber = 'tip_121c';
 
-// Minimum DAI expected to be on the new DAI PSM
-//       - transferred from old PSM and DAI holding deposit
-// TODO: Update when final approx user circulating FEI is known
-const MIN_DAI_ON_NEW_PSM = ethers.constants.WeiPerEther.mul(57_000_000);
-
 let pcvStatsBefore: PcvStats;
+
+// Amount of FEI sudo() script mints to accounts[0]
+const AMOUNT_FEI_MINTED_BY_E2E = toBN('10000000000000000000000000'); // 10M
 
 // Do any deployments
 // This should exclusively include new contract deployments
@@ -101,13 +101,16 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 
   // 2. Verify new DAI PSM has DAI and no FEI (should have been burned)
   // DAI on PSM should cover the user circulating supply of FEI
-  const protocolControlledFei = (await contracts.fei.balanceOf(addresses.daiFixedPricePSM))
+  const protocolControlledFei = (await contracts.fei.balanceOf(addresses.simpleFeiDaiPSM))
     .add(await contracts.fei.balanceOf(addresses.rariInfraFeiTimelock))
     .add(await contracts.rariPool79FeiPCVDepositWrapper.balance());
-  console.log('protocol controlled fei: ', protocolControlledFei.toString());
 
-  const userCirculatingFeiSupply = (await contracts.fei.totalSupply()).sub(protocolControlledFei);
-  console.log('user circulating fei: ', userCirculatingFeiSupply.toString());
+  const userCirculatingFeiSupply = (await contracts.fei.totalSupply())
+    .sub(protocolControlledFei)
+    .sub(AMOUNT_FEI_MINTED_BY_E2E);
+  console.log('Protocol controlled fei', protocolControlledFei / 1e24, '(millions)');
+  console.log('Total supply', (await contracts.fei.totalSupply()) / 1e24, '(millions)');
+  console.log('User circulating Fei supply', userCirculatingFeiSupply / 1e24, '(millions)');
   expect(await contracts.dai.balanceOf(addresses.simpleFeiDaiPSM)).to.be.bignumber.greaterThan(
     userCirculatingFeiSupply
   );
