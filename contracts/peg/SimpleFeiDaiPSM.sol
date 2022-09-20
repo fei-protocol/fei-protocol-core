@@ -33,10 +33,9 @@ contract SimpleFeiDaiPSM {
     function mint(
         address to,
         uint256 amountIn,
-        uint256 minAmountOut
+        uint256 // minAmountOut
     ) external returns (uint256 amountFeiOut) {
         amountFeiOut = amountIn;
-        require(amountFeiOut >= minAmountOut, "SimpleFeiDaiPSM: Mint not enough out");
         DAI.safeTransferFrom(msg.sender, address(this), amountIn);
         FEI.mint(to, amountFeiOut);
         emit Mint(to, amountIn, amountFeiOut);
@@ -48,10 +47,9 @@ contract SimpleFeiDaiPSM {
     function redeem(
         address to,
         uint256 amountFeiIn,
-        uint256 minAmountOut
+        uint256 // minAmountOut
     ) external returns (uint256 amountOut) {
         amountOut = amountFeiIn;
-        require(amountOut >= minAmountOut, "SimpleFeiDaiPSM: Redeem not enough out");
         FEI.safeTransferFrom(msg.sender, address(this), amountFeiIn);
         DAI.safeTransfer(to, amountOut);
         emit Redeem(to, amountFeiIn, amountOut);
