@@ -26,9 +26,9 @@ const AMOUNT_FEI_MINTED_BY_E2E = toBN('10000000000000000000000000'); // 10M
 const REDEEM_BASE = ethers.constants.WeiPerEther.mul(458_964_340);
 
 // Lido deposit balance, being withdrawn and sent to Tribe Redeemer
-const STETH_DEPOSIT_BALANCE = '50296523674661485703301';
-const DAO_TIMELOCK_FOX_BALANCE = '15316691965631380244403204';
-const DAO_TIMELOCK_LQTY_BALANCE = '1101298805118942906652299';
+const STETH_DEPOSIT_BALANCE = toBN('50296523674661485703301');
+const DAO_TIMELOCK_FOX_BALANCE = toBN('15316691965631380244403204');
+const DAO_TIMELOCK_LQTY_BALANCE = toBN('1101298805118942906652299');
 
 // Minimum DAI transferred to Redeemer. Lower bound
 // TODO: Update with final numbers
@@ -93,7 +93,21 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   console.log(' Equity diff                            [M]e18 ', Number(eqDiff) / 1e24);
   console.log('----------------------------------------------------');
 
-  expect(await contracts.collateralizationOracle.isOvercollateralized()).to.be.true;
+  // Calculate protocol controlled Fei and user circulating - subtracting off the 10M FEI
+  // our test scripts mint. The use to determin if over collaterised
+  const protocolControlledFei = (await contracts.fei.balanceOf(addresses.simpleFeiDaiPSM))
+    .add(await contracts.fei.balanceOf(addresses.rariInfraFeiTimelock))
+    .add(await contracts.rariPool79FeiPCVDepositWrapper.balance());
+
+  const userCirculatingFeiSupply = (await contracts.fei.totalSupply())
+    .sub(protocolControlledFei)
+    .sub(AMOUNT_FEI_MINTED_BY_E2E);
+  const protocolEquity = pcvStatsAfter.protocolControlledValue.sub(userCirculatingFeiSupply) as any;
+  console.log('Fei Total supply: ', (await contracts.fei.totalSupply()) / 1e24, '(millions)');
+  console.log('Protocol controlled fei: ', protocolControlledFei / 1e24, '(millions)');
+  console.log('User circulating Fei supply: ', userCirculatingFeiSupply / 1e24, '(millions)');
+  console.log('Protocol equity: ', protocolEquity / 1e24, '(millions)');
+  expect(protocolEquity).to.bignumber.greaterThan(toBN(1));
 
   // check pcv movements
   console.log(
@@ -123,16 +137,6 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 
   // 2. Verify new DAI PSM has DAI and no FEI (should have been burned)
   // DAI on PSM should cover the user circulating supply of FEI
-  const protocolControlledFei = (await contracts.fei.balanceOf(addresses.simpleFeiDaiPSM))
-    .add(await contracts.fei.balanceOf(addresses.rariInfraFeiTimelock))
-    .add(await contracts.rariPool79FeiPCVDepositWrapper.balance());
-
-  const userCirculatingFeiSupply = (await contracts.fei.totalSupply())
-    .sub(protocolControlledFei)
-    .sub(AMOUNT_FEI_MINTED_BY_E2E);
-  console.log('Protocol controlled fei', protocolControlledFei / 1e24, '(millions)');
-  console.log('Total supply', (await contracts.fei.totalSupply()) / 1e24, '(millions)');
-  console.log('User circulating Fei supply', userCirculatingFeiSupply / 1e24, '(millions)');
   expect(await contracts.dai.balanceOf(addresses.simpleFeiDaiPSM)).to.be.bignumber.greaterThan(
     userCirculatingFeiSupply
   );
@@ -173,7 +177,6 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   // 4. Verify Tribe Redeemer contract deploy params
   expect(await contracts.tribeRedeemer.redeemBase()).to.equal(REDEEM_BASE);
   expect(await contracts.tribeRedeemer.redeemedToken()).to.equal(addresses.tribe);
-
   const expectedTokensReceived = [addresses.steth, addresses.lqty, addresses.fox, addresses.dai];
   const actualTokensReceived = await contracts.tribeRedeemer.tokensReceivedOnRedeem();
   expect(actualTokensReceived.length).to.equal(expectedTokensReceived.length);
@@ -185,7 +188,9 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   // 5. Verify Tribe Redeemer has all PCV assets deposited on it
   // stETH is rebasing, so amount transfered to tribeRedeemer will be greater than current amount on deposit
   expect(await contracts.steth.balanceOf(addresses.tribeRedeemer)).to.be.bignumber.greaterThan(STETH_DEPOSIT_BALANCE);
-  expect(await contracts.dai.balanceOf(addresses.tribeRedeemer)).to.equal(REMAINING_DEPOSIT_DAI_FOR_REDEEMER);
+  expect(await contracts.dai.balanceOf(addresses.tribeRedeemer)).to.be.bignumber.greaterThan(
+    REMAINING_DEPOSIT_DAI_FOR_REDEEMER
+  );
   expect(await contracts.lqty.balanceOf(addresses.tribeRedeemer)).to.equal(DAO_TIMELOCK_LQTY_BALANCE);
   expect(await contracts.fox.balanceOf(addresses.tribeRedeemer)).to.equal(DAO_TIMELOCK_FOX_BALANCE);
 };
