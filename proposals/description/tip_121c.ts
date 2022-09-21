@@ -128,6 +128,13 @@ const tip_121c: TemplatedProposalDescription = {
       description: 'Swap old for new DAI PSM in CR Oracle'
     },
     {
+      target: 'collateralizationOracle',
+      values: '0',
+      method: 'removeDeposit(address)',
+      arguments: (addresses) => [addresses.rariPool79FeiPCVDepositWrapper],
+      description: 'Remove now empty rariPool79FeiPCVDepositWrapper from CR'
+    },
+    {
       target: 'pcvGuardian',
       values: '0',
       method: 'setSafeAddresses(address[])',

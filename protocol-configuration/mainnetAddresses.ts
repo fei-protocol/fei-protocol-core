@@ -326,7 +326,7 @@ export const MainnetContractsConfig = {
   rariPool79FeiPCVDepositWrapper: {
     artifactName: 'PCVDepositWrapper',
     address: '0xb3A026B830796E43bfC8b135553A7573538aB341',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
   lusdHoldingPCVDeposit: {
     artifactName: 'ERC20HoldingPCVDeposit',
@@ -377,7 +377,7 @@ export const MainnetContractsConfig = {
   rariPool79FeiPCVDeposit: {
     artifactName: 'ERC20CompoundPCVDeposit',
     address: '0x76dFcf06E7D7B8248094DC319b284fB244f06309',
-    category: AddressCategory.PCV_V1
+    category: AddressCategory.Deprecated
   },
 
   gaugeLensBpt30Fei70WethGauge: {

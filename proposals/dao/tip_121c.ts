@@ -95,9 +95,9 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 
   // Calculate protocol controlled Fei and user circulating - subtracting off the 10M FEI
   // our test scripts mint. The use to determin if over collaterised
-  const protocolControlledFei = (await contracts.fei.balanceOf(addresses.simpleFeiDaiPSM))
-    .add(await contracts.fei.balanceOf(addresses.rariInfraFeiTimelock))
-    .add(await contracts.rariPool79FeiPCVDepositWrapper.balance());
+  const protocolControlledFei = (await contracts.fei.balanceOf(addresses.simpleFeiDaiPSM)).add(
+    await contracts.fei.balanceOf(addresses.rariInfraFeiTimelock)
+  );
 
   const userCirculatingFeiSupply = (await contracts.fei.totalSupply())
     .sub(protocolControlledFei)
