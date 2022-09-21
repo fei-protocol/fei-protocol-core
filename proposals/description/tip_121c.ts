@@ -1,11 +1,11 @@
 import { ethers } from 'ethers';
 import { TemplatedProposalDescription } from '@custom-types/types';
 
-// User circulating Fei: 63.5M
-// DAI from old PSM: 6.5M
-// DAI transfer amount from holding deposit: 57M
+// User circulating Fei: 60.2M
+// DAI from old PSM: 8.7M
+// DAI transfer amount from holding deposit: 51.5M
 // TODO: Update when final approx user circulating FEI is known
-const PSM_DAI_TRANSFER_FROM_DEPOSIT = ethers.constants.WeiPerEther.mul(57_000_000);
+const PSM_DAI_TRANSFER_FROM_DEPOSIT = ethers.constants.WeiPerEther.mul(51_450_791);
 
 // Tribe Redeemer, asset amount configuration
 const MAX_BASIS_POINTS = '10000'; // 100% in basis points
@@ -153,8 +153,61 @@ const tip_121c: TemplatedProposalDescription = {
       description: 'Unset all safe addresses (only DAO timelock and SimpleFeiDaiPSM that acts as a sink)'
     },
 
+    /// 4. Repoint Fuse withdrawal guard to the redemption contract
+    {
+      target: 'fuseWithdrawalGuard',
+      values: '0',
+      method: 'setWithdrawInfo(address,(address,address,uint96))',
+      arguments: (addresses) => [addresses.rariPool8FeiPCVDeposit, [addresses.simpleFeiDaiPSM, addresses.fei, '0']],
+      description: 'Update Fuse Withdrawal Guard for FEI destination to simpleFeiDaiPSM'
+    },
+    {
+      target: 'fuseWithdrawalGuard',
+      values: '0',
+      method: 'setWithdrawInfo(address,(address,address,uint96))',
+      arguments: (addresses) => [addresses.rariPool8DaiPCVDeposit, [addresses.simpleFeiDaiPSM, addresses.dai, '0']],
+      description: 'Update Fuse Withdrawal Guard for DAI destination to simpleFeiDaiPSM'
+    },
+
+    /// 5. Send all LUSD, BAL and bbaUSD to Tribal Council Multisig for selling
+    {
+      target: 'ratioPCVControllerV2',
+      values: '0',
+      method: 'withdrawRatioERC20(address,address,address,uint256)',
+      arguments: (addresses) => [
+        addresses.lusdHoldingPCVDeposit, // from
+        addresses.lusd, // token
+        addresses.tribalCouncilSafe, // to
+        '10000' // basisPoints, 100%
+      ],
+      description: 'Withdraw remaining LUSD ~17k to Tribal Council Safe for selling'
+    },
+
+    // TODO do these numbers need to be updated and/or can ratio PCV controller be used?
+    {
+      target: 'veBalDelegatorPCVDeposit',
+      values: '0',
+      method: 'withdrawERC20(address,address,uint256)',
+      arguments: (addresses) => [addresses.bal, addresses.tribalCouncilSafe, '2032918269598796318544'],
+      description: 'Send 2,032.91 BAL to TC Multisig'
+    },
+    {
+      target: 'veBalDelegatorPCVDeposit',
+      values: '0',
+      method: 'withdrawERC20(address,address,uint256)',
+      arguments: (addresses) => [addresses.bbausd, addresses.tribalCouncilSafe, '35748982138950025950604'],
+      description: 'Send 35,748.98 bb-a-USD to TC Multisig'
+    },
+    {
+      target: 'balancerGaugeStaker',
+      values: '0',
+      method: 'withdrawERC20(address,address,uint256)',
+      arguments: (addresses) => [addresses.bal, addresses.tribalCouncilSafe, '13381940574938719587015'],
+      description: 'Send 13,381.94 BAL to TC Multisig'
+    },
+
     ////////////////////   TRIBE REDEEMER   ////////////////////////
-    // 4. Transfer PCV assets to TribeRedeemer for redemption
+    // 6. Transfer PCV assets to TribeRedeemer for redemption
     // stETH
     {
       target: 'ratioPCVControllerV2',
