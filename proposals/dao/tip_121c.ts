@@ -10,6 +10,7 @@ import {
 import { expect } from 'chai';
 import { getImpersonatedSigner } from '@test/helpers';
 import { forceEth } from '@test/integration/setup/utils';
+import { expectApprox } from '@test/helpers';
 
 const toBN = ethers.BigNumber.from;
 
@@ -29,6 +30,9 @@ const REDEEM_BASE = ethers.constants.WeiPerEther.mul(458_964_340);
 const STETH_DEPOSIT_BALANCE = toBN('50296523674661485703301');
 const DAO_TIMELOCK_FOX_BALANCE = toBN('15316691965631380244403204');
 const DAO_TIMELOCK_LQTY_BALANCE = toBN('1101298805118942906652299');
+
+// User circulating Fei as determined by fei-tools.com for block 15585061
+const USER_CIRCULATING_FEI_AT_FIXED_BLOCK = ethers.constants.WeiPerEther.mul(58_809_106);
 
 // Minimum DAI transferred to Redeemer. Lower bound
 // TODO: Update with final numbers
@@ -141,6 +145,13 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   // DAI on PSM should cover the user circulating supply of FEI
   expect(await contracts.dai.balanceOf(addresses.simpleFeiDaiPSM)).to.be.bignumber.greaterThan(
     userCirculatingFeiSupply
+  );
+
+  // Validate user circulating supply is the same as that reported by fei-tools to within 1e18
+  expectApprox(
+    await contracts.dai.balanceOf(addresses.simpleFeiDaiPSM),
+    USER_CIRCULATING_FEI_AT_FIXED_BLOCK,
+    ethers.utils.parseEther('1').toString()
   );
   expect(await contracts.fei.balanceOf(addresses.simpleFeiDaiPSM)).to.equal(0);
 
