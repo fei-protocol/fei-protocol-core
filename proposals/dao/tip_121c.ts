@@ -179,6 +179,13 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await contracts.tribeRedeemer.redeemedToken()).to.equal(addresses.tribe);
   const expectedTokensReceived = [addresses.steth, addresses.lqty, addresses.fox, addresses.dai];
   const actualTokensReceived = await contracts.tribeRedeemer.tokensReceivedOnRedeem();
+  console.log(
+    'Tokens received contract deploy params: ',
+    actualTokensReceived[0],
+    actualTokensReceived[1],
+    actualTokensReceived[2],
+    actualTokensReceived[3]
+  );
   expect(actualTokensReceived.length).to.equal(expectedTokensReceived.length);
   expect(actualTokensReceived).to.contain(actualTokensReceived[0]);
   expect(actualTokensReceived).to.contain(actualTokensReceived[1]);
