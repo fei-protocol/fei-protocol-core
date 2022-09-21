@@ -13,7 +13,7 @@ before(async () => {
   chai.use(solidity);
 });
 
-describe.only('e2e-tribe-redeemer', function () {
+describe('e2e-tribe-redeemer', function () {
   let contracts: NamedContracts;
   let addresses: NamedAddresses;
   let e2eCoord: TestEndtoEndCoordinator;
