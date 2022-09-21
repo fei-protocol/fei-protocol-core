@@ -850,6 +850,12 @@ export const MainnetContractsConfig = {
     category: AddressCategory.External
   },
 
+  bbausd: {
+    artifactName: 'IERC20',
+    address: '0x7B50775383d3D6f0215A8F290f2C9e2eEBBEceb2',
+    category: AddressCategory.External
+  },
+
   aFei: {
     artifactName: 'IERC20',
     address: '0x683923dB55Fead99A79Fa01A27EeC3cB19679cC3',

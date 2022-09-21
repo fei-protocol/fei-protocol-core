@@ -81,7 +81,7 @@ const tip_121c: TemplatedProposalDescription = {
         addresses.simpleFeiDaiPSM, // to
         '10000' // basisPoints, 100%
       ],
-      description: 'Migrate all DAI from old to new DAI PSM (~14M)'
+      description: 'Migrate all DAI from old to new DAI PSM (~8M)'
     },
     {
       target: 'daiHoldingPCVDeposit',
