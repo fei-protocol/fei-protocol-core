@@ -134,6 +134,8 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await contracts.daiFixedPricePSM.paused()).to.be.true;
   expect(await contracts.daiFixedPricePSM.redeemPaused()).to.be.true;
   expect(await contracts.daiFixedPricePSM.mintPaused()).to.be.true;
+  expect(await contracts.daiPCVDripController.paused()).to.be.true;
+  expect(await contracts.daiFixedPricePSMFeiSkimmer.paused()).to.be.true;
 
   // 2. Verify new DAI PSM has DAI and no FEI (should have been burned)
   // DAI on PSM should cover the user circulating supply of FEI

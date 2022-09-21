@@ -28,6 +28,12 @@ export const StateConfig = {
     redeemPaused: true,
     mintPaused: true
   },
+  daiPCVDripController: {
+    paused: true
+  },
+  daiFixedPricePSMFeiSkimmer: {
+    paused: true
+  },
   fei: {
     decimals: BigNumber.from(18),
     name: 'Fei USD'

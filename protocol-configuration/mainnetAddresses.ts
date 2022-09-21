@@ -92,7 +92,7 @@ export const MainnetContractsConfig = {
   daiPCVDripController: {
     artifactName: 'PCVDripController',
     address: '0x3e0f66c5687FF917809A3F7fA7096e1Bc409fB03',
-    category: AddressCategory.Utility
+    category: AddressCategory.Deprecated
   },
   lusdToDaiSwapper: {
     artifactName: 'BalancerLBPSwapper',
