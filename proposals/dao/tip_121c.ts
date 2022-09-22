@@ -158,7 +158,6 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await contracts.daiFixedPricePSM.redeemPaused()).to.be.true;
   expect(await contracts.daiFixedPricePSM.mintPaused()).to.be.true;
   expect(await contracts.daiPCVDripController.paused()).to.be.true;
-  expect(await contracts.daiFixedPricePSMFeiSkimmer.paused()).to.be.true;
 
   // 2. Verify new DAI PSM has DAI and no FEI (should have been burned)
   // DAI on PSM should cover the user circulating supply of FEI
@@ -252,5 +251,16 @@ const verifyAccountingMitigations = async (contracts: NamedContracts, addresses:
   await expect(contracts.daiPCVDripController.drip()).to.be.revertedWith('Pausable: paused');
 
   // 5. Verify can not allocateSurplus()
+  // Send DAI surplus to the PSM (so can hit pause path)
+  const daiWhale = '0x5777d92f208679db4b9778590fa3cab3ac9e2168';
+  await forceEth(daiWhale);
+  const daiWhaleSigner = await getImpersonatedSigner(daiWhale);
+  const excessReserveDaiAmount = (await contracts.daiFixedPricePSM.reservesThreshold()).add(toBN(1));
+  await contracts.dai.connect(daiWhaleSigner).transfer(addresses.daiFixedPricePSM, excessReserveDaiAmount);
   await expect(contracts.daiFixedPricePSM.allocateSurplus()).to.be.revertedWith('Pausable: paused');
+
+  // Send test DAI on PSM back so doesn't interfere with tests
+  const oldPSMSigner = await getImpersonatedSigner(addresses.daiFixedPricePSM);
+  await forceEth(addresses.daiFixedPricePSM);
+  await contracts.dai.connect(oldPSMSigner).transfer(daiWhale, excessReserveDaiAmount);
 };

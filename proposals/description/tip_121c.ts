@@ -44,11 +44,11 @@ const tip_121c: TemplatedProposalDescription = {
       description: `Revoke PCV_CONTROLLER role from the old DAI PSM skimmer`
     },
     {
-      target: 'daiFixedPricePSMFeiSkimmer',
+      target: 'core',
       values: '0',
-      method: 'pause()',
-      arguments: (addresses) => [],
-      description: `Pause DAI PSM Fei skimmer`
+      method: 'revokePCVController(address)',
+      arguments: (addresses) => [addresses.daiPCVDripController],
+      description: `Revoke PCV_CONTROLLER role from the old DAI PSM drip controller`
     },
     // Pause old DAI PSM
     {
@@ -264,6 +264,16 @@ const tip_121c: TemplatedProposalDescription = {
       method: 'transfer(address,uint256)',
       arguments: (addresses) => [addresses.tribeRedeemer, DAO_TIMELOCK_LQTY_BALANCE],
       description: 'Send all 1.1M LQTY to the Tribe Redeemer'
+    },
+    // Repause daiHoldinDeposit
+    {
+      target: 'daiHoldingPCVDeposit',
+      values: '0',
+      method: 'pause()',
+      arguments: (addresses) => [],
+      description: `
+      Re-pause the DAI holding deposit
+      `
     }
   ],
   description: `
