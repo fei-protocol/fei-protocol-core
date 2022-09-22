@@ -31,8 +31,8 @@ const STETH_DEPOSIT_BALANCE = toBN('50296523674661485703301');
 const DAO_TIMELOCK_FOX_BALANCE = toBN('15316691965631380244403204');
 const DAO_TIMELOCK_LQTY_BALANCE = toBN('1101298805118942906652299');
 
-// User circulating Fei as determined by fei-tools.com for block 15585061
-const USER_CIRCULATING_FEI_AT_FIXED_BLOCK = ethers.constants.WeiPerEther.mul(58_809_106);
+// User circulating Fei as determined by fei-tools.com for block 15589242
+const USER_CIRCULATING_FEI_AT_FIXED_BLOCK = ethers.constants.WeiPerEther.mul(58_708_166);
 
 // Minimum DAI transferred to Redeemer. Lower bound
 // TODO: Update with final numbers

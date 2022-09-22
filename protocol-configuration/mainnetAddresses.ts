@@ -1,6 +1,16 @@
 import { AddressCategory } from '../types/types'; // imported without custom path to allow docs to autogen without ts errors
 
 export const MainnetContractsConfig = {
+  simpleFeiDaiPSM: {
+    artifactName: 'SimpleFeiDaiPSM',
+    address: '0x7842186CDd11270C4Af8C0A99A5E0589c7F249ce',
+    category: AddressCategory.Peg
+  },
+  tribeRedeemer: {
+    artifactName: 'TribeRedeemer',
+    address: '0x7842186CDd11270C4Af8C0A99A5E0589c7F249ce',
+    category: AddressCategory.PCV
+  },
   rariMerkleRedeemer: {
     artifactName: 'RariMerkleRedeemer',
     address: '0xCAe4210e6676727EA4e0fD9BA5dFb95831356a16',
