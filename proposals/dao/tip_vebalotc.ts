@@ -39,7 +39,11 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 
   // Deploy veBoostManager implementation
   const VeBoostManagerFactory = await ethers.getContractFactory('VeBoostManager');
-  const veBoostManagerImplementation = await VeBoostManagerFactory.deploy();
+  const veBoostManagerImplementation = await VeBoostManagerFactory.deploy(
+    addresses.core,
+    addresses.balancerGaugeController,
+    addresses.balancerMinter
+  );
   await veBoostManagerImplementation.deployTransaction.wait();
   logging && console.log(`veBoostManagerImplementation: ${veBoostManagerImplementation.address}`);
 
@@ -89,6 +93,13 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 
   const otcBuyerSigner = await getImpersonatedSigner(vebalOtcBuyer);
 
+  // Check the proxy's state variables
+  expect(await contracts.veBoostManager.owner()).to.be.equal(addresses.vebalOtcHelper);
+  expect(await contracts.veBoostManager.votingEscrowDelegation()).to.be.equal(addresses.balancerVotingEscrowDelegation);
+  expect(await contracts.veBoostManager.balancerMinter()).to.be.equal(addresses.balancerMinter);
+  expect(await contracts.veBoostManager.gaugeController()).to.be.equal(addresses.balancerGaugeController);
+  expect(await contracts.veBoostManager.core()).to.be.equal(addresses.core);
+
   // Check veBAL OTC helper owner and proxy owner
   expect(await contracts.vebalOtcHelper.owner()).to.be.equal(vebalOtcBuyer);
   expect(await contracts.veBoostManager.owner()).to.be.equal(contracts.vebalOtcHelper.address);
@@ -96,14 +107,13 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
     '0x' + (await ethers.provider.getStorageAt(addresses.veBoostManagerProxy, PROXY_ADMIN_STORAGE_SLOT)).slice(26)
   ).to.be.equal(vebalOtcBuyer.toLowerCase());
 
-  // Check veBAL OTC Helper contract behavior
-
   // Check that OTC Buyer can transfer proxy ownership
   await contracts.veBoostManagerProxy.connect(otcBuyerSigner).changeAdmin(addresses.feiDAOTimelock);
   expect(
     '0x' + (await ethers.provider.getStorageAt(addresses.veBoostManagerProxy, PROXY_ADMIN_STORAGE_SLOT)).slice(26)
   ).to.be.equal(addresses.feiDAOTimelock.toLowerCase());
 
+  // Check veBAL OTC Helper contract behavior
   // Can create_boost() to create a boost delegation to someone else
   await contracts.vebalOtcHelper.connect(otcBuyerSigner).create_boost(
     addresses.veBalDelegatorPCVDeposit, // address _delegator
@@ -191,6 +201,8 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
     .withdrawERC20(addresses.bpt80Bal20Weth, vebalOtcBuyer, bpt80Bal20WethAmount);
   expect(await contracts.bpt80Bal20Weth.balanceOf(vebalOtcBuyer)).to.be.equal(bpt80Bal20WethAmount);
   expect(bpt80Bal20WethAmount).to.be.at.least(e18(112_041));
+
+  console.log('all good on veBAL OTC side, no expect failed :)');
 };
 
 export { deploy, setup, teardown, validate };

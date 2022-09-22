@@ -1,15 +1,24 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
+import {BalancerGaugeStaker} from "./BalancerGaugeStaker.sol";
 import {IVotingEscrowDelegation} from "./IVotingEscrowDelegation.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 /// @title Vote-escrowed boost Manager
 /// Used to manage delegation of vote-escrow boost as in Curve Protocol.
 /// @author eswak
-contract VeBoostManager is Ownable {
+contract VeBoostManager is BalancerGaugeStaker, Ownable {
     // events
     event VotingEscrowDelegationChanged(address indexed oldAddress, address indexed newAddress);
+
+    /// @notice Balancer gauge staker
+    /// @param _core Fei Core for reference
+    constructor(
+        address _core,
+        address _gaugeController,
+        address _balancerMinter
+    ) BalancerGaugeStaker(_core, _gaugeController, _balancerMinter) {}
 
     /// @notice The token address
     address public votingEscrowDelegation;
