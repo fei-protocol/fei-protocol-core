@@ -278,29 +278,31 @@ const tip_121c: TemplatedProposalDescription = {
   ],
   description: `
   TIP-121c: Start FEI and TRIBE Redemption
+  
+This proposal implements zero fee redemption of FEI 1:1 to DAI and pro-rata TRIBE redemptions for remaining PCV assets.
 
-  This proposal implements zero fee redemption of FEI 1:1 to DAI and pro-rata TRIBE redemptions for remaining PCV assets.
+It transfers 51,450,791 DAI to an immutable, zero-fee, FEI to DAI wrapper contract (SimpleFeiDaiPSM). In addition, all DAI from the existing PSM will be transferred to maintain a complete 1:1 backing against a changing circulating FEI value. 
 
-  It transfers 51,450,791 DAI to an immutable, zero-fee, FEI to DAI wrapper contract (SimpleFeiDaiPSM). In addition, all DAI from the existing PSM will be transferred to maintain a complete 1:1 backing against a changing circulating FEI value. 
+The remaining 30,666,344 DAI would be transferred to the TribeRedeemer along with all 50.3k stETH, 15,316,691 FOX and 1,101,298 LQTY.
 
-  The remaining 30,666,344 DAI would be transferred to the TribeRedeemer along with all 50.3k stETH, 15,316,691 FOX and 1,101,298 LQTY.
+The effective circulating TRIBE value with pro rata claims to these tokens is 458,964,340. For simplicity, this means each 10,000 TRIBE would receive at least:
+  - 668.16 DAI
+  - 1.0967 stETH
+  - 333.72 FOX
+  - 23.99 LQTY
 
-  The effective circulating TRIBE value with pro rata claims to these tokens is 458,964,340. For simplicity, this means each 10,000 TRIBE would receive at least:
-  668.16 DAI
-  1.0967 stETH
-  333.72 FOX
-  23.99 LQTY
+The ability to redeem TRIBE is at holder discretion and would be open indefinitely, allowing people to claim TRIBE at the time of their choosing. Two additional sources of remaining  funding would be added after the completion of the consolidation steps approved in TIP-121a:
 
-  The ability to redeem TRIBE is at holder discretion and would be open indefinitely, allowing people to claim TRIBE at the time of their choosing. Two additional sources of remaining  funding would be added after the completion of the consolidation steps approved in TIP-121a:
-  selling the remaining assets in the Tribal Council Safe: 0x2EC598d8e3DF35E5D6F13AE2f05a7bB2704e92Ea 
-  Completion of the veBAL for 1M DAI OTC with Aave Companies: https://tribe.fei.money/t/aave-companies-otc-proposal-for-tribe-dao-s-vebal/4544 
+  - Selling the remaining assets in the Tribal Council Safe: 0x2EC598d8e3DF35E5D6F13AE2f05a7bB2704e92Ea 
+  - Completion of the veBAL for 1M DAI OTC with Aave Companies: https://tribe.fei.money/t/aave-companies-otc-proposal-for-tribe-dao-s-vebal/4544 
 
-  Any assets pending consolidation to the  PCV, such as the above, would be added to the pro-rata distribution of  PCV for TRIBE holders when available. Note that any TRIBE that claims before these consolidations will forfeit the pro-rata redemption value of these last assets from consolidation. Each TRIBE address can only redeem once.
+Any assets pending consolidation to the  PCV, such as the above, would be added to the pro-rata distribution of  PCV for TRIBE holders when available. Note that any TRIBE that claims before these consolidations will forfeit the pro-rata redemption value of these last assets from consolidation. Each TRIBE address can only redeem once.
 
-  The proposal also transfers the BAL and bb-a-USD yield from the veBAL contract to the Tribal Council Safe for the purpose of selling to DAI and distributing back in the TribeRedeemer. This is in preparation for the OTC with the Aave Companies, described above.
+The proposal also transfers the BAL and bb-a-USD yield from the veBAL contract to the Tribal Council Safe for the purpose of selling to DAI and distributing back in the TribeRedeemer. This is in preparation for the OTC with the Aave Companies, described above.
 
-  Lastly, it cleans up smart contract ACL roles and the collateralization oracle in line with the old contracts removed in this vote.
+Lastly, it cleans up smart contract ACL roles and the collateralization oracle in line with the old contracts removed in this vote.
 
+The code went through extensive testing, internal QA and external audits like https://code4rena.com/contests/2022-09-fei-and-tribe-redemption-contest.
   `
 };
 
