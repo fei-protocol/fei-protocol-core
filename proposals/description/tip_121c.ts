@@ -15,6 +15,16 @@ const DAO_TIMELOCK_LQTY_BALANCE = '1101298805118942906652299';
 const tip_121c: TemplatedProposalDescription = {
   title: 'TIP-121c: Final redemptions',
   commands: [
+    // 0. Unpause the DAI Holding PCV deposit
+    {
+      target: 'daiHoldingPCVDeposit',
+      values: '0',
+      method: 'unpause()',
+      arguments: (addresses) => [],
+      description: `
+      Unpause the DAI holding deposit, so DAI can be transferred from it
+      `
+    },
     ////////////////////   SIMPLE FEI PSM ////////////////////////
     // 1. DAI : deprecate old psm, setup new psm, move enough DAI to new psm to cover
     // user circulating FEI
@@ -34,25 +44,11 @@ const tip_121c: TemplatedProposalDescription = {
       description: `Revoke PCV_CONTROLLER role from the old DAI PSM skimmer`
     },
     {
-      target: 'daiFixedPricePSMFeiSkimmer',
-      values: '0',
-      method: 'pause()',
-      arguments: (addresses) => [],
-      description: `Pause DAI PSM Fei skimmer`
-    },
-    {
       target: 'core',
       values: '0',
       method: 'revokePCVController(address)',
       arguments: (addresses) => [addresses.daiPCVDripController],
       description: `Revoke PCV_CONTROLLER role from the old DAI PSM drip controller`
-    },
-    {
-      target: 'daiPCVDripController',
-      values: '0',
-      method: 'pause()',
-      arguments: (addresses) => [],
-      description: `Pause DAI PCV drip controller`
     },
     // Pause old DAI PSM
     {
@@ -203,7 +199,6 @@ const tip_121c: TemplatedProposalDescription = {
       description: 'Withdraw remaining LUSD ~17k to Tribal Council Safe for selling'
     },
 
-    // TODO do these numbers need to be updated and/or can ratio PCV controller be used?
     {
       target: 'veBalDelegatorPCVDeposit',
       values: '0',
@@ -269,6 +264,16 @@ const tip_121c: TemplatedProposalDescription = {
       method: 'transfer(address,uint256)',
       arguments: (addresses) => [addresses.tribeRedeemer, DAO_TIMELOCK_LQTY_BALANCE],
       description: 'Send all 1.1M LQTY to the Tribe Redeemer'
+    },
+    // Repause daiHoldinDeposit
+    {
+      target: 'daiHoldingPCVDeposit',
+      values: '0',
+      method: 'pause()',
+      arguments: (addresses) => [],
+      description: `
+      Re-pause the DAI holding deposit
+      `
     }
   ],
   description: `

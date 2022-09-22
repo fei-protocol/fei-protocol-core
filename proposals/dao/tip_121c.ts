@@ -2,15 +2,15 @@ import { ethers } from 'hardhat';
 import {
   DeployUpgradeFunc,
   NamedAddresses,
+  NamedContracts,
   PcvStats,
   SetupUpgradeFunc,
   TeardownUpgradeFunc,
   ValidateUpgradeFunc
 } from '@custom-types/types';
 import { expect } from 'chai';
-import { getImpersonatedSigner } from '@test/helpers';
+import { expectApproxAbs, getImpersonatedSigner } from '@test/helpers';
 import { forceEth } from '@test/integration/setup/utils';
-import { expectApprox } from '@test/helpers';
 
 const toBN = ethers.BigNumber.from;
 
@@ -23,7 +23,6 @@ const AMOUNT_FEI_MINTED_BY_E2E = toBN('10000000000000000000000000'); // 10M
 
 /////////////  Tribe Redeemer config
 // Circulating amount of TRIBE, which is redeemable for underlying PCV assets
-// TODO: Update with final circulating TRIBE figure
 const REDEEM_BASE = ethers.constants.WeiPerEther.mul(458_964_340);
 
 // Lido deposit balance, being withdrawn and sent to Tribe Redeemer
@@ -31,11 +30,10 @@ const STETH_DEPOSIT_BALANCE = toBN('50296523674661485703301');
 const DAO_TIMELOCK_FOX_BALANCE = toBN('15316691965631380244403204');
 const DAO_TIMELOCK_LQTY_BALANCE = toBN('1101298805118942906652299');
 
-// User circulating Fei as determined by fei-tools.com for block 15589242
-const USER_CIRCULATING_FEI_AT_FIXED_BLOCK = ethers.constants.WeiPerEther.mul(58_708_166);
+// User circulating Fei as determined by fei-tools.com for block 15591696
+const USER_CIRCULATING_FEI_AT_FIXED_BLOCK = ethers.constants.WeiPerEther.mul(58_641_830);
 
 // Minimum DAI transferred to Redeemer. Lower bound
-// TODO: Update with final numbers
 const MIN_REMAINING_DEPOSIT_DAI_FOR_REDEEMER = ethers.constants.WeiPerEther.mul(30_000_000);
 
 // Do any deployments
@@ -67,6 +65,23 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 // ensuring contracts have a specific state, etc.
 const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
   pcvStatsBefore = await contracts.collateralizationOracle.pcvStats();
+
+  const guardianSigner = await getImpersonatedSigner(addresses.guardianMultisig);
+
+  // 1. Pause daiPCVDripController
+  await contracts.daiPCVDripController.connect(guardianSigner).pause();
+
+  // 2. Pause daiHoldingPCVDeposit
+  await contracts.daiHoldingPCVDeposit.connect(guardianSigner).pause();
+
+  // 3. Can NOT revoke PCV_CONTROLLER_ROLE from DAI PCV drip controller - role admin is GOVERNOR
+
+  // 4. Slay fuseWithdrawalGuard on PCV Sentinel
+  await contracts.pcvSentinel.slay(addresses.fuseWithdrawalGuard);
+
+  //////// Verify daiHoldingPCVDeposit paused  ///////
+  // - needs to be paused up until DAO vote execution time
+  expect(await contracts.daiHoldingPCVDeposit.paused()).to.be.true;
 };
 
 // Tears down any changes made in setup() that need to be
@@ -78,6 +93,9 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // Run any validations required on the fip using mocha or console logging
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
+  // 0. Verify accounting mitigations
+  await verifyAccountingMitigations(contracts, addresses);
+
   // display pcvStats
   console.log('----------------------------------------------------');
   console.log(' pcvStatsBefore.protocolControlledValue [M]e18 ', Number(pcvStatsBefore.protocolControlledValue) / 1e24);
@@ -139,19 +157,23 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await contracts.daiFixedPricePSM.redeemPaused()).to.be.true;
   expect(await contracts.daiFixedPricePSM.mintPaused()).to.be.true;
   expect(await contracts.daiPCVDripController.paused()).to.be.true;
-  expect(await contracts.daiFixedPricePSMFeiSkimmer.paused()).to.be.true;
 
   // 2. Verify new DAI PSM has DAI and no FEI (should have been burned)
   // DAI on PSM should cover the user circulating supply of FEI
+  // Validate user circulating supply is the same as that reported by fei-tools to within 1e18
+  console.log('simpleFeiPSM DAI balance" ', (await contracts.dai.balanceOf(addresses.simpleFeiDaiPSM)).toString());
+  console.log('User Circulating FEI, at fixed block: ', USER_CIRCULATING_FEI_AT_FIXED_BLOCK.toString());
   expect(await contracts.dai.balanceOf(addresses.simpleFeiDaiPSM)).to.be.bignumber.greaterThan(
     userCirculatingFeiSupply
   );
+  expect(await contracts.dai.balanceOf(addresses.simpleFeiDaiPSM)).to.be.bignumber.greaterThan(
+    USER_CIRCULATING_FEI_AT_FIXED_BLOCK
+  );
 
-  // Validate user circulating supply is the same as that reported by fei-tools to within 1e18
-  expectApprox(
+  expectApproxAbs(
     await contracts.dai.balanceOf(addresses.simpleFeiDaiPSM),
     USER_CIRCULATING_FEI_AT_FIXED_BLOCK,
-    ethers.utils.parseEther('1').toString()
+    ethers.utils.parseEther('500').toString() // same to nearest 500 FEI
   );
   expect(await contracts.fei.balanceOf(addresses.simpleFeiDaiPSM)).to.equal(0);
 
@@ -216,3 +238,31 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 };
 
 export { deploy, setup, teardown, validate };
+
+const verifyAccountingMitigations = async (contracts: NamedContracts, addresses: NamedAddresses) => {
+  console.log('Verifying accounting checks...');
+  // 1. Verify daiPCVDripController paused
+  expect(await contracts.daiPCVDripController.paused()).to.be.true;
+
+  // 2. Can NOT revoke PCV_CONTROLLER_ROLE from DAI PCV drip controller - role admin is GOVERNOR
+
+  // 3. Verify fuseWithdrawalGuard slain
+  expect(await contracts.pcvSentinel.isGuard(addresses.fuseWithdrawalGuard)).to.be.false;
+
+  // 4. Verify can not call drip
+  await expect(contracts.daiPCVDripController.drip()).to.be.revertedWith('Pausable: paused');
+
+  // 5. Verify can not allocateSurplus()
+  // Send DAI surplus to the PSM (so can hit pause path)
+  const daiWhale = '0x5777d92f208679db4b9778590fa3cab3ac9e2168';
+  await forceEth(daiWhale);
+  const daiWhaleSigner = await getImpersonatedSigner(daiWhale);
+  const excessReserveDaiAmount = (await contracts.daiFixedPricePSM.reservesThreshold()).add(toBN(1));
+  await contracts.dai.connect(daiWhaleSigner).transfer(addresses.daiFixedPricePSM, excessReserveDaiAmount);
+  await expect(contracts.daiFixedPricePSM.allocateSurplus()).to.be.revertedWith('Pausable: paused');
+
+  // Send test DAI on PSM back so doesn't interfere with tests
+  const oldPSMSigner = await getImpersonatedSigner(addresses.daiFixedPricePSM);
+  await forceEth(addresses.daiFixedPricePSM);
+  await contracts.dai.connect(oldPSMSigner).transfer(daiWhale, excessReserveDaiAmount);
+};
