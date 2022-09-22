@@ -2,6 +2,7 @@ import { ethers } from 'hardhat';
 import {
   DeployUpgradeFunc,
   NamedAddresses,
+  NamedContracts,
   PcvStats,
   SetupUpgradeFunc,
   TeardownUpgradeFunc,
@@ -68,18 +69,18 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
 
   const guardianSigner = await getImpersonatedSigner(addresses.guardianMultisig);
 
-  // Pause daiPCVDripController
+  // 1. Pause daiPCVDripController
   await contracts.daiPCVDripController.connect(guardianSigner).pause();
 
-  // Pause daiHoldingPCVDeposit
+  // 2. Pause daiHoldingPCVDeposit
   await contracts.daiHoldingPCVDeposit.connect(guardianSigner).pause();
 
-  // Revoke PCV_CONTROLLER_ROLE from DAI PCV drip controller
+  // 3. Revoke PCV_CONTROLLER_ROLE from DAI PCV drip controller
   await contracts.core
     .connect(guardianSigner)
     .revokeRole(ethers.utils.id('PCV_CONTROLLER_ROLE'), addresses.daiPCVDripController);
 
-  // Slay fuseWithdrawalGuard on PCV Sentinel
+  // 4. Slay fuseWithdrawalGuard on PCV Sentinel
   await contracts.pcvSentinel.slay(addresses.fuseWithdrawalGuard);
 };
 
@@ -92,6 +93,9 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // Run any validations required on the fip using mocha or console logging
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
+  // 0. Verify accounting mitigations
+  await verifyAccountingMitigations(contracts, addresses);
+
   // display pcvStats
   console.log('----------------------------------------------------');
   console.log(' pcvStatsBefore.protocolControlledValue [M]e18 ', Number(pcvStatsBefore.protocolControlledValue) / 1e24);
@@ -230,3 +234,24 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 };
 
 export { deploy, setup, teardown, validate };
+
+const verifyAccountingMitigations = async (contracts: NamedContracts, addresses: NamedAddresses) => {
+  console.log('Verifying accounting checks...');
+  // 1. Verify daiPCVDripController paused
+  expect(await contracts.daiPCVDripController.paused()).to.be.true;
+
+  // 2. Verify daiHoldingPCVDeposit paused
+  expect(await contracts.daiHoldingPCVDeposit.paused()).to.be.true;
+
+  // 3. Verify PCV_CONTROLLER_ROLE removed from daiPCVDripController
+  expect(await contracts.core.hasRole(ethers.utils.id('PCV_CONTROLLER_ROLE'), addresses.daiPCVDripController));
+
+  // 4. Verify fuseWithdrawalGuard slain
+  expect(await contracts.pcvSentinel.isGuard(addresses.fuseWithdrawalGuard)).to.be.true;
+
+  // 5. Verify can not call drip
+  await expect(contracts.daiPCVDripController.drip()).to.be.revertedWith('Pausable: paused');
+
+  // 6. Verify can not allocateSurplus()
+  await expect(contracts.daiFixedPricePSM.allocateSurplus()).to.be.revertedWith('Pausable: paused');
+};
