@@ -34,6 +34,17 @@ contract VeBalHelper is Ownable {
         pcvDeposit.setDelegate(newDelegate);
     }
 
+    /// @notice clear the snapshot delegate in gnosis registry, and set the
+    /// delegate() state variable to address(this).
+    /// @dev this contract also has a delegate() state variable, and we
+    /// cannot setDelegate(0), so we set the delegate state variable to
+    /// address(this), but the gnosis registry properly does not have any
+    /// delegate.
+    function clearDelegate() external onlyOwner {
+        pcvDeposit.setDelegate(address(this));
+        pcvDeposit.clearDelegate();
+    }
+
     // ----------------------------------------------------------------------------------
     // Vote-lock Management
     // ----------------------------------------------------------------------------------

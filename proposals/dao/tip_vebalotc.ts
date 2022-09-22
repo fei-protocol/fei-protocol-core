@@ -142,6 +142,18 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   await contracts.vebalOtcHelper.connect(otcBuyerSigner).setDelegate(addresses.feiDAOTimelock);
   expect(await contracts.veBalDelegatorPCVDeposit.delegate()).to.be.equal(addresses.feiDAOTimelock);
 
+  // Can clearDelegate() to give Snapshot voting power to nobody
+  const snapshotSpaceId = await contracts.veBalDelegatorPCVDeposit.spaceId();
+  expect(await contracts.veBalDelegatorPCVDeposit.delegate()).to.be.equal(addresses.feiDAOTimelock);
+  expect(
+    await contracts.snapshotDelegateRegistry.delegation(addresses.veBalDelegatorPCVDeposit, snapshotSpaceId)
+  ).to.be.equal(addresses.feiDAOTimelock);
+  await contracts.vebalOtcHelper.connect(otcBuyerSigner).clearDelegate();
+  expect(await contracts.veBalDelegatorPCVDeposit.delegate()).to.be.equal(contracts.vebalOtcHelper.address);
+  expect(
+    await contracts.snapshotDelegateRegistry.delegation(addresses.veBalDelegatorPCVDeposit, snapshotSpaceId)
+  ).to.be.equal(ethers.constants.AddressZero);
+
   // Can setLockDuration() to change veBAL lock time
   expect(await contracts.veBalDelegatorPCVDeposit.lockDuration()).to.be.equal(3600 * 24 * 365);
   await contracts.vebalOtcHelper.connect(otcBuyerSigner).setLockDuration(3600 * 24 * 358);
