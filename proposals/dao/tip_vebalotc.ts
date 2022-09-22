@@ -123,7 +123,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
     '1672272000', // uint256 _expire_time = December 29 2022
     '0' // uint256 _id
   );
-  const expectedMinBoost = '75000000000000000000000'; // should be 77.5k with 18 decimals as of 14/09/2022
+  const expectedMinBoost = '70000000000000000000000'; // should be 77.5k with 18 decimals as of 14/09/2022
   expect(
     await contracts.balancerVotingEscrowDelegation.delegated_boost(contracts.veBalDelegatorPCVDeposit.address)
   ).to.be.at.least(expectedMinBoost);
@@ -153,14 +153,6 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(
     await contracts.snapshotDelegateRegistry.delegation(addresses.veBalDelegatorPCVDeposit, snapshotSpaceId)
   ).to.be.equal(ethers.constants.AddressZero);
-
-  // Can setLockDuration() to change veBAL lock time
-  expect(await contracts.veBalDelegatorPCVDeposit.lockDuration()).to.be.equal(3600 * 24 * 365);
-  await contracts.vebalOtcHelper.connect(otcBuyerSigner).setLockDuration(3600 * 24 * 358);
-  expect(await contracts.veBalDelegatorPCVDeposit.lockDuration()).to.be.equal(3600 * 24 * 358);
-
-  // Can lock() to renew veBAL lock
-  await contracts.vebalOtcHelper.connect(otcBuyerSigner).lock();
 
   // Can setGaugeController() to update gauge controller
   await contracts.vebalOtcHelper.connect(otcBuyerSigner).setGaugeController(addresses.feiDAOTimelock);

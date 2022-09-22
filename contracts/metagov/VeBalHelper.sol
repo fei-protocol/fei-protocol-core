@@ -49,16 +49,6 @@ contract VeBalHelper is Ownable {
     // Vote-lock Management
     // ----------------------------------------------------------------------------------
 
-    /// @notice Set the amount of time tokens will be vote-escrowed for in lock() calls
-    function setLockDuration(uint256 newLockDuration) external onlyOwner {
-        pcvDeposit.setLockDuration(newLockDuration);
-    }
-
-    /// @notice Deposit tokens to get veTokens. Set lock duration to lockDuration.
-    function lock() external onlyOwner {
-        pcvDeposit.lock();
-    }
-
     /// @notice Exit the veToken lock.
     function exitLock() external onlyOwner {
         pcvDeposit.exitLock();
