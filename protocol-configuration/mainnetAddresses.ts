@@ -1,6 +1,16 @@
 import { AddressCategory } from '../types/types'; // imported without custom path to allow docs to autogen without ts errors
 
 export const MainnetContractsConfig = {
+  rariMerkleRedeemer: {
+    artifactName: 'RariMerkleRedeemer',
+    address: '0xCAe4210e6676727EA4e0fD9BA5dFb95831356a16',
+    category: AddressCategory.TBD
+  },
+  merkleRedeemerDripper: {
+    artifactName: 'MerkleRedeemerDripper',
+    address: '0xF681F42f53D98A9136D090A04b47318C6961a832',
+    category: AddressCategory.TBD
+  },
   core: {
     artifactName: 'Core',
     address: '0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9',
@@ -220,7 +230,7 @@ export const MainnetContractsConfig = {
   roleBastion: {
     artifactName: 'RoleBastion',
     address: '0x8096314D9014EbB69Fc777ED3791DDE6FFbaFAed',
-    category: AddressCategory.Governance
+    category: AddressCategory.Deprecated
   },
 
   tribeReserveStabilizer: {
@@ -239,7 +249,11 @@ export const MainnetContractsConfig = {
     address: '0xe49B608663EeB89f1E3AbBe75744e5318F85029C',
     category: AddressCategory.Deprecated
   },
-
+  lusdCurveMetapool: {
+    artifactName: 'ICurvePool',
+    address: '0xEd279fDD11cA84bEef15AF5D39BB4d4bEE23F0cA',
+    category: AddressCategory.External
+  },
   tribalCouncilTimelockFeiLens: {
     artifactName: 'ERC20PCVDepositWrapper',
     address: '0x4037a70152F4c88Ad40522f35BD4dDD17E6B2052',
@@ -349,7 +363,12 @@ export const MainnetContractsConfig = {
   indexDelegator: {
     artifactName: 'SnapshotDelegatorPCVDeposit',
     address: '0x0ee81df08B20e4f9E0F534e50da437D24491c4ee',
-    category: AddressCategory.PCV_V1
+    category: AddressCategory.Deprecated
+  },
+  indexOtcEscrow: {
+    artifactName: 'OtcEscrow',
+    address: '0x574a9a9EeD5A3bE02bD35255e7E8625fE6824a02',
+    category: AddressCategory.TBD
   },
 
   rariPool22FeiPCVDeposit: {
@@ -408,12 +427,12 @@ export const MainnetContractsConfig = {
   laTribuFeiTimelock: {
     artifactName: 'LinearTokenTimelock',
     address: '0xdb02630ed4f4994414122894B5082dc6D88a4ED4',
-    category: AddressCategory.Distribution
+    category: AddressCategory.Deprecated
   },
   laTribuTribeTimelock: {
     artifactName: 'QuadraticTokenTimelock',
     address: '0x552b8A441E945D021D29ae58B6Ae3dE96da75A05',
-    category: AddressCategory.Distribution
+    category: AddressCategory.Deprecated
   },
   rariInfraFeiTimelock: {
     artifactName: 'LinearTokenTimelock',
@@ -1598,6 +1617,15 @@ export const MainnetContractsConfig = {
     address: '0x6ef71cA9cD708883E129559F5edBFb9d9D5C6148',
     category: AddressCategory.External
   },
+  fishy: {
+    artifactName: 'unknown',
+    address: '0x7D82675470B06453980b37880d81f6F254371FD3'
+  },
+  wintermute: {
+    artifactName: 'unknown',
+    address: '0x4B3F1048C55Faa0C0873e249E541139360501f2a',
+    category: AddressCategory.External
+  },
   olympusMultisig: {
     artifactName: 'unknown',
     address: '0x245cc372C84B3645Bf0Ffe6538620B04a217988B',
@@ -2674,23 +2702,32 @@ export const MainnetContractsConfig = {
     category: AddressCategory.Deprecated
   },
 
+  vlauraOtcHelper: {
+    artifactName: 'ProxyOTCEscrow',
+    address: '0x61A991153E3ff68844abcE91551e046e1BE6f764',
+    category: AddressCategory.TBD
+  },
+  vlAuraDelegatorPCVDepositProxy: {
+    artifactName: 'TransparentUpgradeableProxy', // actually a TransparentUpgradeableProxy
+    address: '0xc44902C03093D52213d20E5b06a0Bda4D9Ce6524',
+    category: AddressCategory.Deprecated
+  },
   vlAuraDelegatorPCVDeposit: {
-    // TODO: show in CR Oracle
     artifactName: 'VlAuraDelegatorPCVDeposit', // actually a TransparentUpgradeableProxy
     address: '0xc44902C03093D52213d20E5b06a0Bda4D9Ce6524',
-    category: AddressCategory.TBD
+    category: AddressCategory.Deprecated
   },
   vlAuraDelegatorPCVDepositImplementation: {
     artifactName: 'VlAuraDelegatorPCVDeposit',
     address: '0x6A78a824BC61Abf70C6AC33c41d37206B22B575d',
-    category: AddressCategory.TBD
+    category: AddressCategory.Deprecated
   },
   vlAuraDelegatorPCVDepositImplementationOld: {
     // this was broken and upgraded in tip-118, setDelegate()
     // is performed in a separate call & not in initialize().
     artifactName: 'VlAuraDelegatorPCVDeposit',
     address: '0xEd47a9519F86a695A212B53B5EBff92aF41741b1',
-    category: AddressCategory.TBD
+    category: AddressCategory.Deprecated
   }
 };
 
