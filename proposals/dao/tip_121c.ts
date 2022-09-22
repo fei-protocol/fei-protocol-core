@@ -66,19 +66,6 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
   pcvStatsBefore = await contracts.collateralizationOracle.pcvStats();
 
-  const guardianSigner = await getImpersonatedSigner(addresses.guardianMultisig);
-
-  // 1. Pause daiPCVDripController
-  await contracts.daiPCVDripController.connect(guardianSigner).pause();
-
-  // 2. Pause daiHoldingPCVDeposit
-  await contracts.daiHoldingPCVDeposit.connect(guardianSigner).pause();
-
-  // 3. Can NOT revoke PCV_CONTROLLER_ROLE from DAI PCV drip controller - role admin is GOVERNOR
-
-  // 4. Slay fuseWithdrawalGuard on PCV Sentinel
-  await contracts.pcvSentinel.slay(addresses.fuseWithdrawalGuard);
-
   //////// Verify daiHoldingPCVDeposit paused  ///////
   // - needs to be paused up until DAO vote execution time
   expect(await contracts.daiHoldingPCVDeposit.paused()).to.be.true;
