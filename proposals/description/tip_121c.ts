@@ -4,7 +4,6 @@ import { TemplatedProposalDescription } from '@custom-types/types';
 // User circulating Fei: 58.7M
 // DAI from old PSM: 7.2M
 // DAI transfer amount from holding deposit: 51.5M
-// TODO: Update when final approx user circulating FEI is known
 const PSM_DAI_TRANSFER_FROM_DEPOSIT = ethers.constants.WeiPerEther.mul(51_450_791);
 
 // Tribe Redeemer, asset amount configuration
