@@ -36,7 +36,7 @@ const USER_CIRCULATING_FEI_AT_FIXED_BLOCK = ethers.constants.WeiPerEther.mul(58_
 
 // Minimum DAI transferred to Redeemer. Lower bound
 // TODO: Update with final numbers
-const REMAINING_DEPOSIT_DAI_FOR_REDEEMER = ethers.constants.WeiPerEther.mul(30_000_000);
+const MIN_REMAINING_DEPOSIT_DAI_FOR_REDEEMER = ethers.constants.WeiPerEther.mul(30_000_000);
 
 // Do any deployments
 // This should exclusively include new contract deployments
@@ -209,7 +209,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   // stETH is rebasing, so amount transfered to tribeRedeemer will be greater than current amount on deposit
   expect(await contracts.steth.balanceOf(addresses.tribeRedeemer)).to.be.bignumber.greaterThan(STETH_DEPOSIT_BALANCE);
   expect(await contracts.dai.balanceOf(addresses.tribeRedeemer)).to.be.bignumber.greaterThan(
-    REMAINING_DEPOSIT_DAI_FOR_REDEEMER
+    MIN_REMAINING_DEPOSIT_DAI_FOR_REDEEMER
   );
   expect(await contracts.lqty.balanceOf(addresses.tribeRedeemer)).to.equal(DAO_TIMELOCK_LQTY_BALANCE);
   expect(await contracts.fox.balanceOf(addresses.tribeRedeemer)).to.equal(DAO_TIMELOCK_FOX_BALANCE);

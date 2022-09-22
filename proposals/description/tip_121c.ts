@@ -1,8 +1,8 @@
 import { ethers } from 'ethers';
 import { TemplatedProposalDescription } from '@custom-types/types';
 
-// User circulating Fei: 60.2M
-// DAI from old PSM: 8.7M
+// User circulating Fei: 58.7M
+// DAI from old PSM: 7.2M
 // DAI transfer amount from holding deposit: 51.5M
 // TODO: Update when final approx user circulating FEI is known
 const PSM_DAI_TRANSFER_FROM_DEPOSIT = ethers.constants.WeiPerEther.mul(51_450_791);
@@ -94,14 +94,14 @@ const tip_121c: TemplatedProposalDescription = {
         addresses.simpleFeiDaiPSM, // to
         '10000' // basisPoints, 100%
       ],
-      description: 'Migrate all DAI from old to new DAI PSM (~8M)'
+      description: 'Migrate all DAI from old to new DAI PSM (~7.2M)'
     },
     {
       target: 'daiHoldingPCVDeposit',
       values: '0',
       method: 'withdraw(address,uint256)',
       arguments: (addresses) => [addresses.simpleFeiDaiPSM, PSM_DAI_TRANSFER_FROM_DEPOSIT],
-      description: 'Withdraw 57M DAI from DAI holding deposit to the simple FEI DAI PSM'
+      description: 'Withdraw 51.5M DAI from DAI holding deposit to the simple FEI DAI PSM'
     },
     {
       target: 'ratioPCVControllerV2',
