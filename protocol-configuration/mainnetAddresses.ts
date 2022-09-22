@@ -8,7 +8,7 @@ export const MainnetContractsConfig = {
   },
   tribeRedeemer: {
     artifactName: 'TribeRedeemer',
-    address: '0x7842186CDd11270C4Af8C0A99A5E0589c7F249ce',
+    address: '0x4d9629e80118082b939e3d59e69c82a2ec08b4d5',
     category: AddressCategory.PCV
   },
   rariMerkleRedeemer: {
