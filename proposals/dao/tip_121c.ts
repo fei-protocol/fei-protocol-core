@@ -75,13 +75,14 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
   // 2. Pause daiHoldingPCVDeposit
   await contracts.daiHoldingPCVDeposit.connect(guardianSigner).pause();
 
-  // 3. Revoke PCV_CONTROLLER_ROLE from DAI PCV drip controller
-  await contracts.core
-    .connect(guardianSigner)
-    .revokeRole(ethers.utils.id('PCV_CONTROLLER_ROLE'), addresses.daiPCVDripController);
+  // 3. Can NOT revoke PCV_CONTROLLER_ROLE from DAI PCV drip controller - role admin is GOVERNOR
 
   // 4. Slay fuseWithdrawalGuard on PCV Sentinel
   await contracts.pcvSentinel.slay(addresses.fuseWithdrawalGuard);
+
+  //////// Verify daiHoldingPCVDeposit paused  ///////
+  // - needs to be paused up until DAO vote execution time
+  expect(await contracts.daiHoldingPCVDeposit.paused()).to.be.true;
 };
 
 // Tears down any changes made in setup() that need to be
@@ -166,6 +167,8 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   );
 
   // Validate user circulating supply is the same as that reported by fei-tools to within 1e18
+  console.log('simpleFeiPSM DAI balance" ', (await contracts.dai.balanceOf(addresses.simpleFeiDaiPSM)).toString());
+  console.log('User Circulating FEI, at fixed block: ', USER_CIRCULATING_FEI_AT_FIXED_BLOCK.toString());
   expectApprox(
     await contracts.dai.balanceOf(addresses.simpleFeiDaiPSM),
     USER_CIRCULATING_FEI_AT_FIXED_BLOCK,
@@ -240,18 +243,14 @@ const verifyAccountingMitigations = async (contracts: NamedContracts, addresses:
   // 1. Verify daiPCVDripController paused
   expect(await contracts.daiPCVDripController.paused()).to.be.true;
 
-  // 2. Verify daiHoldingPCVDeposit paused
-  expect(await contracts.daiHoldingPCVDeposit.paused()).to.be.true;
+  // 2. Can NOT revoke PCV_CONTROLLER_ROLE from DAI PCV drip controller - role admin is GOVERNOR
 
-  // 3. Verify PCV_CONTROLLER_ROLE removed from daiPCVDripController
-  expect(await contracts.core.hasRole(ethers.utils.id('PCV_CONTROLLER_ROLE'), addresses.daiPCVDripController));
+  // 3. Verify fuseWithdrawalGuard slain
+  expect(await contracts.pcvSentinel.isGuard(addresses.fuseWithdrawalGuard)).to.be.false;
 
-  // 4. Verify fuseWithdrawalGuard slain
-  expect(await contracts.pcvSentinel.isGuard(addresses.fuseWithdrawalGuard)).to.be.true;
-
-  // 5. Verify can not call drip
+  // 4. Verify can not call drip
   await expect(contracts.daiPCVDripController.drip()).to.be.revertedWith('Pausable: paused');
 
-  // 6. Verify can not allocateSurplus()
+  // 5. Verify can not allocateSurplus()
   await expect(contracts.daiFixedPricePSM.allocateSurplus()).to.be.revertedWith('Pausable: paused');
 };

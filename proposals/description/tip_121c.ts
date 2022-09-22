@@ -15,6 +15,16 @@ const DAO_TIMELOCK_LQTY_BALANCE = '1101298805118942906652299';
 const tip_121c: TemplatedProposalDescription = {
   title: 'TIP-121c: Final redemptions',
   commands: [
+    // 0. Unpause the DAI Holding PCV deposit
+    {
+      target: 'daiHoldingPCVDeposit',
+      values: '0',
+      method: 'unpause()',
+      arguments: (addresses) => [],
+      description: `
+      Unpause the DAI holding deposit, so DAI can be transferred from it
+      `
+    },
     ////////////////////   SIMPLE FEI PSM ////////////////////////
     // 1. DAI : deprecate old psm, setup new psm, move enough DAI to new psm to cover
     // user circulating FEI
