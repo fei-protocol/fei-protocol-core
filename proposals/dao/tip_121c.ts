@@ -9,9 +9,8 @@ import {
   ValidateUpgradeFunc
 } from '@custom-types/types';
 import { expect } from 'chai';
-import { getImpersonatedSigner } from '@test/helpers';
+import { expectApproxAbs, getImpersonatedSigner } from '@test/helpers';
 import { forceEth } from '@test/integration/setup/utils';
-import { expectApprox } from '@test/helpers';
 
 const toBN = ethers.BigNumber.from;
 
@@ -32,7 +31,7 @@ const DAO_TIMELOCK_FOX_BALANCE = toBN('15316691965631380244403204');
 const DAO_TIMELOCK_LQTY_BALANCE = toBN('1101298805118942906652299');
 
 // User circulating Fei as determined by fei-tools.com for block 15589242
-const USER_CIRCULATING_FEI_AT_FIXED_BLOCK = ethers.constants.WeiPerEther.mul(58_708_166);
+const USER_CIRCULATING_FEI_AT_FIXED_BLOCK = ethers.constants.WeiPerEther.mul(58_641_);
 
 // Minimum DAI transferred to Redeemer. Lower bound
 const MIN_REMAINING_DEPOSIT_DAI_FOR_REDEEMER = ethers.constants.WeiPerEther.mul(30_000_000);
@@ -168,7 +167,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   // Validate user circulating supply is the same as that reported by fei-tools to within 1e18
   console.log('simpleFeiPSM DAI balance" ', (await contracts.dai.balanceOf(addresses.simpleFeiDaiPSM)).toString());
   console.log('User Circulating FEI, at fixed block: ', USER_CIRCULATING_FEI_AT_FIXED_BLOCK.toString());
-  expectApprox(
+  expectApproxAbs(
     await contracts.dai.balanceOf(addresses.simpleFeiDaiPSM),
     USER_CIRCULATING_FEI_AT_FIXED_BLOCK,
     ethers.utils.parseEther('1').toString()

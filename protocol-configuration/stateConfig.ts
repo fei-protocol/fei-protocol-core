@@ -32,7 +32,7 @@ export const StateConfig = {
     paused: true
   },
   daiFixedPricePSMFeiSkimmer: {
-    paused: true
+    paused: false
   },
   fei: {
     decimals: BigNumber.from(18),
