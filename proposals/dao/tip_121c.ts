@@ -160,13 +160,16 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 
   // 2. Verify new DAI PSM has DAI and no FEI (should have been burned)
   // DAI on PSM should cover the user circulating supply of FEI
-  expect(await contracts.dai.balanceOf(addresses.simpleFeiDaiPSM)).to.be.bignumber.greaterThan(
-    userCirculatingFeiSupply
-  );
-
   // Validate user circulating supply is the same as that reported by fei-tools to within 1e18
   console.log('simpleFeiPSM DAI balance" ', (await contracts.dai.balanceOf(addresses.simpleFeiDaiPSM)).toString());
   console.log('User Circulating FEI, at fixed block: ', USER_CIRCULATING_FEI_AT_FIXED_BLOCK.toString());
+  expect(await contracts.dai.balanceOf(addresses.simpleFeiDaiPSM)).to.be.bignumber.greaterThan(
+    userCirculatingFeiSupply
+  );
+  expect(await contracts.dai.balanceOf(addresses.simpleFeiDaiPSM)).to.be.bignumber.greaterThan(
+    USER_CIRCULATING_FEI_AT_FIXED_BLOCK
+  );
+
   expectApproxAbs(
     await contracts.dai.balanceOf(addresses.simpleFeiDaiPSM),
     USER_CIRCULATING_FEI_AT_FIXED_BLOCK,
