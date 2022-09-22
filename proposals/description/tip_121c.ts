@@ -286,10 +286,10 @@ It transfers 51,450,791 DAI to an immutable, zero-fee, FEI to DAI wrapper contra
 The remaining 30,666,344 DAI would be transferred to the TribeRedeemer along with all 50.3k stETH, 15,316,691 FOX and 1,101,298 LQTY.
 
 The effective circulating TRIBE value with pro rata claims to these tokens is 458,964,340. For simplicity, this means each 10,000 TRIBE would receive at least:
-  - 668.16 DAI
-  - 1.0967 stETH
-  - 333.72 FOX
-  - 23.99 LQTY
+  - 668.15 DAI
+  - 1.096 stETH
+  - 333.71 FOX
+  - 23.98 LQTY
 
 The ability to redeem TRIBE is at holder discretion and would be open indefinitely, allowing people to claim TRIBE at the time of their choosing. Two additional sources of remaining  funding would be added after the completion of the consolidation steps approved in TIP-121a:
 
