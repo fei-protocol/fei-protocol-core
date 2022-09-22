@@ -46,10 +46,11 @@ const BALANCER_ADDRESS_AMOUNT = '15141036549620406272';
 const CONTRACT_3_ADDRESS_AMOUNT = '14692297519190968320';
 const CONTRACT_4_ADDRESS_AMOUNT = '11483196978961967104';
 const RARI_FOR_ARBITRUM_ADDRESS_AMOUNT = parseEther('280000');
+
 /* DAO Vote Commands */
 
 const tip_121b: TemplatedProposalDescription = {
-  title: 'Part 2: RariFuse Merkle Redemption',
+  title: 'TIP-121b: Rari Fuse Hack Payment',
   commands: [
     // 1. Mint FEI directly to redeemer
     {
@@ -200,9 +201,16 @@ const tip_121b: TemplatedProposalDescription = {
     }
   ],
   description: `
-  [Part 2: RariFuse Merkle Redemption] /n/n
-  [<does stuff>] \n\n
-  ` // @todo - add description
+  TIP-121b: Rari Fuse Hack Payment
+
+  If passed (i.e. “For” wins), this proposal would issue a payment to those affected by the Fuse Hack corresponding to the full amount stolen by the hacker. This on-chain vote follows from the snapshot vote: https://snapshot.org/#/fei.eth/proposal/0xd5359654b34bba833843fb64ad38e813b4ff6cc21e6f5ea323b704d2ceb25d96.
+  
+  The payment would be in FEI for end-users in return for the cTokens from the affected Fuse pools. Users would also have to sign a message releasing any liability. 
+  
+  For the affected DAOs and smart contracts, there would be a direct payment in DAI.
+  
+  The total payment amount is ~12.68M FEI and ~26.61M DAI. Here is a spreadsheet detailing the payments per address: https://docs.google.com/spreadsheets/d/1h6VTKPyyA4FzB1yQNDniyROR4-FkGqYa8A97LWm8470/edit#gid=0 
+  `
 };
 
 export default tip_121b;

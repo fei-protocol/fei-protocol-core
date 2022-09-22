@@ -96,6 +96,9 @@ async function main() {
   const ratesArray: string[] = Object.values(rates);
   const rootsArray: string[] = Object.values(roots);
 
+  console.log(`Rates Array: ${JSON.stringify(ratesArray, null, 2)}`);
+  console.log(`Roots Array: ${JSON.stringify(rootsArray, null, 2)}`);
+
   if (enableForking) {
     if (debug) console.log('Connecting to anvil fork...');
   } else {
@@ -129,6 +132,10 @@ async function main() {
     wallet = new ethers.Wallet('0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80', provider);
   }
 
+  console.log(JSON.stringify(cTokens, null, 2));
+  console.log(JSON.stringify(ratesArray, null, 2));
+  console.log(JSON.stringify(rootsArray, null, 2));
+
   const rariMerkleRedeemerFactory = new RariMerkleRedeemer__factory(wallet);
 
   const rariMerkleRedeemer = await rariMerkleRedeemerFactory.deploy(
@@ -137,6 +144,8 @@ async function main() {
     ratesArray,
     rootsArray
   );
+
+  await rariMerkleRedeemer.deployed();
 
   const merkleRedeemerDripperFactory = new MerkleRedeemerDripper__factory(wallet);
 
@@ -147,6 +156,8 @@ async function main() {
     dripAmount,
     MainnetContractsConfig.fei.address
   );
+
+  await merkleRedeemerDripper.deployed();
 
   console.log(`MerkleRedeemerDripper deployed to ${merkleRedeemerDripper.address}\n`);
   console.log(`RariMerkleRedeemer deployed to ${rariMerkleRedeemer.address}\n`);
