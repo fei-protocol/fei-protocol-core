@@ -40,20 +40,6 @@ const tip_121c: TemplatedProposalDescription = {
       arguments: (addresses) => [],
       description: `Pause DAI PSM Fei skimmer`
     },
-    {
-      target: 'core',
-      values: '0',
-      method: 'revokePCVController(address)',
-      arguments: (addresses) => [addresses.daiPCVDripController],
-      description: `Revoke PCV_CONTROLLER role from the old DAI PSM drip controller`
-    },
-    {
-      target: 'daiPCVDripController',
-      values: '0',
-      method: 'pause()',
-      arguments: (addresses) => [],
-      description: `Pause DAI PCV drip controller`
-    },
     // Pause old DAI PSM
     {
       target: 'daiFixedPricePSM',

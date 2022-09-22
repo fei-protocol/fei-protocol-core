@@ -65,6 +65,22 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 // ensuring contracts have a specific state, etc.
 const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
   pcvStatsBefore = await contracts.collateralizationOracle.pcvStats();
+
+  const guardianSigner = await getImpersonatedSigner(addresses.guardianMultisig);
+
+  // Pause daiPCVDripController
+  await contracts.daiPCVDripController.connect(guardianSigner).pause();
+
+  // Pause daiHoldingPCVDeposit
+  await contracts.daiHoldingPCVDeposit.connect(guardianSigner).pause();
+
+  // Revoke PCV_CONTROLLER_ROLE from DAI PCV drip controller
+  await contracts.core
+    .connect(guardianSigner)
+    .revokeRole(ethers.utils.id('PCV_CONTROLLER_ROLE'), addresses.daiPCVDripController);
+
+  // Slay fuseWithdrawalGuard on PCV Sentinel
+  await contracts.pcvSentinel.slay(addresses.fuseWithdrawalGuard);
 };
 
 // Tears down any changes made in setup() that need to be
