@@ -23,7 +23,6 @@ const AMOUNT_FEI_MINTED_BY_E2E = toBN('10000000000000000000000000'); // 10M
 
 /////////////  Tribe Redeemer config
 // Circulating amount of TRIBE, which is redeemable for underlying PCV assets
-// TODO: Update with final circulating TRIBE figure
 const REDEEM_BASE = ethers.constants.WeiPerEther.mul(458_964_340);
 
 // Lido deposit balance, being withdrawn and sent to Tribe Redeemer
@@ -35,7 +34,6 @@ const DAO_TIMELOCK_LQTY_BALANCE = toBN('1101298805118942906652299');
 const USER_CIRCULATING_FEI_AT_FIXED_BLOCK = ethers.constants.WeiPerEther.mul(58_708_166);
 
 // Minimum DAI transferred to Redeemer. Lower bound
-// TODO: Update with final numbers
 const MIN_REMAINING_DEPOSIT_DAI_FOR_REDEEMER = ethers.constants.WeiPerEther.mul(30_000_000);
 
 // Do any deployments

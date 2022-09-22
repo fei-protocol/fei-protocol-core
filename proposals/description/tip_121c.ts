@@ -203,7 +203,6 @@ const tip_121c: TemplatedProposalDescription = {
       description: 'Withdraw remaining LUSD ~17k to Tribal Council Safe for selling'
     },
 
-    // TODO do these numbers need to be updated and/or can ratio PCV controller be used?
     {
       target: 'veBalDelegatorPCVDeposit',
       values: '0',
