@@ -18,9 +18,6 @@ const fipNumber = 'tip_121c';
 
 let pcvStatsBefore: PcvStats;
 
-// Amount of FEI sudo() script mints to accounts[0], will be subtracted off
-const AMOUNT_FEI_MINTED_BY_E2E = toBN('10000000000000000000000000'); // 10M
-
 /////////////  Tribe Redeemer config
 // Circulating amount of TRIBE, which is redeemable for underlying PCV assets
 const REDEEM_BASE = ethers.constants.WeiPerEther.mul(458_964_340);
@@ -108,9 +105,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
     await contracts.fei.balanceOf(addresses.rariInfraFeiTimelock)
   );
 
-  const userCirculatingFeiSupply = (await contracts.fei.totalSupply())
-    .sub(protocolControlledFei)
-    .sub(AMOUNT_FEI_MINTED_BY_E2E);
+  const userCirculatingFeiSupply = (await contracts.fei.totalSupply()).sub(protocolControlledFei);
   const protocolEquity = pcvStatsAfter.protocolControlledValue.sub(userCirculatingFeiSupply) as any;
   console.log('Fei Total supply: ', (await contracts.fei.totalSupply()) / 1e24, '(millions)');
   console.log('Protocol controlled fei: ', protocolControlledFei / 1e24, '(millions)');
