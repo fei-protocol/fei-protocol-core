@@ -2,12 +2,13 @@ import { Fei } from '@custom-types/contracts';
 import { NamedContracts } from '@custom-types/types';
 import { Signer } from '@ethersproject/abstract-signer';
 import { ProposalsConfig } from '@protocol/proposalsConfig';
-import { ZERO_ADDRESS } from '@test/helpers';
+import { getImpersonatedSigner, ZERO_ADDRESS } from '@test/helpers';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
 import { ethers } from 'hardhat';
+import { forceEth } from '../setup/utils';
 const toBN = ethers.BigNumber.from;
 
 describe('e2e-fei', function () {
@@ -64,6 +65,10 @@ describe('e2e-fei', function () {
     });
 
     it('burn works', async function () {
+      const feiWhale = '0x9928e4046d7c6513326cCeA028cD3e7a91c7590A';
+      const feiWhaleSigner = await getImpersonatedSigner(feiWhale);
+      await forceEth(feiWhale);
+      await fei.connect(feiWhaleSigner).transfer(deployAddress, 50);
       const balanceBefore = await fei.balanceOf(deployAddress);
       await fei.connect(deploySigner).burn(10);
       const balanceAfter = await fei.balanceOf(deployAddress);
