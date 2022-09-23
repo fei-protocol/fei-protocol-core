@@ -10,7 +10,7 @@ import {
 
 /*
 
-TIP_121c (pt 1): Deprecate Tribe DAO and Fei sub-systems
+TIP_121c (pt 2): Deprecate Tribe DAO and Fei sub-systems
 
 */
 

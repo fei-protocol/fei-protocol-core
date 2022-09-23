@@ -1,8 +1,8 @@
 import { ethers } from 'ethers';
 import { TemplatedProposalDescription } from '@custom-types/types';
 
-const tip_121c_pt1: TemplatedProposalDescription = {
-  title: 'TIP_121c (pt. 1): Deprecate sub-systems and revoke non-final roles',
+const tip_121c_pt2: TemplatedProposalDescription = {
+  title: 'TIP_121c (pt. 2): Deprecate sub-systems and revoke non-final roles',
   commands: [
     // 1. Revoke all non-final Tribe roles
     // SWAP_ADMIN_ROLE
@@ -87,7 +87,7 @@ const tip_121c_pt1: TemplatedProposalDescription = {
     }
   ],
   description: `
-  TIP_121c (pt. 1): Deprecate sub-systems and revoke non-final roles
+  TIP_121c (pt. 2): Deprecate sub-systems and revoke non-final roles
 
   This proposal deprecates various sub-systems and revokes all non-final roles. 
   
@@ -98,4 +98,4 @@ const tip_121c_pt1: TemplatedProposalDescription = {
   `
 };
 
-export default tip_121c_pt1;
+export default tip_121c_pt2;
