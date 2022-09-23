@@ -5,14 +5,6 @@ const tip_121c_pt2: TemplatedProposalDescription = {
   title: 'TIP_121c (pt. 2): Deprecate sub-systems and revoke non-final roles',
   commands: [
     // 1. Revoke all non-final Tribe roles
-    // SWAP_ADMIN_ROLE
-    {
-      target: 'core',
-      values: '0',
-      method: 'revokeRole(bytes32,address)',
-      arguments: (addresses) => [ethers.utils.id('SWAP_ADMIN_ROLE'), addresses.pcvEquityMinter],
-      description: 'Revoke SWAP_ADMIN_ROLE from pcvEquityMinter'
-    },
     // METAGOVERNANCE roles
     {
       target: 'core',

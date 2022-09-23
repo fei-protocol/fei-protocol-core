@@ -1,7 +1,7 @@
 // This config lists all of the contracts that (should) be hold each listed role.
 
 export const PermissionsConfig = {
-  MINTER_ROLE: ['simpleFeiDaiPSM', 'feiDAOTimelock'],
+  MINTER_ROLE: ['simpleFeiDaiPSM'],
   BURNER_ROLE: [],
   GOVERN_ROLE: ['core', 'feiDAOTimelock'],
   PCV_CONTROLLER_ROLE: ['feiDAOTimelock', 'ratioPCVControllerV2', 'pcvGuardian'],
