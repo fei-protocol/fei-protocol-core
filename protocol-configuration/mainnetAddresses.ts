@@ -1,6 +1,26 @@
 import { AddressCategory } from '../types/types'; // imported without custom path to allow docs to autogen without ts errors
 
 export const MainnetContractsConfig = {
+  simpleFeiDaiPSM: {
+    artifactName: 'SimpleFeiDaiPSM',
+    address: '0x7842186CDd11270C4Af8C0A99A5E0589c7F249ce',
+    category: AddressCategory.Peg
+  },
+  tribeRedeemer: {
+    artifactName: 'TribeRedeemer',
+    address: '0x4d9629e80118082b939e3d59e69c82a2ec08b4d5',
+    category: AddressCategory.PCV
+  },
+  rariMerkleRedeemer: {
+    artifactName: 'RariMerkleRedeemer',
+    address: '0xCAe4210e6676727EA4e0fD9BA5dFb95831356a16',
+    category: AddressCategory.TBD
+  },
+  merkleRedeemerDripper: {
+    artifactName: 'MerkleRedeemerDripper',
+    address: '0xF681F42f53D98A9136D090A04b47318C6961a832',
+    category: AddressCategory.TBD
+  },
   core: {
     artifactName: 'Core',
     address: '0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9',
@@ -82,7 +102,7 @@ export const MainnetContractsConfig = {
   daiPCVDripController: {
     artifactName: 'PCVDripController',
     address: '0x3e0f66c5687FF917809A3F7fA7096e1Bc409fB03',
-    category: AddressCategory.Utility
+    category: AddressCategory.Deprecated
   },
   lusdToDaiSwapper: {
     artifactName: 'BalancerLBPSwapper',
@@ -267,7 +287,7 @@ export const MainnetContractsConfig = {
   ethLidoPCVDeposit: {
     artifactName: 'EthLidoPCVDeposit',
     address: '0x6e5f2745C08249a190239763706473bE0B72816d',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
 
   balancerDepositFeiWeth: {
@@ -310,13 +330,13 @@ export const MainnetContractsConfig = {
   daiHoldingPCVDeposit: {
     artifactName: 'ERC20HoldingPCVDeposit',
     address: '0x8fFAe111Ab06F532a18418190129373D14570014',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
 
   rariPool79FeiPCVDepositWrapper: {
     artifactName: 'PCVDepositWrapper',
     address: '0xb3A026B830796E43bfC8b135553A7573538aB341',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
   lusdHoldingPCVDeposit: {
     artifactName: 'ERC20HoldingPCVDeposit',
@@ -367,7 +387,7 @@ export const MainnetContractsConfig = {
   rariPool79FeiPCVDeposit: {
     artifactName: 'ERC20CompoundPCVDeposit',
     address: '0x76dFcf06E7D7B8248094DC319b284fB244f06309',
-    category: AddressCategory.PCV_V1
+    category: AddressCategory.Deprecated
   },
 
   gaugeLensBpt30Fei70WethGauge: {
@@ -837,6 +857,12 @@ export const MainnetContractsConfig = {
   aaveLendingPool: {
     artifactName: 'ILendingPool',
     address: '0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9',
+    category: AddressCategory.External
+  },
+
+  bbausd: {
+    artifactName: 'IERC20',
+    address: '0x7B50775383d3D6f0215A8F290f2C9e2eEBBEceb2',
     category: AddressCategory.External
   },
 
@@ -1579,6 +1605,10 @@ export const MainnetContractsConfig = {
     artifactName: 'unknown',
     address: '0x6ef71cA9cD708883E129559F5edBFb9d9D5C6148',
     category: AddressCategory.External
+  },
+  fishy: {
+    artifactName: 'unknown',
+    address: '0x7D82675470B06453980b37880d81f6F254371FD3'
   },
   wintermute: {
     artifactName: 'unknown',
@@ -2661,23 +2691,32 @@ export const MainnetContractsConfig = {
     category: AddressCategory.Deprecated
   },
 
+  vlauraOtcHelper: {
+    artifactName: 'ProxyOTCEscrow',
+    address: '0x61A991153E3ff68844abcE91551e046e1BE6f764',
+    category: AddressCategory.TBD
+  },
+  vlAuraDelegatorPCVDepositProxy: {
+    artifactName: 'TransparentUpgradeableProxy', // actually a TransparentUpgradeableProxy
+    address: '0xc44902C03093D52213d20E5b06a0Bda4D9Ce6524',
+    category: AddressCategory.Deprecated
+  },
   vlAuraDelegatorPCVDeposit: {
-    // TODO: show in CR Oracle
     artifactName: 'VlAuraDelegatorPCVDeposit', // actually a TransparentUpgradeableProxy
     address: '0xc44902C03093D52213d20E5b06a0Bda4D9Ce6524',
-    category: AddressCategory.TBD
+    category: AddressCategory.Deprecated
   },
   vlAuraDelegatorPCVDepositImplementation: {
     artifactName: 'VlAuraDelegatorPCVDeposit',
     address: '0x6A78a824BC61Abf70C6AC33c41d37206B22B575d',
-    category: AddressCategory.TBD
+    category: AddressCategory.Deprecated
   },
   vlAuraDelegatorPCVDepositImplementationOld: {
     // this was broken and upgraded in tip-118, setDelegate()
     // is performed in a separate call & not in initialize().
     artifactName: 'VlAuraDelegatorPCVDeposit',
     address: '0xEd47a9519F86a695A212B53B5EBff92aF41741b1',
-    category: AddressCategory.TBD
+    category: AddressCategory.Deprecated
   }
 };
 

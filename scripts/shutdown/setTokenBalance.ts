@@ -2,15 +2,14 @@ import * as dotenv from 'dotenv';
 import { BigNumber, ethers } from 'ethers';
 import { parseEther } from 'ethers/lib/utils';
 import { IERC20, IERC20__factory } from '../../types/contracts';
-import { cTokens } from './data/prod/cTokens';
 
 dotenv.config();
 
 const feiHolder = '0x19C549357034d10DB8D75ed812b45bE1Dd8A7218'.toLowerCase();
 const feiAddress = '0x956F47F50A910163D8BF957Cf5846D573E7f87CA';
 
-// ctoken address : { topHolder : tokenAmount }
-const cTokenHolders = {
+// token address : { topHolder : tokenAmount }
+const tokenHolders = {
   '0xd8553552f8868c1ef160eedf031cf0bcf9686945': [
     '0x37349d9cc523d28e6abfc03fc5f44879bc8bffd9',
     '10985155688905568046898444'
@@ -88,7 +87,27 @@ const cTokenHolders = {
     '28499508944344457687075380'
   ],
   '0x88d3557eb6280cc084ca36e425d6bc52d0a04429': ['0x88958f23e4fb3c4e47cc21f7aa02b5d8fddfce11', '87918304210'],
-  '0xe92a3db67e4b6ac86114149f522644b34264f858': ['0x108e4f1486bb38b60629ab570d82bf5420181217', '6000000000000000000']
+  '0xc7283b66eb1eb5fb86327f08e1b5816b0720212b': [
+    '0xfa4fc4ec2f81a4897743c5b4f45907c02ce06199',
+    '16856213429620138601579623'
+  ],
+  '0xe92a3db67e4b6ac86114149f522644b34264f858': ['0x108e4f1486bb38b60629ab570d82bf5420181217', '6000000000000000000'],
+  '0x6b175474e89094c44da98b954eedeac495271d0f': [
+    '0x075e72a5edf65f0a5f44699c7654c1a76941ddc8',
+    '278915974736877714909963561'
+  ],
+  '0xae7ab96520de3a18e5e111b5eaab095312d7fe84': [
+    '0x41318419cfa25396b47a94896ffa2c77c6434040',
+    '41361117342485101798009'
+  ],
+  '0x6dea81c8171d0ba574754ef6f8b412f2ed88c54d': [
+    '0x32c761138ad9ff95d8595aa9a79208f19b01d8e7',
+    '9843750000000000000000000'
+  ],
+  '0xc770eefad204b5180df6a14ee197d99d808ee52d': [
+    '0x8a72a41af2f1edaf02cfd423ec4edfa35ed82f53',
+    '11463962301028748844772178'
+  ]
 };
 
 async function main() {
@@ -98,7 +117,7 @@ async function main() {
         npx ts-node scripts/shutdown/setTokenBalance tokenAddress giveToAddress [amount] [debug]
       
       Args:
-        tokenAddress = string (default: undefined) (must be one of the 27 cTokens or Fei)
+        tokenAddress = string (default: undefined) (must be one of the 27 cTokens or Fei or TRIBE or DAI or stETH or LQTY or FOX)
         giveToAddress = string (default: undefined)
         amount = string (default: "1000000000000000000")
         debug = true|false (default: false)
@@ -117,7 +136,10 @@ async function main() {
 
   if (process.argv[2] !== undefined) {
     cTokenAddress = process.argv[2];
-    if (!cTokens.includes(cTokenAddress) && cTokenAddress != feiAddress)
+    if (
+      !Object.keys(tokenHolders).some((t) => t.toLowerCase() === cTokenAddress.toLowerCase()) &&
+      cTokenAddress != feiAddress
+    )
       throw new Error(`Invalid token address: ${cTokenAddress}`);
   } else throw new Error("Must provide cToken address. Run with single param 'help' for usage.");
 
@@ -147,14 +169,12 @@ async function main() {
   await provider.send('anvil_setBalance', [wallet.address, parseEther('10').toHexString()]);
 
   // check the ctokens to make sure the data looks good, adjust for up to date network conditions
-  if (Object.keys(cTokenHolders).length !== 27) throw new Error('Must have exactly 27 cToken top holders.');
-
   if (debug) {
-    for (const cTokenAddress of Object.keys(cTokenHolders)) {
+    for (const cTokenAddress of Object.keys(tokenHolders)) {
       const cTokenContract = new ethers.Contract(cTokenAddress, IERC20__factory.createInterface(), wallet) as IERC20;
-      const topHolder = cTokenHolders[cTokenAddress as keyof typeof cTokenHolders][0];
+      const topHolder = tokenHolders[cTokenAddress as keyof typeof tokenHolders][0];
       const topHolderActualBalance = await cTokenContract.balanceOf(topHolder);
-      const topHolderRecordedBalance = BigNumber.from(cTokenHolders[cTokenAddress as keyof typeof cTokenHolders][1]);
+      const topHolderRecordedBalance = BigNumber.from(tokenHolders[cTokenAddress as keyof typeof tokenHolders][1]);
       if (topHolderActualBalance.lt(BigNumber.from('100000'))) {
         throw new Error(
           `Error: Top holder balance for cToken ${cTokenAddress} too low for testing: ${topHolderActualBalance.toNumber()}`
@@ -177,7 +197,9 @@ async function main() {
   }
 
   const topHolder =
-    cTokenAddress === feiAddress ? feiHolder : cTokenHolders[cTokenAddress as keyof typeof cTokenHolders][0];
+    cTokenAddress.toLowerCase() === feiAddress.toLowerCase()
+      ? feiHolder
+      : tokenHolders[cTokenAddress.toLowerCase() as keyof typeof tokenHolders][0];
   await provider.send('anvil_setBalance', [topHolder, parseEther('10').toHexString()]);
 
   if (debug) console.log(`Top holder: ${topHolder}`);
