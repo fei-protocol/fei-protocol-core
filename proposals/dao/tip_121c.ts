@@ -153,13 +153,19 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await contracts.dai.balanceOf(addresses.simpleFeiDaiPSM)).to.be.bignumber.greaterThan(
     userCirculatingFeiSupply
   );
-  expect(await contracts.dai.balanceOf(addresses.simpleFeiDaiPSM)).to.be.bignumber.greaterThan(
-    USER_CIRCULATING_FEI_AT_FIXED_BLOCK
+
+  // Revert if circulating FEI supply moved more than 1.5M in the current
+  // block, compared to when we last manually checked the numbers and set
+  // the USER_CIRCULATING_FEI_AT_FIXED_BLOCK variable at the top of this file.
+  expectApproxAbs(
+    USER_CIRCULATING_FEI_AT_FIXED_BLOCK,
+    userCirculatingFeiSupply,
+    ethers.constants.WeiPerEther.mul(1_500_000).toString()
   );
 
   expectApproxAbs(
     await contracts.dai.balanceOf(addresses.simpleFeiDaiPSM),
-    USER_CIRCULATING_FEI_AT_FIXED_BLOCK,
+    userCirculatingFeiSupply,
     ethers.utils.parseEther('500').toString() // same to nearest 500 FEI
   );
   expect(await contracts.fei.balanceOf(addresses.simpleFeiDaiPSM)).to.equal(0);
