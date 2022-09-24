@@ -57,7 +57,7 @@ describe('e2e-backstop', function () {
       expect(tribeSupply.add(toBN('100000'))).to.be.equal(await tribe.totalSupply());
     });
   });
-  describe('TribeReserveStabilizer', async function () {
+  describe.skip('TribeReserveStabilizer', async function () {
     it('exchangeFei', async function () {
       const { fei, tribe, tribeReserveStabilizer, collateralizationOracle } = contracts;
 
