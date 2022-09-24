@@ -1,7 +1,7 @@
 import { ProposalCategory, TemplatedProposalsConfigMap } from '@custom-types/types';
 
 import fip_x from '@proposals/description/fip_x';
-import tip_121c from '@proposals/description/old/tip_121c';
+import tip_121c from '@proposals/description/tip_121c';
 
 export const ProposalsConfig: TemplatedProposalsConfigMap = {
   tip_121c: {

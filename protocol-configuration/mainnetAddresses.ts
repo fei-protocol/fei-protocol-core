@@ -9,7 +9,7 @@ export const MainnetContractsConfig = {
   tribeRedeemer: {
     artifactName: 'TribeRedeemer',
     address: '0x4d9629e80118082b939e3d59e69c82a2ec08b4d5',
-    category: AddressCategory.PCV
+    category: AddressCategory.Core
   },
   rariMerkleRedeemer: {
     artifactName: 'RariMerkleRedeemer',
@@ -61,11 +61,6 @@ export const MainnetContractsConfig = {
     address: '0xB8f482539F2d3Ae2C9ea6076894df36D1f632775',
     category: AddressCategory.Security
   },
-  fuseWithdrawalGuard: {
-    artifactName: 'FuseWithdrawalGuard',
-    address: '0xd079ec4b442600a381eAc7E95662eB1b313cd113',
-    category: AddressCategory.Security
-  },
   ratioPCVControllerV2: {
     artifactName: 'RatioPCVControllerV2',
     address: '0x221fff24FB66dA3c722c7C5B856956a6a30C0179',
@@ -77,11 +72,6 @@ export const MainnetContractsConfig = {
     category: AddressCategory.Utility
   },
 
-  lusdToDaiSwapper: {
-    artifactName: 'BalancerLBPSwapper',
-    address: '0x09d26e0D6e40b285854C964FF8Dd672b524E235c',
-    category: AddressCategory.Utility
-  },
   feiDAO: {
     artifactName: 'FeiDAO',
     address: '0x0BEF27FEB58e857046d630B2c03dFb7bae567494',
@@ -93,18 +83,6 @@ export const MainnetContractsConfig = {
     address: '0xd51dbA7a94e1adEa403553A8235C302cEbF41a3c',
     category: AddressCategory.Governance
   },
-  optimisticMultisig: {
-    artifactName: 'unknown',
-    address: '0x35ED000468f397AA943009bD60cc6d2d9a7d32fF',
-    category: AddressCategory.Governance
-  },
-
-  optimisticTimelock: {
-    artifactName: 'OptimisticTimelock',
-    address: '0xbC9C084a12678ef5B516561df902fdc426d95483',
-    category: AddressCategory.Governance
-  },
-
   rariTimelock: {
     artifactName: 'Timelock',
     address: '0x8ace03Fc45139fDDba944c6A4082b604041d19FC',
@@ -153,23 +131,6 @@ export const MainnetContractsConfig = {
     category: AddressCategory.Governance
   },
 
-  tribalCouncilSafe: {
-    artifactName: 'unknown',
-    address: '0x2EC598d8e3DF35E5D6F13AE2f05a7bB2704e92Ea',
-    category: AddressCategory.Governance
-  },
-
-  tribeReserveStabilizer: {
-    artifactName: 'TribeReserveStabilizer',
-    address: '0xE1A468418f4D8D3F070A06d49b3575A9562b6CfD',
-    category: AddressCategory.Peg
-  },
-
-  tribalCouncilTimelockFeiLens: {
-    artifactName: 'ERC20PCVDepositWrapper',
-    address: '0x4037a70152F4c88Ad40522f35BD4dDD17E6B2052',
-    category: AddressCategory.PCV
-  },
   rariTimelockFeiOldLens: {
     artifactName: 'ERC20PCVDepositWrapper',
     address: '0x614D46B7eB2AC1a359b8835D64954F3Ee4E6F676',
@@ -188,33 +149,9 @@ export const MainnetContractsConfig = {
     category: AddressCategory.PCV
   },
 
-  lusdToDaiLensDai: {
-    artifactName: 'BPTLens',
-    address: '0x49194B3a9330316dC24e806B06a276794e1116DD',
-    category: AddressCategory.PCV
-  },
-
-  lusdToDaiLensLusd: {
-    artifactName: 'BPTLens',
-    address: '0x35cA36B69a4169B6BF71E6b64a03C2B2A6834ad0',
-    category: AddressCategory.PCV
-  },
-
-  balancerDepositFeiWeth: {
-    artifactName: 'BalancerPCVDepositWeightedPool',
-    address: '0xc5bb8F0253776beC6FF450c2B40f092f7e7f5b57',
-    category: AddressCategory.PCV
-  },
-
   balancerDepositBalWeth: {
     artifactName: 'BalancerPCVDepositWeightedPool',
     address: '0xcd1Ac0014E2ebd972f40f24dF1694e6F528B2fD4',
-    category: AddressCategory.PCV
-  },
-
-  balancerLensBpt30Fei70Weth: {
-    artifactName: 'BalancerPool2Lens',
-    address: '0x8465E7CFA63Aa6682531C7a34141966318aC5178',
     category: AddressCategory.PCV
   },
 
@@ -252,33 +189,15 @@ export const MainnetContractsConfig = {
     category: AddressCategory.Oracle
   },
 
-  chainlinkBALEthOracle: {
-    artifactName: 'ChainlinkOracleWrapper',
-    address: '0x7261D245454Daa070C77B2a26eA192E3a4c8F655',
-    category: AddressCategory.Oracle
-  },
-
-  chainlinkEthUsdOracleWrapper: {
-    artifactName: 'ChainlinkOracleWrapper',
-    address: '0xCd3c40AE1256922BA16C7872229385E20Bc8351e',
-    category: AddressCategory.Oracle
-  },
-
   chainlinkStEthUsdOracleWrapper: {
     artifactName: 'ChainlinkOracleWrapper',
     address: '0x011d15600671530C93818FdB1283E20748CB8c73',
     category: AddressCategory.Oracle
   },
 
-  compositeStEthEthOracle: {
-    artifactName: 'CompositeOracle',
-    address: '0x16A26876835cB3b06D948E7D166835aB28896a71',
-    category: AddressCategory.Oracle
-  },
-
-  chainlinkFeiEthOracleWrapper: {
+  chainlinkDaiUsdOracleWrapper: {
     artifactName: 'ChainlinkOracleWrapper',
-    address: '0x060Be7B51F78DFFd04749332fd306BA1228e7444',
+    address: '0x231aDa12E273eDf3fA54CbD90c5C1a73129D5bb9',
     category: AddressCategory.Oracle
   },
 
@@ -288,27 +207,9 @@ export const MainnetContractsConfig = {
     category: AddressCategory.Oracle
   },
 
-  chainlinkTribeEthOracleWrapper: {
-    artifactName: 'ChainlinkOracleWrapper',
-    address: '0x061118ccabF0c2c62f05a2e3C2bd4379c0C70079',
-    category: AddressCategory.Oracle
-  },
-
-  compositeOracle: {
-    artifactName: 'CompositeOracle',
-    address: '0x8721f9EAba0B9081069970bCBce38763D3D4f28E',
-    category: AddressCategory.Oracle
-  },
-
   oneConstantOracle: {
     artifactName: 'ConstantOracle',
     address: '0x2374800337c6BE8B935f96AA6c10b33f9F12Bd40',
-    category: AddressCategory.Oracle
-  },
-
-  tribeUsdCompositeOracle: {
-    artifactName: 'CompositeOracle',
-    address: '0xD7B8207f8644ee5cc60095023a8fcb8BdCF54732',
     category: AddressCategory.Oracle
   },
 
@@ -1343,6 +1244,106 @@ export const MainnetContractsConfig = {
     address: '0xEd279fDD11cA84bEef15AF5D39BB4d4bEE23F0cA',
     category: AddressCategory.External
   },
+
+  chainlinkBALEthOracle: {
+    artifactName: 'ChainlinkOracleWrapper',
+    address: '0x7261D245454Daa070C77B2a26eA192E3a4c8F655',
+    category: AddressCategory.External
+  },
+
+  fuseWithdrawalGuard: {
+    artifactName: 'FuseWithdrawalGuard',
+    address: '0xd079ec4b442600a381eAc7E95662eB1b313cd113',
+    category: AddressCategory.Deprecated
+  },
+
+  compositeStEthEthOracle: {
+    artifactName: 'CompositeOracle',
+    address: '0x16A26876835cB3b06D948E7D166835aB28896a71',
+    category: AddressCategory.Deprecated
+  },
+
+  chainlinkEthUsdOracleWrapper: {
+    artifactName: 'ChainlinkOracleWrapper',
+    address: '0xCd3c40AE1256922BA16C7872229385E20Bc8351e',
+    category: AddressCategory.Deprecated
+  },
+
+  chainlinkFeiEthOracleWrapper: {
+    artifactName: 'ChainlinkOracleWrapper',
+    address: '0x060Be7B51F78DFFd04749332fd306BA1228e7444',
+    category: AddressCategory.Deprecated
+  },
+
+  chainlinkTribeEthOracleWrapper: {
+    artifactName: 'ChainlinkOracleWrapper',
+    address: '0x061118ccabF0c2c62f05a2e3C2bd4379c0C70079',
+    category: AddressCategory.Deprecated
+  },
+
+  compositeOracle: {
+    artifactName: 'CompositeOracle',
+    address: '0x8721f9EAba0B9081069970bCBce38763D3D4f28E',
+    category: AddressCategory.Deprecated
+  },
+
+  tribeUsdCompositeOracle: {
+    artifactName: 'CompositeOracle',
+    address: '0xD7B8207f8644ee5cc60095023a8fcb8BdCF54732',
+    category: AddressCategory.Deprecated
+  },
+  lusdToDaiSwapper: {
+    artifactName: 'BalancerLBPSwapper',
+    address: '0x09d26e0D6e40b285854C964FF8Dd672b524E235c',
+    category: AddressCategory.Deprecated
+  },
+  optimisticMultisig: {
+    artifactName: 'unknown',
+    address: '0x35ED000468f397AA943009bD60cc6d2d9a7d32fF',
+    category: AddressCategory.Deprecated
+  },
+
+  optimisticTimelock: {
+    artifactName: 'OptimisticTimelock',
+    address: '0xbC9C084a12678ef5B516561df902fdc426d95483',
+    category: AddressCategory.Deprecated
+  },
+
+  tribalCouncilSafe: {
+    artifactName: 'unknown',
+    address: '0x2EC598d8e3DF35E5D6F13AE2f05a7bB2704e92Ea',
+    category: AddressCategory.Deprecated
+  },
+  tribeReserveStabilizer: {
+    artifactName: 'TribeReserveStabilizer',
+    address: '0xE1A468418f4D8D3F070A06d49b3575A9562b6CfD',
+    category: AddressCategory.Deprecated
+  },
+  balancerLensBpt30Fei70Weth: {
+    artifactName: 'BalancerPool2Lens',
+    address: '0x8465E7CFA63Aa6682531C7a34141966318aC5178',
+    category: AddressCategory.Deprecated
+  },
+  balancerDepositFeiWeth: {
+    artifactName: 'BalancerPCVDepositWeightedPool',
+    address: '0xc5bb8F0253776beC6FF450c2B40f092f7e7f5b57',
+    category: AddressCategory.Deprecated
+  },
+  lusdToDaiLensDai: {
+    artifactName: 'BPTLens',
+    address: '0x49194B3a9330316dC24e806B06a276794e1116DD',
+    category: AddressCategory.Deprecated
+  },
+  tribalCouncilTimelockFeiLens: {
+    artifactName: 'ERC20PCVDepositWrapper',
+    address: '0x4037a70152F4c88Ad40522f35BD4dDD17E6B2052',
+    category: AddressCategory.Deprecated
+  },
+  lusdToDaiLensLusd: {
+    artifactName: 'BPTLens',
+    address: '0x35cA36B69a4169B6BF71E6b64a03C2B2A6834ad0',
+    category: AddressCategory.Deprecated
+  },
   wethHoldingPCVDeposit: {
     artifactName: 'ERC20HoldingPCVDeposit',
     address: '0xC6D675ca5217d39C3A5E366141060fC2D1ea2b82',
@@ -1518,12 +1519,6 @@ export const MainnetContractsConfig = {
   chainlinkCREAMEthOracle: {
     artifactName: 'ChainlinkOracleWrapper',
     address: '0xDE02522cDc4959117fe839a7326D80F9858f383C',
-    category: AddressCategory.Deprecated
-  },
-
-  chainlinkDaiUsdOracleWrapper: {
-    artifactName: 'ChainlinkOracleWrapper',
-    address: '0x231aDa12E273eDf3fA54CbD90c5C1a73129D5bb9',
     category: AddressCategory.Deprecated
   },
 
