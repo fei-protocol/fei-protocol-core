@@ -25,8 +25,8 @@ import { forceEth } from '@test/integration/setup/utils';
 import { expect } from 'chai';
 import { parseEther } from 'ethers/lib/utils';
 import { ethers } from 'hardhat';
-import balances from '../data/merkle_redemption/prod/mergedBalances.json';
-import proofs from '../data/merkle_redemption/prod/proofs.json';
+import balances from '../../data/merkle_redemption/prod/mergedBalances.json';
+import proofs from '../../data/merkle_redemption/prod/proofs.json';
 
 /*
 

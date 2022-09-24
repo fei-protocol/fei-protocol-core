@@ -56,6 +56,12 @@ describe('e2e-pcv', function () {
     if (aaveEthPCVDepositPaused) {
       await contracts.aaveEthPCVDeposit.unpause();
     }
+
+    // Seed DAI holding deposit with DAI for test
+    const daiWhale = await getImpersonatedSigner('0x5777d92f208679DB4b9778590Fa3CAB3aC9e2168');
+    await contracts.dai
+      .connect(daiWhale)
+      .transfer(contractAddresses.daiHoldingPCVDeposit, ethers.constants.WeiPerEther.mul(50_000_000));
   });
 
   describe('BAMM', function () {
