@@ -27,8 +27,8 @@ const STETH_DEPOSIT_BALANCE = toBN('50296523674661485703301');
 const DAO_TIMELOCK_FOX_BALANCE = toBN('15316691965631380244403204');
 const DAO_TIMELOCK_LQTY_BALANCE = toBN('1101298805118942906652299');
 
-// User circulating Fei as determined by fei-tools.com for block 15594500
-const USER_CIRCULATING_FEI_AT_FIXED_BLOCK = ethers.constants.WeiPerEther.mul(58_594_123);
+// User circulating Fei as determined by fei-tools.com for block 15611295
+const USER_CIRCULATING_FEI_AT_FIXED_BLOCK = ethers.constants.WeiPerEther.mul(58_141_399);
 
 // Minimum DAI transferred to Redeemer. Lower bound
 const MIN_REMAINING_DEPOSIT_DAI_FOR_REDEEMER = ethers.constants.WeiPerEther.mul(30_000_000);
@@ -161,7 +161,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expectApproxAbs(
     await contracts.dai.balanceOf(addresses.simpleFeiDaiPSM),
     userCirculatingFeiSupply,
-    ethers.utils.parseEther('500').toString() // same to nearest 500 FEI
+    ethers.utils.parseEther('1000').toString() // same to nearest 1000 FEI
   );
   expect(await contracts.fei.balanceOf(addresses.simpleFeiDaiPSM)).to.equal(0);
 
