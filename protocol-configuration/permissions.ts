@@ -2,10 +2,17 @@
 
 export const PermissionsConfig = {
   MINTER_ROLE: ['simpleFeiDaiPSM'],
-  BURNER_ROLE: [],
   GOVERN_ROLE: ['core', 'feiDAOTimelock'],
   PCV_CONTROLLER_ROLE: ['feiDAOTimelock', 'ratioPCVControllerV2', 'pcvGuardian', 'vebalOtcHelper'],
   GUARDIAN_ROLE: ['guardianMultisig', 'pcvGuardian', 'pcvSentinel'],
+  METAGOVERNANCE_VOTE_ADMIN: ['feiDAOTimelock', 'vebalOtcHelper'],
+  METAGOVERNANCE_TOKEN_STAKING: ['feiDAOTimelock', 'vebalOtcHelper'],
+  METAGOVERNANCE_GAUGE_ADMIN: ['feiDAOTimelock', 'vebalOtcHelper'],
+  ROLE_ADMIN: ['feiDAOTimelock'],
+  POD_VETO_ADMIN: ['nopeDAO'],
+  PCV_MINOR_PARAM_ROLE: ['feiDAOTimelock'],
+  TRIBE_MINTER_ROLE: [],
+  BURNER_ROLE: [],
   ORACLE_ADMIN_ROLE: [],
   SWAP_ADMIN_ROLE: [],
   BALANCER_MANAGER_ADMIN_ROLE: [],
@@ -17,15 +24,9 @@ export const PermissionsConfig = {
   VOTIUM_ADMIN_ROLE: [],
   PCV_GUARDIAN_ADMIN_ROLE: [],
   PCV_SAFE_MOVER_ROLE: [],
-  METAGOVERNANCE_VOTE_ADMIN: ['feiDAOTimelock', 'vebalOtcHelper'],
-  METAGOVERNANCE_TOKEN_STAKING: ['feiDAOTimelock', 'vebalOtcHelper'],
-  METAGOVERNANCE_GAUGE_ADMIN: ['feiDAOTimelock', 'vebalOtcHelper'],
-  ROLE_ADMIN: ['feiDAOTimelock'],
   POD_METADATA_REGISTER_ROLE: [],
   FEI_MINT_ADMIN: [],
-  POD_VETO_ADMIN: ['nopeDAO'],
   POD_ADMIN: [],
-  PCV_MINOR_PARAM_ROLE: ['feiDAOTimelock'],
   TOKEMAK_DEPOSIT_ADMIN_ROLE: []
 };
 
