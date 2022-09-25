@@ -52,58 +52,6 @@ describe('e2e-collateralization', function () {
     }
   });
 
-  describe('Named PCVDeposit Wrapper', async function () {
-    it('can fetch all underlying token addresses', async function () {
-      const namedStaticPCVDepositWrapper: NamedStaticPCVDepositWrapper =
-        contracts.namedStaticPCVDepositWrapper as NamedStaticPCVDepositWrapper;
-
-      const allTokenAddresses = await namedStaticPCVDepositWrapper.getAllUnderlying();
-      expect(allTokenAddresses.length).to.be.eq(allNames.length);
-
-      for (let i = 0; i < allTokenAddresses.length; i++) {
-        const deposit = await namedStaticPCVDepositWrapper.pcvDeposits(i);
-        expect(allTokenAddresses[i]).to.equal(deposit.underlyingToken);
-      }
-    });
-
-    it('number of deposits is correct', async function () {
-      const namedStaticPCVDepositWrapper: NamedStaticPCVDepositWrapper =
-        contracts.namedStaticPCVDepositWrapper as NamedStaticPCVDepositWrapper;
-      const numDeposits = Number(await namedStaticPCVDepositWrapper.numDeposits());
-      expect(numDeposits).to.be.eq(allNames.length);
-    });
-
-    it('can add a new deposit', async function () {
-      const namedStaticPCVDepositWrapper: NamedStaticPCVDepositWrapper =
-        contracts.namedStaticPCVDepositWrapper as NamedStaticPCVDepositWrapper;
-      const startingFeiUSDValues = await namedStaticPCVDepositWrapper.resistantBalanceAndFei();
-      const feiAmount = eth.mul(10_000);
-
-      await namedStaticPCVDepositWrapper.addDeposit({
-        depositName: 'intangible brand value',
-        underlyingToken: namedStaticPCVDepositWrapper.address,
-        underlyingTokenAmount: 10_000_000,
-        feiAmount,
-        usdAmount: 0
-      });
-
-      const endingFeiUSDValues = await namedStaticPCVDepositWrapper.resistantBalanceAndFei();
-      const numDeposits = await namedStaticPCVDepositWrapper.numDeposits();
-
-      expect(numDeposits).to.be.eq(allNames.length + 1);
-      expect(startingFeiUSDValues[0]).to.be.eq(endingFeiUSDValues[0]);
-      expect(startingFeiUSDValues[1].add(feiAmount)).to.be.eq(endingFeiUSDValues[1]);
-    });
-
-    it('can remove an existing deposit', async function () {
-      const namedStaticPCVDepositWrapper: NamedStaticPCVDepositWrapper =
-        contracts.namedStaticPCVDepositWrapper as NamedStaticPCVDepositWrapper;
-      await namedStaticPCVDepositWrapper.removeDeposit(Number(await namedStaticPCVDepositWrapper.numDeposits()) - 1);
-      const numDeposits = Number(await namedStaticPCVDepositWrapper.numDeposits());
-      expect(numDeposits).to.be.eq(allNames.length);
-    });
-  });
-
   describe('Collateralization Oracle', function () {
     it('token deposits should match', async function () {
       const collateralizationOracle = contracts.collateralizationOracle;

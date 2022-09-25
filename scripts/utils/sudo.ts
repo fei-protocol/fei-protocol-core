@@ -44,7 +44,4 @@ export async function sudo(contracts: NamedContracts, logging = false): Promise<
   await core.grantPCVController(accounts[0].address);
   await core.grantMinter(accounts[0].address);
   await core.grantBurner(accounts[0].address);
-
-  logging ? console.log('Minting FEI to accounts[0]') : undefined;
-  await fei.mint(accounts[0].address, '10000000000000000000000000');
 }
