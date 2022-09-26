@@ -4,7 +4,39 @@ import { TemplatedProposalDescription } from '@custom-types/types';
 const tip_121c_pt2: TemplatedProposalDescription = {
   title: 'TIP_121c (pt. 2): Deprecate sub-systems',
   commands: [
-    // 1. Deprecate PCV Sentinel
+    // 1. Revoke all non-final Tribe roles
+    // METAGOVERNANCE roles
+    {
+      target: 'core',
+      values: '0',
+      method: 'revokeRole(bytes32,address)',
+      arguments: (addresses) => [ethers.utils.id('METAGOVERNANCE_VOTE_ADMIN'), addresses.feiDAOTimelock],
+      description: 'Revoke METAGOVERNANCE_VOTE_ADMIN from feiDAOTimelock'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'revokeRole(bytes32,address)',
+      arguments: (addresses) => [ethers.utils.id('METAGOVERNANCE_TOKEN_STAKING'), addresses.feiDAOTimelock],
+      description: 'Revoke METAGOVERNANCE_TOKEN_STAKING from feiDAOTimelock'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'revokeRole(bytes32,address)',
+      arguments: (addresses) => [ethers.utils.id('METAGOVERNANCE_GAUGE_ADMIN'), addresses.feiDAOTimelock],
+      description: 'Revoke METAGOVERNANCE_GAUGE_ADMIN from feiDAOTimelock'
+    },
+    // PCV_MINOR_PARAM_ROLE
+    {
+      target: 'core',
+      values: '0',
+      method: 'revokeRole(bytes32,address)',
+      arguments: (addresses) => [ethers.utils.id('PCV_MINOR_PARAM_ROLE'), addresses.feiDAOTimelock],
+      description: 'Revoke PCV_MINOR_PARAM_ROLE from feiDAOTimelock'
+    },
+
+    // 2. Deprecate PCV Sentinel
     {
       target: 'core',
       values: '0',
@@ -13,7 +45,7 @@ const tip_121c_pt2: TemplatedProposalDescription = {
       description: 'Revoke GUARDIAN_ROLE from PCV Sentinel'
     },
 
-    // 2. Deprecate PCV Guardian
+    // 3. Deprecate PCV Guardian
     {
       target: 'core',
       values: '0',
@@ -29,13 +61,21 @@ const tip_121c_pt2: TemplatedProposalDescription = {
       description: 'Revoke PCV_CONTROLLER_ROLE from PCV Guardian'
     },
 
-    // 3. Revoke veto role from NopeDAO and cancel role from podAdminGateway
+    // 4. Revoke veto role from NopeDAO and cancel role from podAdminGateway
     {
       target: 'core',
       values: '0',
       method: 'revokeRole(bytes32,address)',
       arguments: (addresses) => [ethers.utils.id('POD_VETO_ADMIN'), addresses.nopeDAO],
       description: 'Revoke POD_VETO_ADMIN from NopeDAO'
+    },
+    // Revoke ROLE_ADMIN from DAO timelock now that POD_VETO_ADMIN has been revoked
+    {
+      target: 'core',
+      values: '0',
+      method: 'revokeRole(bytes32,address)',
+      arguments: (addresses) => [ethers.utils.id('ROLE_ADMIN'), addresses.feiDAOTimelock],
+      description: 'Revoke ROLE_ADMIN from feiDAOTimelock'
     },
     {
       target: 'tribalCouncilTimelock',
@@ -45,7 +85,7 @@ const tip_121c_pt2: TemplatedProposalDescription = {
       description: 'Revoke CANCELLER_ROLE from PodAdminGateway'
     },
 
-    // 4. Deprecate ratioPCVControllerV2
+    // 5. Deprecate ratioPCVControllerV2
     {
       target: 'core',
       values: '0',

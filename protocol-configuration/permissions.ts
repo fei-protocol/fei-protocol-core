@@ -9,7 +9,7 @@ export const PermissionsConfig = {
   METAGOVERNANCE_TOKEN_STAKING: [],
   METAGOVERNANCE_GAUGE_ADMIN: [],
   ROLE_ADMIN: [],
-  POD_VETO_ADMIN: ['nopeDAO'],
+  POD_VETO_ADMIN: [],
   PCV_MINOR_PARAM_ROLE: [],
   TRIBE_MINTER_ROLE: [],
   BURNER_ROLE: [],
