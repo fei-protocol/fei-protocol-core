@@ -44,12 +44,9 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   // 1. Verify init impossible to call on core
   await expect(contracts.core.init()).to.be.revertedWith('Initializable: contract is already initialized');
 
-  // 2. Verify Tribe minter set to zero address and inflation is the minimum of 0.01% (1 basis point)
-  expect(await contracts.tribe.minter()).to.equal(ethers.constants.AddressZero);
-  expect(await contracts.tribeMinter.annualMaxInflationBasisPoints()).to.equal(1);
-
-  // 3. Verify Tribe Reserve Stabiliser is paused
-  expect(await contracts.tribeReserveStabilizer.paused()).to.be.true;
+  // 2. Verify PodAdminGateway has CANCELLER_ROLE removed
+  expect(await contracts.tribalCouncilTimelock.hasRole(ethers.utils.id('CANCELLER_ROLE'), addresses.podAdminGateway)).to
+    .be.false;
 };
 
 export { deploy, setup, teardown, validate };

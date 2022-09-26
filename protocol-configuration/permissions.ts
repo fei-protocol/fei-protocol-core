@@ -3,8 +3,8 @@
 export const PermissionsConfig = {
   MINTER_ROLE: ['simpleFeiDaiPSM'],
   GOVERN_ROLE: ['core', 'feiDAOTimelock'],
-  PCV_CONTROLLER_ROLE: ['feiDAOTimelock', 'ratioPCVControllerV2', 'pcvGuardian'],
-  GUARDIAN_ROLE: ['guardianMultisig', 'pcvGuardian', 'pcvSentinel'],
+  PCV_CONTROLLER_ROLE: ['feiDAOTimelock'],
+  GUARDIAN_ROLE: ['guardianMultisig'],
   METAGOVERNANCE_VOTE_ADMIN: [],
   METAGOVERNANCE_TOKEN_STAKING: [],
   METAGOVERNANCE_GAUGE_ADMIN: [],
