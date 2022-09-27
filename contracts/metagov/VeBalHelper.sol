@@ -29,6 +29,11 @@ contract VeBalHelper is Ownable {
     // Delegation Management
     // ----------------------------------------------------------------------------------
 
+    /// @notice sets the snapshot id
+    function setSpaceId(bytes32 snapshotId) external onlyOwner {
+        pcvDeposit.setSpaceId(snapshotId);
+    }
+
     /// @notice sets the snapshot delegate
     function setDelegate(address newDelegate) external onlyOwner {
         pcvDeposit.setDelegate(newDelegate);
@@ -81,6 +86,26 @@ contract VeBalHelper is Ownable {
     ) external onlyOwner {
         pcvDeposit.setTokenToGauge(token, gaugeAddress);
         pcvDeposit.voteForGaugeWeight(token, gaugeWeight);
+    }
+
+    /// @notice Stake tokens in a gauge
+    function stakeInGauge(address token, uint256 amount) external onlyOwner {
+        balancerStaker.stakeInGauge(token, amount);
+    }
+
+    /// @notice Stake all tokens held in a gauge
+    function stakeAllInGauge(address token) external onlyOwner {
+        balancerStaker.stakeAllInGauge(token);
+    }
+
+    /// @notice Unstake tokens from a gauge
+    function unstakeFromGauge(address token, uint256 amount) external onlyOwner {
+        balancerStaker.unstakeFromGauge(token, amount);
+    }
+
+    /// @notice Set the balancer minter used to mint BAL
+    function setBalancerMinter(address newMinter) external onlyOwner {
+        balancerStaker.setBalancerMinter(newMinter);
     }
 
     // ----------------------------------------------------------------------------------
@@ -141,11 +166,28 @@ contract VeBalHelper is Ownable {
     /// @notice Withdraw ERC20 tokens that are on the pcvDeposit
     /// @dev this will be needed to withdraw B-80BAL-20WETH after exitLock(),
     /// but also to withdraw BAL and bb-a-usd earned from protocol fees
-    function withdrawERC20(
+    function withdrawERC20fromPCV(
         address token,
         address to,
         uint256 amount
     ) external onlyOwner {
         pcvDeposit.withdrawERC20(token, to, amount);
+    }
+
+    function withdrawETHfromPCV(address to, uint256 amount) external onlyOwner {
+        pcvDeposit.withdraw(to, amount);
+    }
+
+    /// @notice Withdraw ERC20 tokens that are on the balancerGaugeStaker
+    function withdrawERC20fromStaker(
+        address token,
+        address to,
+        uint256 amount
+    ) external onlyOwner {
+        balancerStaker.withdrawERC20(token, to, amount);
+    }
+
+    function withdrawETHfromStaker(address to, uint256 amount) external onlyOwner {
+        balancerStaker.withdraw(to, amount);
     }
 }
