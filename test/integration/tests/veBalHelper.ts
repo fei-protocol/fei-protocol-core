@@ -1,0 +1,176 @@
+import { VeBalHelper } from '@custom-types/contracts';
+import { NamedAddresses, NamedContracts } from '@custom-types/types';
+import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
+import { ProposalsConfig } from '@protocol/proposalsConfig';
+import { getAddresses, getImpersonatedSigner, time } from '@test/helpers';
+import { TestEndtoEndCoordinator } from '@test/integration/setup';
+import { forceEth } from '@test/integration/setup/utils';
+import chai, { expect } from 'chai';
+import CBN from 'chai-bn';
+import { solidity } from 'ethereum-waffle';
+import { BigNumberish, Contract, Signer } from 'ethers';
+import { ethers } from 'hardhat';
+
+const e18 = (x: BigNumberish) => ethers.constants.WeiPerEther.mul(x);
+
+before(async () => {
+  chai.use(CBN(ethers.BigNumber));
+  chai.use(solidity);
+});
+
+describe('e2e-veBalHelper', function () {
+  const impersonatedSigners: { [key: string]: Signer } = {};
+  let contracts: NamedContracts;
+  let contractAddresses: NamedAddresses;
+  let deployAddress: string;
+  let e2eCoord: TestEndtoEndCoordinator;
+  let doLogging: boolean;
+  let veBalHelper: Contract;
+  let otcBuyer: string;
+  let otcBuyerSigner: SignerWithAddress;
+
+  before(async function () {
+    deployAddress = (await ethers.getSigners())[0].address;
+    if (!deployAddress) throw new Error(`No deploy address!`);
+    const addresses = await getAddresses();
+    // add any addresses you want to impersonate here
+    const impersonatedAddresses = [addresses.userAddress, addresses.pcvControllerAddress, addresses.governorAddress];
+
+    doLogging = Boolean(process.env.LOGGING);
+
+    const config = {
+      logging: doLogging,
+      deployAddress: deployAddress,
+      version: 1
+    };
+
+    e2eCoord = new TestEndtoEndCoordinator(config, ProposalsConfig);
+
+    doLogging && console.log(`Loading environment...`);
+    ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment());
+
+    ({ veBalHelper } = contracts);
+    doLogging && console.log(`Environment loaded.`);
+    veBalHelper = veBalHelper as VeBalHelper;
+
+    for (const address of impersonatedAddresses) {
+      impersonatedSigners[address] = await getImpersonatedSigner(address);
+    }
+
+    otcBuyer = contractAddresses.aaveCompaniesMultisig;
+    otcBuyerSigner = await getImpersonatedSigner(otcBuyer);
+  });
+
+  it('should have correct owner and initiate state', async () => {
+    expect(veBalHelper.owner()).to.equal(contractAddresses.aaveCompaniesMultisig);
+    expect(veBalHelper.pcvDeposit()).to.equal(contractAddresses.veBalDelegatorPCVDeposit);
+    expect(veBalHelper.boostManager()).to.equal(contractAddresses.balancerGaugeStaker);
+  });
+
+  it('should be able to create_boost() to boost delegation to another address', async () => {
+    await veBalHelper.connect(otcBuyerSigner).create_boost(
+      contractAddresses.veBalDelegatorPCVDeposit, // address _delegator
+      contractAddresses.eswak, // address _receiver
+      '10000', // int256 _percentage
+      '1669852800', // uint256 _cancel_time = December 1 2022
+      '1672272000', // uint256 _expire_time = December 29 2022
+      '0' // uint256 _id
+    );
+    const expectedMinBoost = '70000000000000000000000'; // should be 77.5k with 18 decimals as of 14/09/2022
+    expect(
+      await contracts.balancerVotingEscrowDelegation.delegated_boost(contracts.veBalDelegatorPCVDeposit.address)
+    ).to.be.at.least(expectedMinBoost);
+    expect(await contracts.balancerVotingEscrowDelegation.received_boost(contractAddresses.eswak)).to.be.at.least(
+      expectedMinBoost
+    );
+
+    // token id is uint256(delegatorAddress << 96 + boostId), and boostId = 0
+    const tokenId = '0xc4eac760c2c631ee0b064e39888b89158ff808b2000000000000000000000000';
+    expect(await contracts.balancerVotingEscrowDelegation.token_boost(tokenId)).to.be.at.least(expectedMinBoost);
+    expect(await contracts.balancerVotingEscrowDelegation.token_expiry(tokenId)).to.equal('1672272000');
+    expect(await contracts.balancerVotingEscrowDelegation.token_cancel_time(tokenId)).to.equal('1669852800');
+  });
+
+  it('should be able setDelegate() to give snapshot voting power to another address', async () => {
+    // Can setDelegate() to give Snapshot voting power to someone else
+    expect(await contracts.veBalDelegatorPCVDeposit.delegate()).to.be.equal(contractAddresses.eswak);
+    await contracts.vebalOtcHelper.connect(otcBuyerSigner).setDelegate(contractAddresses.feiDAOTimelock);
+    expect(await contracts.veBalDelegatorPCVDeposit.delegate()).to.be.equal(contractAddresses.feiDAOTimelock);
+  });
+
+  it('should be able to clearDelegate() to give snapshot voting power to nobody', async () => {
+    // Can clearDelegate() to give Snapshot voting power to nobody
+    const snapshotSpaceId = await contracts.veBalDelegatorPCVDeposit.spaceId();
+    expect(await contracts.veBalDelegatorPCVDeposit.delegate()).to.be.equal(contractAddresses.feiDAOTimelock);
+    expect(
+      await contracts.snapshotDelegateRegistry.delegation(contractAddresses.veBalDelegatorPCVDeposit, snapshotSpaceId)
+    ).to.be.equal(contractAddresses.feiDAOTimelock);
+    await contracts.vebalOtcHelper.connect(otcBuyerSigner).clearDelegate();
+    expect(await contracts.veBalDelegatorPCVDeposit.delegate()).to.be.equal(contracts.vebalOtcHelper.address);
+    expect(
+      await contracts.snapshotDelegateRegistry.delegation(contractAddresses.veBalDelegatorPCVDeposit, snapshotSpaceId)
+    ).to.be.equal(ethers.constants.AddressZero);
+  });
+
+  it('should be able to setGaugeController() to update gauge controller', async () => {
+    await contracts.vebalOtcHelper.connect(otcBuyerSigner).setGaugeController(contractAddresses.feiDAOTimelock);
+    await contracts.vebalOtcHelper
+      .connect(otcBuyerSigner)
+      .setGaugeController(contractAddresses.balancerGaugeController);
+  });
+
+  it('should be able to voteForGaugeWeight() to vote for gauge weights whilst a lock is active ', async () => {
+    // remove 100% votes for B-30FEI-70WETH
+    expect(
+      (
+        await contracts.balancerGaugeController.vote_user_slopes(
+          contractAddresses.veBalDelegatorPCVDeposit,
+          contractAddresses.balancerGaugeBpt30Fei70Weth
+        )
+      )[1]
+    ).to.be.equal('10000');
+    await contracts.vebalOtcHelper
+      .connect(otcBuyerSigner)
+      .voteForGaugeWeight(contractAddresses.bpt30Fei70Weth, contractAddresses.balancerGaugeBpt30Fei70Weth, 0);
+    expect(
+      (
+        await contracts.balancerGaugeController.vote_user_slopes(
+          contractAddresses.veBalDelegatorPCVDeposit,
+          contractAddresses.balancerGaugeBpt30Fei70Weth
+        )
+      )[1]
+    ).to.be.equal('0');
+    // set 100% votes for bb-a-usd
+    await contracts.vebalOtcHelper.connect(otcBuyerSigner).voteForGaugeWeight(
+      '0x7B50775383d3D6f0215A8F290f2C9e2eEBBEceb2', // bb-a-usd token
+      '0x68d019f64A7aa97e2D4e7363AEE42251D08124Fb', // bb-a-usd gauge
+      10000
+    );
+    expect(
+      (
+        await contracts.balancerGaugeController.vote_user_slopes(
+          contractAddresses.veBalDelegatorPCVDeposit,
+          '0x68d019f64A7aa97e2D4e7363AEE42251D08124Fb'
+        )
+      )[1]
+    ).to.be.equal('10000');
+  });
+
+  it('should be able to exitLock()', async () => {
+    await time.increase(3600 * 24 * 365);
+    await contracts.vebalOtcHelper.connect(otcBuyerSigner).exitLock();
+  });
+
+  it('should be able to withdrawERC20() to receive B-80BAL-20WETH at end of lock', async () => {
+    await time.increase(3600 * 24 * 365);
+    await contracts.vebalOtcHelper.connect(otcBuyerSigner).exitLock();
+
+    // Can withdrawERC20() to receive B-80BAL-20WETH at end of lock
+    const bpt80Bal20WethAmount = await contracts.bpt80Bal20Weth.balanceOf(contractAddresses.veBalDelegatorPCVDeposit);
+    await contracts.vebalOtcHelper
+      .connect(otcBuyerSigner)
+      .withdrawERC20(contractAddresses.bpt80Bal20Weth, otcBuyer, bpt80Bal20WethAmount);
+    expect(await contracts.bpt80Bal20Weth.balanceOf(otcBuyer)).to.be.equal(bpt80Bal20WethAmount);
+    expect(bpt80Bal20WethAmount).to.be.at.least(e18(112_041));
+  });
+});
