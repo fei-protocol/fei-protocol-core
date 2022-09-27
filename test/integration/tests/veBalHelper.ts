@@ -4,7 +4,6 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { ProposalsConfig } from '@protocol/proposalsConfig';
 import { getAddresses, getImpersonatedSigner, time } from '@test/helpers';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
-import { forceEth } from '@test/integration/setup/utils';
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
@@ -25,7 +24,7 @@ describe('e2e-veBalHelper', function () {
   let deployAddress: string;
   let e2eCoord: TestEndtoEndCoordinator;
   let doLogging: boolean;
-  let veBalHelper: Contract;
+  let vebalOtcHelper: Contract;
   let otcBuyer: string;
   let otcBuyerSigner: SignerWithAddress;
 
@@ -49,9 +48,9 @@ describe('e2e-veBalHelper', function () {
     doLogging && console.log(`Loading environment...`);
     ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment());
 
-    ({ veBalHelper } = contracts);
+    ({ vebalOtcHelper } = contracts);
     doLogging && console.log(`Environment loaded.`);
-    veBalHelper = veBalHelper as VeBalHelper;
+    vebalOtcHelper = vebalOtcHelper as VeBalHelper;
 
     for (const address of impersonatedAddresses) {
       impersonatedSigners[address] = await getImpersonatedSigner(address);
@@ -61,14 +60,14 @@ describe('e2e-veBalHelper', function () {
     otcBuyerSigner = await getImpersonatedSigner(otcBuyer);
   });
 
-  it('should have correct owner and initiate state', async () => {
-    expect(veBalHelper.owner()).to.equal(contractAddresses.aaveCompaniesMultisig);
-    expect(veBalHelper.pcvDeposit()).to.equal(contractAddresses.veBalDelegatorPCVDeposit);
-    expect(veBalHelper.boostManager()).to.equal(contractAddresses.balancerGaugeStaker);
+  it('should have correct owner and initial state', async () => {
+    expect(await vebalOtcHelper.owner()).to.equal(contractAddresses.aaveCompaniesMultisig);
+    expect(await vebalOtcHelper.pcvDeposit()).to.equal(contractAddresses.veBalDelegatorPCVDeposit);
+    expect(await vebalOtcHelper.boostManager()).to.equal(contractAddresses.balancerGaugeStaker);
   });
 
   it('should be able to create_boost() to boost delegation to another address', async () => {
-    await veBalHelper.connect(otcBuyerSigner).create_boost(
+    await vebalOtcHelper.connect(otcBuyerSigner).create_boost(
       contractAddresses.veBalDelegatorPCVDeposit, // address _delegator
       contractAddresses.eswak, // address _receiver
       '10000', // int256 _percentage
@@ -94,7 +93,7 @@ describe('e2e-veBalHelper', function () {
   it('should be able setDelegate() to give snapshot voting power to another address', async () => {
     // Can setDelegate() to give Snapshot voting power to someone else
     expect(await contracts.veBalDelegatorPCVDeposit.delegate()).to.be.equal(contractAddresses.eswak);
-    await contracts.vebalOtcHelper.connect(otcBuyerSigner).setDelegate(contractAddresses.feiDAOTimelock);
+    await vebalOtcHelper.connect(otcBuyerSigner).setDelegate(contractAddresses.feiDAOTimelock);
     expect(await contracts.veBalDelegatorPCVDeposit.delegate()).to.be.equal(contractAddresses.feiDAOTimelock);
   });
 
@@ -105,18 +104,17 @@ describe('e2e-veBalHelper', function () {
     expect(
       await contracts.snapshotDelegateRegistry.delegation(contractAddresses.veBalDelegatorPCVDeposit, snapshotSpaceId)
     ).to.be.equal(contractAddresses.feiDAOTimelock);
-    await contracts.vebalOtcHelper.connect(otcBuyerSigner).clearDelegate();
-    expect(await contracts.veBalDelegatorPCVDeposit.delegate()).to.be.equal(contracts.vebalOtcHelper.address);
+    await vebalOtcHelper.connect(otcBuyerSigner).clearDelegate();
+    expect(await contracts.veBalDelegatorPCVDeposit.delegate()).to.be.equal(vebalOtcHelper.address);
     expect(
       await contracts.snapshotDelegateRegistry.delegation(contractAddresses.veBalDelegatorPCVDeposit, snapshotSpaceId)
     ).to.be.equal(ethers.constants.AddressZero);
   });
 
   it('should be able to setGaugeController() to update gauge controller', async () => {
-    await contracts.vebalOtcHelper.connect(otcBuyerSigner).setGaugeController(contractAddresses.feiDAOTimelock);
-    await contracts.vebalOtcHelper
-      .connect(otcBuyerSigner)
-      .setGaugeController(contractAddresses.balancerGaugeController);
+    await vebalOtcHelper.connect(otcBuyerSigner).setGaugeController(contractAddresses.feiDAOTimelock);
+    await vebalOtcHelper.connect(otcBuyerSigner).setGaugeController(contractAddresses.balancerGaugeController);
+    // TODO: Verify setting gaugeController had expected state change
   });
 
   it('should be able to voteForGaugeWeight() to vote for gauge weights whilst a lock is active ', async () => {
@@ -129,7 +127,7 @@ describe('e2e-veBalHelper', function () {
         )
       )[1]
     ).to.be.equal('10000');
-    await contracts.vebalOtcHelper
+    await vebalOtcHelper
       .connect(otcBuyerSigner)
       .voteForGaugeWeight(contractAddresses.bpt30Fei70Weth, contractAddresses.balancerGaugeBpt30Fei70Weth, 0);
     expect(
@@ -141,7 +139,7 @@ describe('e2e-veBalHelper', function () {
       )[1]
     ).to.be.equal('0');
     // set 100% votes for bb-a-usd
-    await contracts.vebalOtcHelper.connect(otcBuyerSigner).voteForGaugeWeight(
+    await vebalOtcHelper.connect(otcBuyerSigner).voteForGaugeWeight(
       '0x7B50775383d3D6f0215A8F290f2C9e2eEBBEceb2', // bb-a-usd token
       '0x68d019f64A7aa97e2D4e7363AEE42251D08124Fb', // bb-a-usd gauge
       10000
@@ -158,16 +156,18 @@ describe('e2e-veBalHelper', function () {
 
   it('should be able to exitLock()', async () => {
     await time.increase(3600 * 24 * 365);
-    await contracts.vebalOtcHelper.connect(otcBuyerSigner).exitLock();
+    await vebalOtcHelper.connect(otcBuyerSigner).exitLock();
+
+    // TODO: Verify exitLock() had expected state change
   });
 
   it('should be able to withdrawERC20() to receive B-80BAL-20WETH at end of lock', async () => {
     await time.increase(3600 * 24 * 365);
-    await contracts.vebalOtcHelper.connect(otcBuyerSigner).exitLock();
+    await vebalOtcHelper.connect(otcBuyerSigner).exitLock();
 
     // Can withdrawERC20() to receive B-80BAL-20WETH at end of lock
     const bpt80Bal20WethAmount = await contracts.bpt80Bal20Weth.balanceOf(contractAddresses.veBalDelegatorPCVDeposit);
-    await contracts.vebalOtcHelper
+    await vebalOtcHelper
       .connect(otcBuyerSigner)
       .withdrawERC20(contractAddresses.bpt80Bal20Weth, otcBuyer, bpt80Bal20WethAmount);
     expect(await contracts.bpt80Bal20Weth.balanceOf(otcBuyer)).to.be.equal(bpt80Bal20WethAmount);
