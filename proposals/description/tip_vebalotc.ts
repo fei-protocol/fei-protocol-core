@@ -34,30 +34,7 @@ const tip_vebalotc: TemplatedProposalDescription = {
       description: 'Grant role METAGOVERNANCE_VOTE_ADMIN to vebalOtcHelper'
     },
 
-    // 2. Move dust Balancer-related funds to TC Multisig for selling
-    {
-      target: 'veBalDelegatorPCVDeposit',
-      values: '0',
-      method: 'withdrawERC20(address,address,uint256)',
-      arguments: (addresses) => [addresses.bal, addresses.tribalCouncilSafe, '2032918269598796318544'],
-      description: 'Send 2,032.91 BAL to TC Multisig'
-    },
-    {
-      target: 'veBalDelegatorPCVDeposit',
-      values: '0',
-      method: 'withdrawERC20(address,address,uint256)',
-      arguments: (addresses) => [addresses.bbausd, addresses.tribalCouncilSafe, '35748982138950025950604'],
-      description: 'Send 35,748.98 bb-a-USD to TC Multisig'
-    },
-    {
-      target: 'balancerGaugeStaker',
-      values: '0',
-      method: 'withdrawERC20(address,address,uint256)',
-      arguments: (addresses) => [addresses.bal, addresses.tribalCouncilSafe, '13381940574938719587015'],
-      description: 'Send 13,381.94 BAL to TC Multisig'
-    },
-
-    // 3. Handle balancerGaugeStaker proxy transfer
+    // 2. Handle balancerGaugeStaker proxy transfer
     {
       target: 'proxyAdmin',
       values: '0',
@@ -109,7 +86,6 @@ const tip_vebalotc: TemplatedProposalDescription = {
 
   The full list of actions of this proposal is :
   - 1. Handle veBAL OTC
-  - 2. Move dust Balancer-related funds to TC Multisig for selling
   `
 };
 
