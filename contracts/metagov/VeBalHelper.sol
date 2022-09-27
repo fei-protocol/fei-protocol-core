@@ -175,7 +175,7 @@ contract VeBalHelper is Ownable {
     }
 
     function withdrawETHfromPCV(address to, uint256 amount) external onlyOwner {
-        pcvDeposit.withdrawETH(to, amount);
+        pcvDeposit.withdrawETH(payable(to), amount);
     }
 
     /// @notice Withdraw ERC20 tokens that are on the balancerGaugeStaker
@@ -188,6 +188,6 @@ contract VeBalHelper is Ownable {
     }
 
     function withdrawETHfromStaker(address to, uint256 amount) external onlyOwner {
-        balancerStaker.withdrawETH(to, amount);
+        balancerStaker.withdrawETH(payable(to), amount);
     }
 }

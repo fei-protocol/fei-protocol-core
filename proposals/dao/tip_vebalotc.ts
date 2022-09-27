@@ -38,8 +38,8 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   logging && console.log(`vebalOtcHelper: ${vebalOtcHelper.address}`);
 
   // Deploy BalancerGaugeStakerV2 implementation
-  const balancerGaugeStakerV2Factory = await ethers.getContractFactory('BalancerGaugeStakerV2');
-  const balancerGaugeStakerV2Impl = await balancerGaugeStakerV2Factory.deploy(
+  const BalancerGaugeStakerV2Factory = await ethers.getContractFactory('BalancerGaugeStakerV2');
+  const balancerGaugeStakerV2Impl = await BalancerGaugeStakerV2Factory.deploy(
     addresses.core,
     addresses.balancerGaugeController,
     addresses.balancerMinter
