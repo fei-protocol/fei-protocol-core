@@ -12,10 +12,15 @@ import { BigNumber, BigNumberish } from 'ethers';
 import { getImpersonatedSigner, overwriteChainlinkAggregator, time } from '@test/helpers';
 import { TransactionResponse } from '@ethersproject/providers';
 import { forceEth } from '@test/integration/setup/utils';
+import { IERC20__factory } from '@custom-types/contracts';
 
 const e18 = (x: BigNumberish) => ethers.constants.WeiPerEther.mul(x);
 
 const PROXY_ADMIN_STORAGE_SLOT = '0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103';
+
+const BALWETHBPT_ADDRESS = '0x5c6Ee304399DBdB9C8Ef030aB642B10820DB8F56';
+const BALWETHBPT_WHALE = '0xC128a9954e6c874eA3d62ce62B468bA073093F25';
+const VEBAL_ADDRESS = '0xC128a9954e6c874eA3d62ce62B468bA073093F25';
 
 const fipNumber = 'vebalotc';
 
@@ -139,6 +144,13 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await contracts.balancerVotingEscrowDelegation.token_expiry(tokenId)).to.equal('1672272000');
   expect(await contracts.balancerVotingEscrowDelegation.token_cancel_time(tokenId)).to.equal('1669852800');
 
+  // Can setSpaceId() to change the snapshot space id
+  const beforeSnapshotId = await contracts.veBalDelegatorPCVDeposit.spaceId();
+  await contracts.vebalOtcHelper.connect(otcBuyerSigner).setSpaceId(ethers.constants.HashZero);
+  expect(await contracts.veBalDelegatorPCVDeposit.spaceId()).to.be.eq(ethers.constants.HashZero);
+  await contracts.vebalOtcHelper.connect(otcBuyerSigner).setSpaceId(beforeSnapshotId);
+  expect(await contracts.veBalDelegatorPCVDeposit.spaceId()).to.be.eq(beforeSnapshotId);
+
   // Can setDelegate() to give Snapshot voting power to someone else
   expect(await contracts.veBalDelegatorPCVDeposit.delegate()).to.be.equal(addresses.eswak);
   await contracts.vebalOtcHelper.connect(otcBuyerSigner).setDelegate(addresses.feiDAOTimelock);
@@ -196,9 +208,34 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
     )[1]
   ).to.be.equal('10000');
 
+  // Can lock()
+  const balwethWhale = await getImpersonatedSigner(BALWETHBPT_WHALE);
+  await forceEth(BALWETHBPT_WHALE);
+
+  const balWethBpt = IERC20__factory.connect(BALWETHBPT_ADDRESS, balwethWhale);
+  const veBal = IERC20__factory.connect(VEBAL_ADDRESS, balwethWhale);
+
+  await expect(contracts.vebalOtcHelper.connect(otcBuyerSigner).lock()).to.be.revertedWith(
+    'Smart contract depositors not allowed'
+  );
+
+  // Can setLockDuration()
+  await contracts.vebalOtcHelper.connect(otcBuyerSigner).setLockDuration(20);
+  expect(await contracts.veBalDelegatorPCVDeposit.lockDuration()).to.be.eq(20);
+
+  const veBalBefore = await veBal.balanceOf(contracts.veBalDelegatorPCVDeposit.address);
+  const balWethBefore = await balWethBpt.balanceOf(contracts.veBalDelegatorPCVDeposit.address);
+
+  expect(veBalBefore).to.be.not.eq(0);
+
   // Can exitLock() to exit veBAL lock at the end of period
   await time.increase(3600 * 24 * 365);
   await contracts.vebalOtcHelper.connect(otcBuyerSigner).exitLock();
+
+  const veBalAfter = await veBal.balanceOf(contracts.veBalDelegatorPCVDeposit.address);
+  const balWethAfter = await balWethBpt.balanceOf(contracts.veBalDelegatorPCVDeposit.address);
+  expect(veBalAfter).to.be.eq(0);
+  expect(balWethAfter).to.be.gt(balWethBefore);
 
   // Can withdrawERC20() to receive B-80BAL-20WETH at end of lock
   const bpt80Bal20WethAmount = await contracts.bpt80Bal20Weth.balanceOf(addresses.veBalDelegatorPCVDeposit);
@@ -207,6 +244,19 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
     .withdrawERC20fromPCV(addresses.bpt80Bal20Weth, vebalOtcBuyer, bpt80Bal20WethAmount);
   expect(await contracts.bpt80Bal20Weth.balanceOf(vebalOtcBuyer)).to.be.equal(bpt80Bal20WethAmount);
   expect(bpt80Bal20WethAmount).to.be.at.least(e18(112_041));
+
+  // Can withdraw ERC20 and ETH assets
+  await balWethBpt.transfer(contracts.veBalDelegatorPCVDeposit.address, 1);
+  await balWethBpt.transfer(contracts.balancerGaugeStaker.address, 1);
+  await forceEth(contracts.veBalDelegatorPCVDeposit.address, '1');
+  await forceEth(contracts.balancerGaugeStaker.address, '1');
+
+  let balanceBefore = await balWethBpt.balanceOf(vebalOtcBuyer);
+  await contracts.vebalOtcHelper.connect(otcBuyerSigner).withdrawERC20fromPCV(balWethBpt.address, vebalOtcBuyer, 1);
+  expect(await balWethBpt.balanceOf(vebalOtcBuyer)).to.be.eq(balanceBefore.add(1));
+  await contracts.vebalOtcHelper.connect(otcBuyerSigner).withdrawERC20fromStaker(balWethBpt.address, vebalOtcBuyer, 1);
+  expect(await balWethBpt.balanceOf(vebalOtcBuyer)).to.be.eq(balanceBefore.add(2));
+
 
   console.log('all good on veBAL OTC side, no expect failed :)');
 };
