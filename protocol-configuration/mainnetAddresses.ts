@@ -152,26 +152,26 @@ export const MainnetContractsConfig = {
     category: AddressCategory.External
   },
 
-  balancerGaugeStaker: {
-    artifactName: 'BalancerGaugeStaker', // actually TransparentUpgradeableProxy
-    address: '0x66977Ce30049CD0e443216Bf26377966c3A109E2',
+  balancerGaugeStakerImpl: {
+    artifactName: 'BalancerGaugeStaker',
+    address: '0xF53E251352683155898295569d77B8506bA00d80',
     category: AddressCategory.Deprecated
   },
-  veBoostManager: {
-    artifactName: 'VeBoostManager',
-    address: '0x66977Ce30049CD0e443216Bf26377966c3A109E2',
-    category: AddressCategory.TBD
-  },
-  veBoostManagerProxy: {
+  // balancerGaugeStakerV2Impl: {
+  //   artifactName: 'BalancerGaugeStakerV2',
+  //   address: '0x66977Ce30049CD0e443216Bf26377966c3A109E2',
+  //   category: AddressCategory.TBD
+  // },
+  balancerGaugeStakerProxy: {
     artifactName: 'TransparentUpgradeableProxy',
     address: '0x66977Ce30049CD0e443216Bf26377966c3A109E2',
-    category: AddressCategory.TBD
+    category: AddressCategory.External
   },
-  //veBoostManagerImplementation: {
-  //  artifactName: 'VeBoostManager',
-  //  address: 'TODO',
-  //  category: AddressCategory.TBD
-  //},
+  balancerGaugeStaker: {
+    artifactName: 'BalancerGaugeStakerV2',
+    address: '0x66977Ce30049CD0e443216Bf26377966c3A109E2',
+    category: AddressCategory.External
+  },
 
   angleDelegatorPCVDeposit: {
     artifactName: 'AngleDelegatorPCVDeposit',

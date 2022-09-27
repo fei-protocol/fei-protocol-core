@@ -62,23 +62,30 @@ const tip_vebalotc: TemplatedProposalDescription = {
       target: 'proxyAdmin',
       values: '0',
       method: 'upgrade(address,address)',
-      arguments: (addresses) => [addresses.balancerGaugeStaker, addresses.veBoostManagerImplementation],
+      arguments: (addresses) => [addresses.balancerGaugeStakerProxy, addresses.balancerGaugeStakerV2Impl],
       description: `Upgrade implementation of the balancerGaugeStaker`
     },
     {
-      target: 'veBoostManager',
+      target: 'balancerGaugeStaker',
       values: '0',
       method: '_initialize(address,address)',
       arguments: (addresses) => [addresses.vebalOtcHelper, addresses.balancerVotingEscrowDelegation],
-      description: 'Initialize veBoostManagerProxy state variables'
+      description: 'Initialize BalancerGaugeStakerProxy state variables'
     },
+    // {
+    //   target: 'balancerGaugeStakerV2Impl',
+    //   values: '0',
+    //   method: '_initialize(address,address)',
+    //   arguments: (addresses) => [addresses.vebalOtcHelper, addresses.balancerVotingEscrowDelegation],
+    //   description: 'Initialize BalancerGaugeStakerV2 implementation state variables'
+    // },
     {
       target: 'proxyAdmin',
       values: '0',
       method: 'changeProxyAdmin(address,address)',
-      arguments: (addresses) => [addresses.veBoostManagerProxy, addresses.aaveCompaniesMultisig],
+      arguments: (addresses) => [addresses.balancerGaugeStakerProxy, addresses.aaveCompaniesMultisig],
       description:
-        'Transfer proxy ownership of veBoostManagerProxy (formerly balancerGaugeStaker) to aaveCompaniesMultisig'
+        'Transfer proxy ownership of BalancerGaugeStakerProxy to aaveCompaniesMultisig'
     },
 
     // Finally, CR Oracle updates
@@ -90,7 +97,7 @@ const tip_vebalotc: TemplatedProposalDescription = {
         [
           addresses.balancerLensVeBalBal,
           addresses.balancerLensVeBalWeth,
-          addresses.balancerGaugeStaker,
+          addresses.balancerGaugeStakerProxy,
           addresses.balancerDepositBalWeth
         ]
       ],

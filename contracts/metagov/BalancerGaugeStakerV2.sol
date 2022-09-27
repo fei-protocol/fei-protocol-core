@@ -8,7 +8,7 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 /// @title Vote-escrowed boost Manager
 /// Used to manage delegation of vote-escrow boost as in Curve Protocol.
 /// @author eswak
-contract VeBoostManager is BalancerGaugeStaker, Ownable {
+contract BalancerGaugeStakerV2 is BalancerGaugeStaker, Ownable {
     // events
     event VotingEscrowDelegationChanged(address indexed oldAddress, address indexed newAddress);
 
