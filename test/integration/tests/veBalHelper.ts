@@ -202,7 +202,7 @@ describe('e2e-veBalHelper', function () {
     expect(bpt80Bal20WethAmount).to.be.at.least(e18(112_041));
   });
 
-  it.only('can withdrawERC20 from staker and PCV', async () => {
+  it('can withdrawERC20 from staker and PCV', async () => {
     const balWethBPTWhale = '0xC128a9954e6c874eA3d62ce62B468bA073093F25';
     const balWethBPTWhaleSigner = await getImpersonatedSigner(balWethBPTWhale);
     await forceEth(balWethBPTWhale);

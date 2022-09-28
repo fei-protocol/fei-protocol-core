@@ -117,7 +117,7 @@ contract VeBalHelper is Ownable {
     /// This will make all the following functions (setVotingEscrowDelegation, create_boost,
     /// extend_boost, cancel_boost, and burn) revert, but the new owner will be able to
     /// manage boost directly.
-    function transferbalancerStakerOwnership(address newbalancerStakerOwner) external onlyOwner {
+    function transferBalancerStakerOwnership(address newbalancerStakerOwner) external onlyOwner {
         balancerStaker.transferOwnership(newbalancerStakerOwner);
     }
 
