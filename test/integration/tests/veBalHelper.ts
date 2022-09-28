@@ -208,6 +208,18 @@ describe('e2e-veBalHelper', function () {
       expect(await contracts.balancerVotingEscrowDelegation.token_expiry(tokenId)).to.equal('1672272000');
       expect(await contracts.balancerVotingEscrowDelegation.token_cancel_time(tokenId)).to.equal('1669852800');
     });
+
+    it('should be able to transferBalancerStakerOwnership()', async () => {
+      const newOwner = contractAddresses.dai;
+      await vebalOtcHelper.transferBalancerStakerOwnership(newOwner);
+      expect(await contracts.balancerGaugeStaker.owner()).to.equal(newOwner);
+    });
+
+    it('should be able to setVotingEscrowDelegation()', async () => {
+      const newDelegation = contractAddresses.dai;
+      await vebalOtcHelper.setVotingEscrowDelegation(newDelegation);
+      expect(await contracts.balancerGaugeStaker.votingEscrowDelegation()).to.equal(newDelegation);
+    });
   });
 
   describe('Asset management', () => {
