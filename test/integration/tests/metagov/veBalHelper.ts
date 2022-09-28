@@ -9,7 +9,7 @@ import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
 import { BigNumberish, Contract, Signer } from 'ethers';
 import { ethers } from 'hardhat';
-import { forceEth } from '../setup/utils';
+import { forceEth } from '../../setup/utils';
 
 const e18 = (x: BigNumberish) => ethers.constants.WeiPerEther.mul(x);
 
