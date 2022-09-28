@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
-import {VeBoostManager} from "./VeBoostManager.sol";
+import {BalancerGaugeStakerV2} from "./BalancerGaugeStakerV2.sol";
 import {VeBalDelegatorPCVDeposit} from "./VeBalDelegatorPCVDeposit.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
@@ -13,7 +13,7 @@ contract VeBalHelper is Ownable {
     using SafeERC20 for IERC20;
 
     VeBalDelegatorPCVDeposit public immutable pcvDeposit;
-    VeBoostManager public immutable boostManager;
+    BalancerGaugeStakerV2 public immutable balancerStaker;
 
     constructor(
         address _owner,
@@ -22,12 +22,17 @@ contract VeBalHelper is Ownable {
     ) Ownable() {
         _transferOwnership(_owner);
         pcvDeposit = VeBalDelegatorPCVDeposit(_pcvDeposit);
-        boostManager = VeBoostManager(_boostManager);
+        balancerStaker = BalancerGaugeStakerV2(_boostManager);
     }
 
     // ----------------------------------------------------------------------------------
     // Delegation Management
     // ----------------------------------------------------------------------------------
+
+    /// @notice sets the snapshot id
+    function setSpaceId(bytes32 snapshotId) external onlyOwner {
+        pcvDeposit.setSpaceId(snapshotId);
+    }
 
     /// @notice sets the snapshot delegate
     function setDelegate(address newDelegate) external onlyOwner {
@@ -83,23 +88,43 @@ contract VeBalHelper is Ownable {
         pcvDeposit.voteForGaugeWeight(token, gaugeWeight);
     }
 
+    /// @notice Stake tokens in a gauge
+    function stakeInGauge(address token, uint256 amount) external onlyOwner {
+        balancerStaker.stakeInGauge(token, amount);
+    }
+
+    /// @notice Stake all tokens held in a gauge
+    function stakeAllInGauge(address token) external onlyOwner {
+        balancerStaker.stakeAllInGauge(token);
+    }
+
+    /// @notice Unstake tokens from a gauge
+    function unstakeFromGauge(address token, uint256 amount) external onlyOwner {
+        balancerStaker.unstakeFromGauge(token, amount);
+    }
+
+    /// @notice Set the balancer minter used to mint BAL
+    function setBalancerMinter(address newMinter) external onlyOwner {
+        balancerStaker.setBalancerMinter(newMinter);
+    }
+
     // ----------------------------------------------------------------------------------
     // Boost Management
     // ----------------------------------------------------------------------------------
 
     /// @notice probably not needed, but if this function is called, the VeBalHelper
-    /// contract will not be admin of the boostManager anymore (transfer ownership).
+    /// contract will not be admin of the balancerStaker anymore (transfer ownership).
     /// This will make all the following functions (setVotingEscrowDelegation, create_boost,
     /// extend_boost, cancel_boost, and burn) revert, but the new owner will be able to
     /// manage boost directly.
-    function transferBoostManagerOwnership(address newBoostManagerOwner) external onlyOwner {
-        boostManager.transferOwnership(newBoostManagerOwner);
+    function transferBalancerStakerOwnership(address newbalancerStakerOwner) external onlyOwner {
+        balancerStaker.transferOwnership(newbalancerStakerOwner);
     }
 
     /// @notice Set the contract used to manage boost delegation
     /// @dev the call is gated to the same role as the role to manage veTokens
     function setVotingEscrowDelegation(address newVotingEscrowDelegation) public onlyOwner {
-        boostManager.setVotingEscrowDelegation(newVotingEscrowDelegation);
+        balancerStaker.setVotingEscrowDelegation(newVotingEscrowDelegation);
     }
 
     /// @notice Create a boost and delegate it to another account.
@@ -111,7 +136,7 @@ contract VeBalHelper is Ownable {
         uint256 _expire_time,
         uint256 _id
     ) external onlyOwner {
-        boostManager.create_boost(_delegator, _receiver, _percentage, _cancel_time, _expire_time, _id);
+        balancerStaker.create_boost(_delegator, _receiver, _percentage, _cancel_time, _expire_time, _id);
     }
 
     /// @notice Extend the boost of an existing boost or expired boost
@@ -121,17 +146,17 @@ contract VeBalHelper is Ownable {
         uint256 _expire_time,
         uint256 _cancel_time
     ) external onlyOwner {
-        boostManager.extend_boost(_token_id, _percentage, _expire_time, _cancel_time);
+        balancerStaker.extend_boost(_token_id, _percentage, _expire_time, _cancel_time);
     }
 
     /// @notice Cancel an outstanding boost
     function cancel_boost(uint256 _token_id) external onlyOwner {
-        boostManager.cancel_boost(_token_id);
+        balancerStaker.cancel_boost(_token_id);
     }
 
     /// @notice Destroy a token
     function burn(uint256 _token_id) external onlyOwner {
-        boostManager.burn(_token_id);
+        balancerStaker.burn(_token_id);
     }
 
     // ----------------------------------------------------------------------------------
@@ -147,5 +172,24 @@ contract VeBalHelper is Ownable {
         uint256 amount
     ) external onlyOwner {
         pcvDeposit.withdrawERC20(token, to, amount);
+    }
+
+    /// @notice Withdraw ETH from the PCV deposit
+    function withdrawETH(address to, uint256 amount) external onlyOwner {
+        pcvDeposit.withdrawETH(payable(to), amount);
+    }
+
+    /// @notice Withdraw ERC20 tokens that are on the balancerGaugeStaker
+    function withdrawERC20fromStaker(
+        address token,
+        address to,
+        uint256 amount
+    ) external onlyOwner {
+        balancerStaker.withdrawERC20(token, to, amount);
+    }
+
+    /// @notice Withdraw ETH from balancer staker
+    function withdrawETHfromStaker(address to, uint256 amount) external onlyOwner {
+        balancerStaker.withdrawETH(payable(to), amount);
     }
 }

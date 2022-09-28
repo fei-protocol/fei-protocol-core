@@ -113,26 +113,35 @@ export const MainnetContractsConfig = {
     category: AddressCategory.External
   },
 
-  balancerGaugeStaker: {
-    artifactName: 'BalancerGaugeStaker', // actually TransparentUpgradeableProxy
-    address: '0x66977Ce30049CD0e443216Bf26377966c3A109E2',
+  // Use to call implementation
+  balancerGaugeStakerImpl: {
+    // v1 BalancerGaugeStaker
+    artifactName: 'BalancerGaugeStaker',
+    address: '0xF53E251352683155898295569d77B8506bA00d80',
     category: AddressCategory.Deprecated
   },
-  veBoostManager: {
-    artifactName: 'VeBoostManager',
-    address: '0x66977Ce30049CD0e443216Bf26377966c3A109E2',
-    category: AddressCategory.TBD
-  },
-  veBoostManagerProxy: {
+
+  // Use to call implementation
+  // balancerGaugeStakerV2Impl: {
+  //   artifactName: 'BalancerGaugeStakerV2',
+  //   address: 'TODO',
+  //   category: AddressCategory.TBD
+  // },
+
+  // Use to call proxy functions
+  balancerGaugeStakerProxy: {
     artifactName: 'TransparentUpgradeableProxy',
     address: '0x66977Ce30049CD0e443216Bf26377966c3A109E2',
     category: AddressCategory.TBD
   },
-  //veBoostManagerImplementation: {
-  //  artifactName: 'VeBoostManager',
-  //  address: 'TODO',
-  //  category: AddressCategory.TBD
-  //},
+
+  // Use to call functions through the proxy. Proxy address cast
+  // with latest implementation interface
+  balancerGaugeStaker: {
+    artifactName: 'BalancerGaugeStakerV2',
+    address: '0x66977Ce30049CD0e443216Bf26377966c3A109E2',
+    category: AddressCategory.TBD
+  },
 
   rariGovernanceProxyAdmin: {
     artifactName: 'ProxyAdmin',
@@ -621,6 +630,12 @@ export const MainnetContractsConfig = {
   bal: {
     artifactName: 'IERC20',
     address: '0xba100000625a3754423978a60c9317c58a424e3D',
+    category: AddressCategory.External
+  },
+
+  balWethBPT: {
+    artifactName: 'IERC20',
+    address: '0x5c6Ee304399DBdB9C8Ef030aB642B10820DB8F56',
     category: AddressCategory.External
   },
 

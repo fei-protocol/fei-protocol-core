@@ -4,7 +4,7 @@ import { TemplatedProposalDescription } from '@custom-types/types';
 const tip_vebalotc: TemplatedProposalDescription = {
   title: 'TIP-121c: veBAL OTC',
   commands: [
-    // 1. Handle veBAL OTC
+    // 1. Grant Tribe Roles to the veBalOTCHelper, necessary to allow Aave to manage veBAL
     {
       target: 'core',
       values: '0',
@@ -34,28 +34,31 @@ const tip_vebalotc: TemplatedProposalDescription = {
       description: 'Grant role METAGOVERNANCE_VOTE_ADMIN to vebalOtcHelper'
     },
 
-    // 2. Handle balancerGaugeStaker proxy transfer
+    // 2. Transfer balancerGaugeStakerProxy transfer to Aave Companies multisig
     {
       target: 'proxyAdmin',
       values: '0',
-      method: 'upgrade(address,address)',
-      arguments: (addresses) => [addresses.balancerGaugeStaker, addresses.veBoostManagerImplementation],
-      description: `Upgrade implementation of the balancerGaugeStaker`
+      method: 'upgrade(address,address)', // proxy, impl
+      arguments: (addresses) => [addresses.balancerGaugeStakerProxy, addresses.balancerGaugeStakerV2Impl],
+      description: `Upgrade implementation of the balancerGaugeStakerProxy to balancerGaugeStakerV2Impl`
     },
+
+    // Call initialise() method of new implementation contract via proxy, in context of proxy storage
     {
-      target: 'veBoostManager',
+      target: 'balancerGaugeStaker',
       values: '0',
       method: '_initialize(address,address)',
       arguments: (addresses) => [addresses.vebalOtcHelper, addresses.balancerVotingEscrowDelegation],
-      description: 'Initialize veBoostManagerProxy state variables'
+      description:
+        'Initialize the new state variables defined by the balancerGaugeStakerV2Impl, forward call from Proxy'
     },
+    // Transfer proxyAdmin to Aave companies multisig
     {
       target: 'proxyAdmin',
       values: '0',
       method: 'changeProxyAdmin(address,address)',
-      arguments: (addresses) => [addresses.veBoostManagerProxy, addresses.aaveCompaniesMultisig],
-      description:
-        'Transfer proxy ownership of veBoostManagerProxy (formerly balancerGaugeStaker) to aaveCompaniesMultisig'
+      arguments: (addresses) => [addresses.balancerGaugeStakerProxy, addresses.aaveCompaniesMultisig],
+      description: 'Transfer proxy ownership of balancerGaugeStakerProxy to aaveCompaniesMultisig'
     },
 
     // Finally, CR Oracle updates
@@ -67,7 +70,7 @@ const tip_vebalotc: TemplatedProposalDescription = {
         [
           addresses.balancerLensVeBalBal,
           addresses.balancerLensVeBalWeth,
-          addresses.balancerGaugeStaker,
+          addresses.balancerGaugeStakerProxy,
           addresses.balancerDepositBalWeth
         ]
       ],
