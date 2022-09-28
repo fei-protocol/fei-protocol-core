@@ -12,6 +12,7 @@ import { getImpersonatedSigner } from '@test/helpers';
 import { forceEth } from '@test/integration/setup/utils';
 
 const PROXY_ADMIN_STORAGE_SLOT = '0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103';
+const PROXY_ADMIN_IMPLEMENTATION_SLOT = '0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc';
 
 const fipNumber = 'vebalotc';
 
@@ -57,6 +58,14 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
   await forceEth(vebalOtcBuyer);
 
   pcvStatsBefore = await contracts.collateralizationOracle.pcvStats();
+
+  // Check the proxy implementation is balancerGaugeStakerImpl
+  expect(
+    '0x' +
+      (await ethers.provider.getStorageAt(addresses.balancerGaugeStakerProxy, PROXY_ADMIN_IMPLEMENTATION_SLOT)).slice(
+        26
+      )
+  ).to.be.equal(addresses.balancerGaugeStakerImpl);
 };
 
 // Tears down any changes made in setup() that need to be
@@ -110,6 +119,14 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(
     '0x' + (await ethers.provider.getStorageAt(addresses.balancerGaugeStakerProxy, PROXY_ADMIN_STORAGE_SLOT)).slice(26)
   ).to.be.equal(addresses.feiDAOTimelock.toLowerCase());
+
+  // Check that the implementation was upgraded
+  expect(
+    '0x' +
+      (await ethers.provider.getStorageAt(addresses.balancerGaugeStakerProxy, PROXY_ADMIN_IMPLEMENTATION_SLOT)).slice(
+        26
+      )
+  ).to.be.equal(addresses.balancerGaugeStakerV2Impl);
 };
 
 export { deploy, setup, teardown, validate };
