@@ -28,23 +28,23 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   const vebalOtcHelper = await VeBalHelperFactory.deploy(
     vebalOtcBuyer, // _owner
     addresses.veBalDelegatorPCVDeposit, // _pcvDeposit
-    addresses.balancerGaugeStaker // _boostManager
+    addresses.balancerGaugeStakerProxy // _balancerGaugeStaker
   );
   await vebalOtcHelper.deployTransaction.wait();
   logging && console.log(`vebalOtcHelper: ${vebalOtcHelper.address}`);
 
-  // Deploy veBoostManager implementation
-  const VeBoostManagerFactory = await ethers.getContractFactory('VeBoostManager');
-  const veBoostManagerImplementation = await VeBoostManagerFactory.deploy(
+  // Deploy BalancerGaugeStakerV2 implementation
+  const BalancerGaugeStakerV2Factory = await ethers.getContractFactory('BalancerGaugeStakerV2');
+  const balancerGaugeStakerV2Impl = await BalancerGaugeStakerV2Factory.deploy(
     addresses.core,
     addresses.balancerGaugeController,
     addresses.balancerMinter
   );
-  await veBoostManagerImplementation.deployTransaction.wait();
-  logging && console.log(`veBoostManagerImplementation: ${veBoostManagerImplementation.address}`);
+  await balancerGaugeStakerV2Impl.deployTransaction.wait();
+  logging && console.log(`balancerGaugeStakerV2Impl: ${balancerGaugeStakerV2Impl.address}`);
 
   return {
-    veBoostManagerImplementation,
+    balancerGaugeStakerV2Impl,
     vebalOtcHelper
   };
 };
@@ -90,23 +90,25 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const otcBuyerSigner = await getImpersonatedSigner(vebalOtcBuyer);
 
   // Check the proxy's state variables
-  expect(await contracts.veBoostManager.owner()).to.be.equal(addresses.vebalOtcHelper);
-  expect(await contracts.veBoostManager.votingEscrowDelegation()).to.be.equal(addresses.balancerVotingEscrowDelegation);
-  expect(await contracts.veBoostManager.balancerMinter()).to.be.equal(addresses.balancerMinter);
-  expect(await contracts.veBoostManager.gaugeController()).to.be.equal(addresses.balancerGaugeController);
-  expect(await contracts.veBoostManager.core()).to.be.equal(addresses.core);
+  expect(await contracts.balancerGaugeStaker.owner()).to.be.equal(addresses.vebalOtcHelper);
+  expect(await contracts.balancerGaugeStaker.votingEscrowDelegation()).to.be.equal(
+    addresses.balancerVotingEscrowDelegation
+  );
+  expect(await contracts.balancerGaugeStaker.balancerMinter()).to.be.equal(addresses.balancerMinter);
+  expect(await contracts.balancerGaugeStaker.gaugeController()).to.be.equal(addresses.balancerGaugeController);
+  expect(await contracts.balancerGaugeStaker.core()).to.be.equal(addresses.core);
 
   // Check veBAL OTC helper owner and proxy owner
   expect(await contracts.vebalOtcHelper.owner()).to.be.equal(vebalOtcBuyer);
-  expect(await contracts.veBoostManager.owner()).to.be.equal(contracts.vebalOtcHelper.address);
+  expect(await contracts.balancerGaugeStaker.owner()).to.be.equal(contracts.vebalOtcHelper.address);
   expect(
-    '0x' + (await ethers.provider.getStorageAt(addresses.veBoostManagerProxy, PROXY_ADMIN_STORAGE_SLOT)).slice(26)
+    '0x' + (await ethers.provider.getStorageAt(addresses.balancerGaugeStakerProxy, PROXY_ADMIN_STORAGE_SLOT)).slice(26)
   ).to.be.equal(vebalOtcBuyer.toLowerCase());
 
   // Check that OTC Buyer can transfer proxy ownership
-  await contracts.veBoostManagerProxy.connect(otcBuyerSigner).changeAdmin(addresses.feiDAOTimelock);
+  await contracts.balancerGaugeStakerProxy.connect(otcBuyerSigner).changeAdmin(addresses.feiDAOTimelock);
   expect(
-    '0x' + (await ethers.provider.getStorageAt(addresses.veBoostManagerProxy, PROXY_ADMIN_STORAGE_SLOT)).slice(26)
+    '0x' + (await ethers.provider.getStorageAt(addresses.balancerGaugeStakerProxy, PROXY_ADMIN_STORAGE_SLOT)).slice(26)
   ).to.be.equal(addresses.feiDAOTimelock.toLowerCase());
 };
 
