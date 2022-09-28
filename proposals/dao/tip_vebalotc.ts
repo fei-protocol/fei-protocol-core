@@ -65,7 +65,7 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
       (await ethers.provider.getStorageAt(addresses.balancerGaugeStakerProxy, PROXY_ADMIN_IMPLEMENTATION_SLOT)).slice(
         26
       )
-  ).to.be.equal(addresses.balancerGaugeStakerImpl);
+  ).to.be.equal(addresses.balancerGaugeStakerImpl.toLowerCase());
 };
 
 // Tears down any changes made in setup() that need to be
@@ -126,7 +126,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
       (await ethers.provider.getStorageAt(addresses.balancerGaugeStakerProxy, PROXY_ADMIN_IMPLEMENTATION_SLOT)).slice(
         26
       )
-  ).to.be.equal(addresses.balancerGaugeStakerV2Impl);
+  ).to.be.equal(addresses.balancerGaugeStakerV2Impl.toLowerCase());
 };
 
 export { deploy, setup, teardown, validate };

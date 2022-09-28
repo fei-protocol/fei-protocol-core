@@ -99,24 +99,32 @@ describe('e2e-veBalHelper', function () {
 
     it('can setBalancerMinter()', async () => {
       const newMinter = contractAddresses.aaveCompaniesMultisig;
-      await vebalOtcHelper.setBalancerMinter(newMinter);
+      await vebalOtcHelper.connect(otcBuyerSigner).setBalancerMinter(newMinter);
       expect(await contracts.balancerGaugeStaker.balancerMinter()).to.equal(newMinter);
     });
 
     it('should be able to setGaugeController() to update gauge controller', async () => {
       await vebalOtcHelper.connect(otcBuyerSigner).setGaugeController(contractAddresses.feiDAOTimelock);
-      expect(await contracts.veBalBefore.gaugeController()).to.equal(contractAddresses.feiDAOTimelock);
+      expect(await contracts.veBalDelegatorPCVDeposit.gaugeController()).to.equal(contractAddresses.feiDAOTimelock);
       await vebalOtcHelper.connect(otcBuyerSigner).setGaugeController(contractAddresses.balancerGaugeController);
-      expect(await contracts.veBalBefore.gaugeController()).to.equal(contractAddresses.balancerGaugeController);
+      expect(await contracts.veBalDelegatorPCVDeposit.gaugeController()).to.equal(
+        contractAddresses.balancerGaugeController
+      );
     });
   });
 
   describe('Gauge management', () => {
-    it('can stakeInGauge()', async () => {});
+    it('can stakeInGauge()', async () => {
+      // TODO: There are tests for stakeInGauge on the base LiquidityGaugeManager elsewhere
+    });
 
-    it('can stakeAllInGauge()', async () => {});
+    it('can stakeAllInGauge()', async () => {
+      // TODO: There are tests for stakeInGauge on the base LiquidityGaugeManager elsewhere
+    });
 
-    it('can unstakeFromGauge()', async () => {});
+    it('can unstakeFromGauge()', async () => {
+      // TODO: There are tests for stakeInGauge on the base LiquidityGaugeManager elsewhere
+    });
 
     it('should be able to voteForGaugeWeight() to vote for gauge weights whilst a lock is active ', async () => {
       // remove 100% votes for B-30FEI-70WETH
@@ -158,7 +166,7 @@ describe('e2e-veBalHelper', function () {
 
   describe('Vote lock management', () => {
     it('can lock', async () => {
-      // TODO
+      // TODO - check the lock works. May need to unlock first
       await expect(contracts.vebalOtcHelper.connect(otcBuyerSigner).lock()).to.be.revertedWith(
         'Smart contract depositors not allowed'
       );
@@ -211,13 +219,13 @@ describe('e2e-veBalHelper', function () {
 
     it('should be able to transferBalancerStakerOwnership()', async () => {
       const newOwner = contractAddresses.dai;
-      await vebalOtcHelper.transferBalancerStakerOwnership(newOwner);
+      await vebalOtcHelper.connect(otcBuyerSigner).transferBalancerStakerOwnership(newOwner);
       expect(await contracts.balancerGaugeStaker.owner()).to.equal(newOwner);
     });
 
     it('should be able to setVotingEscrowDelegation()', async () => {
       const newDelegation = contractAddresses.dai;
-      await vebalOtcHelper.setVotingEscrowDelegation(newDelegation);
+      await vebalOtcHelper.connect(otcBuyerSigner).setVotingEscrowDelegation(newDelegation);
       expect(await contracts.balancerGaugeStaker.votingEscrowDelegation()).to.equal(newDelegation);
     });
   });
