@@ -68,12 +68,32 @@ describe('e2e-veBalHelper', function () {
   });
 
   it('should be able to setSpaceId() to change the snapshot space id', async () => {
-    // Can setSpaceId() to change the snapshot space id
     const beforeSnapshotId = await contracts.veBalDelegatorPCVDeposit.spaceId();
     await vebalOtcHelper.connect(otcBuyerSigner).setSpaceId(ethers.constants.HashZero);
     expect(await contracts.veBalDelegatorPCVDeposit.spaceId()).to.be.eq(ethers.constants.HashZero);
     await vebalOtcHelper.connect(otcBuyerSigner).setSpaceId(beforeSnapshotId);
     expect(await contracts.veBalDelegatorPCVDeposit.spaceId()).to.be.eq(beforeSnapshotId);
+  });
+
+  it('should be able setDelegate() to give snapshot voting power to another address', async () => {
+    // Can setDelegate() to give Snapshot voting power to someone else
+    expect(await contracts.veBalDelegatorPCVDeposit.delegate()).to.be.equal(contractAddresses.eswak);
+    await vebalOtcHelper.connect(otcBuyerSigner).setDelegate(contractAddresses.feiDAOTimelock);
+    expect(await contracts.veBalDelegatorPCVDeposit.delegate()).to.be.equal(contractAddresses.feiDAOTimelock);
+  });
+
+  it('should be able to clearDelegate() to give snapshot voting power to nobody', async () => {
+    // Can clearDelegate() to give Snapshot voting power to nobody
+    const snapshotSpaceId = await contracts.veBalDelegatorPCVDeposit.spaceId();
+    expect(await contracts.veBalDelegatorPCVDeposit.delegate()).to.be.equal(contractAddresses.feiDAOTimelock);
+    expect(
+      await contracts.snapshotDelegateRegistry.delegation(contractAddresses.veBalDelegatorPCVDeposit, snapshotSpaceId)
+    ).to.be.equal(contractAddresses.feiDAOTimelock);
+    await vebalOtcHelper.connect(otcBuyerSigner).clearDelegate();
+    expect(await contracts.veBalDelegatorPCVDeposit.delegate()).to.be.equal(vebalOtcHelper.address);
+    expect(
+      await contracts.snapshotDelegateRegistry.delegation(contractAddresses.veBalDelegatorPCVDeposit, snapshotSpaceId)
+    ).to.be.equal(ethers.constants.AddressZero);
   });
 
   it('should be able to create_boost() to boost delegation to another address', async () => {
@@ -100,34 +120,15 @@ describe('e2e-veBalHelper', function () {
     expect(await contracts.balancerVotingEscrowDelegation.token_cancel_time(tokenId)).to.equal('1669852800');
   });
 
-  it('should be able setDelegate() to give snapshot voting power to another address', async () => {
-    // Can setDelegate() to give Snapshot voting power to someone else
-    expect(await contracts.veBalDelegatorPCVDeposit.delegate()).to.be.equal(contractAddresses.eswak);
-    await vebalOtcHelper.connect(otcBuyerSigner).setDelegate(contractAddresses.feiDAOTimelock);
-    expect(await contracts.veBalDelegatorPCVDeposit.delegate()).to.be.equal(contractAddresses.feiDAOTimelock);
-  });
-
-  it('should be able to clearDelegate() to give snapshot voting power to nobody', async () => {
-    // Can clearDelegate() to give Snapshot voting power to nobody
-    const snapshotSpaceId = await contracts.veBalDelegatorPCVDeposit.spaceId();
-    expect(await contracts.veBalDelegatorPCVDeposit.delegate()).to.be.equal(contractAddresses.feiDAOTimelock);
-    expect(
-      await contracts.snapshotDelegateRegistry.delegation(contractAddresses.veBalDelegatorPCVDeposit, snapshotSpaceId)
-    ).to.be.equal(contractAddresses.feiDAOTimelock);
-    await vebalOtcHelper.connect(otcBuyerSigner).clearDelegate();
-    expect(await contracts.veBalDelegatorPCVDeposit.delegate()).to.be.equal(vebalOtcHelper.address);
-    expect(
-      await contracts.snapshotDelegateRegistry.delegation(contractAddresses.veBalDelegatorPCVDeposit, snapshotSpaceId)
-    ).to.be.equal(ethers.constants.AddressZero);
-  });
-
   it('should be able to setGaugeController() to update gauge controller', async () => {
     await vebalOtcHelper.connect(otcBuyerSigner).setGaugeController(contractAddresses.feiDAOTimelock);
+    expect(await contracts.veBalBefore.gaugeController()).to.equal(contractAddresses.feiDAOTimelock);
     await vebalOtcHelper.connect(otcBuyerSigner).setGaugeController(contractAddresses.balancerGaugeController);
-    // TODO: Verify setting gaugeController had expected state change
+    expect(await contracts.veBalBefore.gaugeController()).to.equal(contractAddresses.balancerGaugeController);
   });
 
   it('can lock', async () => {
+    // TODO
     await expect(contracts.vebalOtcHelper.connect(otcBuyerSigner).lock()).to.be.revertedWith(
       'Smart contract depositors not allowed'
     );
