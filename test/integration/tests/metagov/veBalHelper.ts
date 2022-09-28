@@ -67,6 +67,19 @@ describe('e2e-veBalHelper', function () {
     expect(await vebalOtcHelper.balancerStaker()).to.equal(contractAddresses.balancerGaugeStaker);
   });
 
+  it('onlyOwner should allow owner to call priviledged function', async () => {
+    await vebalOtcHelper.connect(otcBuyerSigner).setSpaceId(ethers.constants.HashZero);
+    expect(await contracts.veBalDelegatorPCVDeposit.spaceId()).to.be.eq(ethers.constants.HashZero);
+  });
+
+  it('onlyOwner should reject non-owner address on priviledged function', async () => {
+    const fakeOwner = ethers.constants.AddressZero;
+    const fakeOwnerSigner = await getImpersonatedSigner(fakeOwner);
+    await expect(
+      contracts.vebalOtcHelper.connect(fakeOwnerSigner).setSpaceId(ethers.constants.HashZero)
+    ).to.be.revertedWith('Ownable: caller is not the owner');
+  });
+
   describe('Setters', () => {
     it('should be able to setSpaceId() to change the snapshot space id', async () => {
       const beforeSnapshotId = await contracts.veBalDelegatorPCVDeposit.spaceId();
@@ -231,6 +244,7 @@ describe('e2e-veBalHelper', function () {
   });
 
   describe('Asset management', () => {
+    // Tests withdrawERC20() from pcvDeposit
     it('should be able to withdrawERC20() to receive B-80BAL-20WETH at end of lock', async () => {
       await time.increase(3600 * 24 * 365);
       await vebalOtcHelper.connect(otcBuyerSigner).exitLock();
@@ -244,25 +258,56 @@ describe('e2e-veBalHelper', function () {
       expect(bpt80Bal20WethAmount).to.be.at.least(e18(112_041));
     });
 
-    it('can withdrawERC20 from staker and PCV', async () => {
+    // Tests withdrawERC20() from staker
+    it('can withdrawERC20 from staker', async () => {
       const balWethBPTWhale = '0xC128a9954e6c874eA3d62ce62B468bA073093F25';
       const balWethBPTWhaleSigner = await getImpersonatedSigner(balWethBPTWhale);
       await forceEth(balWethBPTWhale);
 
-      await contracts.balWethBPT.connect(balWethBPTWhaleSigner).transfer(contracts.veBalDelegatorPCVDeposit.address, 1);
+      // Transfer 1 balWETHBPT token to the balancerGaugeStaker, which we will later withdraw
+      // via the vebalOtcHelper contract
       await contracts.balWethBPT.connect(balWethBPTWhaleSigner).transfer(contracts.balancerGaugeStaker.address, 1);
-      await forceEth(contracts.veBalDelegatorPCVDeposit.address);
       await forceEth(contracts.balancerGaugeStaker.address);
 
-      const balanceBefore = await contracts.balWethBPT.balanceOf(otcBuyerAddress);
-      await contracts.vebalOtcHelper
-        .connect(otcBuyerSigner)
-        .withdrawERC20(contractAddresses.balWethBPT, otcBuyerAddress, 1);
-      expect(await contracts.balWethBPT.balanceOf(otcBuyerAddress)).to.be.eq(balanceBefore.add(1));
+      const userBalanceBefore = await contracts.balWethBPT.balanceOf(otcBuyerAddress);
+
+      // Withdraw the 1 BPT token from the balancerGaugeStaker to the user
       await contracts.vebalOtcHelper
         .connect(otcBuyerSigner)
         .withdrawERC20fromStaker(contracts.balWethBPT.address, otcBuyerAddress, 1);
-      expect(await contracts.balWethBPT.balanceOf(otcBuyerAddress)).to.be.eq(balanceBefore.add(2));
+
+      const userBalanceAfter = await contracts.balWethBPT.balanceOf(otcBuyerAddress);
+      expect(userBalanceAfter).to.be.eq(userBalanceBefore.add(1));
+    });
+
+    it('can withdrawETH from pcvDeposit', async () => {
+      // Transfer 1 ETH to the veBalPCVDeposit
+      await forceEth(contractAddresses.veBalDelegatorPCVDeposit);
+      const oneEth = ethers.utils.parseEther('1');
+
+      const receiverAddress = '0x0000000000000000000000000000000000000001';
+      const userEthBefore = await ethers.provider.getBalance(receiverAddress);
+
+      // Withdraw ETH from pcvDeposit to the user
+      await vebalOtcHelper.connect(otcBuyerSigner).withdrawETH(receiverAddress, oneEth);
+
+      const userEthAfter = await ethers.provider.getBalance(receiverAddress);
+      expect(userEthAfter.sub(userEthBefore)).to.equal(oneEth);
+    });
+
+    it('can withdrawETH from staker', async () => {
+      // Transfer 1 ETH to the staker
+      await forceEth(contractAddresses.balancerGaugeStaker);
+      const oneEth = ethers.utils.parseEther('1');
+
+      const receiverAddress = '0x0000000000000000000000000000000000000001';
+      const userEthBefore = await ethers.provider.getBalance(receiverAddress);
+
+      // Withdraw ETH from pcvDeposit to the user
+      await vebalOtcHelper.connect(otcBuyerSigner).withdrawETHfromStaker(receiverAddress, oneEth);
+
+      const userEthAfter = await ethers.provider.getBalance(receiverAddress);
+      expect(userEthAfter.sub(userEthBefore)).to.equal(oneEth);
     });
   });
 });
