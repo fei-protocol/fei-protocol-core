@@ -26,7 +26,7 @@ describe('e2e-veBalHelper', function () {
   let e2eCoord: TestEndtoEndCoordinator;
   let doLogging: boolean;
   let vebalOtcHelper: Contract;
-  let otcBuyer: string;
+  let otcBuyerAddress: string;
   let otcBuyerSigner: SignerWithAddress;
 
   before(async function () {
@@ -57,14 +57,14 @@ describe('e2e-veBalHelper', function () {
       impersonatedSigners[address] = await getImpersonatedSigner(address);
     }
 
-    otcBuyer = contractAddresses.aaveCompaniesMultisig;
-    otcBuyerSigner = await getImpersonatedSigner(otcBuyer);
+    otcBuyerAddress = contractAddresses.aaveCompaniesMultisig;
+    otcBuyerSigner = await getImpersonatedSigner(otcBuyerAddress);
   });
 
   it('should have correct owner and initial state', async () => {
     expect(await vebalOtcHelper.owner()).to.equal(contractAddresses.aaveCompaniesMultisig);
     expect(await vebalOtcHelper.pcvDeposit()).to.equal(contractAddresses.veBalDelegatorPCVDeposit);
-    expect(await vebalOtcHelper.boostManager()).to.equal(contractAddresses.balancerGaugeStaker);
+    expect(await vebalOtcHelper.balancerStaker()).to.equal(contractAddresses.balancerGaugeStaker);
   });
 
   it('should be able to setSpaceId() to change the snapshot space id', async () => {
@@ -176,7 +176,7 @@ describe('e2e-veBalHelper', function () {
   });
 
   it('should be able to exitLock()', async () => {
-    const veBalBefore = await contracts.veBAL.balanceOf(contracts.veBalDelegatorPCVDeposit.address);
+    const veBalBefore = await contracts.veBal.balanceOf(contracts.veBalDelegatorPCVDeposit.address);
     const balWethBefore = await contracts.balWethBPT.balanceOf(contracts.veBalDelegatorPCVDeposit.address);
     expect(veBalBefore).to.be.not.eq(0);
 
@@ -184,7 +184,7 @@ describe('e2e-veBalHelper', function () {
     await vebalOtcHelper.connect(otcBuyerSigner).exitLock();
 
     const veBalAfter = await contracts.veBal.balanceOf(contracts.veBalDelegatorPCVDeposit.address);
-    const balWethAfter = await contracts.balWethBpt.balanceOf(contracts.veBalDelegatorPCVDeposit.address);
+    const balWethAfter = await contracts.balWethBPT.balanceOf(contracts.veBalDelegatorPCVDeposit.address);
     expect(veBalAfter).to.be.eq(0);
     expect(balWethAfter).to.be.gt(balWethBefore);
   });
@@ -197,29 +197,29 @@ describe('e2e-veBalHelper', function () {
     const bpt80Bal20WethAmount = await contracts.bpt80Bal20Weth.balanceOf(contractAddresses.veBalDelegatorPCVDeposit);
     await vebalOtcHelper
       .connect(otcBuyerSigner)
-      .withdrawERC20(contractAddresses.bpt80Bal20Weth, otcBuyer, bpt80Bal20WethAmount);
-    expect(await contracts.bpt80Bal20Weth.balanceOf(otcBuyer)).to.be.equal(bpt80Bal20WethAmount);
+      .withdrawERC20(contractAddresses.bpt80Bal20Weth, otcBuyerAddress, bpt80Bal20WethAmount);
+    expect(await contracts.bpt80Bal20Weth.balanceOf(otcBuyerAddress)).to.be.equal(bpt80Bal20WethAmount);
     expect(bpt80Bal20WethAmount).to.be.at.least(e18(112_041));
   });
 
-  it('can withdrawERC20 from staker and PCV', async () => {
+  it.only('can withdrawERC20 from staker and PCV', async () => {
     const balWethBPTWhale = '0xC128a9954e6c874eA3d62ce62B468bA073093F25';
     const balWethBPTWhaleSigner = await getImpersonatedSigner(balWethBPTWhale);
     await forceEth(balWethBPTWhale);
 
-    await contracts.balWethBpt.connect(balWethBPTWhaleSigner).transfer(contracts.veBalDelegatorPCVDeposit.address, 1);
-    await contracts.balWethBpt.connect(balWethBPTWhaleSigner).transfer(contracts.balancerGaugeStaker.address, 1);
+    await contracts.balWethBPT.connect(balWethBPTWhaleSigner).transfer(contracts.veBalDelegatorPCVDeposit.address, 1);
+    await contracts.balWethBPT.connect(balWethBPTWhaleSigner).transfer(contracts.balancerGaugeStaker.address, 1);
     await forceEth(contracts.veBalDelegatorPCVDeposit.address);
     await forceEth(contracts.balancerGaugeStaker.address);
 
-    const balanceBefore = await contracts.balWethBpt.balanceOf(otcBuyerSigner);
+    const balanceBefore = await contracts.balWethBPT.balanceOf(otcBuyerAddress);
     await contracts.vebalOtcHelper
       .connect(otcBuyerSigner)
-      .withdrawERC20fromPCV(contractAddresses.balWethBpt, otcBuyerSigner, 1);
-    expect(await contracts.balWethBpt.balanceOf(otcBuyerSigner)).to.be.eq(balanceBefore.add(1));
+      .withdrawERC20(contractAddresses.balWethBPT, otcBuyerAddress, 1);
+    expect(await contracts.balWethBPT.balanceOf(otcBuyerAddress)).to.be.eq(balanceBefore.add(1));
     await contracts.vebalOtcHelper
       .connect(otcBuyerSigner)
-      .withdrawERC20fromStaker(contracts.balWethBpt.address, otcBuyerSigner, 1);
-    expect(await contracts.balWethBpt.balanceOf(otcBuyerSigner)).to.be.eq(balanceBefore.add(2));
+      .withdrawERC20fromStaker(contracts.balWethBPT.address, otcBuyerAddress, 1);
+    expect(await contracts.balWethBPT.balanceOf(otcBuyerAddress)).to.be.eq(balanceBefore.add(2));
   });
 });
