@@ -280,32 +280,37 @@ describe('e2e-veBalHelper', function () {
       expect(await contracts.balancerVotingEscrowDelegation.token_cancel_time(tokenId)).to.equal('1669852800');
     });
 
-    // TODO: Reverts
-    it.skip('should be able to extend_boost', async () => {
+    it('should be able to extend_boost', async () => {
       // Create boost
       await vebalOtcHelper.connect(otcBuyerSigner).create_boost(
         contractAddresses.veBalDelegatorPCVDeposit, // address _delegator
         contractAddresses.eswak, // address _receiver
-        '5000', // int256 _percentage
+        '10000', // int256 _percentage
         '1669852800', // uint256 _cancel_time = December 1 2022
         '1672272000', // uint256 _expire_time = December 29 2022
         '0' // uint256 _id
       );
       const tokenId = '0xc4eac760c2c631ee0b064e39888b89158ff808b2000000000000000000000000';
 
-      console.log('created boost');
-      const boostedCancelTime = '1672694348';
-      const boostedExpireTime = '1672953548';
+      await time.increase(86400 * 8);
+      const boostedExpireTime = '1674998582'; // uint256 _expire_time = Jan 29 2023
+      //  - boostedExpireTime gets rounded down to nearest week
+      const boostedCancelTime = '1672694348'; // uint256 _cancel_time = Jan 2 2023
+
       // Extend the boost
       await vebalOtcHelper.connect(otcBuyerSigner).extend_boost(
         tokenId,
-        '5000', // int256 _percentage
-        boostedCancelTime, // uint256 _cancel_time = Jan 2 2023
-        boostedExpireTime // uint256 _expire_time = Jan 5 2023
+        '10000', // int256 _percentage
+        boostedExpireTime,
+        boostedCancelTime
       );
 
-      // Verify boost extended
-      expect(await contracts.balancerVotingEscrowDelegation.token_expiry(tokenId)).to.equal(boostedExpireTime);
+      const recordedBoostedExpireTime = await contracts.balancerVotingEscrowDelegation.token_expiry(tokenId);
+
+      // Expected boosted expire time rounded down to nearest week
+      const WEEK = 86400 * 7;
+      const expectedBoostedExpire = Math.floor(Number(boostedExpireTime) / WEEK) * WEEK;
+      expect(recordedBoostedExpireTime).to.equal(expectedBoostedExpire);
       expect(await contracts.balancerVotingEscrowDelegation.token_cancel_time(tokenId)).to.equal(boostedCancelTime);
     });
 
@@ -326,25 +331,22 @@ describe('e2e-veBalHelper', function () {
       await time.increase(86400 * 30);
       await vebalOtcHelper.connect(otcBuyerSigner).cancel_boost(tokenId);
 
-      // TODO: Verify cancelled
       const balancerTokenBoost = await contracts.balancerVotingEscrowDelegation.token_boost(tokenId);
-      console.log('balancer token boost: ', balancerTokenBoost.toString());
       expect(balancerTokenBoost).to.equal(0);
     });
 
-    // TODO: Reverts
-    it.skip('should be able to burn a token', async () => {
+    it('should be able to burn a token', async () => {
+      // What is the difference between delegator and receiver
       // Create boost
       await vebalOtcHelper.connect(otcBuyerSigner).create_boost(
         contractAddresses.veBalDelegatorPCVDeposit, // address _delegator
-        contractAddresses.eswak, // address _receiver
+        contractAddresses.veBalDelegatorPCVDeposit, // address _receiver (becomes owner, only owner can burn)
         '10000', // int256 _percentage
         '1669852800', // uint256 _cancel_time = December 1 2022
         '1672272000', // uint256 _expire_time = December 29 2022
         '0' // uint256 _id
       );
       const tokenId = '0xc4eac760c2c631ee0b064e39888b89158ff808b2000000000000000000000000';
-
       // Burn token
       await vebalOtcHelper.connect(otcBuyerSigner).burn(tokenId);
     });
