@@ -179,10 +179,32 @@ describe('e2e-veBalHelper', function () {
       'Ownable: caller is not the owner'
     );
 
-    // cancel_boost
+    // burn
     await expect(contracts.vebalOtcHelper.connect(fakeOwnerSigner).burn('0')).to.be.revertedWith(
       'Ownable: caller is not the owner'
     );
+
+    // withdrawERC20
+    await expect(
+      contracts.vebalOtcHelper.connect(fakeOwnerSigner).withdrawERC20(contractAddresses.dai, contractAddresses.weth, 5)
+    ).to.be.revertedWith('Ownable: caller is not the owner');
+
+    // withdrawETH
+    await expect(
+      contracts.vebalOtcHelper.connect(fakeOwnerSigner).withdrawETH(contractAddresses.dai, 5)
+    ).to.be.revertedWith('Ownable: caller is not the owner');
+
+    // withdrawERC20fromStaker
+    await expect(
+      contracts.vebalOtcHelper
+        .connect(fakeOwnerSigner)
+        .withdrawERC20fromStaker(contractAddresses.dai, contractAddresses.weth, 5)
+    ).to.be.revertedWith('Ownable: caller is not the owner');
+
+    // withdrawETHfromStaker
+    await expect(
+      contracts.vebalOtcHelper.connect(fakeOwnerSigner).withdrawETHfromStaker(contractAddresses.dai, 5)
+    ).to.be.revertedWith('Ownable: caller is not the owner');
   });
 
   describe('Setters', () => {
@@ -445,16 +467,20 @@ describe('e2e-veBalHelper', function () {
       await vebalOtcHelper.connect(otcBuyerSigner).burn(tokenId);
     });
 
-    it('should be able to transferBalancerStakerOwnership()', async () => {
-      const newOwner = contractAddresses.dai;
-      await vebalOtcHelper.connect(otcBuyerSigner).transferBalancerStakerOwnership(newOwner);
-      expect(await contracts.balancerGaugeStaker.owner()).to.equal(newOwner);
-    });
-
     it('should be able to setVotingEscrowDelegation()', async () => {
       const newDelegation = contractAddresses.dai;
       await vebalOtcHelper.connect(otcBuyerSigner).setVotingEscrowDelegation(newDelegation);
       expect(await contracts.balancerGaugeStaker.votingEscrowDelegation()).to.equal(newDelegation);
+    });
+
+    it('should be able to transferBalancerStakerOwnership()', async () => {
+      const newOwner = contractAddresses.dai;
+      await vebalOtcHelper.connect(otcBuyerSigner).transferBalancerStakerOwnership(newOwner);
+      expect(await contracts.balancerGaugeStaker.owner()).to.equal(newOwner);
+
+      // Transfer back
+      const newOwnerSigner = await getImpersonatedSigner(newOwner);
+      await vebalOtcHelper.connect(newOwnerSigner).transferBalancerStakerOwnership(otcBuyerAddress);
     });
   });
 
