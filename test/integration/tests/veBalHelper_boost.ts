@@ -26,7 +26,7 @@ describe('e2e-veBalHelper-boost-management', function () {
   let otcBuyerAddress: string;
   let otcBuyerSigner: SignerWithAddress;
 
-  before(async function () {
+  beforeEach(async function () {
     deployAddress = (await ethers.getSigners())[0].address;
     if (!deployAddress) throw new Error(`No deploy address!`);
     const addresses = await getAddresses();
