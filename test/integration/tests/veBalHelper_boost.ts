@@ -83,7 +83,6 @@ describe('e2e-veBalHelper-boost-management', function () {
   });
 
   it('should be able to extend_boost', async () => {
-    // Create boost
     await vebalOtcHelper.connect(otcBuyerSigner).create_boost(
       contractAddresses.veBalDelegatorPCVDeposit, // address _delegator
       contractAddresses.eswak, // address _receiver
@@ -117,7 +116,6 @@ describe('e2e-veBalHelper-boost-management', function () {
   });
 
   it('should be able to cancel_boost', async () => {
-    // Create boost
     await vebalOtcHelper.connect(otcBuyerSigner).create_boost(
       contractAddresses.veBalDelegatorPCVDeposit, // address _delegator
       contractAddresses.eswak, // address _receiver
@@ -138,8 +136,6 @@ describe('e2e-veBalHelper-boost-management', function () {
   });
 
   it('should be able to burn a token', async () => {
-    // What is the difference between delegator and receiver
-    // Create boost
     await vebalOtcHelper.connect(otcBuyerSigner).create_boost(
       contractAddresses.veBalDelegatorPCVDeposit, // address _delegator
       contractAddresses.veBalDelegatorPCVDeposit, // address _receiver (becomes owner, only owner can burn)
