@@ -29,6 +29,11 @@ describe('e2e-veBalHelper', function () {
   let otcBuyerAddress: string;
   let otcBuyerSigner: SignerWithAddress;
 
+  let balWethBPTWhaleSigner: SignerWithAddress;
+  let gaugeTokenHolderSigner: SignerWithAddress;
+  const balWethBPTWhale = '0xC128a9954e6c874eA3d62ce62B468bA073093F25';
+  const balFeiWethGaugeTokenHolder = '0x7818a1da7bd1e64c199029e86ba244a9798eee10';
+
   before(async function () {
     deployAddress = (await ethers.getSigners())[0].address;
     if (!deployAddress) throw new Error(`No deploy address!`);
@@ -59,6 +64,12 @@ describe('e2e-veBalHelper', function () {
 
     otcBuyerAddress = contractAddresses.aaveCompaniesMultisig;
     otcBuyerSigner = await getImpersonatedSigner(otcBuyerAddress);
+
+    balWethBPTWhaleSigner = await getImpersonatedSigner(balWethBPTWhale);
+    await forceEth(balWethBPTWhale);
+
+    await forceEth(balFeiWethGaugeTokenHolder);
+    gaugeTokenHolderSigner = await getImpersonatedSigner(balFeiWethGaugeTokenHolder);
   });
 
   it('should have correct owner and initial state', async () => {
@@ -128,15 +139,49 @@ describe('e2e-veBalHelper', function () {
 
   describe('Gauge management', () => {
     it('can stakeInGauge()', async () => {
-      // TODO: There are tests for stakeInGauge on the base LiquidityGaugeManager elsewhere
+      expect(await contracts.balancerGaugeBpt30Fei70Weth.balanceOf(contractAddresses.balancerGaugeStaker)).to.be.equal(
+        0
+      );
+      await contracts.bpt30Fei70Weth
+        .connect(gaugeTokenHolderSigner)
+        .transfer(contractAddresses.balancerGaugeStaker, 100);
+
+      await vebalOtcHelper.connect(otcBuyerSigner).stakeInGauge(contractAddresses.bpt30Fei70Weth, 100);
+
+      expect(await contracts.balancerGaugeBpt30Fei70Weth.balanceOf(contractAddresses.balancerGaugeStaker)).to.be.equal(
+        100
+      );
     });
 
     it('can stakeAllInGauge()', async () => {
-      // TODO: There are tests for stakeInGauge on the base LiquidityGaugeManager elsewhere
+      const stakeBeforeBalance = await contracts.balancerGaugeBpt30Fei70Weth.balanceOf(
+        contractAddresses.balancerGaugeStaker
+      );
+      await contracts.bpt30Fei70Weth
+        .connect(gaugeTokenHolderSigner)
+        .transfer(contractAddresses.balancerGaugeStaker, 100);
+
+      await vebalOtcHelper.connect(otcBuyerSigner).stakeAllInGauge(contractAddresses.bpt30Fei70Weth);
+      const stakeBalanceIncrease = (
+        await contracts.balancerGaugeBpt30Fei70Weth.balanceOf(contractAddresses.balancerGaugeStaker)
+      ).sub(stakeBeforeBalance);
+      expect(stakeBalanceIncrease).to.equal(100);
     });
 
     it('can unstakeFromGauge()', async () => {
-      // TODO: There are tests for stakeInGauge on the base LiquidityGaugeManager elsewhere
+      const stakeBeforeBalance = await contracts.balancerGaugeBpt30Fei70Weth.balanceOf(
+        contractAddresses.balancerGaugeStaker
+      );
+      await contracts.bpt30Fei70Weth
+        .connect(gaugeTokenHolderSigner)
+        .transfer(contractAddresses.balancerGaugeStaker, 100);
+
+      await vebalOtcHelper.connect(otcBuyerSigner).stakeInGauge(contractAddresses.bpt30Fei70Weth, 100);
+      await vebalOtcHelper.connect(otcBuyerSigner).unstakeFromGauge(contractAddresses.bpt30Fei70Weth, 100);
+      const stakeBalanceDiff = (
+        await contracts.balancerGaugeBpt30Fei70Weth.balanceOf(contractAddresses.balancerGaugeStaker)
+      ).sub(stakeBeforeBalance);
+      expect(stakeBalanceDiff).to.equal(0);
     });
 
     it('should be able to voteForGaugeWeight() to vote for gauge weights whilst a lock is active ', async () => {
@@ -179,8 +224,13 @@ describe('e2e-veBalHelper', function () {
 
   describe('Vote lock management', () => {
     it('can lock', async () => {
-      // TODO - check the lock works. May need to unlock first
-      await expect(contracts.vebalOtcHelper.connect(otcBuyerSigner).lock()).to.be.revertedWith(
+      // Transfer BPT tokens to the PCV deposit, for veBalHelper to lock into veBAL
+      await contracts.balWethBPT
+        .connect(balWethBPTWhaleSigner)
+        .transfer(contractAddresses.veBalDelegatorPCVDeposit, 100);
+
+      // Expected to fail, Balancer DAO prevented this veBAL from being relocked
+      await expect(vebalOtcHelper.connect(otcBuyerSigner).lock()).to.be.revertedWith(
         'Smart contract depositors not allowed'
       );
     });
@@ -195,7 +245,7 @@ describe('e2e-veBalHelper', function () {
       const balWethBefore = await contracts.balWethBPT.balanceOf(contracts.veBalDelegatorPCVDeposit.address);
       expect(veBalBefore).to.be.not.eq(0);
 
-      await time.increase(3600 * 24 * 365);
+      await time.increase(3600 * 24 * 365); // fast foward to end of locking period
       await vebalOtcHelper.connect(otcBuyerSigner).exitLock();
 
       const veBalAfter = await contracts.veBal.balanceOf(contracts.veBalDelegatorPCVDeposit.address);
@@ -230,6 +280,77 @@ describe('e2e-veBalHelper', function () {
       expect(await contracts.balancerVotingEscrowDelegation.token_cancel_time(tokenId)).to.equal('1669852800');
     });
 
+    it('should be able to extend_boost', async () => {
+      // Create boost
+      await vebalOtcHelper.connect(otcBuyerSigner).create_boost(
+        contractAddresses.veBalDelegatorPCVDeposit, // address _delegator
+        contractAddresses.eswak, // address _receiver
+        '10000', // int256 _percentage
+        '1669852800', // uint256 _cancel_time = December 1 2022
+        '1672272000', // uint256 _expire_time = December 29 2022
+        '0' // uint256 _id
+      );
+      const tokenId = '0xc4eac760c2c631ee0b064e39888b89158ff808b2000000000000000000000000';
+
+      await time.increase(86400 * 8);
+      const boostedExpireTime = '1674998582'; // uint256 _expire_time = Jan 29 2023
+      //  - boostedExpireTime gets rounded down to nearest week
+      const boostedCancelTime = '1672694348'; // uint256 _cancel_time = Jan 2 2023
+
+      // Extend the boost
+      await vebalOtcHelper.connect(otcBuyerSigner).extend_boost(
+        tokenId,
+        '10000', // int256 _percentage
+        boostedExpireTime,
+        boostedCancelTime
+      );
+
+      const recordedBoostedExpireTime = await contracts.balancerVotingEscrowDelegation.token_expiry(tokenId);
+
+      // Expected boosted expire time rounded down to nearest week
+      const WEEK = 86400 * 7;
+      const expectedBoostedExpire = Math.floor(Number(boostedExpireTime) / WEEK) * WEEK;
+      expect(recordedBoostedExpireTime).to.equal(expectedBoostedExpire);
+      expect(await contracts.balancerVotingEscrowDelegation.token_cancel_time(tokenId)).to.equal(boostedCancelTime);
+    });
+
+    it('should be able to cancel_boost', async () => {
+      // Create boost
+      await vebalOtcHelper.connect(otcBuyerSigner).create_boost(
+        contractAddresses.veBalDelegatorPCVDeposit, // address _delegator
+        contractAddresses.eswak, // address _receiver
+        '10000', // int256 _percentage
+        '1665432310', // uint256 _cancel_time = October 10 2022
+        '1676495110', // uint256 _expire_time = February 15 2023
+        '0' // uint256 _id
+      );
+      const tokenId = '0xc4eac760c2c631ee0b064e39888b89158ff808b2000000000000000000000000';
+      expect(await contracts.balancerVotingEscrowDelegation.token_boost(tokenId)).to.be.at.least('1'); // non-zero check
+
+      // Cancel boost - fast forward past cancel time
+      await time.increase(86400 * 30);
+      await vebalOtcHelper.connect(otcBuyerSigner).cancel_boost(tokenId);
+
+      const balancerTokenBoost = await contracts.balancerVotingEscrowDelegation.token_boost(tokenId);
+      expect(balancerTokenBoost).to.equal(0);
+    });
+
+    it('should be able to burn a token', async () => {
+      // What is the difference between delegator and receiver
+      // Create boost
+      await vebalOtcHelper.connect(otcBuyerSigner).create_boost(
+        contractAddresses.veBalDelegatorPCVDeposit, // address _delegator
+        contractAddresses.veBalDelegatorPCVDeposit, // address _receiver (becomes owner, only owner can burn)
+        '10000', // int256 _percentage
+        '1669852800', // uint256 _cancel_time = December 1 2022
+        '1672272000', // uint256 _expire_time = December 29 2022
+        '0' // uint256 _id
+      );
+      const tokenId = '0xc4eac760c2c631ee0b064e39888b89158ff808b2000000000000000000000000';
+      // Burn token
+      await vebalOtcHelper.connect(otcBuyerSigner).burn(tokenId);
+    });
+
     it('should be able to transferBalancerStakerOwnership()', async () => {
       const newOwner = contractAddresses.dai;
       await vebalOtcHelper.connect(otcBuyerSigner).transferBalancerStakerOwnership(newOwner);
@@ -260,8 +381,6 @@ describe('e2e-veBalHelper', function () {
 
     // Tests withdrawERC20() from staker
     it('can withdrawERC20 from staker', async () => {
-      const balWethBPTWhale = '0xC128a9954e6c874eA3d62ce62B468bA073093F25';
-      const balWethBPTWhaleSigner = await getImpersonatedSigner(balWethBPTWhale);
       await forceEth(balWethBPTWhale);
 
       // Transfer 1 balWETHBPT token to the balancerGaugeStaker, which we will later withdraw
