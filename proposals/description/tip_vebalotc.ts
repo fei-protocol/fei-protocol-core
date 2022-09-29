@@ -81,9 +81,14 @@ const tip_vebalotc: TemplatedProposalDescription = {
     },
 
     // 4. Transfer 1M DAI from PSM to Aave Escrow multisig
-    // Mint FEI
-    // Redeem on PSM
-    // Send redeemed DAI to escrow multisig
+    // Grant self MINTER_ROLE
+    {
+      target: 'core',
+      values: '0',
+      method: 'grantMinter(address)',
+      arguments: (addresses) => [addresses.feiDAOTimelock],
+      description: 'Grant MINTER_ROLE to DAO timelock'
+    },
     {
       target: 'fei',
       values: '0',
@@ -92,11 +97,26 @@ const tip_vebalotc: TemplatedProposalDescription = {
       description: 'Mint 1M FEI to the DAO timelock, later used to redeem 1M DAI from PSM'
     },
     {
+      target: 'fei',
+      values: '0',
+      method: 'approve(address,uint256)',
+      arguments: (addresses) => [addresses.simpleFeiDaiPSM, AMOUNT_FEI_MINTED_FOR_DAI_REDEEM],
+      description: 'Approve feiPSM to transfer 1M FEI'
+    },
+    {
       target: 'simpleFeiDaiPSM',
       values: '0',
       method: 'redeem(address,uint256,uint256)',
       arguments: (addresses) => [addresses.aaveCompaniesDaiEscrowMultisig, AMOUNT_FEI_MINTED_FOR_DAI_REDEEM, '0'],
       description: 'Redeem 1M DAI from simpleFeiDaiPSM and send to Aave Companies Escrow multisig'
+    },
+    // Cleanup, revoke MINTER_ROLE
+    {
+      target: 'core',
+      values: '0',
+      method: 'revokeMinter(address)',
+      arguments: (addresses) => [addresses.feiDAOTimelock],
+      description: 'Revoke MINTER_ROLE from DAO timelock'
     }
   ],
   description: `

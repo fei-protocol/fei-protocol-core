@@ -894,7 +894,7 @@ export const MainnetContractsConfig = {
   // TODO: Update to correct multisig, and not Aave companies when ready
   aaveCompaniesDaiEscrowMultisig: {
     artifactName: 'unknown',
-    address: '',
+    address: '0xe8d4D93D9728bD673b0197673a230F62255C7846',
     category: AddressCategory.External
   },
 
