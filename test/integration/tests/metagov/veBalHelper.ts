@@ -30,7 +30,9 @@ describe('e2e-veBalHelper', function () {
   let otcBuyerSigner: SignerWithAddress;
 
   let balWethBPTWhaleSigner: SignerWithAddress;
+  let gaugeTokenHolderSigner: SignerWithAddress;
   const balWethBPTWhale = '0xC128a9954e6c874eA3d62ce62B468bA073093F25';
+  const balFeiWethGaugeTokenHolder = '0x7818a1da7bd1e64c199029e86ba244a9798eee10';
 
   before(async function () {
     deployAddress = (await ethers.getSigners())[0].address;
@@ -65,6 +67,9 @@ describe('e2e-veBalHelper', function () {
 
     balWethBPTWhaleSigner = await getImpersonatedSigner(balWethBPTWhale);
     await forceEth(balWethBPTWhale);
+
+    await forceEth(balFeiWethGaugeTokenHolder);
+    gaugeTokenHolderSigner = await getImpersonatedSigner(balFeiWethGaugeTokenHolder);
   });
 
   it('should have correct owner and initial state', async () => {
@@ -134,15 +139,49 @@ describe('e2e-veBalHelper', function () {
 
   describe('Gauge management', () => {
     it('can stakeInGauge()', async () => {
-      // TODO: There are tests for stakeInGauge on the base LiquidityGaugeManager elsewhere
+      expect(await contracts.balancerGaugeBpt30Fei70Weth.balanceOf(contractAddresses.balancerGaugeStaker)).to.be.equal(
+        0
+      );
+      await contracts.bpt30Fei70Weth
+        .connect(gaugeTokenHolderSigner)
+        .transfer(contractAddresses.balancerGaugeStaker, 100);
+
+      await vebalOtcHelper.connect(otcBuyerSigner).stakeInGauge(contractAddresses.bpt30Fei70Weth, 100);
+
+      expect(await contracts.balancerGaugeBpt30Fei70Weth.balanceOf(contractAddresses.balancerGaugeStaker)).to.be.equal(
+        100
+      );
     });
 
     it('can stakeAllInGauge()', async () => {
-      // TODO: There are tests for stakeInGauge on the base LiquidityGaugeManager elsewhere
+      const stakeBeforeBalance = await contracts.balancerGaugeBpt30Fei70Weth.balanceOf(
+        contractAddresses.balancerGaugeStaker
+      );
+      await contracts.bpt30Fei70Weth
+        .connect(gaugeTokenHolderSigner)
+        .transfer(contractAddresses.balancerGaugeStaker, 100);
+
+      await vebalOtcHelper.connect(otcBuyerSigner).stakeAllInGauge(contractAddresses.bpt30Fei70Weth);
+      const stakeBalanceIncrease = (
+        await contracts.balancerGaugeBpt30Fei70Weth.balanceOf(contractAddresses.balancerGaugeStaker)
+      ).sub(stakeBeforeBalance);
+      expect(stakeBalanceIncrease).to.equal(100);
     });
 
     it('can unstakeFromGauge()', async () => {
-      // TODO: There are tests for stakeInGauge on the base LiquidityGaugeManager elsewhere
+      const stakeBeforeBalance = await contracts.balancerGaugeBpt30Fei70Weth.balanceOf(
+        contractAddresses.balancerGaugeStaker
+      );
+      await contracts.bpt30Fei70Weth
+        .connect(gaugeTokenHolderSigner)
+        .transfer(contractAddresses.balancerGaugeStaker, 100);
+
+      await vebalOtcHelper.connect(otcBuyerSigner).stakeInGauge(contractAddresses.bpt30Fei70Weth, 100);
+      await vebalOtcHelper.connect(otcBuyerSigner).unstakeFromGauge(contractAddresses.bpt30Fei70Weth, 100);
+      const stakeBalanceDiff = (
+        await contracts.balancerGaugeBpt30Fei70Weth.balanceOf(contractAddresses.balancerGaugeStaker)
+      ).sub(stakeBeforeBalance);
+      expect(stakeBalanceDiff).to.equal(0);
     });
 
     it('should be able to voteForGaugeWeight() to vote for gauge weights whilst a lock is active ', async () => {
