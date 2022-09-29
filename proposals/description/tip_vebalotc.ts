@@ -1,6 +1,9 @@
 import { ethers } from 'ethers';
 import { TemplatedProposalDescription } from '@custom-types/types';
 
+// Amount of Fei minted to redeem equivalent amount from feiPSM, for Aave escrow
+const AMOUNT_FEI_MINTED_FOR_DAI_REDEEM = ethers.constants.WeiPerEther.mul(1_000_000);
+
 const tip_vebalotc: TemplatedProposalDescription = {
   title: 'TIP-121c: veBAL OTC',
   commands: [
@@ -61,7 +64,7 @@ const tip_vebalotc: TemplatedProposalDescription = {
       description: 'Transfer proxy ownership of balancerGaugeStakerProxy to aaveCompaniesMultisig'
     },
 
-    // Finally, CR Oracle updates
+    // 3. Update collateralization oracle
     {
       target: 'collateralizationOracle',
       values: '0',
@@ -75,6 +78,25 @@ const tip_vebalotc: TemplatedProposalDescription = {
         ]
       ],
       description: 'Remove deprecated/empty smart contracts from CR Oracle'
+    },
+
+    // 4. Transfer 1M DAI from PSM to Aave Escrow multisig
+    // Mint FEI
+    // Redeem on PSM
+    // Send redeemed DAI to escrow multisig
+    {
+      target: 'fei',
+      values: '0',
+      method: 'mint(address,uint256)',
+      arguments: (addresses) => [addresses.feiDAOTimelock, AMOUNT_FEI_MINTED_FOR_DAI_REDEEM],
+      description: 'Mint 1M FEI to the DAO timelock, later used to redeem 1M DAI from PSM'
+    },
+    {
+      target: 'simpleFeiDaiPSM',
+      values: '0',
+      method: 'redeem(address,uint256,uint256)',
+      arguments: (addresses) => [addresses.aaveCompaniesDaiEscrowMultisig, AMOUNT_FEI_MINTED_FOR_DAI_REDEEM, '0'],
+      description: 'Redeem 1M DAI from simpleFeiDaiPSM and send to Aave Companies Escrow multisig'
     }
   ],
   description: `
