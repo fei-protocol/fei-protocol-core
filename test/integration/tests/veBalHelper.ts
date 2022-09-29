@@ -9,7 +9,7 @@ import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
 import { BigNumberish, Contract, Signer } from 'ethers';
 import { ethers } from 'hardhat';
-import { forceEth } from '../../setup/utils';
+import { forceEth } from '../setup/utils';
 
 const e18 = (x: BigNumberish) => ethers.constants.WeiPerEther.mul(x);
 
@@ -83,12 +83,106 @@ describe('e2e-veBalHelper', function () {
     expect(await contracts.veBalDelegatorPCVDeposit.spaceId()).to.be.eq(ethers.constants.HashZero);
   });
 
-  it('onlyOwner should reject non-owner address on priviledged function', async () => {
+  it('all priviledged functions protected by onlyOwner should reject non-owner address calls', async () => {
     const fakeOwner = ethers.constants.AddressZero;
     const fakeOwnerSigner = await getImpersonatedSigner(fakeOwner);
+
+    const ADDRESS_ONE = '0x0000000000000000000000000000000000000001';
+
+    // setSpaceId
     await expect(
       contracts.vebalOtcHelper.connect(fakeOwnerSigner).setSpaceId(ethers.constants.HashZero)
     ).to.be.revertedWith('Ownable: caller is not the owner');
+
+    // setDelegate
+    await expect(contracts.vebalOtcHelper.connect(fakeOwnerSigner).setDelegate(ADDRESS_ONE)).to.be.revertedWith(
+      'Ownable: caller is not the owner'
+    );
+
+    // clearDelegate
+    await expect(contracts.vebalOtcHelper.connect(fakeOwnerSigner).clearDelegate()).to.be.revertedWith(
+      'Ownable: caller is not the owner'
+    );
+
+    // setLockDuration
+    await expect(contracts.vebalOtcHelper.connect(fakeOwnerSigner).setLockDuration(5)).to.be.revertedWith(
+      'Ownable: caller is not the owner'
+    );
+
+    // lock
+    await expect(contracts.vebalOtcHelper.connect(fakeOwnerSigner).lock()).to.be.revertedWith(
+      'Ownable: caller is not the owner'
+    );
+
+    // exitLock
+    await expect(contracts.vebalOtcHelper.connect(fakeOwnerSigner).exitLock()).to.be.revertedWith(
+      'Ownable: caller is not the owner'
+    );
+
+    // setGaugeController
+    await expect(contracts.vebalOtcHelper.connect(fakeOwnerSigner).setGaugeController(ADDRESS_ONE)).to.be.revertedWith(
+      'Ownable: caller is not the owner'
+    );
+
+    // voteForGaugeWeight
+    await expect(
+      contracts.vebalOtcHelper
+        .connect(fakeOwnerSigner)
+        .voteForGaugeWeight(contractAddresses.dai, contractAddresses.weth, 5)
+    ).to.be.revertedWith('Ownable: caller is not the owner');
+
+    // stakeInGauge
+    await expect(
+      contracts.vebalOtcHelper.connect(fakeOwnerSigner).stakeInGauge(contractAddresses.dai, 5)
+    ).to.be.revertedWith('Ownable: caller is not the owner');
+
+    // stakeAllInGauge
+    await expect(
+      contracts.vebalOtcHelper.connect(fakeOwnerSigner).stakeAllInGauge(contractAddresses.dai)
+    ).to.be.revertedWith('Ownable: caller is not the owner');
+
+    // unstakeFromGauge
+    await expect(
+      contracts.vebalOtcHelper.connect(fakeOwnerSigner).unstakeFromGauge(contractAddresses.dai, 5)
+    ).to.be.revertedWith('Ownable: caller is not the owner');
+
+    // setBalancerMinter
+    await expect(
+      contracts.vebalOtcHelper.connect(fakeOwnerSigner).setBalancerMinter(contractAddresses.dai)
+    ).to.be.revertedWith('Ownable: caller is not the owner');
+
+    // transferBalancerStakerOwnership
+    await expect(
+      contracts.vebalOtcHelper.connect(fakeOwnerSigner).transferBalancerStakerOwnership(contractAddresses.dai)
+    ).to.be.revertedWith('Ownable: caller is not the owner');
+
+    // setVotingEscrowDelegation
+    await expect(
+      contracts.vebalOtcHelper.connect(fakeOwnerSigner).setVotingEscrowDelegation(contractAddresses.dai)
+    ).to.be.revertedWith('Ownable: caller is not the owner');
+    console.log('creating boost');
+
+    // create_boost
+    await expect(
+      contracts.vebalOtcHelper
+        .connect(fakeOwnerSigner)
+        .create_boost(contractAddresses.dai, contractAddresses.weth, '500', '10', '20', '0')
+    ).to.be.revertedWith('Ownable: caller is not the owner');
+
+    // extend_boost
+    await expect(
+      contracts.vebalOtcHelper.connect(fakeOwnerSigner).extend_boost('0', '500', '10', '20')
+    ).to.be.revertedWith('Ownable: caller is not the owner');
+
+    // cancel_boost
+    await expect(contracts.vebalOtcHelper.connect(fakeOwnerSigner).cancel_boost('0')).to.be.revertedWith(
+      'Ownable: caller is not the owner'
+    );
+
+    // cancel_boost
+    await expect(contracts.vebalOtcHelper.connect(fakeOwnerSigner).burn('0')).to.be.revertedWith(
+      'Ownable: caller is not the owner'
+    );
   });
 
   describe('Setters', () => {
