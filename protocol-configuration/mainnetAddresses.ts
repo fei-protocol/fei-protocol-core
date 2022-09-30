@@ -901,6 +901,12 @@ export const MainnetContractsConfig = {
     category: AddressCategory.External
   },
 
+  escrowedAaveDaiPCVDeposit: {
+    artifactName: 'ERC20PCVDepositWrapper',
+    address: '0x82c55A1Ab5C6F4b8e162b7dE24b50A38E1aFd38f',
+    category: AddressCategory.External
+  },
+
   fuseMultisig: {
     artifactName: 'unknown',
     address: '0x5eA4A9a7592683bF0Bc187d6Da706c6c4770976F',

@@ -164,7 +164,8 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const aaveEscrowDaiMultisigGain = (await contracts.dai.balanceOf(addresses.aaveCompaniesDaiEscrowMultisig)).sub(
     aaveEscrowDaiBefore
   );
-  expect(aaveEscrowDaiMultisigGain).to.equal(ethers.constants.WeiPerEther.mul(1_000_000));
+  // x2 as will have the AAVE DAI escrow and the TRIBE DAO DAI, which will later be moved to the redeemer
+  expect(aaveEscrowDaiMultisigGain).to.equal(AAVE_DAI_ESCROW_AMOUNT.mul(2));
 
   // Verify DAI PSM DAI balance decreased by expected 1M DAI
   const psmDaiBalanceDecrease = psmDaiBalanceBefore.sub(await contracts.dai.balanceOf(addresses.simpleFeiDaiPSM));
