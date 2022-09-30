@@ -4,6 +4,9 @@ import { TemplatedProposalDescription } from '@custom-types/types';
 // Amount of Fei minted to redeem equivalent amount from feiPSM, for Aave escrow
 const AMOUNT_FEI_MINTED_FOR_DAI_REDEEM = ethers.constants.WeiPerEther.mul(1_000_000);
 
+// Amount of FEI to withdraw, and then burn, from Rari Pool 8
+const RARI_POOL_8_FEI_WITHDRAWAL = ethers.constants.WeiPerEther.mul(25_000);
+
 const tip_vebalotc: TemplatedProposalDescription = {
   title: 'TIP-121c: veBAL OTC',
   commands: [
@@ -123,7 +126,7 @@ const tip_vebalotc: TemplatedProposalDescription = {
       arguments: (addresses) => [addresses.feiDAOTimelock],
       description: 'Revoke MINTER_ROLE from DAO timelock'
     },
-    // 6. Deprecate various contracts, cleanup
+    // 6. Deprecate various contracts, swap out DAI oracle in CR
     {
       target: 'ethToDaiLBPSwapper',
       values: '0',
@@ -137,6 +140,21 @@ const tip_vebalotc: TemplatedProposalDescription = {
       method: 'setOracle(address,address)',
       arguments: (addresses) => [addresses.oneConstantOracle],
       description: 'Swap DAI oracle for the OneConstantOracle'
+    },
+    // 7. Withdraw last 25k from pool 8
+    {
+      target: 'rariPool8FeiPCVDeposit',
+      values: '0',
+      method: 'withdraw(address,uint256)',
+      arguments: (addresses) => [addresses.feiDAOTimelock, RARI_POOL_8_FEI_WITHDRAWAL],
+      description: 'Withdraw 25K FEI from Rari Pool 8'
+    },
+    {
+      target: 'fei',
+      values: '0',
+      method: 'burn(uint256)',
+      arguments: (addresses) => [RARI_POOL_8_FEI_WITHDRAWAL],
+      description: 'Burn 25K Rari Pool 8 FEI withdrawal'
     }
   ],
   description: `

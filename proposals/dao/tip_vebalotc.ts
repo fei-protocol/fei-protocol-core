@@ -20,7 +20,11 @@ const fipNumber = 'vebalotc';
 let vebalOtcBuyer: string;
 let aaveEscrowDaiBefore: BigNumber;
 let psmDaiBalanceBefore: BigNumber;
+let feiInitialTotalSupply: BigNumber;
 let pcvStatsBefore: PcvStats;
+
+// Amount of FEI to withdraw, and then burn, from Rari Pool 8
+const RARI_POOL_8_FEI_WITHDRAWAL = ethers.constants.WeiPerEther.mul(25_000);
 
 // Do any deployments
 // This should exclusively include new contract deployments
@@ -72,6 +76,7 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
 
   aaveEscrowDaiBefore = await contracts.dai.balanceOf(addresses.aaveCompaniesDaiEscrowMultisig);
   psmDaiBalanceBefore = await contracts.dai.balanceOf(addresses.simpleFeiDaiPSM);
+  feiInitialTotalSupply = await contracts.fei.totalSupply();
 };
 
 // Tears down any changes made in setup() that need to be
@@ -147,6 +152,10 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   // 6. Verify deprecated contracts final state
   expect(await contracts.ethToDaiLBPSwapper.paused()).to.be.true;
   expect(await contracts.collateralizationOracle.tokenToOracle(addresses.dai)).to.equal(addresses.oneConstantOracle);
+
+  // 7. Verify Rari pool 8 FEI was burned
+  const feiBurn = feiInitialTotalSupply.sub(await contracts.fei.totalSupply());
+  expect(feiBurn).to.equal(RARI_POOL_8_FEI_WITHDRAWAL);
 };
 
 export { deploy, setup, teardown, validate };
