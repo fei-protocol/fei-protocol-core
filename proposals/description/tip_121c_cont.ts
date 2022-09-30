@@ -65,6 +65,16 @@ const tip_vebalotc: TemplatedProposalDescription = {
     },
 
     // 3. Update collateralization oracle
+    // Track Aave escrowed DAI PCV deposit
+    {
+      target: 'collateralizationOracle',
+      values: '0',
+      method: 'addDeposit(address)',
+      arguments: (addresses) => [addresses.escrowedAaveDaiPCVDeposit],
+      description: 'Track AAVE Companies escrowed 1M DAI in the CR'
+    },
+
+    // Remove empty PCV deposits
     {
       target: 'collateralizationOracle',
       values: '0',

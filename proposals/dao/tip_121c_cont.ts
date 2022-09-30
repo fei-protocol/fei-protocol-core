@@ -22,6 +22,9 @@ let aaveEscrowDaiBefore: BigNumber;
 let psmDaiBalanceBefore: BigNumber;
 let pcvStatsBefore: PcvStats;
 
+// Aave DAI escrow amount
+const AAVE_DAI_ESCROW_AMOUNT = ethers.constants.WeiPerEther.mul(1_000_000);
+
 /*
   TIP_121c (cont): Aave Companies veBAL OTC, deprecate Tribe DAO sub-systems and contracts
 */
@@ -51,9 +54,19 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   await balancerGaugeStakerV2Impl.deployTransaction.wait();
   logging && console.log(`balancerGaugeStakerV2Impl: ${balancerGaugeStakerV2Impl.address}`);
 
+  // Deploy ERC20PCVDepositWrapper to count escrowed 1M DAI towards PCV
+  const ERC20PCVDepositWrapperFactory = await ethers.getContractFactory('ERC20PCVDepositWrapper');
+  const escrowedAaveDaiPCVDeposit = await ERC20PCVDepositWrapperFactory.deploy(
+    addresses.aaveCompaniesDaiEscrowMultisig,
+    addresses.dai,
+    false
+  );
+  logging && console.log('Escrowed Aave DAI PCV deposit: ', escrowedAaveDaiPCVDeposit.address);
+
   return {
     balancerGaugeStakerV2Impl,
-    vebalOtcHelper
+    vebalOtcHelper,
+    escrowedAaveDaiPCVDeposit
   };
 };
 
@@ -76,6 +89,15 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
 
   aaveEscrowDaiBefore = await contracts.dai.balanceOf(addresses.aaveCompaniesDaiEscrowMultisig);
   psmDaiBalanceBefore = await contracts.dai.balanceOf(addresses.simpleFeiDaiPSM);
+
+  // 1. Mock Aave escrowing 1M DAI in escrow multisig
+  // TODO: Remove once AAVE Companies has escrowed DAI
+  const daiWhale = '0x5d3a536e4d6dbd6114cc1ead35777bab948e3643';
+  await forceEth(daiWhale);
+  const daiWhaleSigner = await getImpersonatedSigner(daiWhale);
+  await contracts.dai
+    .connect(daiWhaleSigner)
+    .transfer(addresses.aaveCompaniesDaiEscrowMultisig, AAVE_DAI_ESCROW_AMOUNT);
 };
 
 // Tears down any changes made in setup() that need to be
@@ -160,6 +182,9 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   // 9. Verify PodAdminGateway has CANCELLER_ROLE removed
   expect(await contracts.tribalCouncilTimelock.hasRole(ethers.utils.id('CANCELLER_ROLE'), addresses.podAdminGateway)).to
     .be.false;
+
+  // 10. Asset overcollaterised
+  expect(await contracts.collateralizationOracle.isOvercollateralized()).to.be.true;
 };
 
 export { deploy, setup, teardown, validate };

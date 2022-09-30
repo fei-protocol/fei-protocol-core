@@ -4,7 +4,7 @@
 
 export const CollateralizationOracleConfig = {
   fei: ['rariTimelockFeiOldLens'],
-  dai: ['simpleFeiDaiPSM']
+  dai: ['simpleFeiDaiPSM', 'escrowedAaveDaiPCVDeposit']
 };
 
 export type CollateralizationOracleConfigType = typeof CollateralizationOracleConfig;
