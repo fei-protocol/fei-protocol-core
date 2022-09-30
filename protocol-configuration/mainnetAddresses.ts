@@ -107,7 +107,7 @@ export const MainnetContractsConfig = {
     category: AddressCategory.Governance
   },
 
-  veBalOtcHelper: {
+  vebalOtcHelper: {
     artifactName: 'VeBalHelper',
     address: '0xb02CE4D72124b98Df4EAB4184467d7Da0023F9FB',
     category: AddressCategory.TBD
