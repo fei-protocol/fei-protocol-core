@@ -130,6 +130,13 @@ const tip_vebalotc: TemplatedProposalDescription = {
       method: 'pause()',
       arguments: (addresses) => [],
       description: 'Pause ethToDaiLBPSwapper'
+    },
+    {
+      target: 'collateralizationOracle',
+      values: '0',
+      method: 'setOracle(address,address)',
+      arguments: (addresses) => [addresses.oneConstantOracle],
+      description: 'Swap DAI oracle for the OneConstantOracle'
     }
   ],
   description: `

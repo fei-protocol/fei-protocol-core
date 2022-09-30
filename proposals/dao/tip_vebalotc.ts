@@ -146,6 +146,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 
   // 6. Verify deprecated contracts final state
   expect(await contracts.ethToDaiLBPSwapper.paused()).to.be.true;
+  expect(await contracts.collateralizationOracle.tokenToOracle(addresses.dai)).to.equal(addresses.oneConstantOracle);
 };
 
 export { deploy, setup, teardown, validate };
