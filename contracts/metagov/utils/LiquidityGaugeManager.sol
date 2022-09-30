@@ -33,6 +33,15 @@ interface ILiquidityGaugeController {
     function vote_user_power(address user) external view returns (uint256);
 
     function gauge_types(address gauge) external view returns (int128);
+
+    function vote_user_slopes(address user, address gauge)
+        external
+        view
+        returns (
+            uint256 slope,
+            uint256 power,
+            uint256 end
+        );
 }
 
 /// @title Liquidity gauge manager, used to stake tokens in liquidity gauges.

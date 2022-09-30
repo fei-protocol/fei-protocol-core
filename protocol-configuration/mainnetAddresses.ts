@@ -69,7 +69,7 @@ export const MainnetContractsConfig = {
   ethToDaiLBPSwapper: {
     artifactName: 'BalancerLBPSwapper',
     address: '0xf7991f4698ffb6716982aec7f78964dd731c4a54',
-    category: AddressCategory.Utility
+    category: AddressCategory.Deprecated
   },
   feiDAO: {
     artifactName: 'FeiDAO',
@@ -97,25 +97,54 @@ export const MainnetContractsConfig = {
   weightedBalancerPoolManagerBase: {
     artifactName: 'WeightedBalancerPoolManagerBase',
     address: '0x75b984d8Ad22007923B03b5D40daA1917EF35313',
-    category: AddressCategory.Governance
+    category: AddressCategory.Deprecated
   },
 
   veBalDelegatorPCVDeposit: {
     artifactName: 'VeBalDelegatorPCVDeposit',
     address: '0xc4EAc760C2C631eE0b064E39888b89158ff808B2',
-    category: AddressCategory.Governance
+    category: AddressCategory.Deprecated
   },
 
-  balancerGaugeStaker: {
-    artifactName: 'BalancerGaugeStaker', // actually a TransparentUpgradeableProxy
-    address: '0x66977Ce30049CD0e443216Bf26377966c3A109E2',
-    category: AddressCategory.Governance
+  vebalOtcHelper: {
+    artifactName: 'VeBalHelper',
+    address: '0xb02CE4D72124b98Df4EAB4184467d7Da0023F9FB',
+    category: AddressCategory.TBD
   },
 
+  balancerVotingEscrowDelegation: {
+    artifactName: 'IVotingEscrowDelegation',
+    address: '0xB496FF44746A8693A060FafD984Da41B253f6790',
+    category: AddressCategory.External
+  },
+
+  // Use to call implementation
   balancerGaugeStakerImpl: {
+    // v1 BalancerGaugeStaker
     artifactName: 'BalancerGaugeStaker',
     address: '0xF53E251352683155898295569d77B8506bA00d80',
-    category: AddressCategory.Governance
+    category: AddressCategory.Deprecated
+  },
+
+  balancerGaugeStakerV2Impl: {
+    artifactName: 'BalancerGaugeStakerV2',
+    address: '0xbf3f6c7821E4d7D5DF204dEa4871b2e8D68c1CCd',
+    category: AddressCategory.TBD
+  },
+
+  // Use to call proxy functions
+  balancerGaugeStakerProxy: {
+    artifactName: 'TransparentUpgradeableProxy',
+    address: '0x66977Ce30049CD0e443216Bf26377966c3A109E2',
+    category: AddressCategory.TBD
+  },
+
+  // Use to call functions through the proxy. Proxy address cast
+  // with latest implementation interface
+  balancerGaugeStaker: {
+    artifactName: 'BalancerGaugeStakerV2',
+    address: '0x66977Ce30049CD0e443216Bf26377966c3A109E2',
+    category: AddressCategory.TBD
   },
 
   rariGovernanceProxyAdmin: {
@@ -139,13 +168,13 @@ export const MainnetContractsConfig = {
   ethToDaiLensDai: {
     artifactName: 'BPTLens',
     address: '0xdF9Ff5c077d9F3427ade67AC2d27a864Be6F3187',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
 
   ethToDaiLensEth: {
     artifactName: 'BPTLens',
     address: '0xf24401F6992FaEAcbc5d6C6991db15B5F8364A1B',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
 
   balancerDepositBalWeth: {
@@ -185,25 +214,25 @@ export const MainnetContractsConfig = {
   balUsdCompositeOracle: {
     artifactName: 'CompositeOracle',
     address: '0xDe0407851AEC6F073A63D27C7D29805CCD59D3e0',
-    category: AddressCategory.Oracle
+    category: AddressCategory.Deprecated
   },
 
   chainlinkStEthUsdOracleWrapper: {
     artifactName: 'ChainlinkOracleWrapper',
     address: '0x011d15600671530C93818FdB1283E20748CB8c73',
-    category: AddressCategory.Oracle
+    category: AddressCategory.Deprecated
   },
 
   chainlinkDaiUsdOracleWrapper: {
     artifactName: 'ChainlinkOracleWrapper',
     address: '0x231aDa12E273eDf3fA54CbD90c5C1a73129D5bb9',
-    category: AddressCategory.Oracle
+    category: AddressCategory.Deprecated
   },
 
   chainlinkLUSDOracleWrapper: {
     artifactName: 'ChainlinkOracleWrapper',
     address: '0xe61d11ec732d556A26fb863B192052BEa03eF8B5',
-    category: AddressCategory.Oracle
+    category: AddressCategory.Deprecated
   },
 
   oneConstantOracle: {
@@ -608,6 +637,12 @@ export const MainnetContractsConfig = {
     category: AddressCategory.External
   },
 
+  balWethBPT: {
+    artifactName: 'IERC20',
+    address: '0x5c6Ee304399DBdB9C8Ef030aB642B10820DB8F56',
+    category: AddressCategory.External
+  },
+
   usdc: {
     artifactName: 'IERC20',
     address: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
@@ -851,6 +886,18 @@ export const MainnetContractsConfig = {
   fuseFeeDistributor: {
     artifactName: 'IFuseFeeDistributor',
     address: '0xa731585ab05fC9f83555cf9Bff8F58ee94e18F85',
+    category: AddressCategory.External
+  },
+
+  aaveCompaniesMultisig: {
+    artifactName: 'unknown',
+    address: '0xe8d4D93D9728bD673b0197673a230F62255C7846',
+    category: AddressCategory.External
+  },
+
+  aaveCompaniesDaiEscrowMultisig: {
+    artifactName: 'unknown',
+    address: '0xA27A83A2433EbEB9f658B4420074B454846e1C5B',
     category: AddressCategory.External
   },
 
