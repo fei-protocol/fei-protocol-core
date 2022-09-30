@@ -4,9 +4,6 @@ import { TemplatedProposalDescription } from '@custom-types/types';
 // Amount of Fei minted to redeem equivalent amount from feiPSM, for Aave escrow
 const AMOUNT_FEI_MINTED_FOR_DAI_REDEEM = ethers.constants.WeiPerEther.mul(1_000_000);
 
-// Amount of FEI to withdraw, and then burn, from Rari Pool 8
-const RARI_POOL_8_FEI_WITHDRAWAL = ethers.constants.WeiPerEther.mul(25_000);
-
 const tip_vebalotc: TemplatedProposalDescription = {
   title: 'TIP-121c: veBAL OTC',
   commands: [
@@ -142,22 +139,7 @@ const tip_vebalotc: TemplatedProposalDescription = {
       arguments: (addresses) => [addresses.dai, addresses.oneConstantOracle],
       description: 'Swap DAI oracle for the OneConstantOracle'
     },
-    // 7. Withdraw last 25k from pool 8
-    // {
-    //   target: 'rariPool8FeiPCVDeposit',
-    //   values: '0',
-    //   method: 'withdraw(address,uint256)',
-    //   arguments: (addresses) => [addresses.feiDAOTimelock, RARI_POOL_8_FEI_WITHDRAWAL],
-    //   description: 'Withdraw 25K FEI from Rari Pool 8'
-    // },
-    // {
-    //   target: 'fei',
-    //   values: '0',
-    //   method: 'burn(uint256)',
-    //   arguments: (addresses) => [RARI_POOL_8_FEI_WITHDRAWAL],
-    //   description: 'Burn 25K Rari Pool 8 FEI withdrawal'
-    // }
-    // 8. Revoke all non-final Tribe roles
+    // 7. Revoke all non-final Tribe roles
     // METAGOVERNANCE roles
     {
       target: 'core',
@@ -189,7 +171,7 @@ const tip_vebalotc: TemplatedProposalDescription = {
       description: 'Revoke PCV_MINOR_PARAM_ROLE from feiDAOTimelock'
     },
 
-    // 9. Deprecate PCV Sentinel
+    // 8. Deprecate PCV Sentinel
     {
       target: 'core',
       values: '0',
@@ -198,7 +180,7 @@ const tip_vebalotc: TemplatedProposalDescription = {
       description: 'Revoke GUARDIAN_ROLE from PCV Sentinel'
     },
 
-    // 10. Deprecate PCV Guardian
+    // 9. Deprecate PCV Guardian
     {
       target: 'core',
       values: '0',
@@ -214,7 +196,7 @@ const tip_vebalotc: TemplatedProposalDescription = {
       description: 'Revoke PCV_CONTROLLER_ROLE from PCV Guardian'
     },
 
-    // 11. Revoke veto role from NopeDAO and cancel role from podAdminGateway
+    // 10. Revoke veto role from NopeDAO and cancel role from podAdminGateway
     {
       target: 'core',
       values: '0',
@@ -238,7 +220,7 @@ const tip_vebalotc: TemplatedProposalDescription = {
       description: 'Revoke CANCELLER_ROLE from PodAdminGateway'
     },
 
-    // 12. Deprecate ratioPCVControllerV2
+    // 11. Deprecate ratioPCVControllerV2
     {
       target: 'core',
       values: '0',

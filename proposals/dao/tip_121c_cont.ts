@@ -20,11 +20,7 @@ const fipNumber = 'tip_121c_cont';
 let vebalOtcBuyer: string;
 let aaveEscrowDaiBefore: BigNumber;
 let psmDaiBalanceBefore: BigNumber;
-let feiInitialTotalSupply: BigNumber;
 let pcvStatsBefore: PcvStats;
-
-// Amount of FEI to withdraw, and then burn, from Rari Pool 8
-const RARI_POOL_8_FEI_WITHDRAWAL = ethers.constants.WeiPerEther.mul(25_000);
 
 /*
   TIP_121c (cont): Aave Companies veBAL OTC, deprecate Tribe DAO sub-systems and contracts
@@ -80,7 +76,6 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
 
   aaveEscrowDaiBefore = await contracts.dai.balanceOf(addresses.aaveCompaniesDaiEscrowMultisig);
   psmDaiBalanceBefore = await contracts.dai.balanceOf(addresses.simpleFeiDaiPSM);
-  feiInitialTotalSupply = await contracts.fei.totalSupply();
 };
 
 // Tears down any changes made in setup() that need to be
@@ -157,16 +152,12 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await contracts.ethToDaiLBPSwapper.paused()).to.be.true;
   expect(await contracts.collateralizationOracle.tokenToOracle(addresses.dai)).to.equal(addresses.oneConstantOracle);
 
-  // 7. Verify Rari pool 8 FEI was burned
-  // const feiBurn = feiInitialTotalSupply.sub(await contracts.fei.totalSupply());
-  // expect(feiBurn).to.equal(RARI_POOL_8_FEI_WITHDRAWAL);
+  // 7. No check for revoked Tribe roles - there is a seperate e2e
 
-  // 8. No check for revoked Tribe roles - there is a seperate e2e
-
-  // 9. Verify init impossible to call on core
+  // 8. Verify init impossible to call on core
   await expect(contracts.core.init()).to.be.revertedWith('Initializable: contract is already initialized');
 
-  // 10. Verify PodAdminGateway has CANCELLER_ROLE removed
+  // 9. Verify PodAdminGateway has CANCELLER_ROLE removed
   expect(await contracts.tribalCouncilTimelock.hasRole(ethers.utils.id('CANCELLER_ROLE'), addresses.podAdminGateway)).to
     .be.false;
 };
