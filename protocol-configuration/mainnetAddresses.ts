@@ -221,19 +221,19 @@ export const MainnetContractsConfig = {
   chainlinkStEthUsdOracleWrapper: {
     artifactName: 'ChainlinkOracleWrapper',
     address: '0x011d15600671530C93818FdB1283E20748CB8c73',
-    category: AddressCategory.Oracle
+    category: AddressCategory.Deprecated
   },
 
   chainlinkDaiUsdOracleWrapper: {
     artifactName: 'ChainlinkOracleWrapper',
     address: '0x231aDa12E273eDf3fA54CbD90c5C1a73129D5bb9',
-    category: AddressCategory.Oracle
+    category: AddressCategory.Deprecated
   },
 
   chainlinkLUSDOracleWrapper: {
     artifactName: 'ChainlinkOracleWrapper',
     address: '0xe61d11ec732d556A26fb863B192052BEa03eF8B5',
-    category: AddressCategory.Oracle
+    category: AddressCategory.Deprecated
   },
 
   oneConstantOracle: {
