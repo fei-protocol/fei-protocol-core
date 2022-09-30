@@ -57,6 +57,9 @@ describe('e2e-peg-stability-module', function () {
     for (const address of impersonatedAddresses) {
       impersonatedSigners[address] = await getImpersonatedSigner(address);
     }
+
+    const daoTimelockSigner = await getImpersonatedSigner(contracts.feiDAOTimelock.address);
+    await contracts.core.connect(daoTimelockSigner).grantPCVController(contracts.feiDAOTimelock.address);
   });
 
   describe('simpleFeiDaiPSM', async () => {

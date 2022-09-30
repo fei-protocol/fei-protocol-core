@@ -49,7 +49,7 @@ export const MainnetContractsConfig = {
   pcvSentinel: {
     artifactName: 'PCVSentinel',
     address: '0xC297705Acf50134d256187c754B92FA37826C019',
-    category: AddressCategory.Security
+    category: AddressCategory.Deprecated
   },
   pcvGuardian: {
     artifactName: 'PCVGuardian',
@@ -71,7 +71,6 @@ export const MainnetContractsConfig = {
     address: '0xf7991f4698ffb6716982aec7f78964dd731c4a54',
     category: AddressCategory.Deprecated
   },
-
   feiDAO: {
     artifactName: 'FeiDAO',
     address: '0x0BEF27FEB58e857046d630B2c03dFb7bae567494',

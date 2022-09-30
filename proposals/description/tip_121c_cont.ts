@@ -141,7 +141,7 @@ const tip_vebalotc: TemplatedProposalDescription = {
       method: 'setOracle(address,address)',
       arguments: (addresses) => [addresses.dai, addresses.oneConstantOracle],
       description: 'Swap DAI oracle for the OneConstantOracle'
-    }
+    },
     // 7. Withdraw last 25k from pool 8
     // {
     //   target: 'rariPool8FeiPCVDeposit',
@@ -157,6 +157,95 @@ const tip_vebalotc: TemplatedProposalDescription = {
     //   arguments: (addresses) => [RARI_POOL_8_FEI_WITHDRAWAL],
     //   description: 'Burn 25K Rari Pool 8 FEI withdrawal'
     // }
+    // 8. Revoke all non-final Tribe roles
+    // METAGOVERNANCE roles
+    {
+      target: 'core',
+      values: '0',
+      method: 'revokeRole(bytes32,address)',
+      arguments: (addresses) => [ethers.utils.id('METAGOVERNANCE_VOTE_ADMIN'), addresses.feiDAOTimelock],
+      description: 'Revoke METAGOVERNANCE_VOTE_ADMIN from feiDAOTimelock'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'revokeRole(bytes32,address)',
+      arguments: (addresses) => [ethers.utils.id('METAGOVERNANCE_TOKEN_STAKING'), addresses.feiDAOTimelock],
+      description: 'Revoke METAGOVERNANCE_TOKEN_STAKING from feiDAOTimelock'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'revokeRole(bytes32,address)',
+      arguments: (addresses) => [ethers.utils.id('METAGOVERNANCE_GAUGE_ADMIN'), addresses.feiDAOTimelock],
+      description: 'Revoke METAGOVERNANCE_GAUGE_ADMIN from feiDAOTimelock'
+    },
+    // PCV_MINOR_PARAM_ROLE
+    {
+      target: 'core',
+      values: '0',
+      method: 'revokeRole(bytes32,address)',
+      arguments: (addresses) => [ethers.utils.id('PCV_MINOR_PARAM_ROLE'), addresses.feiDAOTimelock],
+      description: 'Revoke PCV_MINOR_PARAM_ROLE from feiDAOTimelock'
+    },
+
+    // 9. Deprecate PCV Sentinel
+    {
+      target: 'core',
+      values: '0',
+      method: 'revokeRole(bytes32,address)',
+      arguments: (addresses) => [ethers.utils.id('GUARDIAN_ROLE'), addresses.pcvSentinel],
+      description: 'Revoke GUARDIAN_ROLE from PCV Sentinel'
+    },
+
+    // 10. Deprecate PCV Guardian
+    {
+      target: 'core',
+      values: '0',
+      method: 'revokeRole(bytes32,address)',
+      arguments: (addresses) => [ethers.utils.id('GUARDIAN_ROLE'), addresses.pcvGuardian],
+      description: 'Revoke GUARDIAN_ROLE from PCV Guardian'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'revokeRole(bytes32,address)',
+      arguments: (addresses) => [ethers.utils.id('PCV_CONTROLLER_ROLE'), addresses.pcvGuardian],
+      description: 'Revoke PCV_CONTROLLER_ROLE from PCV Guardian'
+    },
+
+    // 11. Revoke veto role from NopeDAO and cancel role from podAdminGateway
+    {
+      target: 'core',
+      values: '0',
+      method: 'revokeRole(bytes32,address)',
+      arguments: (addresses) => [ethers.utils.id('POD_VETO_ADMIN'), addresses.nopeDAO],
+      description: 'Revoke POD_VETO_ADMIN from NopeDAO'
+    },
+    // Revoke ROLE_ADMIN from DAO timelock now that POD_VETO_ADMIN has been revoked
+    {
+      target: 'core',
+      values: '0',
+      method: 'revokeRole(bytes32,address)',
+      arguments: (addresses) => [ethers.utils.id('ROLE_ADMIN'), addresses.feiDAOTimelock],
+      description: 'Revoke ROLE_ADMIN from feiDAOTimelock'
+    },
+    {
+      target: 'tribalCouncilTimelock',
+      values: '0',
+      method: 'revokeRole(bytes32,address)',
+      arguments: (addresses) => [ethers.utils.id('CANCELLER_ROLE'), addresses.podAdminGateway],
+      description: 'Revoke CANCELLER_ROLE from PodAdminGateway'
+    },
+
+    // 12. Deprecate ratioPCVControllerV2
+    {
+      target: 'core',
+      values: '0',
+      method: 'revokeRole(bytes32,address)',
+      arguments: (addresses) => [ethers.utils.id('PCV_CONTROLLER_ROLE'), addresses.ratioPCVControllerV2],
+      description: 'Revoke PCV_CONTROLLER_ROLE from RatioPCVControllerV2'
+    }
   ],
   description: `
   TIP-121c: veBAL OTC
