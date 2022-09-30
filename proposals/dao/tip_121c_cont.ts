@@ -15,7 +15,7 @@ import { BigNumber } from 'ethers';
 const PROXY_ADMIN_STORAGE_SLOT = '0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103';
 const PROXY_ADMIN_IMPLEMENTATION_SLOT = '0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc';
 
-const fipNumber = 'vebalotc';
+const fipNumber = 'tip_121c_cont';
 
 let vebalOtcBuyer: string;
 let aaveEscrowDaiBefore: BigNumber;
@@ -25,6 +25,10 @@ let pcvStatsBefore: PcvStats;
 
 // Amount of FEI to withdraw, and then burn, from Rari Pool 8
 const RARI_POOL_8_FEI_WITHDRAWAL = ethers.constants.WeiPerEther.mul(25_000);
+
+/*
+  TIP_121c (cont): Aave Companies veBAL OTC, deprecate Tribe DAO sub-systems and contracts
+*/
 
 // Do any deployments
 // This should exclusively include new contract deployments
@@ -156,6 +160,15 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   // 7. Verify Rari pool 8 FEI was burned
   // const feiBurn = feiInitialTotalSupply.sub(await contracts.fei.totalSupply());
   // expect(feiBurn).to.equal(RARI_POOL_8_FEI_WITHDRAWAL);
+
+  // 8. No check for revoked Tribe roles - there is a seperate e2e
+
+  // 9. Verify init impossible to call on core
+  await expect(contracts.core.init()).to.be.revertedWith('Initializable: contract is already initialized');
+
+  // 10. Verify PodAdminGateway has CANCELLER_ROLE removed
+  expect(await contracts.tribalCouncilTimelock.hasRole(ethers.utils.id('CANCELLER_ROLE'), addresses.podAdminGateway)).to
+    .be.false;
 };
 
 export { deploy, setup, teardown, validate };

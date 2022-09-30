@@ -29,7 +29,7 @@ export const MainnetContractsConfig = {
   proxyAdmin: {
     artifactName: 'ProxyAdmin',
     address: '0xf8c2b645988b7658E7748BA637fE25bdD46A704A',
-    category: AddressCategory.Deprecated
+    category: AddressCategory.Core
   },
   tribe: {
     artifactName: 'Tribe',
@@ -39,7 +39,7 @@ export const MainnetContractsConfig = {
   tribeMinter: {
     artifactName: 'TribeMinter',
     address: '0xFC3532b443383d9022b1B2c6FD5Fd0895943360A',
-    category: AddressCategory.Deprecated
+    category: AddressCategory.Core
   },
   restrictedPermissions: {
     artifactName: 'RestrictedPermissions',
