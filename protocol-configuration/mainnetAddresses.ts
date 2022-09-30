@@ -107,6 +107,12 @@ export const MainnetContractsConfig = {
     category: AddressCategory.Governance
   },
 
+  veBalOtcHelper: {
+    artifactName: 'VeBalHelper',
+    address: '0xb02CE4D72124b98Df4EAB4184467d7Da0023F9FB',
+    category: AddressCategory.TBD
+  },
+
   balancerVotingEscrowDelegation: {
     artifactName: 'IVotingEscrowDelegation',
     address: '0xB496FF44746A8693A060FafD984Da41B253f6790',
@@ -121,12 +127,11 @@ export const MainnetContractsConfig = {
     category: AddressCategory.Deprecated
   },
 
-  // Use to call implementation
-  // balancerGaugeStakerV2Impl: {
-  //   artifactName: 'BalancerGaugeStakerV2',
-  //   address: 'TODO',
-  //   category: AddressCategory.TBD
-  // },
+  balancerGaugeStakerV2Impl: {
+    artifactName: 'BalancerGaugeStakerV2',
+    address: '0xbf3f6c7821E4d7D5DF204dEa4871b2e8D68c1CCd',
+    category: AddressCategory.TBD
+  },
 
   // Use to call proxy functions
   balancerGaugeStakerProxy: {
