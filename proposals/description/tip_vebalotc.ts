@@ -82,7 +82,8 @@ const tip_vebalotc: TemplatedProposalDescription = {
           addresses.ethToDaiLensEth,
           addresses.lusdHoldingPCVDeposit,
           addresses.wethHoldingPCVDeposit,
-          addresses.ethLidoPCVDeposit
+          addresses.ethLidoPCVDeposit,
+          addresses.daiHoldingPCVDeposit
         ]
       ],
       description: 'Remove deprecated/empty smart contracts from CR Oracle'
@@ -140,22 +141,22 @@ const tip_vebalotc: TemplatedProposalDescription = {
       method: 'setOracle(address,address)',
       arguments: (addresses) => [addresses.dai, addresses.oneConstantOracle],
       description: 'Swap DAI oracle for the OneConstantOracle'
-    },
-    // 7. Withdraw last 25k from pool 8
-    {
-      target: 'rariPool8FeiPCVDeposit',
-      values: '0',
-      method: 'withdraw(address,uint256)',
-      arguments: (addresses) => [addresses.feiDAOTimelock, RARI_POOL_8_FEI_WITHDRAWAL],
-      description: 'Withdraw 25K FEI from Rari Pool 8'
-    },
-    {
-      target: 'fei',
-      values: '0',
-      method: 'burn(uint256)',
-      arguments: (addresses) => [RARI_POOL_8_FEI_WITHDRAWAL],
-      description: 'Burn 25K Rari Pool 8 FEI withdrawal'
     }
+    // 7. Withdraw last 25k from pool 8
+    // {
+    //   target: 'rariPool8FeiPCVDeposit',
+    //   values: '0',
+    //   method: 'withdraw(address,uint256)',
+    //   arguments: (addresses) => [addresses.feiDAOTimelock, RARI_POOL_8_FEI_WITHDRAWAL],
+    //   description: 'Withdraw 25K FEI from Rari Pool 8'
+    // },
+    // {
+    //   target: 'fei',
+    //   values: '0',
+    //   method: 'burn(uint256)',
+    //   arguments: (addresses) => [RARI_POOL_8_FEI_WITHDRAWAL],
+    //   description: 'Burn 25K Rari Pool 8 FEI withdrawal'
+    // }
   ],
   description: `
   TIP-121c: veBAL OTC
