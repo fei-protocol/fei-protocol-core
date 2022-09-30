@@ -74,7 +74,9 @@ const tip_vebalotc: TemplatedProposalDescription = {
           addresses.balancerLensVeBalBal,
           addresses.balancerLensVeBalWeth,
           addresses.balancerGaugeStakerProxy,
-          addresses.balancerDepositBalWeth
+          addresses.balancerDepositBalWeth,
+          addresses.ethToDaiLensDai,
+          addresses.ethToDaiLensEth
         ]
       ],
       description: 'Remove deprecated/empty smart contracts from CR Oracle'
@@ -117,6 +119,21 @@ const tip_vebalotc: TemplatedProposalDescription = {
       method: 'revokeMinter(address)',
       arguments: (addresses) => [addresses.feiDAOTimelock],
       description: 'Revoke MINTER_ROLE from DAO timelock'
+    },
+    // 6. Deprecate various contracts, cleanup
+    {
+      target: 'ethToDaiLBPSwapper',
+      values: '0',
+      method: 'pause()',
+      arguments: (addresses) => [],
+      description: 'Pause ethToDaiLBPSwapper'
+    },
+    {
+      target: 'ethToDaiLBPSwapper',
+      values: '0',
+      method: 'pause()',
+      arguments: (addresses) => [],
+      description: 'Pause ethToDaiLBPSwapper'
     }
   ],
   description: `

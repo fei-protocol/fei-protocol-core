@@ -143,6 +143,9 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   // Verify DAI PSM DAI balance decreased by expected 1M DAI
   const psmDaiBalanceDecrease = psmDaiBalanceBefore.sub(await contracts.dai.balanceOf(addresses.simpleFeiDaiPSM));
   expect(psmDaiBalanceDecrease).to.equal(ethers.constants.WeiPerEther.mul(1_000_000));
+
+  // 6. Verify deprecated contracts final state
+  expect(await contracts.ethToDaiLBPSwapper.paused()).to.be.true;
 };
 
 export { deploy, setup, teardown, validate };

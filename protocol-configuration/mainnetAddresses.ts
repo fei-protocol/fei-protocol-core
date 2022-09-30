@@ -69,7 +69,7 @@ export const MainnetContractsConfig = {
   ethToDaiLBPSwapper: {
     artifactName: 'BalancerLBPSwapper',
     address: '0xf7991f4698ffb6716982aec7f78964dd731c4a54',
-    category: AddressCategory.Utility
+    category: AddressCategory.Deprecated
   },
 
   feiDAO: {
@@ -98,13 +98,13 @@ export const MainnetContractsConfig = {
   weightedBalancerPoolManagerBase: {
     artifactName: 'WeightedBalancerPoolManagerBase',
     address: '0x75b984d8Ad22007923B03b5D40daA1917EF35313',
-    category: AddressCategory.Governance
+    category: AddressCategory.Deprecated
   },
 
   veBalDelegatorPCVDeposit: {
     artifactName: 'VeBalDelegatorPCVDeposit',
     address: '0xc4EAc760C2C631eE0b064E39888b89158ff808B2',
-    category: AddressCategory.Governance
+    category: AddressCategory.Deprecated
   },
 
   vebalOtcHelper: {
@@ -169,13 +169,13 @@ export const MainnetContractsConfig = {
   ethToDaiLensDai: {
     artifactName: 'BPTLens',
     address: '0xdF9Ff5c077d9F3427ade67AC2d27a864Be6F3187',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
 
   ethToDaiLensEth: {
     artifactName: 'BPTLens',
     address: '0xf24401F6992FaEAcbc5d6C6991db15B5F8364A1B',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
 
   balancerDepositBalWeth: {
@@ -215,7 +215,7 @@ export const MainnetContractsConfig = {
   balUsdCompositeOracle: {
     artifactName: 'CompositeOracle',
     address: '0xDe0407851AEC6F073A63D27C7D29805CCD59D3e0',
-    category: AddressCategory.Oracle
+    category: AddressCategory.Deprecated
   },
 
   chainlinkStEthUsdOracleWrapper: {
