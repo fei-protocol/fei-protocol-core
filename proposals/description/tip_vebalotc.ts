@@ -138,7 +138,7 @@ const tip_vebalotc: TemplatedProposalDescription = {
       target: 'collateralizationOracle',
       values: '0',
       method: 'setOracle(address,address)',
-      arguments: (addresses) => [addresses.oneConstantOracle],
+      arguments: (addresses) => [addresses.dai, addresses.oneConstantOracle],
       description: 'Swap DAI oracle for the OneConstantOracle'
     },
     // 7. Withdraw last 25k from pool 8
