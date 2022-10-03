@@ -46,11 +46,6 @@ export const MainnetContractsConfig = {
     address: '0x10ffa0CD36Bc16b355d21A08DF4a552c4A9FEC10',
     category: AddressCategory.Core
   },
-  pcvSentinel: {
-    artifactName: 'PCVSentinel',
-    address: '0xC297705Acf50134d256187c754B92FA37826C019',
-    category: AddressCategory.Deprecated
-  },
   pcvGuardian: {
     artifactName: 'PCVGuardian',
     address: '0x02435948F84d7465FB71dE45ABa6098Fc6eC2993',
@@ -65,11 +60,6 @@ export const MainnetContractsConfig = {
     artifactName: 'RatioPCVControllerV2',
     address: '0x221fff24FB66dA3c722c7C5B856956a6a30C0179',
     category: AddressCategory.Utility
-  },
-  ethToDaiLBPSwapper: {
-    artifactName: 'BalancerLBPSwapper',
-    address: '0xf7991f4698ffb6716982aec7f78964dd731c4a54',
-    category: AddressCategory.Deprecated
   },
   feiDAO: {
     artifactName: 'FeiDAO',
@@ -94,18 +84,6 @@ export const MainnetContractsConfig = {
     category: AddressCategory.Governance
   },
 
-  weightedBalancerPoolManagerBase: {
-    artifactName: 'WeightedBalancerPoolManagerBase',
-    address: '0x75b984d8Ad22007923B03b5D40daA1917EF35313',
-    category: AddressCategory.Deprecated
-  },
-
-  veBalDelegatorPCVDeposit: {
-    artifactName: 'VeBalDelegatorPCVDeposit',
-    address: '0xc4EAc760C2C631eE0b064E39888b89158ff808B2',
-    category: AddressCategory.Deprecated
-  },
-
   vebalOtcHelper: {
     artifactName: 'VeBalHelper',
     address: '0xb02CE4D72124b98Df4EAB4184467d7Da0023F9FB',
@@ -116,14 +94,6 @@ export const MainnetContractsConfig = {
     artifactName: 'IVotingEscrowDelegation',
     address: '0xB496FF44746A8693A060FafD984Da41B253f6790',
     category: AddressCategory.External
-  },
-
-  // Use to call implementation
-  balancerGaugeStakerImpl: {
-    // v1 BalancerGaugeStaker
-    artifactName: 'BalancerGaugeStaker',
-    address: '0xF53E251352683155898295569d77B8506bA00d80',
-    category: AddressCategory.Deprecated
   },
 
   balancerGaugeStakerV2Impl: {
@@ -165,18 +135,6 @@ export const MainnetContractsConfig = {
     category: AddressCategory.PCV
   },
 
-  ethToDaiLensDai: {
-    artifactName: 'BPTLens',
-    address: '0xdF9Ff5c077d9F3427ade67AC2d27a864Be6F3187',
-    category: AddressCategory.Deprecated
-  },
-
-  ethToDaiLensEth: {
-    artifactName: 'BPTLens',
-    address: '0xf24401F6992FaEAcbc5d6C6991db15B5F8364A1B',
-    category: AddressCategory.Deprecated
-  },
-
   balancerDepositBalWeth: {
     artifactName: 'BalancerPCVDepositWeightedPool',
     address: '0xcd1Ac0014E2ebd972f40f24dF1694e6F528B2fD4',
@@ -209,30 +167,6 @@ export const MainnetContractsConfig = {
     artifactName: 'LinearTimelockedDelegator',
     address: '0x625cf6AA7DafB154F3Eb6BE87592110e30290dEe',
     category: AddressCategory.Distribution
-  },
-
-  balUsdCompositeOracle: {
-    artifactName: 'CompositeOracle',
-    address: '0xDe0407851AEC6F073A63D27C7D29805CCD59D3e0',
-    category: AddressCategory.Deprecated
-  },
-
-  chainlinkStEthUsdOracleWrapper: {
-    artifactName: 'ChainlinkOracleWrapper',
-    address: '0x011d15600671530C93818FdB1283E20748CB8c73',
-    category: AddressCategory.Deprecated
-  },
-
-  chainlinkDaiUsdOracleWrapper: {
-    artifactName: 'ChainlinkOracleWrapper',
-    address: '0x231aDa12E273eDf3fA54CbD90c5C1a73129D5bb9',
-    category: AddressCategory.Deprecated
-  },
-
-  chainlinkLUSDOracleWrapper: {
-    artifactName: 'ChainlinkOracleWrapper',
-    address: '0xe61d11ec732d556A26fb863B192052BEa03eF8B5',
-    category: AddressCategory.Deprecated
   },
 
   oneConstantOracle: {
@@ -904,7 +838,7 @@ export const MainnetContractsConfig = {
   escrowedAaveDaiPCVDeposit: {
     artifactName: 'ERC20PCVDepositWrapper',
     address: '0x82c55A1Ab5C6F4b8e162b7dE24b50A38E1aFd38f',
-    category: AddressCategory.External
+    category: AddressCategory.PCV
   },
 
   fuseMultisig: {
@@ -1301,6 +1235,74 @@ export const MainnetContractsConfig = {
     artifactName: 'ChainlinkOracleWrapper',
     address: '0x7261D245454Daa070C77B2a26eA192E3a4c8F655',
     category: AddressCategory.External
+  },
+
+  pcvSentinel: {
+    artifactName: 'PCVSentinel',
+    address: '0xC297705Acf50134d256187c754B92FA37826C019',
+    category: AddressCategory.Deprecated
+  },
+
+  // Use to call implementation
+  balancerGaugeStakerImpl: {
+    // v1 BalancerGaugeStaker
+    artifactName: 'BalancerGaugeStaker',
+    address: '0xF53E251352683155898295569d77B8506bA00d80',
+    category: AddressCategory.Deprecated
+  },
+
+  ethToDaiLBPSwapper: {
+    artifactName: 'BalancerLBPSwapper',
+    address: '0xf7991f4698ffb6716982aec7f78964dd731c4a54',
+    category: AddressCategory.Deprecated
+  },
+
+  weightedBalancerPoolManagerBase: {
+    artifactName: 'WeightedBalancerPoolManagerBase',
+    address: '0x75b984d8Ad22007923B03b5D40daA1917EF35313',
+    category: AddressCategory.Deprecated
+  },
+
+  veBalDelegatorPCVDeposit: {
+    artifactName: 'VeBalDelegatorPCVDeposit',
+    address: '0xc4EAc760C2C631eE0b064E39888b89158ff808B2',
+    category: AddressCategory.Deprecated
+  },
+
+  ethToDaiLensDai: {
+    artifactName: 'BPTLens',
+    address: '0xdF9Ff5c077d9F3427ade67AC2d27a864Be6F3187',
+    category: AddressCategory.Deprecated
+  },
+
+  ethToDaiLensEth: {
+    artifactName: 'BPTLens',
+    address: '0xf24401F6992FaEAcbc5d6C6991db15B5F8364A1B',
+    category: AddressCategory.Deprecated
+  },
+
+  balUsdCompositeOracle: {
+    artifactName: 'CompositeOracle',
+    address: '0xDe0407851AEC6F073A63D27C7D29805CCD59D3e0',
+    category: AddressCategory.Deprecated
+  },
+
+  chainlinkStEthUsdOracleWrapper: {
+    artifactName: 'ChainlinkOracleWrapper',
+    address: '0x011d15600671530C93818FdB1283E20748CB8c73',
+    category: AddressCategory.Deprecated
+  },
+
+  chainlinkDaiUsdOracleWrapper: {
+    artifactName: 'ChainlinkOracleWrapper',
+    address: '0x231aDa12E273eDf3fA54CbD90c5C1a73129D5bb9',
+    category: AddressCategory.Deprecated
+  },
+
+  chainlinkLUSDOracleWrapper: {
+    artifactName: 'ChainlinkOracleWrapper',
+    address: '0xe61d11ec732d556A26fb863B192052BEa03eF8B5',
+    category: AddressCategory.Deprecated
   },
 
   fuseWithdrawalGuard: {
