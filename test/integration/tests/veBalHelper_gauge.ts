@@ -28,7 +28,7 @@ describe('e2e-veBalHelper-gauge-management', function () {
   let otcBuyerSigner: SignerWithAddress;
 
   let gaugeTokenHolderSigner: SignerWithAddress;
-  const balFeiWethGaugeTokenHolder = '0x7818a1da7bd1e64c199029e86ba244a9798eee10';
+  const balFeiWethGaugeTokenHolder = '0xf4adc8369e83d6a599e51438d44b5e53a412f807';
 
   before(async function () {
     deployAddress = (await ethers.getSigners())[0].address;
