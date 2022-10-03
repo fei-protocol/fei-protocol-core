@@ -16,7 +16,7 @@ jobs:
           key: package-cache-{{ checksum "package-lock.json" }}
       - run: # we use npm install and not npm ci because npm ci removes node-modules entirely
           name: Install dependencies
-          command: npm install
+          command: echo "lmeow"; npm install
       - save_cache: # Save the node_modules and .npm directories into the cache by the checksum of package-lock.json
           key: package-cache-{{ checksum "package-lock.json" }}
           paths:
