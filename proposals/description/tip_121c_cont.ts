@@ -4,8 +4,8 @@ import { TemplatedProposalDescription } from '@custom-types/types';
 // Amount of Fei minted to redeem equivalent amount from feiPSM, for Aave escrow
 const AMOUNT_FEI_MINTED_FOR_DAI_REDEEM = ethers.constants.WeiPerEther.mul(1_000_000);
 
-const tip_vebalotc: TemplatedProposalDescription = {
-  title: 'TIP-121c: veBAL OTC',
+const tip_121c_cont: TemplatedProposalDescription = {
+  title: 'TIP-121c: veBAL OTC with Aave Companies',
   commands: [
     // 1. Grant Tribe Roles to the veBalOTCHelper, necessary to allow Aave to manage veBAL
     {
@@ -240,18 +240,21 @@ const tip_vebalotc: TemplatedProposalDescription = {
     }
   ],
   description: `
-  TIP-121c: veBAL OTC
+  TIP-121c: veBAL OTC with Aave Companies
 
-  This proposal sets up the protocol to be able to transfer its 112k veBAL to Aave Companies for OTC trade.
+  This proposal sets up the protocol to transfer 112k veBAL to Aave Companies for OTC trade.
 
-  The 1,000,000 DAI will be escrowed on a 3/3 multisig with Aave Companies, Balancer DAO, and Tribe DAO.
-  The Tribe DAO designates eswak.eth to be signer on this 3/3 multisig.
+Aave Companies will send 1,000,000 DAI to be escrowed on a 2/3 multisig with Aave Companies, Balancer DAO, and Tribe DAO (with eswak.eth as the designated representative).
 
-  After the Aave Companies team confirms they can properly use the veBAL-holding smart contracts, the 3/3 multisig will transfer the DAI to the Tribe DAO.
+In addition, the proposal moves 1M DAI from the FEI PSM to the escrow multisig to be sent to the TRIBE Redeemer.
 
-  The full list of actions of this proposal is :
-  - 1. Handle veBAL OTC
+After the Aave Companies team confirms they can properly use the veBAL-holding smart contracts, the 2/3 multisig will transfer 1M DAI to the TRIBE Redeemer, giving TRIBE holders access to the optimal amount of excess PCV for redemptions.
+
+After the DAO Vote to disable governance, the final 1M DAI from Aave Companies would be sent back to the FEI PSM from the ⅔ Multisig.
+
+Lastly, the proposal further cleans up unused roles in the system and performs maintenance on the collateralization oracle so that it is in the most up to date state.
+
   `
 };
 
-export default tip_vebalotc;
+export default tip_121c_cont;
