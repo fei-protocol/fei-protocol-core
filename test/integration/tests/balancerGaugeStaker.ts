@@ -10,6 +10,8 @@ import { forceEth } from '@test/integration/setup/utils';
 import { BalancerGaugeStakerV2 } from '@custom-types/contracts';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 
+const e18 = '000000000000000000';
+
 describe('e2e-metagov', function () {
   let deployAddress: string;
   let contracts: NamedContracts;
@@ -60,7 +62,7 @@ describe('e2e-metagov', function () {
       const lpTokenHolder = '0xf4adc8369e83d6a599e51438d44b5e53a412f807';
       const lpTokenSigner = await getImpersonatedSigner(lpTokenHolder);
       await forceEth(lpTokenHolder);
-      await contracts.bpt30Fei70Weth.connect(lpTokenSigner).transfer(staker.address, 10_000);
+      await contracts.bpt30Fei70Weth.connect(lpTokenSigner).transfer(staker.address, `100${e18}`);
 
       // also airdrop some BAL so that balance is not zero
       const balTokenHolder = '0xBA12222222228d8Ba445958a75a0704d566BF2C8';
@@ -68,10 +70,10 @@ describe('e2e-metagov', function () {
       await forceEth(balTokenHolder);
       await contracts.bal.connect(balTokenSigner).transfer(staker.address, '10000');
 
-      // grant role to dao and initialize dao signer
       veBalOtcHelperContract = await getImpersonatedSigner(contracts.vebalOtcHelper.address);
       await forceEth(contracts.vebalOtcHelper.address);
 
+      // Initialise dao signer
       daoSigner = await getImpersonatedSigner(contracts.feiDAOTimelock.address);
       await forceEth(contracts.feiDAOTimelock.address);
     });
@@ -135,9 +137,9 @@ describe('e2e-metagov', function () {
           .setTokenToGauge(contracts.bpt30Fei70Weth.address, contracts.balancerGaugeBpt30Fei70Weth.address);
         await staker.connect(veBalOtcHelperContract).stakeAllInGauge(contracts.bpt30Fei70Weth.address);
 
-        staker.mintGaugeRewards(contracts.bpt30Fei70Weth.address);
-        expect(await staker.balance()).to.be.at.least('9991');
-        expect((await staker.resistantBalanceAndFei())[0]).to.be.at.least('9991');
+        await staker.mintGaugeRewards(contracts.bpt30Fei70Weth.address);
+        expect(await staker.balance()).to.be.at.least('9990');
+        expect((await staker.resistantBalanceAndFei())[0]).to.be.at.least('9990');
         expect((await staker.resistantBalanceAndFei())[1]).to.be.equal('0');
       });
     });
