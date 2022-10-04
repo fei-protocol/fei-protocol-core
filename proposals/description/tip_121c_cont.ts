@@ -4,6 +4,9 @@ import { TemplatedProposalDescription } from '@custom-types/types';
 // Amount of Fei minted to redeem equivalent amount from feiPSM, for Aave escrow
 const AMOUNT_FEI_MINTED_FOR_DAI_REDEEM = ethers.constants.WeiPerEther.mul(1_000_000);
 
+// Amount of DAI available for withdrawal from Rari Pool 8
+const AMOUNT_DAI_POOL_8_WITHDRAWAL = '24827902366047784229817';
+
 const tip_121c_cont: TemplatedProposalDescription = {
   title: 'TIP-121c: veBAL OTC with Aave Companies',
   commands: [
@@ -237,6 +240,14 @@ const tip_121c_cont: TemplatedProposalDescription = {
       method: 'revokeRole(bytes32,address)',
       arguments: (addresses) => [ethers.utils.id('PCV_CONTROLLER_ROLE'), addresses.ratioPCVControllerV2],
       description: 'Revoke PCV_CONTROLLER_ROLE from RatioPCVControllerV2'
+    },
+    // 12. Withdraw 25k DAI from Rari Pool 8
+    {
+      target: 'rariPool8DaiPCVDeposit',
+      values: '0',
+      method: 'withdraw(address,uint256)',
+      arguments: (addresses) => [addresses.tribeRedeemer, AMOUNT_DAI_POOL_8_WITHDRAWAL],
+      description: 'Withdraw 25K DAI from Rari Pool 8 and send to Tribe Redeemer'
     }
   ],
   description: `
