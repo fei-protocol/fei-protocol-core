@@ -20,10 +20,14 @@ const fipNumber = 'tip_121c_cont';
 let vebalOtcBuyer: string;
 let aaveEscrowDaiBefore: BigNumber;
 let psmDaiBalanceBefore: BigNumber;
+let initialTribeRedeemerDai: BigNumber;
 let pcvStatsBefore: PcvStats;
 
 // Aave DAI escrow amount
 const AAVE_DAI_ESCROW_AMOUNT = ethers.constants.WeiPerEther.mul(1_000_000);
+
+// Amount of DAI available for withdrawal from Rari Pool 8
+const AMOUNT_DAI_POOL_8_WITHDRAWAL = '24827902366047784229817';
 
 /*
   TIP_121c (cont): Aave Companies veBAL OTC, deprecate Tribe DAO sub-systems and contracts
@@ -89,6 +93,7 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
 
   aaveEscrowDaiBefore = await contracts.dai.balanceOf(addresses.aaveCompaniesDaiEscrowMultisig);
   psmDaiBalanceBefore = await contracts.dai.balanceOf(addresses.simpleFeiDaiPSM);
+  initialTribeRedeemerDai = await contracts.dai.balanceOf(addresses.tribeRedeemer);
 
   // 1. Mock Aave escrowing 1M DAI in escrow multisig
   // TODO: Remove once AAVE Companies has escrowed DAI
@@ -184,7 +189,11 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await contracts.tribalCouncilTimelock.hasRole(ethers.utils.id('CANCELLER_ROLE'), addresses.podAdminGateway)).to
     .be.false;
 
-  // 10. Asset overcollaterised
+  // 10. Verify 25k Pool 8 DAI withdrawal to Tribe Redeemer
+  const tribeRedeemerDaiGain = (await contracts.dai.balanceOf(addresses.tribeRedeemer)).sub(initialTribeRedeemerDai);
+  expect(tribeRedeemerDaiGain).to.equal(AMOUNT_DAI_POOL_8_WITHDRAWAL);
+
+  // 11. Assert overcollaterised
   expect(await contracts.collateralizationOracle.isOvercollateralized()).to.be.true;
 };
 
