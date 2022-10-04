@@ -153,6 +153,12 @@ export const MainnetContractsConfig = {
     category: AddressCategory.PCV
   },
 
+  escrowedAaveDaiPCVDeposit: {
+    artifactName: 'ERC20PCVDepositWrapper',
+    address: '0x82c55A1Ab5C6F4b8e162b7dE24b50A38E1aFd38f',
+    category: AddressCategory.PCV
+  },
+
   collateralizationOracle: {
     artifactName: 'CollateralizationOracle',
     address: '0xFF6f59333cfD8f4Ebc14aD0a0E181a83e655d257',
@@ -833,12 +839,6 @@ export const MainnetContractsConfig = {
     artifactName: 'unknown',
     address: '0xA27A83A2433EbEB9f658B4420074B454846e1C5B',
     category: AddressCategory.External
-  },
-
-  escrowedAaveDaiPCVDeposit: {
-    artifactName: 'ERC20PCVDepositWrapper',
-    address: '0x82c55A1Ab5C6F4b8e162b7dE24b50A38E1aFd38f',
-    category: AddressCategory.PCV
   },
 
   fuseMultisig: {
