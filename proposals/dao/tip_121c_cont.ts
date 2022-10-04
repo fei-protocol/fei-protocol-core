@@ -92,17 +92,12 @@ const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, loggi
   ).to.be.equal(addresses.balancerGaugeStakerImpl.toLowerCase());
 
   aaveEscrowDaiBefore = await contracts.dai.balanceOf(addresses.aaveCompaniesDaiEscrowMultisig);
+
+  // Assert that Aave Escrow multisig has 1M DAI being escrowed
+  expect(aaveEscrowDaiBefore).to.equal(AAVE_DAI_ESCROW_AMOUNT);
+
   psmDaiBalanceBefore = await contracts.dai.balanceOf(addresses.simpleFeiDaiPSM);
   initialTribeRedeemerDai = await contracts.dai.balanceOf(addresses.tribeRedeemer);
-
-  // 1. Mock Aave escrowing 1M DAI in escrow multisig
-  // TODO: Remove once AAVE Companies has escrowed DAI
-  const daiWhale = '0x5d3a536e4d6dbd6114cc1ead35777bab948e3643';
-  await forceEth(daiWhale);
-  const daiWhaleSigner = await getImpersonatedSigner(daiWhale);
-  await contracts.dai
-    .connect(daiWhaleSigner)
-    .transfer(addresses.aaveCompaniesDaiEscrowMultisig, AAVE_DAI_ESCROW_AMOUNT);
 };
 
 // Tears down any changes made in setup() that need to be
@@ -169,8 +164,8 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const aaveEscrowDaiMultisigGain = (await contracts.dai.balanceOf(addresses.aaveCompaniesDaiEscrowMultisig)).sub(
     aaveEscrowDaiBefore
   );
-  // x2 as will have the AAVE DAI escrow and the TRIBE DAO DAI, which will later be moved to the redeemer
-  expect(aaveEscrowDaiMultisigGain).to.equal(AAVE_DAI_ESCROW_AMOUNT.mul(2));
+  // Will have gained 1M DAI from the Tribe DAO PSM, which will later be moved to the redeemer
+  expect(aaveEscrowDaiMultisigGain).to.equal(AAVE_DAI_ESCROW_AMOUNT);
 
   // Verify DAI PSM DAI balance decreased by expected 1M DAI
   const psmDaiBalanceDecrease = psmDaiBalanceBefore.sub(await contracts.dai.balanceOf(addresses.simpleFeiDaiPSM));
