@@ -129,12 +129,6 @@ export const MainnetContractsConfig = {
     category: AddressCategory.Governance
   },
 
-  rariTimelockFeiOldLens: {
-    artifactName: 'ERC20PCVDepositWrapper',
-    address: '0x614D46B7eB2AC1a359b8835D64954F3Ee4E6F676',
-    category: AddressCategory.PCV
-  },
-
   balancerDepositBalWeth: {
     artifactName: 'BalancerPCVDepositWeightedPool',
     address: '0xcd1Ac0014E2ebd972f40f24dF1694e6F528B2fD4',
@@ -1235,6 +1229,12 @@ export const MainnetContractsConfig = {
     artifactName: 'ChainlinkOracleWrapper',
     address: '0x7261D245454Daa070C77B2a26eA192E3a4c8F655',
     category: AddressCategory.External
+  },
+
+  rariTimelockFeiOldLens: {
+    artifactName: 'ERC20PCVDepositWrapper',
+    address: '0x614D46B7eB2AC1a359b8835D64954F3Ee4E6F676',
+    category: AddressCategory.Deprecated
   },
 
   pcvSentinel: {
