@@ -37,7 +37,6 @@ describe('e2e-metagov', function () {
   describe('BalancerGaugeStaker.sol', function () {
     let staker: BalancerGaugeStakerV2;
     let veBalOtcHelperContract: SignerWithAddress;
-    let daoSigner: SignerWithAddress;
     let randomSigner: SignerWithAddress;
 
     before(async function () {
@@ -72,10 +71,6 @@ describe('e2e-metagov', function () {
 
       veBalOtcHelperContract = await getImpersonatedSigner(contracts.vebalOtcHelper.address);
       await forceEth(contracts.vebalOtcHelper.address);
-
-      // Initialise dao signer
-      daoSigner = await getImpersonatedSigner(contracts.feiDAOTimelock.address);
-      await forceEth(contracts.feiDAOTimelock.address);
     });
 
     it('init', async function () {
@@ -105,12 +100,6 @@ describe('e2e-metagov', function () {
           staker.connect(randomSigner).withdraw(veBalOtcHelperContract.address, '10'),
           'CoreRef: Caller is not a PCV controller'
         );
-      });
-
-      it('should revert if contract is paused', async function () {
-        await staker.connect(daoSigner).pause();
-        await expectRevert(staker.withdraw(veBalOtcHelperContract.address, '10'), 'Pausable: paused');
-        await staker.connect(daoSigner).unpause();
       });
 
       it('should work if user has PCV_CONTROLLER_ROLE role', async function () {
@@ -150,12 +139,6 @@ describe('e2e-metagov', function () {
           staker.connect(randomSigner).withdraw(veBalOtcHelperContract.address, '10'),
           'CoreRef: Caller is not a PCV controller'
         );
-      });
-
-      it('should revert if contract is paused', async function () {
-        await staker.connect(daoSigner).pause();
-        await expectRevert(staker.withdraw(veBalOtcHelperContract.address, '10'), 'Pausable: paused');
-        await staker.connect(daoSigner).unpause();
       });
 
       it('should work if user has PCV_CONTROLLER_ROLE role', async function () {
