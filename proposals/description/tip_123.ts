@@ -4,15 +4,7 @@ import { ethers } from 'ethers';
 const tip_123: TemplatedProposalDescription = {
   title: 'TIP_123',
   commands: [
-    // 1. Deprecate TribeMinter
-    // {
-    //   target: 'core',
-    //   values: '0',
-    //   method: 'revokeRole(bytes32,address)',
-    //   arguments: (addresses) => [ethers.utils.id('GOVERN_ROLE'), addresses.feiDAOTimelock],
-    //   description: 'Revoke the GOVERN_ROLE from the TribeDAO timelock'
-    // },
-    // 2. Transfer beneficiary of deprecated Rari FEI timelock to burner timelock
+    // 1. Transfer beneficiary of deprecated Rari FEI timelock to burner timelock
     {
       target: 'rariInfraFeiTimelock',
       values: '0',
@@ -43,7 +35,35 @@ const tip_123: TemplatedProposalDescription = {
       arguments: (addresses) => [],
       description: 'Accept deprecated Rari Tribe timelock beneficiary to burner'
     },
-    // 2. Cleanup Collaterisation Oracle
+
+    // 3. Deprecate TribeMinter
+    {
+      target: 'tribeMinter',
+      values: '0',
+      method: 'setAnnualMaxInflationBasisPoints(uint256)',
+      arguments: (addresses) => ['1'],
+      description: 'Set Tribe minter max annual inflation to the minimum of 0.01% (1 basis point)'
+    },
+    {
+      target: 'tribeMinter',
+      values: '0',
+      method: 'setMinter(address)',
+      arguments: (addresses) => [addresses.feiDAOTimelock],
+      description: `
+        Set Tribe minter address to DAO timelock. This is an intermediate step and a subsequent action
+        will set the minter address to the zero address, effectively burning it (Tribe Minter doesn't allow
+        setting to zero).
+      `
+    },
+    {
+      target: 'tribe',
+      values: '0',
+      method: 'setMinter(address)',
+      arguments: (addresses) => [ethers.constants.AddressZero],
+      description: 'Set Tribe minter address to the Zero address'
+    },
+
+    // 4. Cleanup Collaterisation Oracle
     {
       target: 'collateralizationOracle',
       values: '0',
@@ -51,7 +71,8 @@ const tip_123: TemplatedProposalDescription = {
       arguments: (addresses) => [addresses.rariTimelockFeiOldLens],
       description: 'Remove Rari Infra deprecated FEI timelock lens from CR'
     },
-    // 3. Revoke PCV_CONTROLLER_ROLE from the DAO
+
+    // 5. Revoke PCV_CONTROLLER_ROLE from the DAO
     {
       target: 'core',
       values: '0',
@@ -59,7 +80,8 @@ const tip_123: TemplatedProposalDescription = {
       arguments: (addresses) => [ethers.utils.id('PCV_CONTROLLER_ROLE'), addresses.feiDAOTimelock],
       description: 'Revoke the PCV_CONTROLLER_ROLE from the TribeDAO timelock'
     },
-    // 4. Revoke GUARDIAN role from Guardian multisig
+
+    // 6. Revoke GUARDIAN role from Guardian multisig
     {
       target: 'core',
       values: '0',
@@ -67,7 +89,8 @@ const tip_123: TemplatedProposalDescription = {
       arguments: (addresses) => [ethers.utils.id('GUARDIAN_ROLE'), addresses.guardianMultisig],
       description: 'Revoke the GUARDIAN_ROLE from the Guardian multisig'
     },
-    // 5. Revoke GOVERN_ROLE from the DAO and Core
+
+    // 7. Revoke GOVERN_ROLE from the DAO and Core
     {
       target: 'core',
       values: '0',
@@ -82,7 +105,8 @@ const tip_123: TemplatedProposalDescription = {
       arguments: (addresses) => [ethers.utils.id('GOVERN_ROLE'), addresses.feiDAOTimelock],
       description: 'Revoke the GOVERN_ROLE from the TribeDAO timelock'
     },
-    // 6. Transfer admin of DAO timelock to DAO timelock burner
+
+    // 8. Transfer admin of DAO timelock to DAO timelock burner
     {
       target: 'feiDAOTimelock',
       values: '0',

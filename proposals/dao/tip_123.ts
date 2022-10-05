@@ -67,6 +67,10 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 
   // 3. Verify Rari Tribe deprecated timelock burned
   expect(await contracts.rariInfraTribeTimelock.beneficiary()).to.equal(addresses.deprecatedRariTribeTimelockBurner);
+
+  // 4. Verify Tribe minter set to zero address and inflation is the minimum of 0.01% (1 basis point)
+  expect(await contracts.tribe.minter()).to.equal(ethers.constants.AddressZero);
+  expect(await contracts.tribeMinter.annualMaxInflationBasisPoints()).to.equal(1);
 };
 
 export { deploy, setup, teardown, validate };
