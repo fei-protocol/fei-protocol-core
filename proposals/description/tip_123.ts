@@ -28,6 +28,37 @@ const tip_123: TemplatedProposalDescription = {
       arguments: (addresses) => [addresses.rariTimelockFeiOldLens],
       description: 'Remove Rari Infra deprecated FEI timelock lens from CR'
     },
+    // 3. Revoke PCV_CONTROLLER_ROLE from the DAO
+    {
+      target: 'core',
+      values: '0',
+      method: 'revokeRole(bytes32,address)',
+      arguments: (addresses) => [ethers.utils.id('PCV_CONTROLLER_ROLE'), addresses.feiDAOTimelock],
+      description: 'Revoke the PCV_CONTROLLER_ROLE from the TribeDAO timelock'
+    },
+    // 4. Revoke GUARDIAN role from Guardian multisig
+    {
+      target: 'core',
+      values: '0',
+      method: 'revokeRole(bytes32,address)',
+      arguments: (addresses) => [ethers.utils.id('GUARDIAN_ROLE'), addresses.guardianMultisig],
+      description: 'Revoke the GUARDIAN_ROLE from the Guardian multisig'
+    },
+    // 5. Revoke GOVERN_ROLE from the DAO and Core
+    {
+      target: 'core',
+      values: '0',
+      method: 'revokeRole(bytes32,address)',
+      arguments: (addresses) => [ethers.utils.id('GOVERN_ROLE'), addresses.feiDAOTimelock],
+      description: 'Revoke the GOVERN_ROLE from the TribeDAO timelock'
+    },
+    {
+      target: 'core',
+      values: '0',
+      method: 'revokeRole(bytes32,address)',
+      arguments: (addresses) => [ethers.utils.id('GOVERN_ROLE'), addresses.core],
+      description: 'Revoke the GOVERN_ROLE from the Core Treasury'
+    },
       arguments: (addresses) => [],
       description: ''
     }
