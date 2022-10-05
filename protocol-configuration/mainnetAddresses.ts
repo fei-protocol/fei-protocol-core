@@ -16,11 +16,6 @@ export const MainnetContractsConfig = {
     address: '0xCAe4210e6676727EA4e0fD9BA5dFb95831356a16',
     category: AddressCategory.Core
   },
-  core: {
-    artifactName: 'Core',
-    address: '0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9',
-    category: AddressCategory.Core
-  },
   fei: {
     artifactName: 'Fei',
     address: '0x956F47F50A910163D8BF957Cf5846D573E7f87CA',
@@ -34,11 +29,6 @@ export const MainnetContractsConfig = {
   tribe: {
     artifactName: 'Tribe',
     address: '0xc7283b66Eb1EB5FB86327f08e1B5816b0720212B',
-    category: AddressCategory.Core
-  },
-  tribeMinter: {
-    artifactName: 'TribeMinter',
-    address: '0xFC3532b443383d9022b1B2c6FD5Fd0895943360A',
     category: AddressCategory.Core
   },
   restrictedPermissions: {
@@ -67,11 +57,6 @@ export const MainnetContractsConfig = {
     category: AddressCategory.Governance
   },
 
-  feiDAOTimelock: {
-    artifactName: 'FeiDAOTimelock',
-    address: '0xd51dbA7a94e1adEa403553A8235C302cEbF41a3c',
-    category: AddressCategory.Governance
-  },
   rariTimelock: {
     artifactName: 'Timelock',
     address: '0x8ace03Fc45139fDDba944c6A4082b604041d19FC',
@@ -1229,6 +1214,24 @@ export const MainnetContractsConfig = {
     artifactName: 'ChainlinkOracleWrapper',
     address: '0x7261D245454Daa070C77B2a26eA192E3a4c8F655',
     category: AddressCategory.External
+  },
+
+  feiDAOTimelock: {
+    artifactName: 'FeiDAOTimelock',
+    address: '0xd51dbA7a94e1adEa403553A8235C302cEbF41a3c',
+    category: AddressCategory.Deprecated
+  },
+
+  core: {
+    artifactName: 'Core',
+    address: '0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9',
+    category: AddressCategory.Deprecated
+  },
+
+  tribeMinter: {
+    artifactName: 'TribeMinter',
+    address: '0xFC3532b443383d9022b1B2c6FD5Fd0895943360A',
+    category: AddressCategory.Deprecated
   },
 
   rariTimelockFeiOldLens: {
