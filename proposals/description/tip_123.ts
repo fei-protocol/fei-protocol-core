@@ -26,7 +26,7 @@ const tip_123: TemplatedProposalDescription = {
       values: '0',
       method: 'setPendingBeneficiary(address)',
       arguments: (addresses) => [addresses.deprecatedRariTribeTimelockBurner],
-      description: 'Set pending beneficiary of deprecated Rari Tribe timelock burner to Tribe burner timelock'
+      description: 'Set pending beneficiary of deprecated Rari Tribe timelock to Tribe burner timelock'
     },
     {
       target: 'deprecatedRariTribeTimelockBurner',
@@ -34,6 +34,22 @@ const tip_123: TemplatedProposalDescription = {
       method: 'acceptBeneficiary()',
       arguments: (addresses) => [],
       description: 'Accept deprecated Rari Tribe timelock beneficiary to burner'
+    },
+
+    // 3. Transfer beneficiary of Fei Labs Tribe contract to burner TRIBE timelock
+    {
+      target: 'feiLabsVestingTimelock',
+      values: '0',
+      method: 'setPendingBeneficiary(address)',
+      arguments: (addresses) => [addresses.feiLabsTribeBurner],
+      description: 'Set pending beneficiary of Fei Labs Tribe timelock to Fei Labs Tribe burner timelock'
+    },
+    {
+      target: 'feiLabsTribeBurner',
+      values: '0',
+      method: 'acceptBeneficiary()',
+      arguments: (addresses) => [],
+      description: 'Accept deprecated Fei Labs Tribe timelock beneficiary to burner'
     },
 
     // 3. Deprecate TribeMinter
