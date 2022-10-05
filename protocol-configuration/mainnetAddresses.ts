@@ -16,11 +16,17 @@ export const MainnetContractsConfig = {
     address: '0xCAe4210e6676727EA4e0fD9BA5dFb95831356a16',
     category: AddressCategory.Core
   },
+  core: {
+    artifactName: 'Core',
+    address: '0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9',
+    category: AddressCategory.Core
+  },
   fei: {
     artifactName: 'Fei',
     address: '0x956F47F50A910163D8BF957Cf5846D573E7f87CA',
     category: AddressCategory.Core
   },
+  // TODO: Deprecate once confident no dependents
   proxyAdmin: {
     artifactName: 'ProxyAdmin',
     address: '0xf8c2b645988b7658E7748BA637fE25bdD46A704A',
@@ -31,29 +37,29 @@ export const MainnetContractsConfig = {
     address: '0xc7283b66Eb1EB5FB86327f08e1B5816b0720212B',
     category: AddressCategory.Core
   },
+  tribeMinter: {
+    artifactName: 'TribeMinter',
+    address: '0xFC3532b443383d9022b1B2c6FD5Fd0895943360A',
+    category: AddressCategory.Core
+  },
   restrictedPermissions: {
     artifactName: 'RestrictedPermissions',
     address: '0x10ffa0CD36Bc16b355d21A08DF4a552c4A9FEC10',
     category: AddressCategory.Core
-  },
-  pcvGuardian: {
-    artifactName: 'PCVGuardian',
-    address: '0x02435948F84d7465FB71dE45ABa6098Fc6eC2993',
-    category: AddressCategory.Security
   },
   guardianMultisig: {
     artifactName: 'unknown',
     address: '0xB8f482539F2d3Ae2C9ea6076894df36D1f632775',
     category: AddressCategory.Security
   },
-  ratioPCVControllerV2: {
-    artifactName: 'RatioPCVControllerV2',
-    address: '0x221fff24FB66dA3c722c7C5B856956a6a30C0179',
-    category: AddressCategory.Utility
-  },
   feiDAO: {
     artifactName: 'FeiDAO',
     address: '0x0BEF27FEB58e857046d630B2c03dFb7bae567494',
+    category: AddressCategory.Governance
+  },
+  feiDAOTimelock: {
+    artifactName: 'FeiDAOTimelock',
+    address: '0xd51dbA7a94e1adEa403553A8235C302cEbF41a3c',
     category: AddressCategory.Governance
   },
 
@@ -69,66 +75,15 @@ export const MainnetContractsConfig = {
     category: AddressCategory.Governance
   },
 
-  vebalOtcHelper: {
-    artifactName: 'VeBalHelper',
-    address: '0xb02CE4D72124b98Df4EAB4184467d7Da0023F9FB',
-    category: AddressCategory.TBD
-  },
-
-  balancerVotingEscrowDelegation: {
-    artifactName: 'IVotingEscrowDelegation',
-    address: '0xB496FF44746A8693A060FafD984Da41B253f6790',
-    category: AddressCategory.External
-  },
-
-  balancerGaugeStakerV2Impl: {
-    artifactName: 'BalancerGaugeStakerV2',
-    address: '0xbf3f6c7821E4d7D5DF204dEa4871b2e8D68c1CCd',
-    category: AddressCategory.TBD
-  },
-
-  // Use to call proxy functions
-  balancerGaugeStakerProxy: {
-    artifactName: 'TransparentUpgradeableProxy',
-    address: '0x66977Ce30049CD0e443216Bf26377966c3A109E2',
-    category: AddressCategory.TBD
-  },
-
-  // Use to call functions through the proxy. Proxy address cast
-  // with latest implementation interface
-  balancerGaugeStaker: {
-    artifactName: 'BalancerGaugeStakerV2',
-    address: '0x66977Ce30049CD0e443216Bf26377966c3A109E2',
-    category: AddressCategory.TBD
-  },
-
   rariGovernanceProxyAdmin: {
     artifactName: 'ProxyAdmin',
     address: '0x1c9aA54a013962C2444ECae06902F31D532c6AD3',
     category: AddressCategory.Governance
   },
 
-  nopeDAO: {
-    artifactName: 'NopeDAO',
-    address: '0x6C7aF43Ce97686e0C8AcbBc03b2E4f313c0394C7',
-    category: AddressCategory.Governance
-  },
-
-  balancerDepositBalWeth: {
-    artifactName: 'BalancerPCVDepositWeightedPool',
-    address: '0xcd1Ac0014E2ebd972f40f24dF1694e6F528B2fD4',
-    category: AddressCategory.PCV
-  },
-
-  balancerLensVeBalBal: {
-    artifactName: 'BalancerPool2Lens',
-    address: '0x8cbA3149b95084A61bBAb9e01110b0fB92C9a289',
-    category: AddressCategory.PCV
-  },
-
-  balancerLensVeBalWeth: {
-    artifactName: 'BalancerPool2Lens',
-    address: '0xD8Eb546726d449fC1dEd06DFeCa800A2fa8bB930',
+  rariTimelockFeiOldLens: {
+    artifactName: 'ERC20PCVDepositWrapper',
+    address: '0x614D46B7eB2AC1a359b8835D64954F3Ee4E6F676',
     category: AddressCategory.PCV
   },
 
@@ -309,6 +264,40 @@ export const MainnetContractsConfig = {
     address: '0xc0c59A2d3F278445f27ed4a00E2727D6c677c43F',
     category: AddressCategory.FeiRari
   },
+
+  vebalOtcHelper: {
+    artifactName: 'VeBalHelper',
+    address: '0xb02CE4D72124b98Df4EAB4184467d7Da0023F9FB',
+    category: AddressCategory.External
+  },
+
+  balancerVotingEscrowDelegation: {
+    artifactName: 'IVotingEscrowDelegation',
+    address: '0xB496FF44746A8693A060FafD984Da41B253f6790',
+    category: AddressCategory.External
+  },
+
+  balancerGaugeStakerV2Impl: {
+    artifactName: 'BalancerGaugeStakerV2',
+    address: '0xbf3f6c7821E4d7D5DF204dEa4871b2e8D68c1CCd',
+    category: AddressCategory.External
+  },
+
+  // Use to call proxy functions
+  balancerGaugeStakerProxy: {
+    artifactName: 'TransparentUpgradeableProxy',
+    address: '0x66977Ce30049CD0e443216Bf26377966c3A109E2',
+    category: AddressCategory.External
+  },
+
+  // Use to call functions through the proxy. Proxy address cast
+  // with latest implementation interface
+  balancerGaugeStaker: {
+    artifactName: 'BalancerGaugeStakerV2',
+    address: '0x66977Ce30049CD0e443216Bf26377966c3A109E2',
+    category: AddressCategory.External
+  },
+
   volt: {
     artifactName: 'Fei',
     address: '0x559eBC30b0E58a45Cc9fF573f77EF1e5eb1b3E18',
@@ -1216,27 +1205,37 @@ export const MainnetContractsConfig = {
     category: AddressCategory.External
   },
 
-  feiDAOTimelock: {
-    artifactName: 'FeiDAOTimelock',
-    address: '0xd51dbA7a94e1adEa403553A8235C302cEbF41a3c',
+  pcvGuardian: {
+    artifactName: 'PCVGuardian',
+    address: '0x02435948F84d7465FB71dE45ABa6098Fc6eC2993',
+    category: AddressCategory.Deprecated
+  },
+  ratioPCVControllerV2: {
+    artifactName: 'RatioPCVControllerV2',
+    address: '0x221fff24FB66dA3c722c7C5B856956a6a30C0179',
+    category: AddressCategory.Deprecated
+  },
+  nopeDAO: {
+    artifactName: 'NopeDAO',
+    address: '0x6C7aF43Ce97686e0C8AcbBc03b2E4f313c0394C7',
     category: AddressCategory.Deprecated
   },
 
-  core: {
-    artifactName: 'Core',
-    address: '0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9',
+  balancerDepositBalWeth: {
+    artifactName: 'BalancerPCVDepositWeightedPool',
+    address: '0xcd1Ac0014E2ebd972f40f24dF1694e6F528B2fD4',
     category: AddressCategory.Deprecated
   },
 
-  tribeMinter: {
-    artifactName: 'TribeMinter',
-    address: '0xFC3532b443383d9022b1B2c6FD5Fd0895943360A',
+  balancerLensVeBalBal: {
+    artifactName: 'BalancerPool2Lens',
+    address: '0x8cbA3149b95084A61bBAb9e01110b0fB92C9a289',
     category: AddressCategory.Deprecated
   },
 
-  rariTimelockFeiOldLens: {
-    artifactName: 'ERC20PCVDepositWrapper',
-    address: '0x614D46B7eB2AC1a359b8835D64954F3Ee4E6F676',
+  balancerLensVeBalWeth: {
+    artifactName: 'BalancerPool2Lens',
+    address: '0xD8Eb546726d449fC1dEd06DFeCa800A2fa8bB930',
     category: AddressCategory.Deprecated
   },
 

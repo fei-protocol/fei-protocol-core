@@ -79,16 +79,7 @@ const tip_123: TemplatedProposalDescription = {
       description: 'Set Tribe minter address to the Zero address'
     },
 
-    // 4. Cleanup Collaterisation Oracle
-    {
-      target: 'collateralizationOracle',
-      values: '0',
-      method: 'removeDeposit(address)',
-      arguments: (addresses) => [addresses.rariTimelockFeiOldLens],
-      description: 'Remove Rari Infra deprecated FEI timelock lens from CR'
-    },
-
-    // 5. Revoke PCV_CONTROLLER_ROLE from the DAO
+    // 4. Revoke PCV_CONTROLLER_ROLE from the DAO
     {
       target: 'core',
       values: '0',
@@ -97,7 +88,7 @@ const tip_123: TemplatedProposalDescription = {
       description: 'Revoke the PCV_CONTROLLER_ROLE from the TribeDAO timelock'
     },
 
-    // 6. Revoke GUARDIAN role from Guardian multisig
+    // 5. Revoke GUARDIAN role from Guardian multisig
     {
       target: 'core',
       values: '0',
@@ -106,7 +97,7 @@ const tip_123: TemplatedProposalDescription = {
       description: 'Revoke the GUARDIAN_ROLE from the Guardian multisig'
     },
 
-    // 7. Revoke GOVERN_ROLE from the DAO and Core
+    // 6. Revoke GOVERN_ROLE from the DAO and Core
     {
       target: 'core',
       values: '0',
@@ -122,7 +113,7 @@ const tip_123: TemplatedProposalDescription = {
       description: 'Revoke the GOVERN_ROLE from the TribeDAO timelock'
     },
 
-    // 8. Transfer admin of DAO timelock to DAO timelock burner
+    // 7. Transfer admin of DAO timelock to DAO timelock burner
     {
       target: 'feiDAOTimelock',
       values: '0',

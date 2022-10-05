@@ -3,6 +3,7 @@
 // Values are arrays of contracts that hold that token
 
 export const CollateralizationOracleConfig = {
+  fei: ['rariTimelockFeiOldLens'],
   dai: ['simpleFeiDaiPSM', 'escrowedAaveDaiPCVDeposit']
 };
 
