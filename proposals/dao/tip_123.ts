@@ -60,8 +60,13 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 // IE check balances, check state of contracts, etc.
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
   // 1. Verify Fei DAO timelock admin burned
+  expect(await contracts.feiDAOTimelock.admin()).to.equal(addresses.daoTimelockBurner);
 
-  // 2. Verify 
+  // 2. Verify Rari Fei deprecated timelock burned
+  expect(await contracts.rariInfraFeiTimelock.beneficiary()).to.equal(addresses.deprecatedRariFeiTimelockBurner);
+
+  // 3. Verify Rari Tribe deprecated timelock burned
+  expect(await contracts.rariInfraTribeTimelock.beneficiary()).to.equal(addresses.deprecatedRariTribeTimelockBurner);
 };
 
 export { deploy, setup, teardown, validate };
