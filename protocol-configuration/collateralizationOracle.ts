@@ -3,11 +3,8 @@
 // Values are arrays of contracts that hold that token
 
 export const CollateralizationOracleConfig = {
-  bal: ['balancerDepositBalWeth', 'balancerLensVeBalBal', 'balancerGaugeStaker'],
   fei: ['rariTimelockFeiOldLens'],
-  dai: ['simpleFeiDaiPSM', 'ethToDaiLensDai', 'daiHoldingPCVDeposit'],
-  lusd: ['lusdHoldingPCVDeposit'],
-  weth: ['ethLidoPCVDeposit', 'balancerLensVeBalWeth', 'ethToDaiLensEth', 'wethHoldingPCVDeposit']
+  dai: ['simpleFeiDaiPSM', 'escrowedAaveDaiPCVDeposit']
 };
 
 export type CollateralizationOracleConfigType = typeof CollateralizationOracleConfig;
