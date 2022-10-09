@@ -29,25 +29,23 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 
   const FeiTimelockBurnerFactory = await ethers.getContractFactory('FeiLinearTokenTimelockBurner');
   // 2. Deploy deprecated Rari FEI timelock burner
-  const deprecatedRariFeiTimelockBurner = await FeiTimelockBurnerFactory.deploy(addresses.rariInfraFeiTimelock);
-  console.log('Deprecated Rari FEI timelock burner deployed to: ', deprecatedRariFeiTimelockBurner.address);
+  const feiTimelockBurner1 = await FeiTimelockBurnerFactory.deploy(addresses.rariInfraFeiTimelock);
+  console.log('Deprecated Rari FEI timelock burner deployed to: ', feiTimelockBurner1.address);
 
   // 3. Deploy deprecated Rari TRIBE timelock burner
   const TribeTimelockedDelegatorBurnerFactory = await ethers.getContractFactory('TribeTimelockedDelegatorBurner');
-  const deprecatedRariTribeTimelockBurner = await TribeTimelockedDelegatorBurnerFactory.deploy(
-    addresses.rariInfraTribeTimelock
-  );
-  console.log('Deprecated Rari TRIBE timelock burned deployed to: ', deprecatedRariTribeTimelockBurner.address);
+  const tribeTimelockBurner1 = await TribeTimelockedDelegatorBurnerFactory.deploy(addresses.rariInfraTribeTimelock);
+  console.log('Deprecated Rari TRIBE timelock burned deployed to: ', tribeTimelockBurner1.address);
 
   // 4. Deploy Fei Labs burner
-  const feiLabsTribeBurner = await TribeTimelockedDelegatorBurnerFactory.deploy(addresses.feiLabsVestingTimelock);
-  console.log('Fei Labs TRIBE burner deployed to: ', feiLabsTribeBurner.address);
+  const tribeTimelockBurner2 = await TribeTimelockedDelegatorBurnerFactory.deploy(addresses.feiLabsVestingTimelock);
+  console.log('Fei Labs TRIBE burner deployed to: ', tribeTimelockBurner2.address);
 
   return {
     daoTimelockBurner,
-    deprecatedRariFeiTimelockBurner,
-    deprecatedRariTribeTimelockBurner,
-    feiLabsTribeBurner
+    feiTimelockBurner1,
+    tribeTimelockBurner1,
+    tribeTimelockBurner2
   };
 };
 
@@ -87,19 +85,19 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   console.log('----------------------------------------------------');
 
   // 0. Assert overcollaterised
-  // expect(await contracts.collateralizationOracle.isOvercollateralized()).to.be.true;
+  expect(await contracts.collateralizationOracle.isOvercollateralized()).to.be.true;
 
   // 1. Verify Fei DAO timelock admin burned
   expect(await contracts.feiDAOTimelock.admin()).to.equal(addresses.daoTimelockBurner);
 
   // 2. Verify Rari Fei deprecated timelock burned
-  expect(await contracts.rariInfraFeiTimelock.beneficiary()).to.equal(addresses.deprecatedRariFeiTimelockBurner);
+  expect(await contracts.rariInfraFeiTimelock.beneficiary()).to.equal(addresses.feiTimelockBurner1);
 
   // 3. Verify Rari Tribe deprecated timelock burned
-  expect(await contracts.rariInfraTribeTimelock.beneficiary()).to.equal(addresses.deprecatedRariTribeTimelockBurner);
+  expect(await contracts.rariInfraTribeTimelock.beneficiary()).to.equal(addresses.tribeTimelockBurner1);
 
   // 4. Verify Fei Labs Tribe timelock burned
-  expect(await contracts.feiLabsVestingTimelock.beneficiary()).to.equal(addresses.feiLabsTribeBurner);
+  expect(await contracts.feiLabsVestingTimelock.beneficiary()).to.equal(addresses.tribeTimelockBurner2);
 
   // 4. Verify Tribe minter set to zero address and inflation is the minimum of 0.01% (1 basis point)
   expect(await contracts.tribe.minter()).to.equal(ethers.constants.AddressZero);

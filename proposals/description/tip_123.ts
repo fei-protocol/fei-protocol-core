@@ -9,11 +9,11 @@ const tip_123: TemplatedProposalDescription = {
       target: 'rariInfraFeiTimelock',
       values: '0',
       method: 'setPendingBeneficiary(address)',
-      arguments: (addresses) => [addresses.deprecatedRariFeiTimelockBurner],
+      arguments: (addresses) => [addresses.feiTimelockBurner1],
       description: 'Set pending beneficiary of deprecated Rari Fei timelock burner to Fei burner timelock'
     },
     {
-      target: 'deprecatedRariFeiTimelockBurner',
+      target: 'feiTimelockBurner1',
       values: '0',
       method: 'acceptBeneficiary()',
       arguments: (addresses) => [],
@@ -25,11 +25,11 @@ const tip_123: TemplatedProposalDescription = {
       target: 'rariInfraTribeTimelock',
       values: '0',
       method: 'setPendingBeneficiary(address)',
-      arguments: (addresses) => [addresses.deprecatedRariTribeTimelockBurner],
+      arguments: (addresses) => [addresses.tribeTimelockBurner1],
       description: 'Set pending beneficiary of deprecated Rari Tribe timelock to Tribe burner timelock'
     },
     {
-      target: 'deprecatedRariTribeTimelockBurner',
+      target: 'tribeTimelockBurner1',
       values: '0',
       method: 'acceptBeneficiary()',
       arguments: (addresses) => [],
@@ -41,11 +41,11 @@ const tip_123: TemplatedProposalDescription = {
       target: 'feiLabsVestingTimelock',
       values: '0',
       method: 'setPendingBeneficiary(address)',
-      arguments: (addresses) => [addresses.feiLabsTribeBurner],
+      arguments: (addresses) => [addresses.tribeTimelockBurner2],
       description: 'Set pending beneficiary of Fei Labs Tribe timelock to Fei Labs Tribe burner timelock'
     },
     {
-      target: 'feiLabsTribeBurner',
+      target: 'tribeTimelockBurner2',
       values: '0',
       method: 'acceptBeneficiary()',
       arguments: (addresses) => [],
