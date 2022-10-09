@@ -19,7 +19,7 @@ export const MainnetContractsConfig = {
   core: {
     artifactName: 'Core',
     address: '0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9',
-    category: AddressCategory.Core
+    category: AddressCategory.Deprecated
   },
   fei: {
     artifactName: 'Fei',
@@ -40,7 +40,7 @@ export const MainnetContractsConfig = {
   tribeMinter: {
     artifactName: 'TribeMinter',
     address: '0xFC3532b443383d9022b1B2c6FD5Fd0895943360A',
-    category: AddressCategory.Core
+    category: AddressCategory.Deprecated
   },
   restrictedPermissions: {
     artifactName: 'RestrictedPermissions',
@@ -50,17 +50,17 @@ export const MainnetContractsConfig = {
   guardianMultisig: {
     artifactName: 'unknown',
     address: '0xB8f482539F2d3Ae2C9ea6076894df36D1f632775',
-    category: AddressCategory.Security
+    category: AddressCategory.Deprecated
   },
   feiDAO: {
     artifactName: 'FeiDAO',
     address: '0x0BEF27FEB58e857046d630B2c03dFb7bae567494',
-    category: AddressCategory.Governance
+    category: AddressCategory.Deprecated
   },
   feiDAOTimelock: {
     artifactName: 'FeiDAOTimelock',
     address: '0xd51dbA7a94e1adEa403553A8235C302cEbF41a3c',
-    category: AddressCategory.Governance
+    category: AddressCategory.Deprecated
   },
 
   rariTimelock: {
@@ -101,12 +101,12 @@ export const MainnetContractsConfig = {
   rariInfraFeiTimelock: {
     artifactName: 'LinearTokenTimelock',
     address: '0xfaFC562265a49975E8B20707EAC966473795CF90',
-    category: AddressCategory.Distribution
+    category: AddressCategory.Deprecated
   },
   rariInfraTribeTimelock: {
     artifactName: 'LinearTimelockedDelegator',
     address: '0x625cf6AA7DafB154F3Eb6BE87592110e30290dEe',
-    category: AddressCategory.Distribution
+    category: AddressCategory.Deprecated
   },
 
   oneConstantOracle: {
