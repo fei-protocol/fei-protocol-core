@@ -117,9 +117,6 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 
   // 6. Verify can not queue on DAO timelock
   await verifyCanNotQueueProposals(contracts, addresses);
-
-  // 7. Verify can not execute on DAO timelock
-  // await verifyCanNotExecuteProposals(contracts, addresses);
 };
 
 // Verify proposals can not be queued
@@ -156,7 +153,8 @@ const verifyCanNotQueueProposals = async (contracts: NamedContracts, addresses: 
 
   expect(await contracts.feiDAO.state(pid)).to.equal(4); // SUCCEEDED state in ProposalState enum
 
-  // Attempt to queue, should fail
+  // Attempt to queue on the timelock through the Fei DAO
+  // Queuing should fail as daoTimelockBurner is admin of timelock
   await expect(
     feiDAO['queue(address[],uint256[],bytes[],bytes32)'](
       targets,
@@ -165,7 +163,6 @@ const verifyCanNotQueueProposals = async (contracts: NamedContracts, addresses: 
       ethers.utils.keccak256(description)
     )
   ).to.be.revertedWith('Timelock: Call must come from admin.');
-};
 };
 
 export { deploy, setup, teardown, validate };
