@@ -1,17 +1,14 @@
 import { Core } from '@custom-types/contracts';
-import { ContractAccessRights, NamedAddresses, NamedContracts } from '@custom-types/types';
+import { ContractAccessRights, NamedContracts } from '@custom-types/types';
 import { ProposalsConfig } from '@protocol/proposalsConfig';
-import { getImpersonatedSigner, increaseTime, latestTime, time } from '@test/helpers';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
-import { forceEth } from '@test/integration/setup/utils';
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
-import hre, { ethers } from 'hardhat';
+import { ethers } from 'hardhat';
 
 describe('e2e-dao', function () {
   let contracts: NamedContracts;
-  let contractAddresses: NamedAddresses;
   let deployAddress: string;
   let e2eCoord: TestEndtoEndCoordinator;
   let doLogging: boolean;
@@ -38,17 +35,11 @@ describe('e2e-dao', function () {
     e2eCoord = new TestEndtoEndCoordinator(config, ProposalsConfig);
 
     doLogging && console.log(`Loading environment...`);
-    ({ contracts, contractAddresses } = await e2eCoord.loadEnvironment());
+    ({ contracts } = await e2eCoord.loadEnvironment());
     doLogging && console.log(`Environment loaded.`);
   });
 
   describe('Access control', async () => {
-    before(async () => {
-      // Revoke deploy address permissions, so that does not erroneously
-      // contribute to num governor roles etc
-      await e2eCoord.revokeDeployAddressPermission();
-    });
-
     it('should have granted correct role cardinality', async function () {
       const core = contracts.core;
       const accessRights = e2eCoord.getAccessControlMapping();
@@ -61,7 +52,7 @@ describe('e2e-dao', function () {
         const numRoles = await core.getRoleMemberCount(id);
         doLogging && console.log(`Role count for ${element}: ${numRoles}`);
         // in e2e setup, deployer address has minter role
-        expect(numRoles.toNumber() - (element == 'MINTER_ROLE' ? 1 : 0)).to.be.equal(
+        expect(numRoles.toNumber()).to.be.equal(
           accessRights[element as keyof ContractAccessRights].length,
           'role ' + element
         );
