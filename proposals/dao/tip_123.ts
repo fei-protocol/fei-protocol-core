@@ -3,11 +3,14 @@ import { expect } from 'chai';
 import {
   DeployUpgradeFunc,
   NamedAddresses,
+  NamedContracts,
   PcvStats,
   SetupUpgradeFunc,
   TeardownUpgradeFunc,
   ValidateUpgradeFunc
 } from '@custom-types/types';
+import { forceEth } from '@test/integration/setup/utils';
+import { getImpersonatedSigner, time } from '@test/helpers';
 
 /*
 
@@ -108,9 +111,61 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   // 4. Verify Fei Labs Tribe timelock burned
   expect(await contracts.feiLabsVestingTimelock.beneficiary()).to.equal(addresses.tribeTimelockBurner2);
 
-  // 4. Verify Tribe minter set to zero address and inflation is the minimum of 0.01% (1 basis point)
+  // 5. Verify Tribe minter set to zero address and inflation is the minimum of 0.01% (1 basis point)
   expect(await contracts.tribe.minter()).to.equal(ethers.constants.AddressZero);
   expect(await contracts.tribeMinter.annualMaxInflationBasisPoints()).to.equal(1);
+
+  // 6. Verify can not queue on DAO timelock
+  await verifyCanNotQueueProposals(contracts, addresses);
+
+  // 7. Verify can not execute on DAO timelock
+  // await verifyCanNotExecuteProposals(contracts, addresses);
+};
+
+// Verify proposals can not be queued
+const verifyCanNotQueueProposals = async (contracts: NamedContracts, addresses: NamedAddresses) => {
+  const feiDAO = contracts.feiDAO;
+
+  const targets = [feiDAO.address];
+  const values = [0];
+  const calldatas = [
+    '0x70b0f660000000000000000000000000000000000000000000000000000000000000000a' // set voting delay 10
+  ];
+  const description: any[] = [];
+
+  const treasurySigner = await getImpersonatedSigner(addresses.core);
+  await forceEth(addresses.core);
+  await contracts.tribe.connect(treasurySigner).delegate(addresses.guardianMultisig);
+  const signer = await getImpersonatedSigner(addresses.guardianMultisig);
+
+  // Propose
+  // note ethers.js requires using this notation when two overloaded methods exist)
+  // https://docs.ethers.io/v5/migration/web3/#migration-from-web3-js--contracts--overloaded-functions
+  await feiDAO.connect(signer)['propose(address[],uint256[],bytes[],string)'](targets, values, calldatas, description);
+
+  const pid = await feiDAO.hashProposal(targets, values, calldatas, ethers.utils.keccak256(description));
+
+  await time.advanceBlock();
+
+  // vote
+  await feiDAO.connect(signer).castVote(pid, 1);
+
+  // advance to end of voting period
+  const endBlock = (await feiDAO.proposals(pid)).endBlock;
+  await time.advanceBlockTo(endBlock.toNumber());
+
+  expect(await contracts.feiDAO.state(pid)).to.equal(4); // SUCCEEDED state in ProposalState enum
+
+  // Attempt to queue, should fail
+  await expect(
+    feiDAO['queue(address[],uint256[],bytes[],bytes32)'](
+      targets,
+      values,
+      calldatas,
+      ethers.utils.keccak256(description)
+    )
+  ).to.be.revertedWith('Timelock: Call must come from admin.');
+};
 };
 
 export { deploy, setup, teardown, validate };
