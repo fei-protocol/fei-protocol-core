@@ -16,26 +16,26 @@ export const MainnetContractsConfig = {
     address: '0xCAe4210e6676727EA4e0fD9BA5dFb95831356a16',
     category: AddressCategory.Core
   },
-  // feiTimelockBurner1: {
-  //   artifactName: 'FeiLinearTokenTimelockBurner',
-  //   address: '',
-  //   category: AddressCategory.Distribution
-  // },
-  // tribeTimelockBurner1: {
-  //   artifactName: 'TribeTimelockedDelegatorBurner',
-  //   address: '',
-  //   category: AddressCategory.Distribution
-  // },
-  // tribeTimelockBurner2: {
-  //   artifactName: 'TribeTimelockedDelegatorBurner',
-  //   address: '',
-  //   category: AddressCategory.Distribution
-  // },
-  // daoTimelockBurner: {
-  //   artifactName: 'DAOTimelockBurner',
-  //   address: '',
-  //   category: AddressCategory.Core
-  // },
+  feiTimelockBurner1: {
+    artifactName: 'FeiLinearTokenTimelockBurner',
+    address: '0x072e5D8DBe245bB78aF1888866E6eFE9548d017F',
+    category: AddressCategory.Distribution
+  },
+  tribeTimelockBurner1: {
+    artifactName: 'TribeTimelockedDelegatorBurner',
+    address: '0x8772D97229A55cf0e2D4AB37766D5DC5647cdF3C',
+    category: AddressCategory.Distribution
+  },
+  tribeTimelockBurner2: {
+    artifactName: 'TribeTimelockedDelegatorBurner',
+    address: '0x8f966aF3ACc936aE6b8ebeB893F6f5925e220902',
+    category: AddressCategory.Distribution
+  },
+  daoTimelockBurner: {
+    artifactName: 'DAOTimelockBurner',
+    address: '0x6F6580285a63f1e886548458f427f8695BA1a563',
+    category: AddressCategory.Core
+  },
   core: {
     artifactName: 'Core',
     address: '0x8d5ED43dCa8C2F7dFB20CF7b53CC7E593635d7b9',
