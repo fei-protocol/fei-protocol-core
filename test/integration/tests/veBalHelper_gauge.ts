@@ -59,6 +59,7 @@ describe('e2e-veBalHelper-gauge-management', function () {
     }
 
     otcBuyerAddress = contractAddresses.aaveCompaniesMultisig;
+    await forceEth(otcBuyerAddress);
     otcBuyerSigner = await getImpersonatedSigner(otcBuyerAddress);
 
     await forceEth(balFeiWethGaugeTokenHolder);

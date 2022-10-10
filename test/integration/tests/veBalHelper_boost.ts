@@ -9,6 +9,7 @@ import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
 import { Contract, Signer } from 'ethers';
 import { ethers } from 'hardhat';
+import { forceEth } from '../setup/utils';
 
 before(async () => {
   chai.use(CBN(ethers.BigNumber));
@@ -55,6 +56,7 @@ describe('e2e-veBalHelper-boost-management', function () {
     }
 
     otcBuyerAddress = contractAddresses.aaveCompaniesMultisig;
+    await forceEth(otcBuyerAddress);
     otcBuyerSigner = await getImpersonatedSigner(otcBuyerAddress);
   });
 

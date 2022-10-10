@@ -16,7 +16,7 @@ before(async () => {
   chai.use(solidity);
 });
 
-describe('e2e-veBalHelper-setters', function () {
+describe.only('e2e-veBalHelper-setters', function () {
   const impersonatedSigners: { [key: string]: Signer } = {};
   let contracts: NamedContracts;
   let contractAddresses: NamedAddresses;
@@ -59,6 +59,7 @@ describe('e2e-veBalHelper-setters', function () {
     }
 
     otcBuyerAddress = contractAddresses.aaveCompaniesMultisig;
+    await forceEth(otcBuyerAddress);
     otcBuyerSigner = await getImpersonatedSigner(otcBuyerAddress);
 
     balWethBPTWhaleSigner = await getImpersonatedSigner(balWethBPTWhale);

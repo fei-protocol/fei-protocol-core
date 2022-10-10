@@ -60,6 +60,7 @@ describe('e2e-veBalHelper-vote-lock', function () {
 
     otcBuyerAddress = contractAddresses.aaveCompaniesMultisig;
     otcBuyerSigner = await getImpersonatedSigner(otcBuyerAddress);
+    await forceEth(otcBuyerAddress);
 
     balWethBPTWhaleSigner = await getImpersonatedSigner(balWethBPTWhale);
     await forceEth(balWethBPTWhale);
