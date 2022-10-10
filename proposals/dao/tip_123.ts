@@ -1,4 +1,4 @@
-import hre, { ethers, artifacts } from 'hardhat';
+import { ethers } from 'hardhat';
 import { expect } from 'chai';
 import {
   DeployUpgradeFunc,
@@ -90,11 +90,20 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   // 1. Verify Fei DAO timelock admin burned
   expect(await contracts.feiDAOTimelock.admin()).to.equal(addresses.daoTimelockBurner);
 
+  // Verify no addresses have GOVERN_ROLE, GUARDIAN_ROLE. One has PCV_CONTROLLER_ROLE, one has MINTER
+  expect(await contracts.core.getRoleMemberCount(ethers.utils.id('GOVERN_ROLE'))).to.equal(0);
+  expect(await contracts.core.getRoleMemberCount(ethers.utils.id('GUARDIAN_ROLE'))).to.equal(0);
+  expect(await contracts.core.getRoleMemberCount(ethers.utils.id('PCV_CONTROLLER_ROLE'))).to.equal(1);
+  expect(await contracts.core.getRoleMemberCount(ethers.utils.id('MINTER_ROLE'))).to.equal(1);
+
   // 2. Verify Rari Fei deprecated timelock burned
   expect(await contracts.rariInfraFeiTimelock.beneficiary()).to.equal(addresses.feiTimelockBurner1);
 
   // 3. Verify Rari Tribe deprecated timelock burned
   expect(await contracts.rariInfraTribeTimelock.beneficiary()).to.equal(addresses.tribeTimelockBurner1);
+
+  // Verify Fuse multisig does not have any delegated TRIBE
+  expect(await contracts.tribe.getCurrentVotes(addresses.fuseMultisig)).to.equal(0);
 
   // 4. Verify Fei Labs Tribe timelock burned
   expect(await contracts.feiLabsVestingTimelock.beneficiary()).to.equal(addresses.tribeTimelockBurner2);

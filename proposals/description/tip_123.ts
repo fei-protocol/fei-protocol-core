@@ -24,6 +24,13 @@ const tip_123: TemplatedProposalDescription = {
     {
       target: 'rariInfraTribeTimelock',
       values: '0',
+      method: 'delegate(address)',
+      arguments: (addresses) => [ethers.constants.AddressZero],
+      description: 'Delegate all voting TRIBE to the ZERO address'
+    },
+    {
+      target: 'rariInfraTribeTimelock',
+      values: '0',
       method: 'setPendingBeneficiary(address)',
       arguments: (addresses) => [addresses.tribeTimelockBurner1],
       description: 'Set pending beneficiary of deprecated Rari Tribe timelock to Tribe burner timelock'
