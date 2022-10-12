@@ -90,11 +90,10 @@ export const MainnetContractsConfig = {
     category: AddressCategory.PCV
   },
 
-  // TODO: Mark as deprecated after DAI moved to Tribe Redeemer
   escrowedAaveDaiPCVDeposit: {
     artifactName: 'ERC20PCVDepositWrapper',
     address: '0x82c55A1Ab5C6F4b8e162b7dE24b50A38E1aFd38f',
-    category: AddressCategory.PCV
+    category: AddressCategory.Deprecated
   },
 
   // TODO: Mark as deprecated after Rari fuse admin sorted

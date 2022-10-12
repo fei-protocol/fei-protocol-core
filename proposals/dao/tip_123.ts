@@ -117,6 +117,9 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 
   // 6. Verify can not queue on DAO timelock
   await verifyCanNotQueueProposals(contracts, addresses);
+
+  // 7. Verify proxyAdmin controlled by DAO timelock
+  expect(await contracts.proxyAdmin.owner()).to.equal(addresses.feiDAOTimelock);
 };
 
 // Verify proposals can not be queued
