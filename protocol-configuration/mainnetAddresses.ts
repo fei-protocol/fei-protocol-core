@@ -67,7 +67,11 @@ export const MainnetContractsConfig = {
     address: '0x8ace03Fc45139fDDba944c6A4082b604041d19FC',
     category: AddressCategory.Governance
   },
-
+  daoTimelockBurner: {
+    artifactName: 'IDAOTimelockBurner',
+    address: '0x6F6580285a63f1e886548458f427f8695BA1a563',
+    category: AddressCategory.Core
+  },
   tribeRariDAO: {
     artifactName: 'FeiDAO',
     address: '0x637deEED4e4deb1D222650bD4B64192abf002c00',
@@ -930,6 +934,30 @@ export const MainnetContractsConfig = {
   rai: {
     artifactName: 'IERC20',
     address: '0x03ab458634910AaD20eF5f1C8ee96F1D6ac54919',
+    category: AddressCategory.External
+  },
+
+  rariUSDCPoolControllerProxy: {
+    artifactName: 'IRariController',
+    address: '0x66f4856F1BBD1eb09e1C8d9D646f5A3a193dA569',
+    category: AddressCategory.External
+  },
+
+  rariDAIPoolControllerProxy: {
+    artifactName: 'IRariController',
+    address: '0xC6BF8C8A55f77686720E0a88e2Fd1fEEF58ddf4a',
+    category: AddressCategory.External
+  },
+
+  rariRSPTFundManagerProxy: {
+    artifactName: 'IRariManager',
+    address: '0xaFD2AaDE64E6Ea690173F6DE59Fc09F5C9190d74',
+    category: AddressCategory.External
+  },
+
+  rariDAIPoolManagerProxy: {
+    artifactName: 'IRariManager',
+    address: '0xB465BAF04C087Ce3ed1C266F96CA43f4847D9635',
     category: AddressCategory.External
   },
 
