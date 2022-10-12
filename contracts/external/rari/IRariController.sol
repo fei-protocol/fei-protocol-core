@@ -2,5 +2,7 @@
 pragma solidity ^0.8.4;
 
 interface IRariController {
-    function setFundManager(address) external;
+    function setFundRebalancer(address) external;
+
+    function withdraw(string calldata, uint256) external;
 }

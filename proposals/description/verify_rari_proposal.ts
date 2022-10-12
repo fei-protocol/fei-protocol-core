@@ -3,21 +3,37 @@ import { TemplatedProposalDescription } from '@custom-types/types';
 const fip_x: TemplatedProposalDescription = {
   title: 'Verify Rari deprecation proposal',
   commands: [
-    // await controller.methods.setFundManager("0x8ace03fc45139fddba944c6a4082b604041d19fc")
+    // await controller.methods.setFundRebalancer("0x8ace03fc45139fddba944c6a4082b604041d19fc")
     // 0x66f4856F1BBD1eb09e1C8d9D646f5A3a193dA569
     {
       target: 'rariUSDCPoolControllerProxy',
       values: '0',
-      method: 'setFundManager(address)',
+      method: 'setFundRebalancer(address)',
       arguments: (addresses) => ['0x8ace03fc45139fddba944c6a4082b604041d19fc'],
       description: ''
     },
-    // await controller.methods.setFundManager("0x8ace03fc45139fddba944c6a4082b604041d19fc")
+    // await controller.methods.setFundRebalancer("0x8ace03fc45139fddba944c6a4082b604041d19fc")
     // 0xaFD2AaDE64E6Ea690173F6DE59Fc09F5C9190d74
     {
       target: 'rariDAIPoolControllerProxy',
       values: '0',
-      method: 'setFundManager(address)',
+      method: 'setFundRebalancer(address)',
+      arguments: (addresses) => ['0x8ace03fc45139fddba944c6a4082b604041d19fc'],
+      description: ''
+    },
+    {
+      target: 'rariRSPTFundManagerProxy',
+      values: '0',
+      method: 'setFundRebalancer(address)',
+      arguments: (addresses) => ['0x8ace03fc45139fddba944c6a4082b604041d19fc'],
+      description: ''
+    },
+    // await manager.methods.depositFees()
+    // 0xB465BAF04C087Ce3ed1C266F96CA43f4847D9635
+    {
+      target: 'rariDAIPoolManagerProxy',
+      values: '0',
+      method: 'setFundRebalancer(address)',
       arguments: (addresses) => ['0x8ace03fc45139fddba944c6a4082b604041d19fc'],
       description: ''
     },
@@ -42,10 +58,10 @@ const fip_x: TemplatedProposalDescription = {
     // await manager.methods.withdraw("USDC", "134818277836212805900127")
     // 0xC6BF8C8A55f77686720E0a88e2Fd1fEEF58ddf4a
     {
-      target: 'rariDAIPoolControllerProxy',
+      target: 'rariRSPTFundManagerProxy',
       values: '0',
       method: 'withdraw(string,uint256)',
-      arguments: (addresses) => [],
+      arguments: (addresses) => ['USDC', '134818277836212805900127'],
       description: ''
     },
     // await manager.methods.withdraw("DAI", "159312000000000000000000")
@@ -54,7 +70,7 @@ const fip_x: TemplatedProposalDescription = {
       target: 'rariDAIPoolManagerProxy',
       values: '0',
       method: 'withdraw(string,uint256)',
-      arguments: (addresses) => [],
+      arguments: (addresses) => ['DAI', '159312000000000000000000'],
       description: ''
     },
 
