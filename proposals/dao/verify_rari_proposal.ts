@@ -58,7 +58,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const usdcGain = (await contracts.usdc.balanceOf(addresses.fuseMultisig)).sub(initialFuseMultisigUSDC);
   expect(usdcGain).to.equal(EXPECTED_USDC_GAIN);
 
-  // 2. Verify Tribe Redeemer multisig DAI gain
+  // 2. Verify Tribe Redeemer DAI gain
   const daiGain = (await contracts.dai.balanceOf(addresses.tribeRedeemer)).sub(initialTribeRedeemerDAI);
   expect(daiGain).to.equal(EXPECTED_DAI_GAIN);
 

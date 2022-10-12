@@ -1,7 +1,7 @@
 import { TemplatedProposalDescription } from '@custom-types/types';
 
 const fip_x: TemplatedProposalDescription = {
-  title: 'Verify Rari deprecation proposal',
+  title: 'Rari Governance Deprecation',
   commands: [
     {
       target: 'rariUSDCPoolControllerProxy',
@@ -89,7 +89,17 @@ const fip_x: TemplatedProposalDescription = {
     }
   ],
   description: `
-  Verify Rari deprecation proposal
+  Rari Governance Deprecation
+
+  This proposal in whole will deprecate the Rari Yield Aggregator and Rari Timelock.
+
+The Rari timelock will claim remaining USDC and DAI fees through a series of txs.
+
+The USDC will be sent to the Fuse multisig (0x5eA4A9a7592683bF0Bc187d6Da706c6c4770976F), where it will be converted to DAI and sent to the Tribe Redeemer.
+
+This is to minimize technical risk. 
+
+The claimed DAI fees will be send directly to the redeemer. Finally the Rari timelock will have its ownership transferred to the DAOTimelockBurner contract (0x6F6580285a63f1e886548458f427f8695BA1a563) for deprecation.
   `
 };
 
