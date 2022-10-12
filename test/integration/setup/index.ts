@@ -177,8 +177,8 @@ export class TestEndtoEndCoordinator implements TestCoordinator {
       console.log('Simulating DAO proposal in DEBUG mode (step by step)...');
       console.log('  Title: ', config.proposal!.title);
 
-      const signer = await getImpersonatedSigner(contracts.feiDAOTimelock.address);
-      await forceEth(contracts.feiDAOTimelock.address);
+      const signer = await getImpersonatedSigner(contracts.rariTimelock.address);
+      await forceEth(contracts.rariTimelock.address);
 
       await simulateDEBUGProposal(signer, contractAddresses, contracts as unknown as MainnetContracts, config);
     }

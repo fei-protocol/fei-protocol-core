@@ -141,7 +141,7 @@ export default {
   },
 
   proposals: {
-    governor: '0x0BEF27FEB58e857046d630B2c03dFb7bae567494',
+    governor: '0x637deEED4e4deb1D222650bD4B64192abf002c00',
     votingToken: '0xc7283b66Eb1EB5FB86327f08e1B5816b0720212B'
   }
 } as HardhatUserConfig;

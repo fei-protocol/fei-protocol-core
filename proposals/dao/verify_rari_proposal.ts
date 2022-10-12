@@ -56,10 +56,12 @@ const teardown: TeardownUpgradeFunc = async (addresses, oldContracts, contracts,
 const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
   // 1. Verify Fuse multisig USDC gain
   const usdcGain = (await contracts.usdc.balanceOf(addresses.fuseMultisig)).sub(initialFuseMultisigUSDC);
+  console.log('USDC gain: ', usdcGain.toString());
   expect(usdcGain).to.be.bignumber.greaterThan(EXPECTED_USDC_GAIN);
 
   // 2. Verify Fuse multisig DAI gain
   const daiGain = (await contracts.dai.balanceOf(addresses.fuseMultisig)).sub(initialFuseMultisigDAI);
+  console.log('daiGain: ', daiGain.toString());
   expect(daiGain).to.be.bignumber.greaterThan(EXPECTED_DAI_GAIN);
 
   // 3. Verify Rari timelock admin set to DAOTimelockBurne

@@ -945,13 +945,13 @@ export const MainnetContractsConfig = {
 
   rariDAIPoolControllerProxy: {
     artifactName: 'IRariController',
-    address: '0xC6BF8C8A55f77686720E0a88e2Fd1fEEF58ddf4a',
+    address: '0xaFD2AaDE64E6Ea690173F6DE59Fc09F5C9190d74',
     category: AddressCategory.External
   },
 
   rariRSPTFundManagerProxy: {
     artifactName: 'IRariManager',
-    address: '0xaFD2AaDE64E6Ea690173F6DE59Fc09F5C9190d74',
+    address: '0xC6BF8C8A55f77686720E0a88e2Fd1fEEF58ddf4a',
     category: AddressCategory.External
   },
 
