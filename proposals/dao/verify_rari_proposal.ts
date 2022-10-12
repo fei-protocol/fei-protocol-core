@@ -18,7 +18,7 @@ Verify Rari Proposal
 */
 
 let initialFuseMultisigUSDC: BigNumber;
-let initialFuseMultisigDAI: BigNumber;
+let initialTribeRedeemerDAI: BigNumber;
 
 // Expected Fuse multisig asset gains
 const EXPECTED_USDC_GAIN = toBN('336235000000');
@@ -42,7 +42,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 // ensuring contracts have a specific state, etc.
 const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
   initialFuseMultisigUSDC = await contracts.usdc.balanceOf(addresses.fuseMultisig);
-  initialFuseMultisigDAI = await contracts.dai.balanceOf(addresses.fuseMultisig);
+  initialTribeRedeemerDAI = await contracts.dai.balanceOf(addresses.tribeRedeemer);
 };
 
 // Tears down any changes made in setup() that need to be
@@ -58,8 +58,8 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   const usdcGain = (await contracts.usdc.balanceOf(addresses.fuseMultisig)).sub(initialFuseMultisigUSDC);
   expect(usdcGain).to.equal(EXPECTED_USDC_GAIN);
 
-  // 2. Verify Fuse multisig DAI gain
-  const daiGain = (await contracts.dai.balanceOf(addresses.fuseMultisig)).sub(initialFuseMultisigDAI);
+  // 2. Verify Tribe Redeemer multisig DAI gain
+  const daiGain = (await contracts.dai.balanceOf(addresses.tribeRedeemer)).sub(initialTribeRedeemerDAI);
   expect(daiGain).to.equal(EXPECTED_DAI_GAIN);
 
   // 3. Verify Rari timelock admin set to DAOTimelockBurne

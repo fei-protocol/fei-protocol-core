@@ -70,7 +70,7 @@ const fip_x: TemplatedProposalDescription = {
       target: 'dai',
       values: '0',
       method: 'transfer(address,uint256)',
-      arguments: (addresses) => [addresses.fuseMultisig, '94218000000000000000000'],
+      arguments: (addresses) => [addresses.tribeRedeemer, '94218000000000000000000'],
       description: ''
     },
     {
