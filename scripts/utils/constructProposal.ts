@@ -173,7 +173,6 @@ export default async function constructProposal(
     hre.config.proposals.governor,
     hre.config.proposals.votingToken
   );
-  console.log('governor: ', hre.config.proposals.governor);
   proposalBuilder.maxActions = 50;
 
   for (let i = 0; i < proposalInfo.commands.length; i += 1) {
