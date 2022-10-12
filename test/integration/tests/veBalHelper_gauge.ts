@@ -2,7 +2,7 @@ import { VeBalHelper } from '@custom-types/contracts';
 import { NamedAddresses, NamedContracts } from '@custom-types/types';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { ProposalsConfig } from '@protocol/proposalsConfig';
-import { getAddresses, getImpersonatedSigner } from '@test/helpers';
+import { getAddresses, getImpersonatedSigner, time } from '@test/helpers';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
@@ -102,42 +102,5 @@ describe('e2e-veBalHelper-gauge-management', function () {
       await contracts.balancerGaugeBpt30Fei70Weth.balanceOf(contractAddresses.balancerGaugeStaker)
     ).sub(stakeBeforeBalance);
     expect(stakeBalanceDiff).to.equal(0);
-  });
-
-  it('should be able to voteForGaugeWeight() to vote for gauge weights whilst a lock is active ', async () => {
-    // remove 100% votes for B-30FEI-70WETH
-    expect(
-      (
-        await contracts.balancerGaugeController.vote_user_slopes(
-          contractAddresses.veBalDelegatorPCVDeposit,
-          contractAddresses.balancerGaugeBpt30Fei70Weth
-        )
-      )[1]
-    ).to.be.equal('10000');
-    await vebalOtcHelper
-      .connect(otcBuyerSigner)
-      .voteForGaugeWeight(contractAddresses.bpt30Fei70Weth, contractAddresses.balancerGaugeBpt30Fei70Weth, 0);
-    expect(
-      (
-        await contracts.balancerGaugeController.vote_user_slopes(
-          contractAddresses.veBalDelegatorPCVDeposit,
-          contractAddresses.balancerGaugeBpt30Fei70Weth
-        )
-      )[1]
-    ).to.be.equal('0');
-    // set 100% votes for bb-a-usd
-    await vebalOtcHelper.connect(otcBuyerSigner).voteForGaugeWeight(
-      '0x7B50775383d3D6f0215A8F290f2C9e2eEBBEceb2', // bb-a-usd token
-      '0x68d019f64A7aa97e2D4e7363AEE42251D08124Fb', // bb-a-usd gauge
-      10000
-    );
-    expect(
-      (
-        await contracts.balancerGaugeController.vote_user_slopes(
-          contractAddresses.veBalDelegatorPCVDeposit,
-          '0x68d019f64A7aa97e2D4e7363AEE42251D08124Fb'
-        )
-      )[1]
-    ).to.be.equal('10000');
   });
 });

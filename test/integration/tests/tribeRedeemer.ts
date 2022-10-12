@@ -151,7 +151,7 @@ describe('e2e-tribe-redeemer', function () {
     expect(daiReceived).to.be.at.most('71000000000'); // <>>= 0.0000000710 DAI
   });
 
-  it.only('dust redeemooor', async () => {
+  it('dust redeemooor', async () => {
     const signer = await getImpersonatedSigner(addresses.core);
     await forceEth(signer.address);
     const amount = '100'; // 100 TRIBE Wei
@@ -177,7 +177,7 @@ describe('e2e-tribe-redeemer', function () {
     expect(daiReceived).to.be.equal('7'); // 6 DAI Wei
   });
 
-  it.only('last redeemooor', async () => {
+  it('last redeemooor', async () => {
     const signer = await getImpersonatedSigner(addresses.core);
     await forceEth(signer.address);
     const redeemerSigner = await getImpersonatedSigner(contracts.tribeRedeemer.address);
@@ -251,8 +251,8 @@ describe('e2e-tribe-redeemer', function () {
     const daiReceived = daiBalance1.sub(daiBalance0);
     expect(stethReceived).to.be.at.least(ethers.constants.WeiPerEther.mul(109).div(100)); // 1.0964 stETH
     expect(stethReceived).to.be.at.most(ethers.constants.WeiPerEther.mul(112).div(100));
-    expect(daiReceived).to.be.at.least(ethers.constants.WeiPerEther.mul(665)); // 670.212 DAI
-    expect(daiReceived).to.be.at.most(ethers.constants.WeiPerEther.mul(675));
+    expect(daiReceived).to.be.at.least(ethers.constants.WeiPerEther.mul(700)); // 701.525 DAI
+    expect(daiReceived).to.be.at.most(ethers.constants.WeiPerEther.mul(705));
 
     // balance after all redeems
     expect(await contracts.steth.balanceOf(contracts.tribeRedeemer.address)).to.be.at.most('1');

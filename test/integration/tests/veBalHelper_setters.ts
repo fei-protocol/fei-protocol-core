@@ -211,7 +211,7 @@ describe('e2e-veBalHelper-setters', function () {
 
     it('should be able setDelegate() to give snapshot voting power to another address', async () => {
       // Can setDelegate() to give Snapshot voting power to someone else
-      expect(await contracts.veBalDelegatorPCVDeposit.delegate()).to.be.equal(contractAddresses.eswak);
+      expect(await contracts.veBalDelegatorPCVDeposit.delegate()).to.be.equal(contractAddresses.aaveCompaniesMultisig);
       await vebalOtcHelper.connect(otcBuyerSigner).setDelegate(contractAddresses.feiDAOTimelock);
       expect(await contracts.veBalDelegatorPCVDeposit.delegate()).to.be.equal(contractAddresses.feiDAOTimelock);
     });
