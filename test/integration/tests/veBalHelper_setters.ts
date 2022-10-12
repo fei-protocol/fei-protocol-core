@@ -16,7 +16,7 @@ before(async () => {
   chai.use(solidity);
 });
 
-describe.only('e2e-veBalHelper-setters', function () {
+describe('e2e-veBalHelper-setters', function () {
   const impersonatedSigners: { [key: string]: Signer } = {};
   let contracts: NamedContracts;
   let contractAddresses: NamedAddresses;

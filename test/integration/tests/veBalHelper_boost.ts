@@ -69,7 +69,7 @@ describe('e2e-veBalHelper-boost-management', function () {
       '1672272000', // uint256 _expire_time = December 29 2022
       '0' // uint256 _id
     );
-    const expectedMinBoost = '70000000000000000000000'; // should be 77.5k with 18 decimals as of 14/09/2022
+    const expectedMinBoost = '65000000000000000000000'; // should be 77.5k with 18 decimals as of 14/09/2022
     expect(
       await contracts.balancerVotingEscrowDelegation.delegated_boost(contracts.veBalDelegatorPCVDeposit.address)
     ).to.be.at.least(expectedMinBoost);
