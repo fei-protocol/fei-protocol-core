@@ -284,6 +284,18 @@ export const MainnetContractsConfig = {
     category: AddressCategory.FeiRari
   },
 
+  balancerBBaUSD: {
+    artifactName: 'unknown',
+    address: '0xA13a9247ea42D743238089903570127DdA72fE44',
+    category: AddressCategory.External
+  },
+
+  balancerBBUSDGauge: {
+    artifactName: 'unknown',
+    address: '0xa6325e799d266632D347e41265a69aF111b05403',
+    category: AddressCategory.External
+  },
+
   vebalOtcHelper: {
     artifactName: 'VeBalHelper',
     address: '0xb02CE4D72124b98Df4EAB4184467d7Da0023F9FB',
