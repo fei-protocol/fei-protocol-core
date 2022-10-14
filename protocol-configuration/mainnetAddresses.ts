@@ -46,6 +46,26 @@ export const MainnetContractsConfig = {
     address: '0x10ffa0CD36Bc16b355d21A08DF4a552c4A9FEC10',
     category: AddressCategory.Core
   },
+  feiTimelockBurner1: {
+    artifactName: 'FeiLinearTokenTimelockBurner',
+    address: '0x072e5D8DBe245bB78aF1888866E6eFE9548d017F',
+    category: AddressCategory.Distribution
+  },
+  tribeTimelockBurner1: {
+    artifactName: 'TribeTimelockedDelegatorBurner',
+    address: '0x8772D97229A55cf0e2D4AB37766D5DC5647cdF3C',
+    category: AddressCategory.Distribution
+  },
+  tribeTimelockBurner2: {
+    artifactName: 'TribeTimelockedDelegatorBurner',
+    address: '0x8f966aF3ACc936aE6b8ebeB893F6f5925e220902',
+    category: AddressCategory.Distribution
+  },
+  daoTimelockBurner: {
+    artifactName: 'DAOTimelockBurner',
+    address: '0x6F6580285a63f1e886548458f427f8695BA1a563',
+    category: AddressCategory.Core
+  },
   guardianMultisig: {
     artifactName: 'unknown',
     address: '0xB8f482539F2d3Ae2C9ea6076894df36D1f632775',
@@ -262,6 +282,18 @@ export const MainnetContractsConfig = {
     artifactName: 'FuseGuardian',
     address: '0xc0c59A2d3F278445f27ed4a00E2727D6c677c43F',
     category: AddressCategory.FeiRari
+  },
+
+  balancerBBaUSD: {
+    artifactName: 'unknown',
+    address: '0xA13a9247ea42D743238089903570127DdA72fE44',
+    category: AddressCategory.External
+  },
+
+  balancerBBUSDGauge: {
+    artifactName: 'unknown',
+    address: '0xa6325e799d266632D347e41265a69aF111b05403',
+    category: AddressCategory.External
   },
 
   vebalOtcHelper: {

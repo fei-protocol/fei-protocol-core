@@ -2,7 +2,7 @@ import { VeBalHelper } from '@custom-types/contracts';
 import { NamedAddresses, NamedContracts } from '@custom-types/types';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { ProposalsConfig } from '@protocol/proposalsConfig';
-import { getAddresses, getImpersonatedSigner } from '@test/helpers';
+import { getAddresses, getImpersonatedSigner, time } from '@test/helpers';
 import { TestEndtoEndCoordinator } from '@test/integration/setup';
 import chai, { expect } from 'chai';
 import CBN from 'chai-bn';
@@ -59,6 +59,7 @@ describe('e2e-veBalHelper-gauge-management', function () {
     }
 
     otcBuyerAddress = contractAddresses.aaveCompaniesMultisig;
+    await forceEth(otcBuyerAddress);
     otcBuyerSigner = await getImpersonatedSigner(otcBuyerAddress);
 
     await forceEth(balFeiWethGaugeTokenHolder);
@@ -104,37 +105,39 @@ describe('e2e-veBalHelper-gauge-management', function () {
   });
 
   it('should be able to voteForGaugeWeight() to vote for gauge weights whilst a lock is active ', async () => {
-    // remove 100% votes for B-30FEI-70WETH
+    // remove 100% votes for BB-USD gauge
     expect(
       (
         await contracts.balancerGaugeController.vote_user_slopes(
           contractAddresses.veBalDelegatorPCVDeposit,
-          contractAddresses.balancerGaugeBpt30Fei70Weth
+          contractAddresses.balancerBBUSDGauge
         )
       )[1]
     ).to.be.equal('10000');
+    await time.increase(86400 * 11); // Cannot change gauge weights more than once every 10 days
     await vebalOtcHelper
       .connect(otcBuyerSigner)
-      .voteForGaugeWeight(contractAddresses.bpt30Fei70Weth, contractAddresses.balancerGaugeBpt30Fei70Weth, 0);
+      .voteForGaugeWeight(contractAddresses.balancerBBaUSD, contractAddresses.balancerBBUSDGauge, 0);
     expect(
       (
         await contracts.balancerGaugeController.vote_user_slopes(
           contractAddresses.veBalDelegatorPCVDeposit,
-          contractAddresses.balancerGaugeBpt30Fei70Weth
+          contractAddresses.balancerBBUSDGauge
         )
       )[1]
     ).to.be.equal('0');
+    await time.increase(86400 * 11); // Cannot change gauge weights more than once every 10 days
     // set 100% votes for bb-a-usd
     await vebalOtcHelper.connect(otcBuyerSigner).voteForGaugeWeight(
-      '0x7B50775383d3D6f0215A8F290f2C9e2eEBBEceb2', // bb-a-usd token
-      '0x68d019f64A7aa97e2D4e7363AEE42251D08124Fb', // bb-a-usd gauge
+      contractAddresses.balancerBBaUSD, // bb-a-usd token
+      contractAddresses.balancerBBUSDGauge, // bb-a-usd gauge
       10000
     );
     expect(
       (
         await contracts.balancerGaugeController.vote_user_slopes(
           contractAddresses.veBalDelegatorPCVDeposit,
-          '0x68d019f64A7aa97e2D4e7363AEE42251D08124Fb'
+          contractAddresses.balancerBBUSDGauge
         )
       )[1]
     ).to.be.equal('10000');

@@ -61,6 +61,7 @@ describe('e2e-veBalHelper-assetManagement', function () {
     }
 
     otcBuyerAddress = contractAddresses.aaveCompaniesMultisig;
+    await forceEth(otcBuyerAddress);
     otcBuyerSigner = await getImpersonatedSigner(otcBuyerAddress);
 
     balWethBPTWhaleSigner = await getImpersonatedSigner(balWethBPTWhale);

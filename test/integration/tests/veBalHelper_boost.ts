@@ -9,6 +9,7 @@ import CBN from 'chai-bn';
 import { solidity } from 'ethereum-waffle';
 import { Contract, Signer } from 'ethers';
 import { ethers } from 'hardhat';
+import { forceEth } from '../setup/utils';
 
 before(async () => {
   chai.use(CBN(ethers.BigNumber));
@@ -55,7 +56,12 @@ describe('e2e-veBalHelper-boost-management', function () {
     }
 
     otcBuyerAddress = contractAddresses.aaveCompaniesMultisig;
+    await forceEth(otcBuyerAddress);
     otcBuyerSigner = await getImpersonatedSigner(otcBuyerAddress);
+
+    await time.increase(86400 * 3);
+    const aaveCreatedBoostId = '0xC4EAC760C2C631EE0B064E39888B89158FF808B2000000000000000000005ABF';
+    await vebalOtcHelper.connect(otcBuyerSigner).cancel_boost(aaveCreatedBoostId);
   });
 
   it('should be able to create_boost() to boost delegation to another address', async () => {
@@ -67,7 +73,7 @@ describe('e2e-veBalHelper-boost-management', function () {
       '1672272000', // uint256 _expire_time = December 29 2022
       '0' // uint256 _id
     );
-    const expectedMinBoost = '70000000000000000000000'; // should be 77.5k with 18 decimals as of 14/09/2022
+    const expectedMinBoost = '65000000000000000000000'; // should be 77.5k with 18 decimals as of 14/09/2022
     expect(
       await contracts.balancerVotingEscrowDelegation.delegated_boost(contracts.veBalDelegatorPCVDeposit.address)
     ).to.be.at.least(expectedMinBoost);
