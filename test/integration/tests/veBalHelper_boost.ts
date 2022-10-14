@@ -58,6 +58,10 @@ describe('e2e-veBalHelper-boost-management', function () {
     otcBuyerAddress = contractAddresses.aaveCompaniesMultisig;
     await forceEth(otcBuyerAddress);
     otcBuyerSigner = await getImpersonatedSigner(otcBuyerAddress);
+
+    await time.increase(86400 * 3);
+    const aaveCreatedBoostId = '0xC4EAC760C2C631EE0B064E39888B89158FF808B2000000000000000000005ABF';
+    await vebalOtcHelper.connect(otcBuyerSigner).cancel_boost(aaveCreatedBoostId);
   });
 
   it('should be able to create_boost() to boost delegation to another address', async () => {
