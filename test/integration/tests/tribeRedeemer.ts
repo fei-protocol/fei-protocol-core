@@ -69,7 +69,7 @@ describe('e2e-tribe-redeemer', function () {
     expect(amountsOut[1]).to.be.at.most(ethers.constants.WeiPerEther.mul(25));
     expect(amountsOut[2]).to.be.at.least(ethers.constants.WeiPerEther.mul(330)); // 333.72 FOX
     expect(amountsOut[2]).to.be.at.most(ethers.constants.WeiPerEther.mul(335));
-    expect(amountsOut[3]).to.be.at.least(ethers.constants.WeiPerEther.mul(700)); // 670.21 DAI
+    expect(amountsOut[3]).to.be.at.least(ethers.constants.WeiPerEther.mul(700)); // 701.525 DAI
     expect(amountsOut[3]).to.be.at.most(ethers.constants.WeiPerEther.mul(705));
   });
 
@@ -120,7 +120,7 @@ describe('e2e-tribe-redeemer', function () {
     expect(stethPerRedeem).to.be.at.least(ethers.constants.WeiPerEther.mul(109));
     expect(stethPerRedeem).to.be.at.most(ethers.constants.WeiPerEther.mul(112));
     expect(daiPerRedeem).to.be.at.least(ethers.constants.WeiPerEther.mul(70000));
-    expect(daiPerRedeem).to.be.at.most(ethers.constants.WeiPerEther.mul(71000));
+    expect(daiPerRedeem).to.be.at.most(ethers.constants.WeiPerEther.mul(70500));
   });
 
   it('small redeemooor', async () => {
@@ -148,7 +148,7 @@ describe('e2e-tribe-redeemer', function () {
     expect(stethReceived).to.be.at.least('109000000'); // >= 0.000000000109 stETH
     expect(stethReceived).to.be.at.most('112000000'); // <= 0.000000000112 stETH
     expect(daiReceived).to.be.at.least('70000000000'); // >= 0.0000000700 DAI
-    expect(daiReceived).to.be.at.most('71000000000'); // <>>= 0.0000000710 DAI
+    expect(daiReceived).to.be.at.most('71000000000'); // <>>= 0.0.0000000710 DAI
   });
 
   it('dust redeemooor', async () => {
@@ -174,7 +174,7 @@ describe('e2e-tribe-redeemer', function () {
     const stethReceived = stethBalance1.sub(stethBalance0);
     const daiReceived = daiBalance1.sub(daiBalance0);
     expect(stethReceived).to.be.equal('0'); // got rounded down to 0, no revert
-    expect(daiReceived).to.be.equal('7'); // 6 DAI Wei
+    expect(daiReceived).to.be.equal('7'); // 7 DAI Wei
   });
 
   it('last redeemooor', async () => {

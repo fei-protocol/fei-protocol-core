@@ -103,4 +103,43 @@ describe('e2e-veBalHelper-gauge-management', function () {
     ).sub(stakeBeforeBalance);
     expect(stakeBalanceDiff).to.equal(0);
   });
+
+  it('should be able to voteForGaugeWeight() to vote for gauge weights whilst a lock is active ', async () => {
+    // remove 100% votes for BB-USD gauge
+    expect(
+      (
+        await contracts.balancerGaugeController.vote_user_slopes(
+          contractAddresses.veBalDelegatorPCVDeposit,
+          contractAddresses.balancerBBUSDGauge
+        )
+      )[1]
+    ).to.be.equal('10000');
+    await time.increase(86400 * 11); // Cannot change gauge weights more than once every 10 days
+    await vebalOtcHelper
+      .connect(otcBuyerSigner)
+      .voteForGaugeWeight(contractAddresses.balancerBBaUSD, contractAddresses.balancerBBUSDGauge, 0);
+    expect(
+      (
+        await contracts.balancerGaugeController.vote_user_slopes(
+          contractAddresses.veBalDelegatorPCVDeposit,
+          contractAddresses.balancerBBUSDGauge
+        )
+      )[1]
+    ).to.be.equal('0');
+    await time.increase(86400 * 11); // Cannot change gauge weights more than once every 10 days
+    // set 100% votes for bb-a-usd
+    await vebalOtcHelper.connect(otcBuyerSigner).voteForGaugeWeight(
+      contractAddresses.balancerBBaUSD, // bb-a-usd token
+      contractAddresses.balancerBBUSDGauge, // bb-a-usd gauge
+      10000
+    );
+    expect(
+      (
+        await contracts.balancerGaugeController.vote_user_slopes(
+          contractAddresses.veBalDelegatorPCVDeposit,
+          contractAddresses.balancerBBUSDGauge
+        )
+      )[1]
+    ).to.be.equal('10000');
+  });
 });
