@@ -69,20 +69,6 @@ export const MainnetContractsConfig = {
     category: AddressCategory.PCV
   },
 
-  // TODO: Mark as deprecated after Rari fuse admin sorted
-  fuseAdmin: {
-    artifactName: 'FuseAdmin',
-    address: '0x761dD1Ae03D95BdABeC3C228532Dcdab4F2c7adD',
-    category: AddressCategory.FeiRari
-  },
-
-  // TODO: Mark as deprecated after Rari fuse admin sorted
-  fuseGuardian: {
-    artifactName: 'FuseGuardian',
-    address: '0xc0c59A2d3F278445f27ed4a00E2727D6c677c43F',
-    category: AddressCategory.FeiRari
-  },
-
   balancerBBaUSD: {
     artifactName: 'unknown',
     address: '0xA13a9247ea42D743238089903570127DdA72fE44',
@@ -1178,6 +1164,18 @@ export const MainnetContractsConfig = {
     artifactName: 'unknown',
     address: '0xfbD8Aaf46Ab3C2732FA930e5B343cd67cEA5054C',
     category: AddressCategory.External
+  },
+
+  fuseAdmin: {
+    artifactName: 'FuseAdmin',
+    address: '0x761dD1Ae03D95BdABeC3C228532Dcdab4F2c7adD',
+    category: AddressCategory.Deprecated
+  },
+
+  fuseGuardian: {
+    artifactName: 'FuseGuardian',
+    address: '0xc0c59A2d3F278445f27ed4a00E2727D6c677c43F',
+    category: AddressCategory.Deprecated
   },
 
   proxyAdmin: {
