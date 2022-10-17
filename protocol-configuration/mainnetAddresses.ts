@@ -26,12 +26,6 @@ export const MainnetContractsConfig = {
     address: '0x956F47F50A910163D8BF957Cf5846D573E7f87CA',
     category: AddressCategory.Core
   },
-  // TODO: Deprecate once confident no dependents
-  proxyAdmin: {
-    artifactName: 'ProxyAdmin',
-    address: '0xf8c2b645988b7658E7748BA637fE25bdD46A704A',
-    category: AddressCategory.Core
-  },
   tribe: {
     artifactName: 'Tribe',
     address: '0xc7283b66Eb1EB5FB86327f08e1B5816b0720212B',
@@ -63,27 +57,6 @@ export const MainnetContractsConfig = {
     category: AddressCategory.Core
   },
 
-  // TODO: Mark as deprecated after Rari deprecates
-  rariTimelock: {
-    artifactName: 'Timelock',
-    address: '0x8ace03Fc45139fDDba944c6A4082b604041d19FC',
-    category: AddressCategory.Governance
-  },
-
-  // TODO: Mark as deprecated after Rari deprecates
-  tribeRariDAO: {
-    artifactName: 'FeiDAO',
-    address: '0x637deEED4e4deb1D222650bD4B64192abf002c00',
-    category: AddressCategory.Governance
-  },
-
-  // TODO: Mark as deprecated after Rari deprecates
-  rariGovernanceProxyAdmin: {
-    artifactName: 'ProxyAdmin',
-    address: '0x1c9aA54a013962C2444ECae06902F31D532c6AD3',
-    category: AddressCategory.Governance
-  },
-
   rariTimelockFeiOldLens: {
     artifactName: 'ERC20PCVDepositWrapper',
     address: '0x614D46B7eB2AC1a359b8835D64954F3Ee4E6F676',
@@ -93,7 +66,7 @@ export const MainnetContractsConfig = {
   escrowedAaveDaiPCVDeposit: {
     artifactName: 'ERC20PCVDepositWrapper',
     address: '0x82c55A1Ab5C6F4b8e162b7dE24b50A38E1aFd38f',
-    category: AddressCategory.Deprecated
+    category: AddressCategory.PCV
   },
 
   // TODO: Mark as deprecated after Rari fuse admin sorted
@@ -1205,6 +1178,30 @@ export const MainnetContractsConfig = {
     artifactName: 'unknown',
     address: '0xfbD8Aaf46Ab3C2732FA930e5B343cd67cEA5054C',
     category: AddressCategory.External
+  },
+
+  proxyAdmin: {
+    artifactName: 'ProxyAdmin',
+    address: '0xf8c2b645988b7658E7748BA637fE25bdD46A704A',
+    category: AddressCategory.Deprecated
+  },
+
+  rariTimelock: {
+    artifactName: 'Timelock',
+    address: '0x8ace03Fc45139fDDba944c6A4082b604041d19FC',
+    category: AddressCategory.Deprecated
+  },
+
+  tribeRariDAO: {
+    artifactName: 'FeiDAO',
+    address: '0x637deEED4e4deb1D222650bD4B64192abf002c00',
+    category: AddressCategory.Deprecated
+  },
+
+  rariGovernanceProxyAdmin: {
+    artifactName: 'ProxyAdmin',
+    address: '0x1c9aA54a013962C2444ECae06902F31D532c6AD3',
+    category: AddressCategory.Deprecated
   },
 
   tribeMinter: {
