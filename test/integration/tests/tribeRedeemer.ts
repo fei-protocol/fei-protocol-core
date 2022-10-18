@@ -120,7 +120,7 @@ describe('e2e-tribe-redeemer', function () {
     expect(stethPerRedeem).to.be.at.least(ethers.constants.WeiPerEther.mul(109));
     expect(stethPerRedeem).to.be.at.most(ethers.constants.WeiPerEther.mul(112));
     expect(daiPerRedeem).to.be.at.least(ethers.constants.WeiPerEther.mul(71200));
-    expect(daiPerRedeem).to.be.at.most(ethers.constants.WeiPerEther.mul(71400));
+    expect(daiPerRedeem).to.be.at.most(ethers.constants.WeiPerEther.mul(71700));
   });
 
   it('small redeemooor', async () => {
