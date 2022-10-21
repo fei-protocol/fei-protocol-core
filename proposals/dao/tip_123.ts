@@ -11,6 +11,7 @@ import {
 } from '@custom-types/types';
 import { forceEth } from '@test/integration/setup/utils';
 import { getImpersonatedSigner, time } from '@test/helpers';
+import { BigNumber } from 'ethers';
 
 /*
 
@@ -19,6 +20,7 @@ TIP_123
 */
 
 let pcvStatsBefore: PcvStats;
+let initialTotalTribeDelegation: BigNumber;
 
 const fipNumber = 'tip_123';
 
@@ -57,6 +59,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 // ensuring contracts have a specific state, etc.
 const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
   pcvStatsBefore = await contracts.collateralizationOracle.pcvStats();
+  initialTotalTribeDelegation = await contracts.feiLabsVestingTimelock.totalDelegated();
 };
 
 // Tears down any changes made in setup() that need to be
@@ -120,6 +123,22 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 
   // 7. Verify proxyAdmin controlled by DAO timelock
   expect(await contracts.proxyAdmin.owner()).to.equal(addresses.feiDAOTimelock);
+
+  // 8. Verify can permissionlessly undelegated TRIBE from timelock via TRIBE timelock burner
+  const delegatee = '0x0d4ba14ca1e990654c6f9c7957b9b23f8a1429dc';
+  const expectedDelegateeDelegation = ethers.constants.WeiPerEther.mul(1_000_000);
+  expect(await contracts.feiLabsVestingTimelock.delegateAmount(delegatee)).to.equal(expectedDelegateeDelegation);
+
+  await contracts.tribeTimelockBurner2.undelegate(delegatee);
+
+  const finalTribeDelegated = await contracts.feiLabsVestingTimelock.totalDelegated();
+  const undelegatedAmount = initialTotalTribeDelegation.sub(finalTribeDelegated);
+
+  // Verify delegatee no longer has a delegation
+  expect(await contracts.feiLabsVestingTimelock.delegateAmount(delegatee)).to.equal(0);
+
+  // Verify total delegation decrease was equal to the delegates delegation
+  expect(undelegatedAmount).to.equal(expectedDelegateeDelegation);
 };
 
 // Verify proposals can not be queued
