@@ -61,7 +61,7 @@ describe('e2e-metagov', function () {
       const lpTokenHolder = '0x4f9463405f5bc7b4c1304222c1df76efbd81a407';
       const lpTokenSigner = await getImpersonatedSigner(lpTokenHolder);
       await forceEth(lpTokenHolder);
-      await contracts.bpt30Fei70Weth.connect(lpTokenSigner).transfer(staker.address, `100${e18}`);
+      await contracts.bpt30Fei70Weth.connect(lpTokenSigner).transfer(staker.address, `40${e18}`);
 
       // also airdrop some BAL so that balance is not zero
       const balTokenHolder = '0xBA12222222228d8Ba445958a75a0704d566BF2C8';

@@ -27,8 +27,10 @@ contract TribeTimelockedDelegatorBurnerIntegrationTest is DSTest {
         tribeTimelock.setPendingBeneficiary(address(tribeTimelockBurner));
 
         // Undelegate some TRIBE to make enough available for withdrawals
-        vm.prank(tribeTimelock.beneficiary());
+        vm.startPrank(tribeTimelock.beneficiary());
         tribeTimelock.undelegate(MainnetAddresses.TRIBE_FEI_LABS_DEL);
+        tribeTimelock.undelegate(MainnetAddresses.TRIBE_FEI_LABS_DEL_2);
+        vm.stopPrank();
     }
 
     /// @notice Validate that timelock to burn is setup
