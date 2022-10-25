@@ -58,7 +58,7 @@ describe('e2e-metagov', function () {
       await forceEth(randomSigner.address);
 
       // seed the staker with some LP tokens
-      const lpTokenHolder = '0xf4adc8369e83d6a599e51438d44b5e53a412f807';
+      const lpTokenHolder = '0x4f9463405f5bc7b4c1304222c1df76efbd81a407';
       const lpTokenSigner = await getImpersonatedSigner(lpTokenHolder);
       await forceEth(lpTokenHolder);
       await contracts.bpt30Fei70Weth.connect(lpTokenSigner).transfer(staker.address, `100${e18}`);
