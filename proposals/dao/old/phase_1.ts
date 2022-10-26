@@ -118,7 +118,7 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   expect(await contracts.uniswapLiquidityRemover.FEI_TRIBE_PAIR()).to.be.equal(addresses.feiTribePair);
 
   // 3. Validate Fei Labs vesting timelock accepted beneficiary
-  expect(await contracts.feiLabsVestingTimelock.beneficiary()).to.be.equal(addresses.feiDAOTimelock);
+  expect(await contracts.tribeDAODelegationsTimelock.beneficiary()).to.be.equal(addresses.feiDAOTimelock);
 
   // 4. Uniswap LP liquidity timelock should have no LP tokens or FEI or TRIBE
   expect(await contracts.feiTribePair.balanceOf(addresses.uniswapFeiTribeLiquidityTimelock)).to.be.equal(0);

@@ -1,3 +1,4 @@
+// Deprecated: Optimistic governance is no longer live and in use
 export const tribalCouncilMembers = [
   '0xc8eefb8b3d50ca87Da7F99a661720148acf97EfA',
   '0x72b7448f470D07222Dbf038407cD69CC380683F3',

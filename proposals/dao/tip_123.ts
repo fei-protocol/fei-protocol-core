@@ -43,8 +43,10 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
   console.log('Deprecated Rari TRIBE timelock burned deployed to: ', tribeTimelockBurner1.address);
 
   // 4. Deploy Fei Labs burner
-  const tribeTimelockBurner2 = await TribeTimelockedDelegatorBurnerFactory.deploy(addresses.feiLabsVestingTimelock);
-  console.log('Fei Labs TRIBE burner deployed to: ', tribeTimelockBurner2.address);
+  const tribeTimelockBurner2 = await TribeTimelockedDelegatorBurnerFactory.deploy(
+    addresses.tribeDAODelegationsTimelock
+  );
+  console.log('Tribe DAO delegations TRIBE burner deployed to: ', tribeTimelockBurner2.address);
 
   return {
     daoTimelockBurner,
@@ -59,7 +61,7 @@ const deploy: DeployUpgradeFunc = async (deployAddress: string, addresses: Named
 // ensuring contracts have a specific state, etc.
 const setup: SetupUpgradeFunc = async (addresses, oldContracts, contracts, logging) => {
   pcvStatsBefore = await contracts.collateralizationOracle.pcvStats();
-  initialTotalTribeDelegation = await contracts.feiLabsVestingTimelock.totalDelegated();
+  initialTotalTribeDelegation = await contracts.tribeDAODelegationsTimelock.totalDelegated();
 };
 
 // Tears down any changes made in setup() that need to be
@@ -111,8 +113,8 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   // Verify Fuse multisig does not have any delegated TRIBE
   expect(await contracts.tribe.getCurrentVotes(addresses.fuseMultisig)).to.equal(0);
 
-  // 4. Verify Fei Labs Tribe timelock burned
-  expect(await contracts.feiLabsVestingTimelock.beneficiary()).to.equal(addresses.tribeTimelockBurner2);
+  // 4. Verify Tribe DAO Delegations timelock burned
+  expect(await contracts.tribeDAODelegationsTimelock.beneficiary()).to.equal(addresses.tribeTimelockBurner2);
 
   // 5. Verify Tribe minter set to zero address and inflation is the minimum of 0.01% (1 basis point)
   expect(await contracts.tribe.minter()).to.equal(ethers.constants.AddressZero);
@@ -121,21 +123,21 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
   // 6. Verify can not queue on DAO timelock
   await verifyCanNotQueueProposals(contracts, addresses);
 
-  // 7. Verify proxyAdmin controlled by DAO timelock
-  expect(await contracts.proxyAdmin.owner()).to.equal(addresses.feiDAOTimelock);
+  // 7. Verify proxyAdmin ownership renounced
+  expect(await contracts.proxyAdmin.owner()).to.equal(ethers.constants.AddressZero);
 
   // 8. Verify can permissionlessly undelegated TRIBE from timelock via TRIBE timelock burner
   const delegatee = '0x0d4ba14ca1e990654c6f9c7957b9b23f8a1429dc';
   const expectedDelegateeDelegation = ethers.constants.WeiPerEther.mul(1_000_000);
-  expect(await contracts.feiLabsVestingTimelock.delegateAmount(delegatee)).to.equal(expectedDelegateeDelegation);
+  expect(await contracts.tribeDAODelegationsTimelock.delegateAmount(delegatee)).to.equal(expectedDelegateeDelegation);
 
   await contracts.tribeTimelockBurner2.undelegate(delegatee);
 
-  const finalTribeDelegated = await contracts.feiLabsVestingTimelock.totalDelegated();
+  const finalTribeDelegated = await contracts.tribeDAODelegationsTimelock.totalDelegated();
   const undelegatedAmount = initialTotalTribeDelegation.sub(finalTribeDelegated);
 
   // Verify delegatee no longer has a delegation
-  expect(await contracts.feiLabsVestingTimelock.delegateAmount(delegatee)).to.equal(0);
+  expect(await contracts.tribeDAODelegationsTimelock.delegateAmount(delegatee)).to.equal(0);
 
   // Verify total delegation decrease was equal to the delegates delegation
   expect(undelegatedAmount).to.equal(expectedDelegateeDelegation);

@@ -43,20 +43,23 @@ const tip_123: TemplatedProposalDescription = {
       description: 'Accept deprecated Rari Tribe timelock beneficiary to burner'
     },
 
-    // 3. Transfer beneficiary of Fei Labs Tribe contract to burner TRIBE timelock
+    // 3. Transfer beneficiary of Tribe DAO delegations contract to burner TRIBE timelock
     {
-      target: 'feiLabsVestingTimelock',
+      target: 'tribeDAODelegationsTimelock',
       values: '0',
       method: 'setPendingBeneficiary(address)',
       arguments: (addresses) => [addresses.tribeTimelockBurner2],
-      description: 'Set pending beneficiary of Fei Labs Tribe timelock to Fei Labs Tribe burner timelock'
+      description: `
+        Set pending beneficiary of Tribe DAO Tribe delegations timelock to Tribe DAO delegations
+        TRIBE burner timelock
+      `
     },
     {
       target: 'tribeTimelockBurner2',
       values: '0',
       method: 'acceptBeneficiary()',
       arguments: (addresses) => [],
-      description: 'Accept deprecated Fei Labs Tribe timelock beneficiary to burner'
+      description: 'Accept deprecated Tribe DAO delegations TRIBE timelock beneficiary to burner'
     },
 
     // 3. Deprecate TribeMinter
@@ -120,7 +123,16 @@ const tip_123: TemplatedProposalDescription = {
       description: 'Revoke the GOVERN_ROLE from the TribeDAO timelock'
     },
 
-    // 7. Transfer admin of DAO timelock to DAO timelock burner
+    // 7. Renounce ownership of ProxyAdmin
+    {
+      target: 'proxyAdmin',
+      values: '0',
+      method: 'renounceOwnership()',
+      arguments: (addresses) => [],
+      description: 'Renounce ownership of ProxyAdmin, transferring owner to zero address'
+    },
+
+    // 8. Transfer admin of DAO timelock to DAO timelock burner
     {
       target: 'feiDAOTimelock',
       values: '0',
