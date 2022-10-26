@@ -141,6 +141,39 @@ const validate: ValidateUpgradeFunc = async (addresses, oldContracts, contracts,
 
   // Verify total delegation decrease was equal to the delegates delegation
   expect(undelegatedAmount).to.equal(expectedDelegateeDelegation);
+
+  // 9. Verify can permissionlessly burn FEI on Rari infra burner timelock
+  const initialFeiSupply = await contracts.fei.totalSupply();
+  const initialRariTimelockFei = await contracts.fei.balanceOf(addresses.rariInfraFeiTimelock);
+  await contracts.feiTimelockBurner1.burnFeiHeld();
+  const feiBurned = initialFeiSupply.sub(await contracts.fei.totalSupply());
+  const rariTimelockFeiLoss = initialRariTimelockFei.sub(await contracts.fei.balanceOf(addresses.rariInfraFeiTimelock));
+  expect(feiBurned).to.equal(rariTimelockFeiLoss);
+
+  // 10. Verify can permissionlessly sendTribeToTreasury() on Rari infra Tribe burner timelock
+  const initialCoreTreasury1 = await contracts.tribe.balanceOf(addresses.core);
+  const initialRariTimelockTribe1 = await contracts.tribe.balanceOf(addresses.rariInfraTribeTimelock);
+  await contracts.tribeTimelockBurner1.sendTribeToTreaury();
+  const rariTimelockTribeLoss1 = initialRariTimelockTribe1.sub(
+    await contracts.tribe.balanceOf(addresses.rariInfraTribeTimelock)
+  );
+  const coreTreasuryGain1 = (await contracts.tribe.balanceOf(addresses.core)).sub(initialCoreTreasury1);
+  expect(coreTreasuryGain1).to.equal(rariTimelockTribeLoss1);
+
+  // 11. Verify can permissionlessly sendTribeToTreasury() on Tribe DAO delegations burner timelock
+  // Undelegate TRIBE to make available
+  await contracts.tribeTimelockBurner2.undelegate('0xd046135ba00b0315ed4c3135206c87a7f4eb57d9');
+  await contracts.tribeTimelockBurner2.undelegate('0xc64ed730e030bdcb66e9b5703798bb4275a5a484');
+  await contracts.tribeTimelockBurner2.undelegate('0x114b8d7ab033e650003fa3fc72c5ba2d0fd18345');
+
+  const initialCoreTreasury2 = await contracts.tribe.balanceOf(addresses.core);
+  const initialDAOTimelockTribe2 = await contracts.tribe.balanceOf(addresses.tribeDAODelegationsTimelock);
+  await contracts.tribeTimelockBurner2.sendTribeToTreaury();
+  const daoTimelockTribeLoss2 = initialDAOTimelockTribe2.sub(
+    await contracts.tribe.balanceOf(addresses.tribeDAODelegationsTimelock)
+  );
+  const coreTreasuryGain2 = (await contracts.tribe.balanceOf(addresses.core)).sub(initialCoreTreasury2);
+  expect(coreTreasuryGain2).to.equal(daoTimelockTribeLoss2);
 };
 
 // Verify proposals can not be queued
