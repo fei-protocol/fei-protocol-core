@@ -2,7 +2,7 @@ import { TemplatedProposalDescription } from '@custom-types/types';
 import { ethers } from 'ethers';
 
 const tip_123: TemplatedProposalDescription = {
-  title: 'TIP_123',
+  title: 'TIP-121: Proposal for the future of the Tribe DAO',
   commands: [
     // 1. Transfer beneficiary of deprecated Rari FEI timelock to burner timelock
     {
@@ -148,9 +148,18 @@ const tip_123: TemplatedProposalDescription = {
       description: 'Accept Fei DAO timelock admin transfer to the DAO timelock burner'
     }
   ],
-  description: `
-  [TITLE] /n/n
-  [BODY OF PROPOSAL] \n\n
+  description: `  
+TIP-121: Proposal for the future of the Tribe DAO
+
+This is a completion of the proposal laid out in TIP-121: https://tribe.fei.money/t/tip-121-proposal-for-the-future-of-the-tribe-dao/4475 
+
+It transitions the DAO to a governance-less state by disabling the functionality by which the DAO executes proposals. 
+
+In addition, it disables new TRIBE minting, consolidates all DAO owned TRIBE and FEI, and revokes all roles remaining including the GOVERNOR and GUARDIAN roles. 
+
+The only remaining roles will be the single MINTER_ROLE on the FEI to DAI peg wrapper contract and the roles Aave needs to operate the OTC contract from “TIP-121c: veBAL OTC with Aave Companies”. Both of these roles need to remain in perpetuity to maintain basic functionality.
+
+TRIBE and FEI will continue to remain redeemable on the TribeRedeemer and SimpleFeiDaiPSM respectively if this proposal passes.
   `
 };
 
