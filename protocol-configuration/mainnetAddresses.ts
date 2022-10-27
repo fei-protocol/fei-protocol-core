@@ -26,19 +26,9 @@ export const MainnetContractsConfig = {
     address: '0x956F47F50A910163D8BF957Cf5846D573E7f87CA',
     category: AddressCategory.Core
   },
-  proxyAdmin: {
-    artifactName: 'ProxyAdmin',
-    address: '0xf8c2b645988b7658E7748BA637fE25bdD46A704A',
-    category: AddressCategory.Core
-  },
   tribe: {
     artifactName: 'Tribe',
     address: '0xc7283b66Eb1EB5FB86327f08e1B5816b0720212B',
-    category: AddressCategory.Core
-  },
-  tribeMinter: {
-    artifactName: 'TribeMinter',
-    address: '0xFC3532b443383d9022b1B2c6FD5Fd0895943360A',
     category: AddressCategory.Core
   },
   restrictedPermissions: {
@@ -46,9 +36,19 @@ export const MainnetContractsConfig = {
     address: '0x10ffa0CD36Bc16b355d21A08DF4a552c4A9FEC10',
     category: AddressCategory.Core
   },
+  daoTimelockBurner: {
+    artifactName: 'DAOTimelockBurner',
+    address: '0x6F6580285a63f1e886548458f427f8695BA1a563',
+    category: AddressCategory.Core
+  },
   feiTimelockBurner1: {
     artifactName: 'FeiLinearTokenTimelockBurner',
     address: '0x072e5D8DBe245bB78aF1888866E6eFE9548d017F',
+    category: AddressCategory.Distribution
+  },
+  rariInfraFeiTimelock: {
+    artifactName: 'LinearTokenTimelock',
+    address: '0xfaFC562265a49975E8B20707EAC966473795CF90',
     category: AddressCategory.Distribution
   },
   tribeTimelockBurner1: {
@@ -56,232 +56,25 @@ export const MainnetContractsConfig = {
     address: '0x8772D97229A55cf0e2D4AB37766D5DC5647cdF3C',
     category: AddressCategory.Distribution
   },
-  tribeTimelockBurner2: {
-    artifactName: 'TribeTimelockedDelegatorBurner',
-    address: '0x8f966aF3ACc936aE6b8ebeB893F6f5925e220902',
-    category: AddressCategory.Distribution
-  },
-  daoTimelockBurner: {
-    artifactName: 'DAOTimelockBurner',
-    address: '0x6F6580285a63f1e886548458f427f8695BA1a563',
-    category: AddressCategory.Core
-  },
-  guardianMultisig: {
-    artifactName: 'unknown',
-    address: '0xB8f482539F2d3Ae2C9ea6076894df36D1f632775',
-    category: AddressCategory.Security
-  },
-  feiDAO: {
-    artifactName: 'FeiDAO',
-    address: '0x0BEF27FEB58e857046d630B2c03dFb7bae567494',
-    category: AddressCategory.Governance
-  },
-
-  feiDAOTimelock: {
-    artifactName: 'FeiDAOTimelock',
-    address: '0xd51dbA7a94e1adEa403553A8235C302cEbF41a3c',
-    category: AddressCategory.Governance
-  },
-  rariTimelock: {
-    artifactName: 'Timelock',
-    address: '0x8ace03Fc45139fDDba944c6A4082b604041d19FC',
-    category: AddressCategory.Governance
-  },
-
-  tribeRariDAO: {
-    artifactName: 'FeiDAO',
-    address: '0x637deEED4e4deb1D222650bD4B64192abf002c00',
-    category: AddressCategory.Governance
-  },
-
-  rariGovernanceProxyAdmin: {
-    artifactName: 'ProxyAdmin',
-    address: '0x1c9aA54a013962C2444ECae06902F31D532c6AD3',
-    category: AddressCategory.Governance
-  },
-
-  rariTimelockFeiOldLens: {
-    artifactName: 'ERC20PCVDepositWrapper',
-    address: '0x614D46B7eB2AC1a359b8835D64954F3Ee4E6F676',
-    category: AddressCategory.PCV
-  },
-
-  escrowedAaveDaiPCVDeposit: {
-    artifactName: 'ERC20PCVDepositWrapper',
-    address: '0x82c55A1Ab5C6F4b8e162b7dE24b50A38E1aFd38f',
-    category: AddressCategory.PCV
-  },
-
-  collateralizationOracle: {
-    artifactName: 'CollateralizationOracle',
-    address: '0xFF6f59333cfD8f4Ebc14aD0a0E181a83e655d257',
-    category: AddressCategory.Collateralization
-  },
-  rariInfraFeiTimelock: {
-    artifactName: 'LinearTokenTimelock',
-    address: '0xfaFC562265a49975E8B20707EAC966473795CF90',
-    category: AddressCategory.Distribution
-  },
   rariInfraTribeTimelock: {
     artifactName: 'LinearTimelockedDelegator',
     address: '0x625cf6AA7DafB154F3Eb6BE87592110e30290dEe',
     category: AddressCategory.Distribution
   },
-
-  oneConstantOracle: {
-    artifactName: 'ConstantOracle',
-    address: '0x2374800337c6BE8B935f96AA6c10b33f9F12Bd40',
-    category: AddressCategory.Oracle
+  tribeTimelockBurner2: {
+    artifactName: 'TribeTimelockedDelegatorBurner',
+    address: '0x8f966aF3ACc936aE6b8ebeB893F6f5925e220902',
+    category: AddressCategory.Distribution
   },
-
-  zeroConstantOracle: {
-    artifactName: 'ConstantOracle',
-    address: '0x43b99923CF06D6D9101110b595234670f73A4934',
-    category: AddressCategory.Oracle
+  tribeDAODelegationsTimelock: {
+    artifactName: 'TimelockedDelegator',
+    address: '0x38afbf8128cc54323e216acde9516d281c4f1e5f',
+    category: AddressCategory.Distribution
   },
-
-  rariPool8ConvexD3Plugin: {
-    artifactName: 'IConvexERC4626',
-    address: '0xaa189e7f4aac757216b62849f78f1236749ba814',
-    category: AddressCategory.FeiRari
-  },
-
-  rariCErc20PluginImpl: {
-    artifactName: 'unknown',
-    address: '0xbfb8D550B53F64F581df1Da41DDa0CB9E596Aa0E',
-    category: AddressCategory.FeiRari
-  },
-
-  rariPool8Comptroller: {
-    artifactName: 'Unitroller',
-    address: '0xc54172e34046c1653d1920d40333dd358c7a1af4',
-    category: AddressCategory.FeiRari
-  },
-
-  rariPool8MasterOracle: {
-    artifactName: 'IMasterOracle',
-    address: '0x4d10BC156FBaD2474a94f792fe0D6c3261469cdd',
-    category: AddressCategory.FeiRari
-  },
-
-  rariChainlinkPriceOracleV3: {
-    artifactName: 'unknown',
-    address: '0x058c345D3240001088b6280e008F9e78b3B2112d',
-    category: AddressCategory.FeiRari
-  },
-
-  curveLPTokenOracle: {
-    artifactName: 'unknown',
-    address: '0xa9f3faac3b8eDF7b3DCcFDBBf25033D6F5fc02F3',
-    category: AddressCategory.FeiRari
-  },
-
-  gUniFuseOracle: {
-    artifactName: 'unknown',
-    address: '0xEa3633b38C747ceA231aDB74b511DC2eD3992B43',
-    category: AddressCategory.FeiRari
-  },
-
-  rariPool8Lusd: {
-    artifactName: 'CErc20Delegator',
-    address: '0x647A36d421183a0a9Fa62717a64B664a24E469C7',
-    category: AddressCategory.FeiRari
-  },
-
-  rariPool8Dai: {
-    artifactName: 'CErc20Delegator',
-    address: '0x7e9cE3CAa9910cc048590801e64174957Ed41d43',
-    category: AddressCategory.FeiRari
-  },
-
-  rariPool8DaiIrm: {
-    artifactName: 'unknown',
-    address: '0xede47399e2aa8f076d40dc52896331cba8bd40f7',
-    category: AddressCategory.FeiRari
-  },
-
-  rariPool8Eth: {
-    artifactName: 'CErc20Delegator',
-    address: '0xbB025D470162CC5eA24daF7d4566064EE7f5F111',
-    category: AddressCategory.FeiRari
-  },
-
-  rariPool8EthIrm: {
-    artifactName: 'unknown',
-    address: '0xbab47e4b692195bf064923178a90ef999a15f819',
-    category: AddressCategory.FeiRari
-  },
-
-  rariPool8Fei: {
-    artifactName: 'CErc20Delegator',
-    address: '0xd8553552f8868C1Ef160eEdf031cF0BCf9686945',
-    category: AddressCategory.FeiRari
-  },
-
-  rariPool8FeiIrm: {
-    artifactName: 'unknown',
-    address: '0x8f47be5692180079931e2f983db6996647aba0a5',
-    category: AddressCategory.FeiRari
-  },
-
-  rariPool8Tribe: {
-    artifactName: 'CErc20Delegator',
-    address: '0xFd3300A9a74b3250F1b2AbC12B47611171910b07',
-    category: AddressCategory.FeiRari
-  },
-
-  rariPool8TribeIrm: {
-    artifactName: 'unknown',
-    address: '0x075538650a9c69ac8019507a7dd1bd879b12c1d7',
-    category: AddressCategory.FeiRari
-  },
-
-  rariPool8CTokenImpl: {
-    artifactName: 'unknown',
-    address: '0x67Db14E73C2Dce786B5bbBfa4D010dEab4BBFCF9',
-    category: AddressCategory.FeiRari
-  },
-
-  rariPool8Fei3Crv: {
-    artifactName: 'CErc20Delegator',
-    address: '0xBFB6f7532d2DB0fE4D83aBb001c5C2B0842AF4dB',
-    category: AddressCategory.FeiRari
-  },
-
-  rariPool8FeiD3: {
-    artifactName: 'CErc20Delegator',
-    address: '0x5cA8Ffe4DAD9452ED880FA429DD0A08574225936',
-    category: AddressCategory.FeiRari
-  },
-
-  rariPool146Comptroller: {
-    artifactName: 'Unitroller',
-    address: '0x88F7c23EA6C4C404dA463Bc9aE03b012B32DEf9e',
-    category: AddressCategory.FeiRari
-  },
-
-  rariPool146FuseAdmin: {
-    artifactName: 'FuseAdmin',
-    address: '0x6d64D080345C446dA31b8D3855bA6d9C0fC875D2',
-    category: AddressCategory.FeiRari
-  },
-
-  rariPool146Eth: {
-    artifactName: 'unknown',
-    address: '0xfbD8Aaf46Ab3C2732FA930e5B343cd67cEA5054C',
-    category: AddressCategory.FeiRari
-  },
-
-  fuseAdmin: {
-    artifactName: 'FuseAdmin',
-    address: '0x761dD1Ae03D95BdABeC3C228532Dcdab4F2c7adD',
-    category: AddressCategory.FeiRari
-  },
-
-  fuseGuardian: {
-    artifactName: 'FuseGuardian',
-    address: '0xc0c59A2d3F278445f27ed4a00E2727D6c677c43F',
-    category: AddressCategory.FeiRari
+  escrowedAaveDaiPCVDeposit: {
+    artifactName: 'ERC20PCVDepositWrapper',
+    address: '0x82c55A1Ab5C6F4b8e162b7dE24b50A38E1aFd38f',
+    category: AddressCategory.PCV
   },
 
   balancerBBaUSD: {
@@ -1212,7 +1005,8 @@ export const MainnetContractsConfig = {
   },
   fishy: {
     artifactName: 'unknown',
-    address: '0x7D82675470B06453980b37880d81f6F254371FD3'
+    address: '0x7D82675470B06453980b37880d81f6F254371FD3',
+    category: AddressCategory.External
   },
   wintermute: {
     artifactName: 'unknown',
@@ -1234,6 +1028,219 @@ export const MainnetContractsConfig = {
     artifactName: 'ChainlinkOracleWrapper',
     address: '0x7261D245454Daa070C77B2a26eA192E3a4c8F655',
     category: AddressCategory.External
+  },
+
+  oneConstantOracle: {
+    artifactName: 'ConstantOracle',
+    address: '0x2374800337c6BE8B935f96AA6c10b33f9F12Bd40',
+    category: AddressCategory.External
+  },
+
+  zeroConstantOracle: {
+    artifactName: 'ConstantOracle',
+    address: '0x43b99923CF06D6D9101110b595234670f73A4934',
+    category: AddressCategory.External
+  },
+
+  rariPool8ConvexD3Plugin: {
+    artifactName: 'IConvexERC4626',
+    address: '0xaa189e7f4aac757216b62849f78f1236749ba814',
+    category: AddressCategory.External
+  },
+
+  rariCErc20PluginImpl: {
+    artifactName: 'unknown',
+    address: '0xbfb8D550B53F64F581df1Da41DDa0CB9E596Aa0E',
+    category: AddressCategory.External
+  },
+
+  rariPool8Comptroller: {
+    artifactName: 'Unitroller',
+    address: '0xc54172e34046c1653d1920d40333dd358c7a1af4',
+    category: AddressCategory.External
+  },
+
+  rariPool8MasterOracle: {
+    artifactName: 'IMasterOracle',
+    address: '0x4d10BC156FBaD2474a94f792fe0D6c3261469cdd',
+    category: AddressCategory.External
+  },
+
+  rariChainlinkPriceOracleV3: {
+    artifactName: 'unknown',
+    address: '0x058c345D3240001088b6280e008F9e78b3B2112d',
+    category: AddressCategory.External
+  },
+
+  curveLPTokenOracle: {
+    artifactName: 'unknown',
+    address: '0xa9f3faac3b8eDF7b3DCcFDBBf25033D6F5fc02F3',
+    category: AddressCategory.External
+  },
+
+  gUniFuseOracle: {
+    artifactName: 'unknown',
+    address: '0xEa3633b38C747ceA231aDB74b511DC2eD3992B43',
+    category: AddressCategory.External
+  },
+
+  rariPool8Lusd: {
+    artifactName: 'CErc20Delegator',
+    address: '0x647A36d421183a0a9Fa62717a64B664a24E469C7',
+    category: AddressCategory.External
+  },
+
+  rariPool8Dai: {
+    artifactName: 'CErc20Delegator',
+    address: '0x7e9cE3CAa9910cc048590801e64174957Ed41d43',
+    category: AddressCategory.External
+  },
+
+  rariPool8DaiIrm: {
+    artifactName: 'unknown',
+    address: '0xede47399e2aa8f076d40dc52896331cba8bd40f7',
+    category: AddressCategory.External
+  },
+
+  rariPool8Eth: {
+    artifactName: 'CErc20Delegator',
+    address: '0xbB025D470162CC5eA24daF7d4566064EE7f5F111',
+    category: AddressCategory.External
+  },
+
+  rariPool8EthIrm: {
+    artifactName: 'unknown',
+    address: '0xbab47e4b692195bf064923178a90ef999a15f819',
+    category: AddressCategory.External
+  },
+
+  rariPool8Fei: {
+    artifactName: 'CErc20Delegator',
+    address: '0xd8553552f8868C1Ef160eEdf031cF0BCf9686945',
+    category: AddressCategory.External
+  },
+
+  rariPool8FeiIrm: {
+    artifactName: 'unknown',
+    address: '0x8f47be5692180079931e2f983db6996647aba0a5',
+    category: AddressCategory.External
+  },
+
+  rariPool8Tribe: {
+    artifactName: 'CErc20Delegator',
+    address: '0xFd3300A9a74b3250F1b2AbC12B47611171910b07',
+    category: AddressCategory.External
+  },
+
+  rariPool8TribeIrm: {
+    artifactName: 'unknown',
+    address: '0x075538650a9c69ac8019507a7dd1bd879b12c1d7',
+    category: AddressCategory.External
+  },
+
+  rariPool8CTokenImpl: {
+    artifactName: 'unknown',
+    address: '0x67Db14E73C2Dce786B5bbBfa4D010dEab4BBFCF9',
+    category: AddressCategory.External
+  },
+
+  rariPool8Fei3Crv: {
+    artifactName: 'CErc20Delegator',
+    address: '0xBFB6f7532d2DB0fE4D83aBb001c5C2B0842AF4dB',
+    category: AddressCategory.External
+  },
+
+  rariPool8FeiD3: {
+    artifactName: 'CErc20Delegator',
+    address: '0x5cA8Ffe4DAD9452ED880FA429DD0A08574225936',
+    category: AddressCategory.External
+  },
+
+  rariPool146Comptroller: {
+    artifactName: 'Unitroller',
+    address: '0x88F7c23EA6C4C404dA463Bc9aE03b012B32DEf9e',
+    category: AddressCategory.External
+  },
+
+  rariPool146FuseAdmin: {
+    artifactName: 'FuseAdmin',
+    address: '0x6d64D080345C446dA31b8D3855bA6d9C0fC875D2',
+    category: AddressCategory.External
+  },
+
+  rariPool146Eth: {
+    artifactName: 'unknown',
+    address: '0xfbD8Aaf46Ab3C2732FA930e5B343cd67cEA5054C',
+    category: AddressCategory.External
+  },
+
+  rariTimelockFeiOldLens: {
+    artifactName: 'ERC20PCVDepositWrapper',
+    address: '0x614D46B7eB2AC1a359b8835D64954F3Ee4E6F676',
+    category: AddressCategory.Deprecated
+  },
+
+  fuseAdmin: {
+    artifactName: 'FuseAdmin',
+    address: '0x761dD1Ae03D95BdABeC3C228532Dcdab4F2c7adD',
+    category: AddressCategory.Deprecated
+  },
+
+  fuseGuardian: {
+    artifactName: 'FuseGuardian',
+    address: '0xc0c59A2d3F278445f27ed4a00E2727D6c677c43F',
+    category: AddressCategory.Deprecated
+  },
+
+  proxyAdmin: {
+    artifactName: 'ProxyAdmin',
+    address: '0xf8c2b645988b7658E7748BA637fE25bdD46A704A',
+    category: AddressCategory.Deprecated
+  },
+
+  rariTimelock: {
+    artifactName: 'Timelock',
+    address: '0x8ace03Fc45139fDDba944c6A4082b604041d19FC',
+    category: AddressCategory.Deprecated
+  },
+
+  tribeRariDAO: {
+    artifactName: 'FeiDAO',
+    address: '0x637deEED4e4deb1D222650bD4B64192abf002c00',
+    category: AddressCategory.Deprecated
+  },
+
+  rariGovernanceProxyAdmin: {
+    artifactName: 'ProxyAdmin',
+    address: '0x1c9aA54a013962C2444ECae06902F31D532c6AD3',
+    category: AddressCategory.Deprecated
+  },
+
+  tribeMinter: {
+    artifactName: 'TribeMinter',
+    address: '0xFC3532b443383d9022b1B2c6FD5Fd0895943360A',
+    category: AddressCategory.Deprecated
+  },
+
+  collateralizationOracle: {
+    artifactName: 'CollateralizationOracle',
+    address: '0xFF6f59333cfD8f4Ebc14aD0a0E181a83e655d257',
+    category: AddressCategory.Deprecated
+  },
+  guardianMultisig: {
+    artifactName: 'unknown',
+    address: '0xB8f482539F2d3Ae2C9ea6076894df36D1f632775',
+    category: AddressCategory.Deprecated
+  },
+  feiDAO: {
+    artifactName: 'FeiDAO',
+    address: '0x0BEF27FEB58e857046d630B2c03dFb7bae567494',
+    category: AddressCategory.Deprecated
+  },
+  feiDAOTimelock: {
+    artifactName: 'FeiDAOTimelock',
+    address: '0xd51dbA7a94e1adEa403553A8235C302cEbF41a3c',
+    category: AddressCategory.Deprecated
   },
 
   pcvGuardian: {
@@ -2726,11 +2733,6 @@ export const MainnetContractsConfig = {
   clawbackVestingContractBeneficiary: {
     artifactName: 'unknown',
     address: '0x4bFa2625D50b68D622D1e71c82ba6Db99BA0d17F',
-    category: AddressCategory.Deprecated
-  },
-  feiLabsVestingTimelock: {
-    artifactName: 'TimelockedDelegator',
-    address: '0x38afbf8128cc54323e216acde9516d281c4f1e5f',
     category: AddressCategory.Deprecated
   },
 

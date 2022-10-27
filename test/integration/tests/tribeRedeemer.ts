@@ -69,8 +69,8 @@ describe('e2e-tribe-redeemer', function () {
     expect(amountsOut[1]).to.be.at.most(ethers.constants.WeiPerEther.mul(25));
     expect(amountsOut[2]).to.be.at.least(ethers.constants.WeiPerEther.mul(330)); // 333.72 FOX
     expect(amountsOut[2]).to.be.at.most(ethers.constants.WeiPerEther.mul(335));
-    expect(amountsOut[3]).to.be.at.least(ethers.constants.WeiPerEther.mul(700)); // 701.525 DAI
-    expect(amountsOut[3]).to.be.at.most(ethers.constants.WeiPerEther.mul(705));
+    expect(amountsOut[3]).to.be.at.least(ethers.constants.WeiPerEther.mul(712)); // 714.34 DAI
+    expect(amountsOut[3]).to.be.at.most(ethers.constants.WeiPerEther.mul(717));
   });
 
   it('redeem() 1,000,000 TRIBE, twice', async () => {
@@ -119,8 +119,8 @@ describe('e2e-tribe-redeemer', function () {
     const daiPerRedeem = daiBalance1.sub(daiBalance0);
     expect(stethPerRedeem).to.be.at.least(ethers.constants.WeiPerEther.mul(109));
     expect(stethPerRedeem).to.be.at.most(ethers.constants.WeiPerEther.mul(112));
-    expect(daiPerRedeem).to.be.at.least(ethers.constants.WeiPerEther.mul(70000));
-    expect(daiPerRedeem).to.be.at.most(ethers.constants.WeiPerEther.mul(70500));
+    expect(daiPerRedeem).to.be.at.least(ethers.constants.WeiPerEther.mul(71200));
+    expect(daiPerRedeem).to.be.at.most(ethers.constants.WeiPerEther.mul(71700));
   });
 
   it('small redeemooor', async () => {
@@ -147,8 +147,8 @@ describe('e2e-tribe-redeemer', function () {
     const daiReceived = daiBalance1.sub(daiBalance0);
     expect(stethReceived).to.be.at.least('109000000'); // >= 0.000000000109 stETH
     expect(stethReceived).to.be.at.most('112000000'); // <= 0.000000000112 stETH
-    expect(daiReceived).to.be.at.least('70000000000'); // >= 0.0000000700 DAI
-    expect(daiReceived).to.be.at.most('71000000000'); // <>>= 0.0.0000000710 DAI
+    expect(daiReceived).to.be.at.least('71200000000'); // >= 0.0000000712 DAI
+    expect(daiReceived).to.be.at.most('71700000000'); // <>>= 0.0.0000000717 DAI
   });
 
   it('dust redeemooor', async () => {
@@ -200,7 +200,7 @@ describe('e2e-tribe-redeemer', function () {
     const expectedAmounts = {
       redeemedAmount: ethers.constants.WeiPerEther.mul(10_000),
       steth: ethers.BigNumber.from('1096463758637073656'), // 1.0964 stETH
-      dai: ethers.BigNumber.from('701525436619890200000') // 701.525 DAI
+      dai: ethers.BigNumber.from('714335537896449685994') // 713.34 DAI
     };
     for (let i = 0; i < 10; i++) {
       const multiplier = Math.floor(Math.random() * 100) + 1;
@@ -251,8 +251,8 @@ describe('e2e-tribe-redeemer', function () {
     const daiReceived = daiBalance1.sub(daiBalance0);
     expect(stethReceived).to.be.at.least(ethers.constants.WeiPerEther.mul(109).div(100)); // 1.0964 stETH
     expect(stethReceived).to.be.at.most(ethers.constants.WeiPerEther.mul(112).div(100));
-    expect(daiReceived).to.be.at.least(ethers.constants.WeiPerEther.mul(700)); // 701.525 DAI
-    expect(daiReceived).to.be.at.most(ethers.constants.WeiPerEther.mul(705));
+    expect(daiReceived).to.be.at.least(ethers.constants.WeiPerEther.mul(712)); // 714.34 DAI
+    expect(daiReceived).to.be.at.most(ethers.constants.WeiPerEther.mul(717));
 
     // balance after all redeems
     expect(await contracts.steth.balanceOf(contracts.tribeRedeemer.address)).to.be.at.most('1');

@@ -2,9 +2,9 @@
 
 export const PermissionsConfig = {
   MINTER_ROLE: ['simpleFeiDaiPSM'],
-  GOVERN_ROLE: ['core', 'feiDAOTimelock'],
-  PCV_CONTROLLER_ROLE: ['feiDAOTimelock', 'vebalOtcHelper'],
-  GUARDIAN_ROLE: ['guardianMultisig'],
+  GOVERN_ROLE: [],
+  PCV_CONTROLLER_ROLE: ['vebalOtcHelper'],
+  GUARDIAN_ROLE: [],
   METAGOVERNANCE_VOTE_ADMIN: ['vebalOtcHelper'],
   METAGOVERNANCE_TOKEN_STAKING: ['vebalOtcHelper'],
   METAGOVERNANCE_GAUGE_ADMIN: ['vebalOtcHelper'],

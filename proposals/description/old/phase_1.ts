@@ -12,7 +12,7 @@ const phase_1: TemplatedProposalDescription = {
   commands: [
     // 1. Accept the beneficiary of Fei Labs vesting TRIBE timelock contract as the DAO timelock
     {
-      target: 'feiLabsVestingTimelock',
+      target: 'tribeDAODelegationsTimelock',
       values: '0',
       method: 'acceptBeneficiary()',
       arguments: (addresses) => [],

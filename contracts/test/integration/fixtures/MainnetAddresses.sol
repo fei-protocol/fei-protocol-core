@@ -57,4 +57,5 @@ library MainnetAddresses {
     address public constant RARI_TRIBE_TOKEN_TIMELOCK = 0x625cf6AA7DafB154F3Eb6BE87592110e30290dEe;
     address public constant FEI_LABS_CONTRACT = 0x38AfBF8128cc54323e216ACde9516d281c4F1E5f;
     address public constant TRIBE_FEI_LABS_DEL = 0x66b9D411E14FBc86424367b67933945fd7E40B11;
+    address public constant TRIBE_FEI_LABS_DEL_2 = 0xb81cf4981Ef648aaA73F07a18B03970f04d5D8bF;
 }
