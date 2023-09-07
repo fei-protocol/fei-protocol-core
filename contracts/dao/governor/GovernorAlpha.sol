@@ -219,7 +219,7 @@ contract GovernorAlpha {
         );
         Proposal storage proposal = proposals[proposalId];
         uint256 eta = add256(block.timestamp, timelock.delay());
-        for (uint256 i = 0; i < proposal.targets.length; i++) {
+        for (uint256 i; i < proposal.targets.length; ++i) {
             _queueOrRevert(proposal.targets[i], proposal.values[i], proposal.signatures[i], proposal.calldatas[i], eta);
         }
         proposal.eta = eta;
@@ -247,7 +247,7 @@ contract GovernorAlpha {
         );
         Proposal storage proposal = proposals[proposalId];
         proposal.executed = true;
-        for (uint256 i = 0; i < proposal.targets.length; i++) {
+        for (uint256 i; i < proposal.targets.length; ++i) {
             timelock.executeTransaction{value: proposal.values[i]}(
                 proposal.targets[i],
                 proposal.values[i],
@@ -274,7 +274,7 @@ contract GovernorAlpha {
         );
 
         proposal.canceled = true;
-        for (uint256 i = 0; i < proposal.targets.length; i++) {
+        for (uint256 i; i < proposal.targets.length; ++i) {
             timelock.cancelTransaction(
                 proposal.targets[i],
                 proposal.values[i],
